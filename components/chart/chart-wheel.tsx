@@ -44,9 +44,10 @@ export interface ChartWheelProps {
   showAspects?: boolean;
   showHouses?: boolean;
   showDegrees?: boolean;
+  svgRef?: React.Ref<SVGSVGElement>;
 }
 
-export function ChartWheel({ view, compact, className, selected, onSelect, highlightAspect, showAspects = true, showHouses = true, showDegrees = true }: ChartWheelProps) {
+export function ChartWheel({ view, compact, className, selected, onSelect, highlightAspect, showAspects = true, showHouses = true, showDegrees = true, svgRef }: ChartWheelProps) {
   const [hover, setHover] = React.useState<string | null>(null);
   const focus = hover ?? selected ?? null;
   const { inner, outer, aspects } = view;
@@ -56,12 +57,12 @@ export function ChartWheel({ view, compact, className, selected, onSelect, highl
 
   const R_OUT = 290;
   const R_ZOD = 252;
-  const R_SPLIT = bi ? 208 : 0;
-  const R_HOUSE = compact ? 150 : 158;
-  const R_ASP = compact ? 150 : 132;
-  const innerGlyphR = bi ? 186 : compact ? 205 : 224;
-  const innerDegR = bi ? 166 : 198;
-  const outerGlyphR = 232;
+  const R_SPLIT = bi ? 200 : 0;
+  const R_HOUSE = compact ? 150 : bi ? 150 : 158;
+  const R_ASP = compact ? (bi ? 140 : 150) : bi ? 128 : 132;
+  const innerGlyphR = bi ? (compact ? 172 : 180) : compact ? 205 : 224;
+  const innerDegR = bi ? 161 : 198;
+  const outerGlyphR = compact ? 226 : 237;
 
   const innerPos = spread(inner.bodies.map((b) => ({ key: b.id, lon: b.lon })), bi ? 7.5 : 8);
   const outerPos = outer ? spread(outer.bodies.map((b) => ({ key: b.id, lon: b.lon })), 6.5) : {};
@@ -120,7 +121,7 @@ export function ChartWheel({ view, compact, className, selected, onSelect, highl
   };
 
   return (
-    <svg viewBox="0 0 600 600" className={cn("h-auto w-full select-none", className)} onClick={() => onSelect?.(null)} role="img" aria-label="Chart wheel">
+    <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" className={cn("h-auto w-full select-none", className)} onClick={() => onSelect?.(null)} role="img" aria-label="Chart wheel">
       {/* zodiac ring */}
       <circle cx={C} cy={C} r={R_OUT} fill="#FFFFFF" stroke="#D6CFC6" strokeWidth={1.2} />
       {SIGNS.map((s, i) => {
@@ -222,7 +223,7 @@ export function ChartWheel({ view, compact, className, selected, onSelect, highl
 
       {/* bodies */}
       {inner.bodies.map((b) => renderBody(b, "inner", innerGlyphR, innerDegR, innerPos[b.id] ?? b.lon, bi ? R_SPLIT : R_ZOD))}
-      {outer && outer.bodies.map((b) => renderBody(b, "outer", outerGlyphR, outerGlyphR - 22, outerPos[b.id] ?? b.lon, R_ZOD))}
+      {outer && outer.bodies.map((b) => renderBody(b, "outer", outerGlyphR, 215, outerPos[b.id] ?? b.lon, R_ZOD))}
 
       <circle cx={C} cy={C} r={2.5} fill="#D6CFC6" />
     </svg>
