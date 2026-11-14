@@ -41,9 +41,9 @@ export function demoSeries(): MonthPoint[] {
     const m = d.getMonth();
     const growth = 1 + (23 - i) * 0.018;
     const season = 1 + 0.18 * Math.cos(((m - 0) / 12) * Math.PI * 2) + (m === 11 ? 0.12 : 0);
-    const partial = i === 0 ? 0.48 : 1; // November is in progress
+    const partial = i === 0 ? 0.8 : 1; // November is in progress
     const consultations = Math.round((20 + r() * 7) * growth * season * partial);
-    const newClients = Math.max(1, Math.round((3 + r() * 4) * growth * (m === 0 ? 1.4 : 1) * partial));
+    const newClients = Math.max(1, Math.round((1.2 + r() * 2.6) * growth * (m === 0 ? 1.4 : 1) * partial));
     const returningClients = Math.round(consultations * (0.55 + r() * 0.12));
     const del = Math.round(consultations * (0.62 + r() * 0.15));
     const video = Math.round(del * (0.12 + (23 - i) * 0.008));
@@ -69,4 +69,4 @@ export function demoSeries(): MonthPoint[] {
   return out;
 }
 
-export const BASE_CLIENTS = 58; // active clients before the 24-month window
+export const BASE_CLIENTS = 26; // active clients before the 24-month window

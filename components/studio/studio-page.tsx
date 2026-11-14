@@ -375,7 +375,7 @@ export function StudioPage() {
           {phase !== "review" && phase !== "done" && (
             <Card className="overflow-hidden">
               <div className="p-3 md:p-4">{preview}</div>
-              <div className="flex flex-col gap-4 border-t border-line px-4 py-4 lg:flex-row lg:items-center">
+              <div className="flex flex-col gap-4 border-t border-line px-4 py-4 2xl:flex-row 2xl:items-center">
                 <div className="flex items-center gap-3">
                   {phase === "setup" && (
                     <Button size="lg" onClick={start} className="bg-danger hover:bg-danger/90"><Circle className="fill-current" /> Start recording</Button>
@@ -385,7 +385,7 @@ export function StudioPage() {
                   {live && <Button size="lg" variant="dark" onClick={stop}><Square className="fill-current" /> Stop</Button>}
                   <span className="font-serif text-[28px] tabular-nums leading-none">{fmtDuration(elapsed)}</span>
                 </div>
-                <div className="grid flex-1 gap-3 sm:grid-cols-3 lg:ml-auto lg:max-w-[560px]">
+                <div className="grid flex-1 gap-3 sm:grid-cols-3 2xl:ml-auto 2xl:max-w-[560px]">
                   <div>
                     <div className="mb-1 flex items-center justify-between text-[11.5px] text-muted">
                       <span className="flex items-center gap-1"><Mic className="size-3.5" /> Microphone</span>
@@ -557,7 +557,7 @@ export function StudioPage() {
             return (
               <li key={r.id} className="flex flex-wrap items-center gap-3 px-5 py-3">
                 <span className="flex size-9 items-center justify-center rounded-lg bg-sage-50 text-sage-dark">{r.mode === "audio" ? <Mic className="size-4" /> : r.mode === "webcam" ? <Video className="size-4" /> : <MonitorPlay className="size-4" />}</span>
-                <div className="min-w-0 flex-1">
+                <div className="min-w-[200px] flex-1">
                   <p className="truncate text-[13.5px] font-medium">{r.title}</p>
                   <p className="truncate text-[12px] text-muted">
                     <Link href={`/app/clients/${r.clientId}`} className="hover:text-ink">{personName(people.find((p) => p.id === r.clientId))}</Link>

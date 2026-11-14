@@ -120,7 +120,7 @@ export function ReportsPage() {
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <Card>
           <CardHeader title="Consultation volume" description={n < 6 ? `Monthly · highlighted: ${RANGE_LABEL[range]} (November in progress)` : "Monthly · November in progress"} />
-          <CardBody className="h-[300px] pl-1">
+          <CardBody className="h-[340px] pl-1">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartMonths} margin={{ top: 6, right: 8, left: -12, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke={C.line} />
@@ -141,7 +141,7 @@ export function ReportsPage() {
             <div className="relative h-[200px] w-[200px] shrink-0">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={delTypes} dataKey="value" innerRadius={62} outerRadius={92} paddingAngle={2} stroke="none">
+                  <Pie data={delTypes} dataKey="value" isAnimationActive={false} innerRadius={62} outerRadius={92} paddingAngle={2} stroke="none">
                     {delTypes.map((d) => <Cell key={d.name} fill={d.color} />)}
                   </Pie>
                   <Tooltip {...tooltipStyle} />
