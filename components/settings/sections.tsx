@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Camera, Monitor, Smartphone, ShieldCheck, Download, Upload, Trash2, RotateCcw, Check, Palette } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { ASPECTS, BODIES, HOUSE_SYSTEMS, PLANET_IDS, ZODIACS, type AspectId, type BodyId, type HouseSystem, type ZodiacType } from "@/lib/astro";
 import { cn } from "@/lib/utils";
@@ -301,6 +302,7 @@ export function SecuritySection() {
 
 // ——— Subscription ————————————————————————————————————————————————————
 export function SubscriptionSection() {
+  const router = useRouter();
   const counts = { clients: useStore((s) => s.clients.length), charts: useStore((s) => s.charts.length) };
   const usage = [
     { label: "Storage", used: "19 GB", of: "50 GB", pct: 38 },
@@ -319,7 +321,7 @@ export function SubscriptionSection() {
             <p className="text-[13px] text-muted">Pricing and plan limits are not yet finalised. Figures shown are placeholders.</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="secondary" size="sm" onClick={() => (window.location.href = "/pricing")}>Compare plans</Button>
+            <Button variant="secondary" size="sm" onClick={() => router.push("/pricing")}>Compare plans</Button>
             <Button size="sm" disabled>Change plan</Button>
           </div>
         </CardBody>
@@ -352,6 +354,7 @@ export function SubscriptionSection() {
 
 // ——— Data ————————————————————————————————————————————————————————————
 export function DataSection() {
+  const router = useRouter();
   const s = useStore();
   const [del, setDel] = React.useState(false);
   const [confirm, setConfirm] = React.useState("");
@@ -379,7 +382,7 @@ export function DataSection() {
             <Button variant="secondary" size="sm" onClick={exportAll}><Download /> Export</Button>
           </Row>
           <Row title="Import clients" desc="CSV or exports from other astrology software.">
-            <Button variant="secondary" size="sm" onClick={() => (window.location.href = "/app/clients")}><Upload /> Go to import</Button>
+            <Button variant="secondary" size="sm" onClick={() => router.push("/app/clients")}><Upload /> Go to import</Button>
           </Row>
         </CardBody>
       </Card>
