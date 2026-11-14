@@ -1,0 +1,64 @@
+import * as React from "react";
+import { cn } from "@/lib/utils";
+import { ButtonLink } from "@/components/ui/button";
+
+export function SectionHeading({
+  eyebrow,
+  title,
+  body,
+  align = "left",
+  className,
+}: {
+  eyebrow?: string;
+  title: React.ReactNode;
+  body?: React.ReactNode;
+  align?: "left" | "center";
+  className?: string;
+}) {
+  return (
+    <div className={cn("max-w-2xl", align === "center" && "mx-auto text-center", className)}>
+      {eyebrow && <p className="eyebrow mb-3 text-accent">{eyebrow}</p>}
+      <h2 className="font-serif text-[34px] leading-[1.1] text-ink md:text-[44px]">{title}</h2>
+      {body && <p className="mt-4 text-[16px] leading-relaxed text-muted">{body}</p>}
+    </div>
+  );
+}
+
+export function PageIntro({ eyebrow, title, body, children }: { eyebrow: string; title: React.ReactNode; body?: React.ReactNode; children?: React.ReactNode }) {
+  return (
+    <section className="border-b border-line">
+      <div className="container py-16 md:py-24">
+        <p className="eyebrow mb-4 text-accent">{eyebrow}</p>
+        <h1 className="max-w-3xl font-serif text-[42px] leading-[1.05] text-ink md:text-[60px]">{title}</h1>
+        {body && <p className="mt-5 max-w-2xl text-[17px] leading-relaxed text-muted">{body}</p>}
+        {children}
+      </div>
+    </section>
+  );
+}
+
+export function FinalCta({
+  title = "Bring your practice together.",
+  body = "Explore the prototype, or create an account to join the early practitioner group shaping AstrologersDirect.",
+}: {
+  title?: string;
+  body?: string;
+}) {
+  return (
+    <section className="container py-20 md:py-28">
+      <div className="relative overflow-hidden rounded-2xl bg-ink px-6 py-14 text-center md:px-16 md:py-20">
+        <p className="eyebrow mb-4 text-[#C9B3BA]">Your Practice. Connected.</p>
+        <h2 className="mx-auto max-w-2xl font-serif text-[34px] leading-[1.1] text-white md:text-[48px]">{title}</h2>
+        <p className="mx-auto mt-4 max-w-xl text-[15.5px] text-[#CFCAD0]">{body}</p>
+        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <ButtonLink href="/app" size="lg">
+            Explore the Platform
+          </ButtonLink>
+          <ButtonLink href="/auth/signup" size="lg" variant="secondary" className="border-white/15 bg-white/5 text-white hover:bg-white/10 hover:border-white/25">
+            Create an account
+          </ButtonLink>
+        </div>
+      </div>
+    </section>
+  );
+}
