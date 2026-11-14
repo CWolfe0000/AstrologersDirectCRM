@@ -149,7 +149,11 @@ export function AiAssistant({ chart, view, onSaved }: { chart: ChartRecord; view
   const [busy, setBusy] = React.useState(false);
   const endRef = React.useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => endRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), [msgs, busy]);
+  React.useEffect(() => {
+    if (!msgs.length || !endRef.current) return;
+    const box = endRef.current.closest(".overflow-y-auto");
+    if (box) box.scrollTo({ top: box.scrollHeight, behavior: "smooth" });
+  }, [msgs, busy]);
 
   const ask = (q: string) => {
     if (!q.trim() || busy) return;

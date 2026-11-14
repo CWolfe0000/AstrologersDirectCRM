@@ -11,7 +11,7 @@ import type {
   Activity, AppNotification, ChartRecord, Client, ClientFile, Consultation, Observation, Person, PortalNotification,
   Practitioner, Reading, Recording, Task,
 } from "./data/types";
-import { uid } from "./utils";
+import { DEMO_TODAY, uid } from "./utils";
 
 /**
  * Prototype data store.
@@ -84,7 +84,13 @@ export interface DemoState {
   resetDemo: () => void;
 }
 
-const NOW = () => "2026-11-14T" + new Date().toTimeString().slice(0, 8);
+/** Demo clock: starts at DEMO_TODAY (09:00) when the page loads and advances in real time. */
+const SESSION_START = Date.now();
+const NOW = () => {
+  const d = new Date(DEMO_TODAY.getTime() + (Date.now() - SESSION_START));
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+};
 
 function seedState() {
   return {

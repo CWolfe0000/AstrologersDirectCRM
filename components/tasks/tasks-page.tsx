@@ -143,7 +143,7 @@ export function TasksPage() {
                         </div>
                         <div className="flex shrink-0 flex-col items-end gap-1">
                           <span className={cn("text-[12px]", od ? "font-medium text-danger" : "text-muted")}>{t.status === "done" ? "Done" : od ? `Overdue · ${relDay(t.due)}` : relDay(t.due)}</span>
-                          <Badge tone={t.priority === "high" ? "danger" : t.priority === "medium" ? "warn" : "neutral"} className="text-[10.5px]">
+                          <Badge tone={t.priority === "high" ? "danger" : t.priority === "medium" ? "warn" : "neutral"} className="text-[10.5px] capitalize">
                             {t.priority}
                           </Badge>
                         </div>

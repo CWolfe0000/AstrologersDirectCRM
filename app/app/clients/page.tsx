@@ -123,9 +123,10 @@ export default function ClientsPage() {
         }
       />
 
-      <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-center">
-        <SearchInput placeholder="Search by name, email, place or tag…" value={q} onChange={(e) => setQ(e.target.value)} className="xl:w-72" />
-        <div className="no-scrollbar -mx-4 overflow-x-auto px-4 xl:mx-0 xl:px-0">
+      <div className="mb-4 flex flex-col gap-3 2xl:flex-row 2xl:items-center">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+        <SearchInput placeholder="Search by name, email, place or tag…" value={q} onChange={(e) => setQ(e.target.value)} className="lg:w-72" />
+        <div className="no-scrollbar -mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
           <Segmented
             size="sm"
             value={status}
@@ -139,7 +140,8 @@ export default function ClientsPage() {
             ]}
           />
         </div>
-        <div className="flex items-center gap-2 xl:ml-auto">
+        </div>
+        <div className="flex items-center gap-2 lg:justify-end 2xl:ml-auto">
           <Select value={tag} onChange={(e) => setTag(e.target.value)} className="min-w-0 flex-1 sm:w-40 sm:flex-none" aria-label="Filter by tag">
             <option value="all">All tags</option>
             {allTags.map((t) => (
@@ -187,8 +189,8 @@ export default function ClientsPage() {
                   <th className="px-5 py-2.5 font-medium">
                     <button className="inline-flex items-center gap-1 hover:text-ink" onClick={() => setSort("name")}>Client <ArrowUpDown className="size-3" /></button>
                   </th>
-                  <th className="hidden px-3 py-2.5 font-medium xl:table-cell">Birth data</th>
-                  <th className="px-3 py-2.5 font-medium">
+                  <th className="hidden px-3 py-2.5 font-medium 2xl:table-cell">Birth data</th>
+                  <th className="whitespace-nowrap px-3 py-2.5 font-medium">
                     <button className="inline-flex items-center gap-1 hover:text-ink" onClick={() => setSort("last")}>Last consultation <ArrowUpDown className="size-3" /></button>
                   </th>
                   <th className="px-3 py-2.5 font-medium">
@@ -211,12 +213,12 @@ export default function ClientsPage() {
                           </Link>
                           <p className="truncate text-[12px] text-muted">
                             {c.email}
-                            {c.phone ? ` · ${c.phone}` : ""}
+                            {c.phone && <span className="hidden 2xl:inline"> · {c.phone}</span>}
                           </p>
                         </div>
                       </div>
                     </td>
-                    <td className="hidden px-3 py-3 text-[12.5px] xl:table-cell">
+                    <td className="hidden px-3 py-3 text-[12.5px] 2xl:table-cell">
                       {p && (
                         <>
                           <p>
@@ -231,8 +233,8 @@ export default function ClientsPage() {
                     <td className="px-3 py-3 text-[12.5px]">
                       {last ? (
                         <>
-                          <p>{fmtDate(last.start)}</p>
-                          <p className="text-muted">{last.type}</p>
+                          <p className="whitespace-nowrap">{fmtDate(last.start)}</p>
+                          <p className="max-w-[180px] truncate text-muted">{last.type}</p>
                         </>
                       ) : (
                         <span className="text-muted">—</span>
@@ -241,10 +243,10 @@ export default function ClientsPage() {
                     <td className="px-3 py-3 text-[12.5px]">
                       {next ? (
                         <>
-                          <p className="font-medium">
+                          <p className="whitespace-nowrap font-medium">
                             {fmtShort(next.start)}, {fmtTime(next.start)}
                           </p>
-                          <p className="text-muted">{next.type}</p>
+                          <p className="max-w-[180px] truncate text-muted">{next.type}</p>
                         </>
                       ) : (
                         <span className="text-muted">None scheduled</span>

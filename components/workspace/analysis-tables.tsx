@@ -5,8 +5,8 @@ import { ASPECTS, BODIES, RULERS, SIGNS, bodyIn, degInSign, dignityOf, fmtDeg, f
 import { cn } from "@/lib/utils";
 import { Segmented } from "@/components/ui/tabs";
 
-const th = "px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted";
-const td = "px-3 py-2 text-[13px]";
+const th = "px-2 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted";
+const td = "px-2 py-2 text-[13px]";
 
 function Glyph({ id, outer }: { id: BodyId; outer?: boolean }) {
   const g = BODIES[id].glyph;

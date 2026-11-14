@@ -8,7 +8,8 @@ const C = 300; // centre (viewBox 600x600)
 
 function pt(r: number, a: number) {
   const rad = (a * Math.PI) / 180;
-  return [C + r * Math.cos(rad), C - r * Math.sin(rad)] as const;
+  // rounded so server- and client-rendered SVG attributes match exactly
+  return [Math.round((C + r * Math.cos(rad)) * 100) / 100, Math.round((C - r * Math.sin(rad)) * 100) / 100] as const;
 }
 
 function spread(items: { key: string; lon: number }[], minSep: number) {
@@ -108,11 +109,11 @@ export function ChartWheel({ view, compact, className, selected, onSelect, highl
         <line x1={t1x} y1={t1y} x2={t2x} y2={t2y} stroke={color} strokeWidth={1.2} />
         {!compact && <line x1={t2x} y1={t2y} x2={lx} y2={ly} stroke={color} strokeOpacity={0.18} strokeWidth={0.8} />}
         {active && <circle cx={gx} cy={gy} r={compact ? 11 : 14} fill={ring === "outer" ? "#F6EEF0" : "#EFF3F0"} stroke={color} strokeOpacity={0.4} />}
-        <text x={gx} y={gy} textAnchor="middle" dominantBaseline="central" className="glyph" fontSize={compact ? 28 : 19} fill={color}>
+        <text x={gx} y={gy} textAnchor="middle" dominantBaseline="central" className="glyph" fontSize={compact ? 28 : 22} fill={color}>
           {BODIES[b.id].glyph}
         </text>
         {!compact && showDegrees && (
-          <text {...(() => { const [x, y] = pt(degR, a); return { x, y }; })()} textAnchor="middle" dominantBaseline="central" fontSize={10.5} fill="#77736F" fontFamily="Inter Variable, Inter, sans-serif">
+          <text {...(() => { const [x, y] = pt(degR, a); return { x, y }; })()} textAnchor="middle" dominantBaseline="central" fontSize={11.5} fill="#77736F" fontFamily="Inter Variable, Inter, sans-serif">
             {Math.floor(d)}°{b.speed < 0 ? "℞" : ""}
           </text>
         )}
@@ -121,7 +122,7 @@ export function ChartWheel({ view, compact, className, selected, onSelect, highl
   };
 
   return (
-    <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" className={cn("h-auto w-full select-none", className)} onClick={() => onSelect?.(null)} role="img" aria-label="Chart wheel">
+    <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox={compact ? "0 0 600 600" : "-22 -22 644 644"} className={cn("h-auto w-full select-none", className)} onClick={() => onSelect?.(null)} role="img" aria-label="Chart wheel">
       {/* zodiac ring */}
       <circle cx={C} cy={C} r={R_OUT} fill="#FFFFFF" stroke="#D6CFC6" strokeWidth={1.2} />
       {SIGNS.map((s, i) => {
@@ -136,7 +137,7 @@ export function ChartWheel({ view, compact, className, selected, onSelect, highl
         return (
           <g key={s.id}>
             <path d={`M${x0},${y0} A${R_OUT},${R_OUT} 0 0 0 ${x1},${y1} L${x2},${y2} A${R_ZOD},${R_ZOD} 0 0 1 ${x3},${y3} Z`} fill={fill} stroke="#E7E2DC" strokeWidth={0.8} />
-            <text x={gx} y={gy} textAnchor="middle" dominantBaseline="central" className="glyph" fontSize={compact ? 22 : 17} fill="#5A555B">
+            <text x={gx} y={gy} textAnchor="middle" dominantBaseline="central" className="glyph" fontSize={compact ? 22 : 19} fill="#5A555B">
               <title>{s.name}</title>
               {s.glyph}
             </text>
@@ -188,7 +189,7 @@ export function ChartWheel({ view, compact, className, selected, onSelect, highl
         ].map((x) => {
           const [lx, ly] = pt(R_OUT + 16, ang(x.lon));
           return (
-            <text key={x.label} x={lx} y={ly} textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={600} fill="#29272B" fontFamily="Inter Variable, Inter, sans-serif">
+            <text key={x.label} x={lx} y={ly} textAnchor="middle" dominantBaseline="central" fontSize={12.5} fontWeight={600} fill="#29272B" fontFamily="Inter Variable, Inter, sans-serif">
               {x.label}
             </text>
           );

@@ -75,6 +75,7 @@ export function OverviewTab({ client, person, onTab }: { client: Client; person:
             {client.summary && <p className="mb-5 text-[14px] leading-relaxed text-ink-3">{client.summary}</p>}
             <KeyValue
               cols={3}
+              className="grid-cols-2"
               items={[
                 { label: "Client since", value: fmtDate(client.createdAt) },
                 { label: "Source", value: client.source ?? "—" },
