@@ -1,0 +1,86 @@
+/**
+ * Astrology engine abstraction.
+ *
+ * The UI only talks to `AstrologyEngine`. The prototype ships with a
+ * DemoEngine that produces deterministic, illustrative positions. A production
+ * build would register an adapter around the existing calculation engine
+ * (e.g. a Swiss Ephemeris–based service) that implements the same interface.
+ */
+
+export type BodyId =
+  | "sun" | "moon" | "mercury" | "venus" | "mars" | "jupiter" | "saturn"
+  | "uranus" | "neptune" | "pluto" | "node" | "chiron" | "asc" | "mc";
+
+export type SignId =
+  | "aries" | "taurus" | "gemini" | "cancer" | "leo" | "virgo"
+  | "libra" | "scorpio" | "sagittarius" | "capricorn" | "aquarius" | "pisces";
+
+export type AspectId = "conjunction" | "opposition" | "trine" | "square" | "sextile" | "quincunx" | "semisextile" | "semisquare" | "sesquiquadrate";
+
+export type HouseSystem = "placidus" | "whole-sign" | "koch" | "equal" | "porphyry" | "regiomontanus" | "campanus";
+export type ZodiacType = "tropical" | "sidereal-lahiri" | "sidereal-fagan-bradley";
+
+export interface BirthData {
+  date: string; // YYYY-MM-DD
+  time: string; // HH:mm (local)
+  timeAccuracy: "exact" | "approximate" | "unknown";
+  place: string;
+  lat: number;
+  lon: number;
+  tz: string;
+}
+
+export interface ChartSettings {
+  houseSystem: HouseSystem;
+  zodiac: ZodiacType;
+  bodies: BodyId[];
+  aspects: AspectId[];
+  orbs: Partial<Record<AspectId, number>>;
+  showAspectLines: boolean;
+  showHouseCusps: boolean;
+  showDegrees: boolean;
+}
+
+export interface BodyPosition {
+  id: BodyId;
+  lon: number; // ecliptic longitude 0–360
+  speed: number; // deg/day, negative = retrograde
+  house: number; // 1–12
+}
+
+export interface ChartPoints {
+  bodies: BodyPosition[];
+  cusps: number[]; // 12 house cusp longitudes, cusps[0] = ASC
+  asc: number;
+  mc: number;
+}
+
+export interface Aspect {
+  a: BodyId;
+  b: BodyId;
+  aRing: "inner" | "outer";
+  bRing: "inner" | "outer";
+  type: AspectId;
+  orb: number; // absolute
+  applying: boolean;
+}
+
+export interface EngineInfo {
+  id: string;
+  name: string;
+  /** False for the demonstration engine — UI must label results accordingly. */
+  verified: boolean;
+  description: string;
+}
+
+export interface AstrologyEngine {
+  info: EngineInfo;
+  /** Natal / radix positions for a birth moment. */
+  natal(birth: BirthData, settings: ChartSettings): ChartPoints;
+  /** Positions of the moving bodies at a moment (for transits). */
+  positionsAt(isoDateTime: string, settings: ChartSettings, reference?: ChartPoints): ChartPoints;
+  /** Secondary progressions for a target date. */
+  progressed(birth: BirthData, targetDate: string, settings: ChartSettings): ChartPoints;
+  /** Solar arc directions for a target date. */
+  solarArc(birth: BirthData, targetDate: string, settings: ChartSettings): ChartPoints;
+}

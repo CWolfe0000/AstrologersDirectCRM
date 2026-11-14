@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body { @apply bg-canvas text-ink font-sans text-[14px] leading-relaxed; }
+  h1, h2, h3, .font-display { font-feature-settings: "liga" 1; }
+  ::selection { background: #EDDCE1; }
+  :focus-visible { outline: 2px solid #824B59; outline-offset: 2px; }
+  input, textarea, select { font: inherit; }
+}
+
+@layer components {
+  .glyph { font-family: "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols", "Noto Sans Symbols 2", "DejaVu Sans", sans-serif; font-variant-emoji: text; }
+  .scrollbar-thin { scrollbar-width: thin; scrollbar-color: #D6CFC6 transparent; }
+  .eyebrow { @apply text-[11px] font-semibold uppercase tracking-[0.12em] text-muted; }
+  .prose-obs p { @apply mb-3; }
+  .prose-obs ul { @apply mb-3 list-disc pl-5; }
+  .prose-obs strong { @apply font-semibold; }
+  .prose-obs em { @apply italic; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+}
