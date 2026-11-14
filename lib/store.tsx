@@ -162,14 +162,14 @@ export const useStore = create<DemoState>()(
           return updated;
         }
         const created: Observation = {
-          id: uid("o"),
-          title: o.title || "Untitled observation",
-          body: o.body ?? "",
           planets: [],
           aspects: [],
           houses: [],
           tags: [],
           ...o,
+          id: uid("o"),
+          title: o.title || "Untitled observation",
+          body: o.body ?? "",
           createdAt: NOW(),
           updatedAt: NOW(),
           revisions: [{ at: NOW(), summary: "Created" }],

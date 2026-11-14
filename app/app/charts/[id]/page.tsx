@@ -276,15 +276,15 @@ function Workspace() {
         <section className="ws-noprint min-w-0">
           <div className="rounded-xl border border-line bg-surface shadow-card xl:sticky xl:top-20 xl:flex xl:max-h-[calc(100vh-6rem)] xl:flex-col">
             <Tabs value={tab} onValueChange={setTab} className="flex min-h-0 flex-1 flex-col">
-              <TabsList className="shrink-0 px-1.5">
-                <TabsTrigger value="placements" className="px-2 text-[13px]">Planets</TabsTrigger>
-                <TabsTrigger value="aspects" className="px-2 text-[13px]">Aspects</TabsTrigger>
-                <TabsTrigger value="houses" className="px-2 text-[13px]">Houses</TabsTrigger>
-                <TabsTrigger value="condition" className="px-2 text-[13px]">Condition</TabsTrigger>
-                <TabsTrigger value="observations" className="px-2 text-[13px]">
-                  Notes{obsCount > 0 && <span className="rounded-full bg-accent-50 px-1.5 text-[10.5px] text-accent">{obsCount}</span>}
+              <TabsList className="grid shrink-0 grid-cols-6 gap-0 px-1">
+                <TabsTrigger value="placements" className="justify-center gap-1 px-1 text-[12.5px]">Planets</TabsTrigger>
+                <TabsTrigger value="aspects" className="justify-center gap-1 px-1 text-[12.5px]">Aspects</TabsTrigger>
+                <TabsTrigger value="houses" className="justify-center gap-1 px-1 text-[12.5px]">Houses</TabsTrigger>
+                <TabsTrigger value="condition" className="justify-center gap-1 px-1 text-[12.5px]">Condition</TabsTrigger>
+                <TabsTrigger value="observations" className="justify-center gap-1 px-1 text-[12.5px]">
+                  Notes{obsCount > 0 && <span className="text-[10.5px] text-accent">{obsCount}</span>}
                 </TabsTrigger>
-                <TabsTrigger value="ai" className="px-2 text-[13px]"><Sparkles className="text-accent" /> AI</TabsTrigger>
+                <TabsTrigger value="ai" className="justify-center gap-1 px-1 text-[12.5px]"><Sparkles className="!size-3.5 text-accent" /> AI</TabsTrigger>
               </TabsList>
               <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-4">
                 <TabsContent value="placements">

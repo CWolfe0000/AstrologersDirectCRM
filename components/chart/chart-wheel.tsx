@@ -13,24 +13,25 @@ function pt(r: number, a: number) {
 }
 
 function spread(items: { key: string; lon: number }[], minSep: number) {
+  // Positions are kept unnormalised while relaxing so neighbours keep their order.
   const sorted = [...items].sort((a, b) => a.lon - b.lon).map((i) => ({ ...i, pos: i.lon }));
-  for (let pass = 0; pass < 12; pass++) {
+  const n = sorted.length;
+  for (let pass = 0; pass < 80 && n > 1; pass++) {
     let moved = false;
-    for (let i = 0; i < sorted.length; i++) {
+    for (let i = 0; i < n; i++) {
       const a = sorted[i]!;
-      const b = sorted[(i + 1) % sorted.length]!;
-      if (a === b) continue;
-      const d = norm(b.pos - a.pos);
+      const b = sorted[(i + 1) % n]!;
+      const d = i === n - 1 ? b.pos + 360 - a.pos : b.pos - a.pos;
       if (d < minSep) {
         const push = (minSep - d) / 2;
-        a.pos = norm(a.pos - push);
-        b.pos = norm(b.pos + push);
+        a.pos -= push;
+        b.pos += push;
         moved = true;
       }
     }
     if (!moved) break;
   }
-  return Object.fromEntries(sorted.map((s) => [s.key, s.pos])) as Record<string, number>;
+  return Object.fromEntries(sorted.map((s) => [s.key, norm(s.pos)])) as Record<string, number>;
 }
 
 const ASPECT_COLOR = { hard: "#824B59", soft: "#5E7266", neutral: "#77736F", minor: "#A39D96" } as const;

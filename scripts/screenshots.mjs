@@ -7,7 +7,8 @@
  *
  * Set BASE_URL to point elsewhere. Requires Playwright with Chromium.
  */
-import { chromium } from "playwright";
+import { createRequire } from "node:module";
+const { chromium } = createRequire(import.meta.url)("playwright");
 
 const BASE = process.env.BASE_URL || "http://localhost:3000";
 const OUT = new URL("../public/screenshots/", import.meta.url).pathname;

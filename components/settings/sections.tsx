@@ -162,17 +162,17 @@ export function AstrologySection() {
             const on = d.aspects.includes(a);
             const orb = d.orbs[a] ?? ASPECTS[a].defaultOrb;
             return (
-              <div key={a} className="grid grid-cols-[auto_1fr_auto] items-center gap-4 px-5 py-3">
+              <div key={a} className="grid grid-cols-[auto_1fr_auto] items-center gap-3 px-4 py-3 sm:gap-4 sm:px-5">
                 <Checkbox checked={on} onChange={() => toggleAspect(a)} aria-label={ASPECTS[a].name} />
-                <div className="flex items-center gap-2">
+                <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
                   <span className="glyph w-5 text-center text-[16px]">{ASPECTS[a].glyph}</span>
                   <span className="text-[13.5px]">{ASPECTS[a].name}</span>
                   <span className="text-[12px] text-muted">{ASPECTS[a].angle}°</span>
                   {ASPECTS[a].nature === "minor" && <Badge tone="outline">Minor</Badge>}
                 </div>
                 <div className={cn("flex items-center gap-3", !on && "opacity-40")}>
-                  <input type="range" min={0.5} max={12} step={0.5} value={orb} disabled={!on} onChange={(e) => update({ orbs: { [a]: Number(e.target.value) } })} className="w-28 accent-[#824B59] sm:w-40" aria-label={`${ASPECTS[a].name} orb`} />
-                  <span className="w-10 text-right text-[12.5px] tabular-nums">{orb}°</span>
+                  <input type="range" min={0.5} max={12} step={0.5} value={orb} disabled={!on} onChange={(e) => update({ orbs: { [a]: Number(e.target.value) } })} className="w-20 accent-[#824B59] sm:w-40" aria-label={`${ASPECTS[a].name} orb`} />
+                  <span className="w-9 text-right text-[12.5px] tabular-nums">{orb}°</span>
                 </div>
               </div>
             );

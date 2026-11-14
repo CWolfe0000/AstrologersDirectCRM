@@ -28,3 +28,6 @@
   background-position: center;
   background-repeat: no-repeat;
 }
+
+/* Grid items default to min-width:auto, which lets long content push layouts wider than phones. */
+.grid > * { min-width: 0; }
