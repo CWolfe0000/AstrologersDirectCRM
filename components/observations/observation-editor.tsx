@@ -84,7 +84,9 @@ export function ObservationEditor({ observationId, initial, lockChart, onCreated
       const cur = latest.current;
       const hasContent = cur.title.trim() || stripHtml(cur.body);
       if (!idRef.current && !hasContent) return;
-      const saved = upsert({ ...cur, id: idRef.current ?? undefined, title: cur.title.trim() || "Untitled observation" }, idRef.current ? revisionSummary : undefined);
+      // note: never pass `id: undefined` — it would override the generated id
+      const payload = { ...cur, title: cur.title.trim() || "Untitled observation", ...(idRef.current ? { id: idRef.current } : {}) };
+      const saved = upsert(payload, idRef.current ? revisionSummary : undefined);
       if (!idRef.current) {
         setId(saved.id);
         idRef.current = saved.id;

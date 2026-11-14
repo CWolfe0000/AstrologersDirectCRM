@@ -173,12 +173,12 @@ function Workspace() {
         </div>
       </div>
 
-      <div className={cn("ws-noprint mb-4 flex items-center gap-2", docked && "xl:hidden")}>
-        <Button variant="secondary" size="sm" onClick={() => setControlsOpen(true)} className="xl:hidden">
+      <div className={cn("ws-noprint mb-4 flex items-center gap-2", docked && "min-[1400px]:hidden")}>
+        <Button variant="secondary" size="sm" onClick={() => setControlsOpen(true)} className={cn(!docked && "min-[1400px]:hidden")}>
           <SlidersHorizontal /> Chart controls
         </Button>
         {!docked && (
-          <Button variant="secondary" size="sm" onClick={() => setDocked(true)} className="hidden xl:inline-flex">
+          <Button variant="secondary" size="sm" onClick={() => setDocked(true)} className="hidden min-[1400px]:inline-flex">
             <PanelLeftOpen /> Show controls
           </Button>
         )}
@@ -188,10 +188,10 @@ function Workspace() {
         {controls}
       </Sheet>
 
-      <div className={cn("ws-grid grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]", docked && "xl:grid-cols-[236px_minmax(0,1fr)_380px]")}>
+      <div className={cn("ws-grid grid gap-5 xl:grid-cols-[minmax(0,1fr)_370px]", docked && "min-[1400px]:grid-cols-[236px_minmax(0,1fr)_370px]")}>
         {/* LEFT: controls */}
         {docked && (
-          <aside className="ws-noprint hidden xl:block">
+          <aside className="ws-noprint hidden min-[1400px]:block">
             <div className="scrollbar-thin sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-xl border border-line bg-surface shadow-card">
               <button onClick={() => setDocked(false)} className="flex w-full items-center justify-between border-b border-line px-4 py-2.5 text-[12px] text-muted hover:text-ink">
                 Controls <PanelLeftClose className="size-4" />
@@ -210,7 +210,7 @@ function Workspace() {
                 <span className="flex items-center gap-1.5"><RingTag label={labels.outer} outer /> outer</span>
               </div>
             )}
-            <div className="mx-auto max-w-[680px]">
+            <div className="mx-auto max-w-[640px]">
               <ChartWheel
                 view={view}
                 svgRef={svgRef}
@@ -274,17 +274,17 @@ function Workspace() {
 
         {/* RIGHT: analysis */}
         <section className="ws-noprint min-w-0">
-          <div className="rounded-xl border border-line bg-surface shadow-card lg:sticky lg:top-20 lg:flex lg:max-h-[calc(100vh-6rem)] lg:flex-col">
+          <div className="rounded-xl border border-line bg-surface shadow-card xl:sticky xl:top-20 xl:flex xl:max-h-[calc(100vh-6rem)] xl:flex-col">
             <Tabs value={tab} onValueChange={setTab} className="flex min-h-0 flex-1 flex-col">
               <TabsList className="shrink-0 px-1.5">
-                <TabsTrigger value="placements" className="px-2.5">Planets</TabsTrigger>
-                <TabsTrigger value="aspects" className="px-2.5">Aspects</TabsTrigger>
-                <TabsTrigger value="houses" className="px-2.5">Houses</TabsTrigger>
-                <TabsTrigger value="condition" className="px-2.5">Condition</TabsTrigger>
-                <TabsTrigger value="observations" className="px-2.5">
+                <TabsTrigger value="placements" className="px-2 text-[13px]">Planets</TabsTrigger>
+                <TabsTrigger value="aspects" className="px-2 text-[13px]">Aspects</TabsTrigger>
+                <TabsTrigger value="houses" className="px-2 text-[13px]">Houses</TabsTrigger>
+                <TabsTrigger value="condition" className="px-2 text-[13px]">Condition</TabsTrigger>
+                <TabsTrigger value="observations" className="px-2 text-[13px]">
                   Notes{obsCount > 0 && <span className="rounded-full bg-accent-50 px-1.5 text-[10.5px] text-accent">{obsCount}</span>}
                 </TabsTrigger>
-                <TabsTrigger value="ai" className="px-2.5"><Sparkles className="text-accent" /> AI</TabsTrigger>
+                <TabsTrigger value="ai" className="px-2 text-[13px]"><Sparkles className="text-accent" /> AI</TabsTrigger>
               </TabsList>
               <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-4">
                 <TabsContent value="placements">

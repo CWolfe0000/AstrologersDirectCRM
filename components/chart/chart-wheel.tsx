@@ -65,8 +65,8 @@ export function ChartWheel({ view, compact, className, selected, onSelect, highl
   const innerDegR = bi ? 161 : 198;
   const outerGlyphR = compact ? 226 : 237;
 
-  const innerPos = spread(inner.bodies.map((b) => ({ key: b.id, lon: b.lon })), bi ? 7.5 : 8);
-  const outerPos = outer ? spread(outer.bodies.map((b) => ({ key: b.id, lon: b.lon })), 6.5) : {};
+  const innerPos = spread(inner.bodies.map((b) => ({ key: b.id, lon: b.lon })), compact ? 8 : bi ? 8.5 : 9.5);
+  const outerPos = outer ? spread(outer.bodies.map((b) => ({ key: b.id, lon: b.lon })), compact ? 6.5 : 7.5) : {};
 
   const isRelated = (a: Aspect) => {
     if (!focus) return true;
