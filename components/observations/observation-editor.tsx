@@ -202,12 +202,23 @@ export function ObservationEditor({ observationId, initial, lockChart, onCreated
         </div>
       </div>
 
-      <input
+      <textarea
+        ref={(el) => {
+          if (el) {
+            el.style.height = "auto";
+            el.style.height = el.scrollHeight + "px";
+          }
+        }}
+        rows={1}
         value={d.title}
-        onChange={(e) => change({ title: e.target.value })}
+        onChange={(e) => {
+          e.currentTarget.style.height = "auto";
+          e.currentTarget.style.height = e.currentTarget.scrollHeight + "px";
+          change({ title: e.target.value.replace(/\n/g, " ") });
+        }}
         placeholder="Observation title"
         aria-label="Observation title"
-        className="w-full bg-transparent font-serif text-[24px] leading-tight text-ink outline-none placeholder:text-muted/50"
+        className="w-full resize-none overflow-hidden bg-transparent font-serif text-[24px] leading-tight text-ink outline-none placeholder:text-muted/50"
       />
 
       <RichEditor value={d.body} onChange={(body) => change({ body })} resetKey={resetKey} minHeight={compact ? 140 : 200} />

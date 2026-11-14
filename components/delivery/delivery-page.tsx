@@ -99,7 +99,7 @@ export function DeliveryPage() {
               })}
             </TabsList>
           </Tabs>
-          <SearchInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search readings or clients…" className="pb-3 md:w-64" />
+          <div className="pb-3 md:w-64"><SearchInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search readings or clients…" /></div>
         </div>
         {list.length === 0 ? (
           <EmptyState icon={<current.icon />} title={`No ${current.label.toLowerCase()}`} body="Deliveries move through these queues as you prepare and send them." action={<Button size="sm" variant="secondary" onClick={() => setNewOpen(true)}>New delivery</Button>} />
