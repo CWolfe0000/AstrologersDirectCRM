@@ -1,5 +1,7 @@
 # Simulated features — and what it takes to make them real
 
+> **Two modes.** In **demo** mode (the shareable prototype) everything below is simulated. In **server** mode (the real platform, see README), accounts, the database and email delivery are real. Rows marked ✅ say what changed.
+
 The AstrologersDirect prototype is built for evaluating interface, navigation and
 workflow. Everything you can click works, but some of it is simulated. In the
 interface, simulated features carry a dashed amber **Simulated** badge or note.
@@ -29,11 +31,11 @@ Calculated chart data always shows a **Demonstration positions** label.
 | **Place lookup / atlas** | A short built-in list of cities with coordinates and time zones. | A geocoding and historical time-zone service (atlas), ideally the one the existing engine already uses. |
 | **Interpretation engine** | Not connected. | Connect the existing interpretation engine behind its own interface, next to the calculation adapter. |
 | **AI Assistant** (chart workspace) | Deterministic responses assembled from real chart data and saved observations. Sources are labelled: *Calculated chart data* / *Your observations* / *Generated interpretation*. | An LLM backend with retrieval over the practitioner's observations, tool access to the calculation engine, a source-attribution contract that keeps the three labels, per-practitioner data isolation, and audit logging. |
-| **Persistence** | Browser `localStorage` through a Zustand store (`lib/store.tsx`). | Database plus API (e.g. Postgres). Each store slice maps to a resource. Add multi-device sync, backups, and server-side observation revision history. |
-| **Authentication** | Sign-up, login, password reset, email verification and invitation screens go through the flow without real accounts. | An auth provider (sessions, email verification, password reset, 2FA), with separate practitioner and client roles and portal invitations. |
+| **Persistence** | ✅ **Real in server mode:** Postgres, a practice-scoped API, sensitive fields encrypted at rest. Demo mode still uses browser `localStorage`. | Production hosting (Neon), backups, server-side observation revision history. |
+| **Authentication** | ✅ **Real in server mode:** sign-up, login, sessions, email verification, password reset and change, client portal invitations. Demo mode simulates these. | Two-factor authentication, a real session-management screen, sign-in email change. |
 | **Two-factor auth, sessions** | Toggles and lists only. | Provided by the auth service. |
 | **File uploads / reading delivery** | Reads the selected file's name and size and shows a simulated upload progress bar. No file leaves the browser. One seeded delivery fails on purpose to show the failure state. | Object storage (e.g. S3) with resumable/multipart uploads, virus scanning, signed URLs, download permissions and expiry enforced on the server, and a storage quota. |
-| **Client notifications** | Delivering to the demo client (Amelia Hart) creates an in-portal notification. Email is not sent. | A transactional email provider, notification preferences, and open tracking. |
+| **Client notifications** | In-portal notification on delivery. In server mode an email is also sent to clients with a portal login (needs a Resend key; otherwise logged to the outbox). | A transactional email provider, notification preferences, and open tracking. |
 | **Recording Studio** | Recording is simulated by default (timer, meter, player). Real devices (`getUserMedia` / `getDisplayMedia` + `MediaRecorder`) can be tried in the browser, but recordings are not uploaded. | Upload of recorded media to storage, server-side transcoding (HLS), plus later transcription, trimming, chapters and captions. |
 | **Media playback in the portal** | Players and the document viewer are simulated: there are no real media files in the demo. | Streaming from storage through signed URLs, a PDF renderer (e.g. pdf.js), and access checks on each request. |
 | **Calendar** | Internal calendar only. | External calendar sync (Google/Microsoft), self-service booking, automated reminders, video-call links. |

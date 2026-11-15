@@ -17,14 +17,52 @@ gives a clickable walkthrough for each of the six workflows (A–F) in the brief
 
 ## Running it
 
-Requirements: Node.js 18.18+ (tested on Node 22).
+Requirements: Node.js 18.18+ (tested on Node 22) and Postgres 14+.
+
+### Two modes
+
+| Mode | What it is | Set with |
+|---|---|---|
+| **server** (default) | The real platform: accounts, a Postgres database, encrypted client data | `NEXT_PUBLIC_DATA_MODE=server` |
+| **demo** | The clickable prototype: seeded data kept in the browser, no backend | `NEXT_PUBLIC_DATA_MODE=demo` |
+
+### Server mode (real accounts and database)
 
 ```bash
 npm install
-npm run dev          # http://localhost:3000
+cp .env.example .env.local
+# Edit .env.local:
+#   DATABASE_URL        your Postgres connection string
+#   APP_ENCRYPTION_KEY  output of: openssl rand -base64 32   (never change it once data exists)
+npm run db:migrate
+npm run dev             # http://localhost:3000 → Get Started
 ```
 
-Production build:
+After signing up, use **Load sample data** in the sidebar to explore with example clients.
+
+Without `RESEND_API_KEY`, emails (verification, password reset, client invitations, reading notifications) are not sent. They are printed to the server log and stored in the `outbox` table, so you can open the links locally.
+
+### Demo mode (no database)
+
+```bash
+NEXT_PUBLIC_DATA_MODE=demo npm run dev
+```
+
+The single-file version used for the shareable prototype link is built with `npm run build:standalone`. That build always uses demo mode.
+
+### Tests
+
+```bash
+npm run typecheck     # also checks the server schema keeps up with the UI's data types
+npm test              # unit tests
+npm run build && npm start &
+npm run test:e2e      # end-to-end smoke test (needs Playwright + Chromium)
+node tests/e2e/flows.mjs
+```
+
+CI (`.github/workflows/ci.yml`) runs all of these against a Postgres service on every push.
+
+### Production build
 
 ```bash
 npm run build
@@ -42,9 +80,9 @@ npx playwright install chromium       # first time only
 npm run screenshots                   # terminal 2
 ```
 
-## Demo data
+## Demo data (demo mode)
 
-- Today's date in the prototype is fixed at **Saturday, November 14, 2026**, so
+- Today's date in the demo is fixed at **Saturday, November 14, 2026**, so
   schedules, overdue tasks and activity always look the same.
 - The practitioner is **Celeste Morrow** of Morrow Astrological Consulting. She
   has 12 clients, plus associated people, 24 charts, consultations, observations,
@@ -69,19 +107,32 @@ feature and what it would take to make it functional.
 ```
 app/
   (marketing)/      public website, prototype guide, legal
-  auth/             sign up, log in, reset, verify, invitation
+  auth/             sign up, log in, reset, verify, invitation (real in server mode)
   app/              practitioner application (sidebar shell)
   portal/           client portal (simplified shell, mobile tab bar)
+  api/auth/*        accounts: sign-up, login, logout, verify, reset, invitations, password change
+  api/v1/*          practice data: bootstrap, records, settings, sample data, portal endpoints
 components/
   ui/               reusable design-system primitives (button, card, badge, tabs, dialog, …)
-  app/              practitioner shell: sidebar, header, global search, quick-create
+  app/              practitioner shell: sidebar, header, global search, quick-create, server gate
   chart/            chart wheel (SVG), thumbnails, chart helpers
   …                 feature components per area
 lib/
   astro/            astrology engine abstraction + demonstration engine
   data/             typed demonstration data
-  store.tsx         Zustand store (persisted) — the seam for a real API
+  store.tsx         Zustand store used by every screen
+  sync.ts           server mode: loads the practice, saves store changes to the API in the background
+  server/           database (Drizzle), encryption, auth, validation, records, email
+drizzle/            SQL migrations
+docs/               PLAN.md (build checklist), sky-engine-review.md
 ```
+
+### How data flows in server mode
+
+1. After sign-in, `/api/v1/bootstrap` loads the whole practice into the store. The client portal gets a filtered view of one client's own records.
+2. Screens read and write the store exactly as in the prototype.
+3. `lib/sync.ts` compares each change against the previous state and saves new or changed records with `PUT /api/v1/records/:collection/:id`, and removed ones with `DELETE`. Saves are retried, and failures are shown to the user.
+4. The server validates every record strictly (`lib/server/validation.ts`) and scopes it to the signed-in practice. It encrypts sensitive fields (`lib/server/records.ts`, `SEALED_FIELDS`) before storing them.
 
 ### Astrology engine integration
 
@@ -106,7 +157,7 @@ engine:
 
 ## Stack
 
-Next.js 15 (App Router) · TypeScript · Tailwind CSS · Radix UI primitives
+Next.js 15 (App Router) · TypeScript · Postgres + Drizzle ORM · Zod · Tailwind CSS · Radix UI primitives
 (the components follow shadcn/ui conventions and are written locally in
 `components/ui`) · Lucide icons · Recharts · Zustand.
 
