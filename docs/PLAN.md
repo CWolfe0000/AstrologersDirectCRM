@@ -36,12 +36,12 @@ Status key: ✅ done · 🟡 in progress · ⬜ not started · 🔒 blocked (the
 ### Calculations: Sky engine
 - ✅ Reuse review (`docs/sky-engine-review.md`)
 - 🟡 Sky maintenance fixes: mirror drift, lockfile, a test syntax error, the birth-year range. ChatGPT is handling these in the Sky repo.
+- ✅ Chart technique calculations built and unit-tested, not yet in the app (`lib/astro/techniques`, see `docs/techniques.md`): neutral synastry (inter-aspects, strict-cusp overlays, no scores), midpoint composite (two house methods), secondary progressions (four angle methods), solar arcs (three arc types), solar returns (precession option, relocation). Defaults are provisional until you decide.
+- 🔒 Make those defaults final (your method answers), and verify against reference charts (`tests/fixtures/reference-charts.template.json`)
 - ⬜ Extract Sky's calculation core into a shared package
 - ⬜ Astro API service on Render: natal and transits endpoints
 - ✅ Make the `AstrologyEngine` interface asynchronous and add loading states to the chart screens (shared cache; the previous chart stays on screen while recalculating)
 - ⬜ Connect the chart workspace to real natal calculations, replacing the demo engine for natal charts
-- 🔒 Progressions, solar arcs and solar returns. Blocked on your method decisions (see the Sky review).
-- 🔒 New synastry and composite module. Blocked on the composite house-method decision and on reference charts.
 
 ### Files and delivery
 - ✅ File storage with two drivers: local disk for development, and S3-compatible storage for production (e.g. Cloudflare R2). In production, browsers upload directly to the bucket with signed URLs, so large files never pass through Vercel.

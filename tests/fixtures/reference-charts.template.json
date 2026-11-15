@@ -1,0 +1,17 @@
+{
+  "_instructions": "Copy to reference-charts.json and fill in values from software you trust. Longitudes in decimal degrees (0–360, e.g. 14°22' Taurus = 44.3667). Leave out anything you don't have. Record the settings you used so the comparison uses the same method.",
+  "source": "e.g. Solar Fire 9.1, Placidus, tropical, true node",
+  "charts": [
+    {
+      "name": "Example — replace me",
+      "birth": { "date": "1988-03-14", "time": "07:42", "timezone": "America/Los_Angeles", "lat": 45.52, "lon": -122.68 },
+      "houseSystem": "placidus",
+      "natal": { "sun": 0, "moon": 0, "asc": 0, "mc": 0 },
+      "progressions": { "target": "2026-11-14", "angleMethod": "solar-arc-longitude", "sun": 0, "moon": 0, "asc": 0, "mc": 0 },
+      "solarArc": { "target": "2026-11-14", "arc": "true", "arcDegrees": 0, "mc": 0 },
+      "solarReturn": { "year": 2027, "precessionCorrected": false, "place": "birthplace", "utc": "2027-03-14T00:00:00Z", "asc": 0, "mc": 0 },
+      "synastryWith": { "name": "Partner", "birth": { "date": "1986-08-29", "time": "14:10", "timezone": "America/Los_Angeles", "lat": 32.72, "lon": -117.16 }, "aspects": [{ "a": "venus", "b": "mars", "aspect": "conjunction", "orb": 0 }] },
+      "composite": { "houseMethod": "derived-mc", "sun": 0, "moon": 0, "asc": 0, "mc": 0 }
+    }
+  ]
+}
