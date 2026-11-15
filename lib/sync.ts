@@ -262,6 +262,7 @@ export async function bootstrap(view: "app" | "portal", opts: { as?: string | nu
     for (const c of COLLECTIONS) (patch as Record<string, unknown>)[c] = (data as Record<string, unknown>)[c] ?? [];
     if (data.practitioner) patch.practitioner = data.practitioner;
     if (data.defaults) patch.defaults = data.defaults;
+    if (data.view === "app") patch.plan = data.plan === "premium" ? "premium" : "standard";
     versions.clear();
     for (const [coll, byId] of Object.entries(data.versions ?? {})) for (const [id, v] of Object.entries(byId)) versions.set(`${coll}:${id}`, v);
     cursor = data.cursor ?? null;

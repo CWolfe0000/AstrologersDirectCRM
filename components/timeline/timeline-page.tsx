@@ -20,6 +20,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Sheet } from "@/components/ui/dialog";
 import { EngineNotice } from "@/components/chart/chart-helpers";
 import { useHydrated } from "@/components/workspace/use-hydrated";
+import { PremiumGate, usePremium } from "@/components/plan/premium";
 
 // ---------------------------------------------------------------------------
 // Labels and colours
@@ -103,6 +104,7 @@ export function TimelinePage() {
 
 function Timeline() {
   const hydrated = useHydrated();
+  const premium = usePremium();
   const router = useRouter();
   const params = useSearchParams();
   const clients = useStore((s) => s.clients);
@@ -135,7 +137,7 @@ function Timeline() {
   const key = person?.birth && !rangeError ? JSON.stringify([person.birth, { ...defaults, timeline: undefined }, start, end, opts]) : null;
 
   React.useEffect(() => {
-    if (!hydrated || !key || !person?.birth) return;
+    if (!hydrated || !premium || !key || !person?.birth) return;
     let cancelled = false;
     setState((s) => ({ ...s, loading: true, error: null }));
     const t = setTimeout(() => {
@@ -164,6 +166,15 @@ function Timeline() {
 
   // The previous result stays on screen while a new one calculates.
   const shown = state.data?.timeline;
+
+  if (hydrated && !premium) {
+    return (
+      <div>
+        <PageHeader title="Convergence timeline" description="Transits, progressions, solar arcs and lunations to the natal chart over a period, and the stretches where they pile up." />
+        <PremiumGate feature="The convergence timeline" />
+      </div>
+    );
+  }
 
   if (hydrated && sortedClients.length === 0) {
     return (

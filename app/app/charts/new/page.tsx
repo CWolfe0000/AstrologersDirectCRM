@@ -3,6 +3,8 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Info } from "lucide-react";
+import { isPremiumChart } from "@/lib/plan";
+import { PremiumBadge, PremiumNote, usePremium } from "@/components/plan/premium";
 import { CHART_TYPES, HOUSE_SYSTEMS, ZODIACS, chartTypeMeta, type HouseSystem, type ZodiacType } from "@/lib/astro";
 import type { ChartRecord, ChartType } from "@/lib/data/types";
 import { useStore, personName } from "@/lib/store";
@@ -32,6 +34,8 @@ function NewChart() {
   const toast = useStore((s) => s.toast);
 
   const [type, setType] = React.useState<ChartType>((params.get("type") as ChartType) || "natal");
+  const premium = usePremium();
+  const locked = !premium && isPremiumChart(type);
   const [clientId, setClientId] = React.useState(params.get("client") ?? "c1");
   const [personA, setPersonA] = React.useState(params.get("client") ?? "c1");
   const [personB, setPersonB] = React.useState(params.get("with") ?? "");
@@ -121,10 +125,18 @@ function NewChart() {
                     type === t.id ? "border-accent bg-accent-50/60 ring-1 ring-accent/30" : "border-line hover:border-line-strong",
                   )}
                 >
-                  <p className="text-[13.5px] font-medium text-ink">{t.name}</p>
+                  <p className="flex items-center justify-between gap-2 text-[13.5px] font-medium text-ink">
+                    {t.name}
+                    {isPremiumChart(t.id) && <PremiumBadge locked={!premium} />}
+                  </p>
                   <p className="mt-0.5 text-[12px] leading-snug text-muted">{t.description}</p>
                 </button>
               ))}
+              {locked && (
+                <div className="sm:col-span-2 lg:col-span-full">
+                  <PremiumNote>{chartTypeMeta(type).name} charts are part of Premium. Natal and synastry charts are on every plan.</PremiumNote>
+                </div>
+              )}
             </CardBody>
           </Card>
 
@@ -206,7 +218,7 @@ function NewChart() {
               {view ? <ChartWheel view={view} /> : <div className="aspect-square rounded-full bg-canvas-2" />}
               <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                 <ButtonLink href="/app/charts" variant="secondary" className="sm:flex-1">Cancel</ButtonLink>
-                <Button onClick={save} disabled={!valid} className="sm:flex-[2]">
+                <Button onClick={save} disabled={!valid || locked} className="sm:flex-[2]">
                   Save & open workspace <ArrowRight />
                 </Button>
               </div>

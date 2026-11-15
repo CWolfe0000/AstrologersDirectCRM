@@ -3,6 +3,7 @@ import { handler, HttpError, json, readJson, requireUser } from "@/lib/server/ht
 import { birthSchema, settingsSchema } from "@/lib/server/validation";
 import { natalChart, positionsAt, progressedChart, solarArcChart, solarReturnChart } from "@/lib/server/astro";
 import { SWISS_INFO } from "@/lib/server/swiss";
+import { requirePremium } from "@/lib/server/plan";
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const points = z.object({ cusps: z.array(z.number()).length(12), asc: z.number(), mc: z.number() });
@@ -16,9 +17,11 @@ const Bodies = {
 
 /** Chart calculations (Swiss Ephemeris). Practitioners only. */
 export const POST = handler(async (req: Request, ctx: { params: Promise<{ op: string }> }) => {
-  await requireUser("owner");
+  const user = await requireUser("owner");
   const { op } = await ctx.params;
   if (!(op in Bodies)) throw new HttpError(404, "Unknown calculation.");
+  // Natal charts (and synastry/composite, built from natal charts) are on every plan; timing techniques are Premium.
+  if (op !== "natal") await requirePremium(user.practiceId);
   const parsed = Bodies[op as keyof typeof Bodies].safeParse(await readJson(req));
   if (!parsed.success) throw new HttpError(422, "Invalid chart request.", parsed.error.flatten());
   const b = parsed.data as never as Record<string, never>;

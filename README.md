@@ -41,6 +41,8 @@ npm run dev             # http://localhost:3000 → Get Started
 
 After signing up, use **Load sample data** in the sidebar to explore with example clients.
 
+New practices start on the **standard** plan (natal and synastry). To try the Premium techniques and the timeline, run `npm run plan -- <your email> premium`, or set `DEFAULT_PLAN=premium` in `.env.local`.
+
 Uploaded files are stored under `.uploads/` by default. Set `STORAGE_DRIVER=s3` and the `S3_*` variables to use a bucket (see `.env.example`).
 
 Without `RESEND_API_KEY`, emails (verification, password reset, client invitations, reading notifications) are not sent. They are printed to the server log and stored in the `outbox` table, so you can open the links locally.
@@ -68,6 +70,9 @@ node tests/e2e/conflicts.mjs     # two devices, one account
 CRON_SECRET=… node tests/e2e/practice-tools.mjs   # CSV import, calendar feed, reminders (server needs the same CRON_SECRET)
 node tests/e2e/pwa.mjs           # installable app + offline page
 node tests/e2e/timeline.mjs      # convergence timeline (server needs SWISS_EPHEMERIS_LICENSE=staging in production mode)
+node tests/e2e/premium.mjs       # standard vs Premium plan (needs DATABASE_URL)
+
+# Most e2e tests expect Premium: start the server with DEFAULT_PLAN=premium.
 node tests/e2e/a11y.mjs [--mobile] [--all]   # accessibility scan (axe-core)
 
 # Test runs create many accounts from one address: start the server with RATE_LIMIT_MULTIPLIER=20 (never in production).

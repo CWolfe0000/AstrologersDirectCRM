@@ -1,7 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { FlaskConical } from "lucide-react";
+import { FlaskConical, Lock } from "lucide-react";
+import { isPremiumChart } from "@/lib/plan";
+import { usePremium } from "@/components/plan/premium";
 import { buildChart, chartTypeMeta, getEngine, type ChartSettings, type ChartView } from "@/lib/astro";
 import type { ChartRecord, Person } from "@/lib/data/types";
 import { useStore } from "@/lib/store";
@@ -18,7 +20,7 @@ function cacheKey(chart: ChartRecord, people: Person[], overrides: Partial<Chart
   return JSON.stringify([getEngine().info.id, chart.type, chart.personIds, chart.refDate, chart.settings, subjects, overrides ?? null, defaults]);
 }
 
-export type ChartViewState = { view: ChartView | null; loading: boolean; error: string | null };
+export type ChartViewState = { view: ChartView | null; loading: boolean; error: string | null; locked?: boolean };
 
 /**
  * Calculates a chart through the active engine (asynchronously).
@@ -29,7 +31,9 @@ export function useChartViewState(chart: ChartRecord | undefined, overrides?: Pa
   const storePeople = useStore((s) => s.people);
   const defaults = useStore((s) => s.defaults);
   const people = React.useMemo(() => (extraPeople?.length ? [...storePeople, ...extraPeople] : storePeople), [storePeople, extraPeople]);
-  const key = chart ? cacheKey(chart, people, overrides, defaults) : null;
+  const premium = usePremium();
+  const locked = !!chart && !premium && isPremiumChart(chart.type);
+  const key = chart && !locked ? cacheKey(chart, people, overrides, defaults) : null;
   const [state, setState] = React.useState<ChartViewState>(() => ({ view: key ? resolved.get(key) ?? null : null, loading: !!key && !resolved.has(key), error: null }));
 
   React.useEffect(() => {
@@ -67,7 +71,7 @@ export function useChartViewState(chart: ChartRecord | undefined, overrides?: Pa
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
-  return state;
+  return locked ? { view: null, loading: false, error: null, locked: true } : state;
 }
 
 /** Builds the ChartView for a saved chart using the active engine + practice defaults. */
@@ -76,7 +80,13 @@ export function useChartView(chart: ChartRecord | undefined, overrides?: Partial
 }
 
 export function ChartThumb({ chart, className }: { chart: ChartRecord; className?: string }) {
-  const view = useChartView(chart);
+  const { view, locked } = useChartViewState(chart);
+  if (locked)
+    return (
+      <div className={cn("flex aspect-square items-center justify-center rounded-full border border-dashed border-[#E6D3B3] bg-[#FBF4E8]/60", className)} title="Premium chart">
+        <Lock className="size-4 text-[#7A5A1E]" aria-label="Premium chart" />
+      </div>
+    );
   if (!view) return <div className={cn("aspect-square rounded-full bg-canvas-2", className)} />;
   return <ChartWheel view={view} compact className={className} />;
 }

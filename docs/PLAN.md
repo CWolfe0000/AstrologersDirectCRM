@@ -63,7 +63,10 @@ Status key: ✅ done · 🟡 in progress · ⬜ not started · 🔒 blocked (the
 - ⬜ Production environment variables and a backup policy
 
 ### Billing
-- ⬜ Stripe subscription (plans and prices to be decided)
+- ✅ Plans enforced (2026-11-15). **Standard:** natal and synastry charts with their aspects and grids, and every practice tool. **Premium:** transits, progressions, solar arcs, solar returns, composite charts and the convergence timeline. The server refuses Premium calculations for standard practices (402). Screens show what Premium includes. The demo shows everything.
+- ✅ `practices.plan` column; `DEFAULT_PLAN` for new sign-ups; `npm run plan -- <email> <standard|premium>` to switch a practice until billing exists
+- ⬜ Stripe subscription: checkout, plan changes and cancellation update `practices.plan` (prices to be decided)
+- ⬜ Confirm whether practice-management features (Recording Studio, insights, AI assistance) also differ by plan. Today only the astrology techniques do.
 
 ### Accessibility and installable app
 - ✅ Accessibility review: axe-core scan of 46 screens at desktop and phone width. Serious and critical issues went from 669 to 0 (contrast, form labels, control names, link names, keyboard access to scrolling regions). The scan now runs in CI.

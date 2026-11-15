@@ -6,6 +6,8 @@ import { useParams, useSearchParams } from "next/navigation";
 import { PanelLeftClose, PanelLeftOpen, Sparkles, Star, UserRound, Mic, Send, SlidersHorizontal, MousePointerClick, CircleDot, Waves } from "lucide-react";
 import { ASPECTS, BODIES, HOUSE_SYSTEMS, ZODIACS, bodyIn, chartTypeMeta, dignityOf, fmtDeg, fmtOrb, signOf, type ChartSettings } from "@/lib/astro";
 import { useStore, personName } from "@/lib/store";
+import { isPremiumChart } from "@/lib/plan";
+import { PremiumGate, usePremium } from "@/components/plan/premium";
 import { cn, fmtClock, fmtDate } from "@/lib/utils";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/dialog";
@@ -97,6 +99,28 @@ function Workspace() {
 
   const effective = React.useMemo(() => (chart ? { ...chart, refDate: refDate ?? chart.refDate } : undefined), [chart, refDate]);
   const view = useChartView(effective, overrides);
+  const premium = usePremium();
+
+  if (chart && !premium && isPremiumChart(chart.type)) {
+    return (
+      <div>
+        <Breadcrumbs
+          className="mb-2"
+          items={[
+            { label: "Clients", href: "/app/clients" },
+            { label: personName(people.find((p) => p.id === chart.clientId)), href: `/app/clients/${chart.clientId}` },
+            { label: "Charts", href: `/app/charts?client=${chart.clientId}` },
+            { label: chart.title },
+          ]}
+        />
+        <div className="mb-5 flex flex-wrap items-center gap-2">
+          <h1 className="font-serif text-[28px] leading-tight text-ink md:text-[32px]">{chart.title}</h1>
+          <ChartTypeBadge type={chart.type} />
+        </div>
+        <PremiumGate feature={chartTypeMeta(chart.type).name} />
+      </div>
+    );
+  }
 
   if (!chart || !view) {
     if (!hydrated || chart) return <div className="h-[70vh] animate-pulse rounded-xl bg-canvas-2" />;

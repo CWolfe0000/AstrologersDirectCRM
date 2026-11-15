@@ -1,0 +1,1 @@
+ALTER TABLE "practices" ADD COLUMN "plan" text DEFAULT 'standard' NOT NULL;

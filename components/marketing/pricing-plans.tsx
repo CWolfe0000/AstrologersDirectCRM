@@ -14,13 +14,13 @@ const PLANS = [
     id: "solo",
     name: "Solo",
     for: "For astrologers beginning to see clients professionally.",
-    highlights: ["Client records & chart workspace", "Notes & observations", "Reading delivery", "Client portal"],
+    highlights: ["Client records", "Natal & synastry charts", "Notes & observations", "Reading delivery", "Client portal"],
   },
   {
     id: "professional",
     name: "Professional",
     for: "For established practices with regular consultations.",
-    highlights: ["Everything in Solo", "Recording Studio", "Intelligent assistance", "Advanced timing techniques", "Practice insights"],
+    highlights: ["Everything in Solo", "Transits, progressions, solar arcs & returns", "Convergence timeline", "Recording Studio", "Intelligent assistance", "Practice insights"],
     featured: true,
   },
   {
@@ -47,9 +47,10 @@ const ROWS: { group: string; rows: [string, Cell, Cell, Cell][] }[] = [
   {
     group: "Astrology",
     rows: [
-      ["Natal, synastry & composite charts", true, true, true],
-      ["Transits, progressions & solar arcs", true, true, true],
-      ["Additional timing techniques", false, true, true],
+      ["Natal & synastry charts, aspects and grids", true, true, true],
+      ["Transits, progressions, solar arcs & solar returns", false, true, true],
+      ["Midpoint composite charts", false, true, true],
+      ["Convergence timeline", false, true, true],
       ["Notes & observations with revision history", true, true, true],
       ["Intelligent assistance", false, "Usage TBD", "Usage TBD"],
     ],

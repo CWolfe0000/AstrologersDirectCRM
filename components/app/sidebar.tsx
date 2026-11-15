@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
-import { Database, ExternalLink, RotateCcw } from "lucide-react";
+import { Database, ExternalLink, Lock, RotateCcw } from "lucide-react";
+import { usePremium } from "@/components/plan/premium";
 import { loadSampleData } from "@/lib/sync";
 import { cn, DATA_MODE, TODAY } from "@/lib/utils";
 import { useStore } from "@/lib/store";
@@ -21,6 +22,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const toast = useStore((s) => s.toast);
   const clientCount = useStore((s) => s.clients.length);
   const [loadingSample, setLoadingSample] = React.useState(false);
+  const premium = usePremium();
 
   const isActive = (href: string, exact?: boolean) => (exact ? path === href : path === href || path.startsWith(href + "/"));
   const badge = (href: string) => (href === "/app/tasks" ? overdue : href === "/app/delivery" ? pending : href === "/app/notifications" ? unread : 0);
@@ -51,6 +53,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                   <span className={cn("absolute -left-3 h-5 w-[3px] rounded-r bg-accent-200 transition-opacity", active ? "opacity-100" : "opacity-0")} />
                   <n.icon className={cn("size-[17px]", active ? "text-[#E3C9D0]" : "text-[#9C969E] group-hover:text-[#CFCAD0]")} />
                   <span className="flex-1 truncate">{n.label}</span>
+                  {n.href === "/app/timeline" && !premium && <Lock className="size-3 text-[#9C969E]" aria-label="Premium" />}
                   {b > 0 && <span className={cn("rounded-full px-1.5 text-[10.5px] font-semibold leading-[18px]", n.href === "/app/tasks" ? "bg-accent text-white" : "bg-white/10 text-white")}>{b}</span>}
                 </Link>
               </li>

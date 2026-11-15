@@ -1,5 +1,6 @@
 "use client";
 
+import type { Plan } from "@/lib/plan";
 import { useEffect } from "react";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
@@ -40,6 +41,8 @@ export interface DemoState {
   /** Background saving state (server mode). */
   sync: { pending: number; error: string | null; savedAt?: string };
   practitioner: Practitioner;
+  /** Subscription plan (server mode: from the server; demo: Premium so every feature can be explored). */
+  plan: Plan;
   defaults: ChartSettings;
   people: Person[];
   clients: Client[];
@@ -110,6 +113,7 @@ const EMPTY_PRACTITIONER: Practitioner = { name: "", firstName: "", title: "", e
 function emptyState() {
   return {
     practitioner: EMPTY_PRACTITIONER,
+    plan: "standard" as Plan,
     defaults: DEFAULT_SETTINGS,
     people: [],
     clients: [],
@@ -123,12 +127,13 @@ function emptyState() {
     notifications: [],
     activity: [],
     portalNotifications: [],
-  } as Pick<DemoState, "practitioner" | "defaults" | "people" | "clients" | "charts" | "consultations" | "observations" | "tasks" | "readings" | "recordings" | "files" | "notifications" | "activity" | "portalNotifications">;
+  } as Pick<DemoState, "practitioner" | "plan" | "defaults" | "people" | "clients" | "charts" | "consultations" | "observations" | "tasks" | "readings" | "recordings" | "files" | "notifications" | "activity" | "portalNotifications">;
 }
 
 function seedState() {
   return {
     practitioner: seedPractitioner,
+    plan: "premium" as Plan,
     defaults: DEFAULT_SETTINGS,
     people: [...clientPeople, ...associatedPeople],
     clients: seedClients,

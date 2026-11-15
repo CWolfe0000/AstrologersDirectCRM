@@ -41,6 +41,7 @@ export const GET = handler(async (req) => {
     view: "app",
     user: me,
     practice: { id: practice?.id, name: practice?.name },
+    plan: practice?.plan === "premium" ? "premium" : "standard",
     practitioner: settings?.practitioner,
     defaults: settings?.defaults ?? DEFAULT_SETTINGS,
     ...Object.fromEntries(entries),

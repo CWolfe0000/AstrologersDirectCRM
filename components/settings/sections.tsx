@@ -1,7 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { Camera, Monitor, Smartphone, ShieldCheck, Download, Upload, Trash2, RotateCcw, Check, Palette, Database } from "lucide-react";
+import { Camera, Monitor, Smartphone, ShieldCheck, Download, Upload, Trash2, RotateCcw, Check, Palette, Database, Lock } from "lucide-react";
+import { PREMIUM_FEATURES } from "@/lib/plan";
+import { PremiumBadge } from "@/components/plan/premium";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { ASPECTS, BODIES, DEFAULT_TIMELINE, HOUSE_SYSTEMS, PLANET_IDS, ZODIACS, type AspectId, type BodyId, type HouseSystem, type TimelineDefaults, type ZodiacType } from "@/lib/astro";
@@ -413,6 +415,35 @@ export function SecuritySection() {
 }
 
 // ——— Subscription ————————————————————————————————————————————————————
+function PlanCard() {
+  const plan = useStore((s) => s.plan);
+  const premium = plan === "premium";
+  return (
+    <Card>
+      <CardHeader title="Current plan" action={premium ? <PremiumBadge /> : undefined} />
+      <CardBody className="grid gap-5 md:grid-cols-2">
+        <div>
+          <p className="font-serif text-[26px]">{premium ? "Premium" : "Standard"}</p>
+          <p className="mt-1 text-[13px] text-muted">
+            {premium
+              ? "Every chart technique and the convergence timeline, plus all practice tools."
+              : "Natal and synastry charts with their aspects and grids, plus all practice tools: clients, calendar, observations, readings, recordings and the client portal."}
+          </p>
+          <p className="mt-3 text-[12px] text-muted">Online plan changes arrive with billing. During the beta, contact us to switch Premium on or off.</p>
+        </div>
+        <ul className="space-y-1.5 rounded-xl border border-line bg-canvas p-4 text-[13px]">
+          <li className="mb-1 text-[11.5px] font-semibold uppercase tracking-wide text-muted">Premium</li>
+          {PREMIUM_FEATURES.map((f) => (
+            <li key={f} className="flex items-center gap-2">
+              {premium ? <Check className="size-3.5 text-sage-dark" aria-hidden /> : <Lock className="size-3.5 text-muted" aria-hidden />} {f}
+            </li>
+          ))}
+        </ul>
+      </CardBody>
+    </Card>
+  );
+}
+
 export function SubscriptionSection() {
   const router = useRouter();
   const counts = { clients: useStore((s) => s.clients.length), charts: useStore((s) => s.charts.length) };
@@ -425,6 +456,8 @@ export function SubscriptionSection() {
   ];
   return (
     <div className="space-y-6">
+      {DATA_MODE === "server" && <PlanCard />}
+      {DATA_MODE === "demo" && (
       <Card>
         <CardHeader title="Current plan" action={<SimulatedBadge label="Placeholder plan" />} />
         <CardBody className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -438,6 +471,7 @@ export function SubscriptionSection() {
           </div>
         </CardBody>
       </Card>
+      )}
       <Card>
         <CardHeader title="Usage" description="Demonstration allowances." />
         <CardBody className="space-y-4">

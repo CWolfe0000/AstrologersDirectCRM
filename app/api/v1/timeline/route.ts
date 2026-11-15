@@ -5,6 +5,7 @@ import { birthUtc, natalChart } from "@/lib/server/astro";
 import { jdToUtc, lunationsBetween, SWISS_INFO, swissEphemeris } from "@/lib/server/swiss";
 import { convergenceTimeline, TIMELINE_ASPECTS } from "@/lib/astro/timeline";
 import { PLANET_IDS } from "@/lib/astro/meta";
+import { requirePremium } from "@/lib/server/plan";
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const body = z.enum(PLANET_IDS as [string, ...string[]]);
@@ -33,7 +34,8 @@ const schema = z.object({
 
 /** Convergence timeline (Swiss Ephemeris). Practitioners only. */
 export const POST = handler(async (req: Request) => {
-  await requireUser("owner");
+  const user = await requireUser("owner");
+  await requirePremium(user.practiceId);
   const parsed = schema.safeParse(await readJson(req));
   if (!parsed.success) throw new HttpError(422, "Invalid timeline request.", parsed.error.flatten());
   const { birth, settings, from, to, options } = parsed.data as z.infer<typeof schema> & { birth: never; settings: never; options: never };

@@ -1,4 +1,5 @@
 import "server-only";
+import { defaultPlan } from "./plan";
 import { eq } from "drizzle-orm";
 import { db, schema } from "./db";
 import { newId } from "./crypto";
@@ -22,7 +23,7 @@ export async function createPractice(input: { name: string; practice: string; em
   const userId = newId("usr");
   const email = normEmail(input.email);
   await db().transaction(async (tx) => {
-    await tx.insert(schema.practices).values({ id: practiceId, name: input.practice });
+    await tx.insert(schema.practices).values({ id: practiceId, name: input.practice, plan: defaultPlan() });
     await tx.insert(schema.users).values({ id: userId, practiceId, email, name: input.name, role: "owner", passwordHash: await hashPassword(input.password) });
   });
   const first = input.name.split(/\s+/)[0] ?? input.name;

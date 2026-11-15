@@ -74,6 +74,7 @@ This is `APP_ENCRYPTION_KEY`. **If it is lost or changed, encrypted client data 
 | `S3_ACCESS_KEY_ID` | from step 3 |
 | `S3_SECRET_ACCESS_KEY` | from step 3 |
 | `CRON_SECRET` | another random value (`openssl rand -base64 32`). Vercel sends it to the reminder job. |
+| `DEFAULT_PLAN` | `standard` (new practices get natal and synastry; switch a practice to Premium with `npm run plan`). Use `premium` if every beta tester should get everything. |
 | `SWISS_EPHEMERIS_LICENSE` | `confirmed` (your Professional License covers AstrologersDirect, confirmed 2026-11-15). Charts, the timeline and solar returns stay off in production until this is set. |
 
 4. Deploy, then add your domain under **Settings → Domains**.
@@ -93,6 +94,7 @@ This is `APP_ENCRYPTION_KEY`. **If it is lost or changed, encrypted client data 
 
 - **Reminder emails** come from a scheduled job (`vercel.json`) that runs hourly. Vercel's free Hobby plan only runs scheduled jobs once a day: reminders still go out, but up to a day early rather than at the chosen time. The Pro plan runs them hourly.
 
+- **Plans:** until billing exists, switch a practice with `DATABASE_URL="<connection string>" npm run plan -- <owner email> premium` (or `standard`).
 - **Migrations:** run `npm run db:migrate` against Neon whenever `drizzle/` changes. A future improvement is to run this automatically before each production deploy.
 - **Backups:** Neon keeps point-in-time history according to your plan. R2 does not keep backups by default, so consider bucket replication once real readings are stored there.
 - **Rate limits** are kept in each server instance's memory. That is fine for a beta. With heavy traffic, move them to Redis (for example Upstash).

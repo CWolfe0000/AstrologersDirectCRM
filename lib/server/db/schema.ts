@@ -20,6 +20,8 @@ import { bigint, index, integer, jsonb, pgTable, primaryKey, text, timestamp, un
 export const practices = pgTable("practices", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
+  /** "standard" (natal + synastry) or "premium" (all chart techniques and the timeline). Set by billing later. */
+  plan: text("plan").notNull().default("standard"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
