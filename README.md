@@ -40,6 +40,8 @@ npm run dev             # http://localhost:3000 → Get Started
 
 After signing up, use **Load sample data** in the sidebar to explore with example clients.
 
+Uploaded files are stored under `.uploads/` by default. Set `STORAGE_DRIVER=s3` and the `S3_*` variables to use a bucket (see `.env.example`).
+
 Without `RESEND_API_KEY`, emails (verification, password reset, client invitations, reading notifications) are not sent. They are printed to the server log and stored in the `outbox` table, so you can open the links locally.
 
 ### Demo mode (no database)
@@ -58,6 +60,7 @@ npm test              # unit tests
 npm run build && npm start &
 npm run test:e2e      # end-to-end smoke test (needs Playwright + Chromium)
 node tests/e2e/flows.mjs
+node tests/e2e/files.mjs
 ```
 
 CI (`.github/workflows/ci.yml`) runs all of these against a Postgres service on every push.

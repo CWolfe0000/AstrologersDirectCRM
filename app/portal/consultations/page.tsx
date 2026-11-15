@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { Video, Phone, MapPin, Lock, FileText, Clock } from "lucide-react";
+import { mediaUrl } from "@/lib/upload";
 import { useStore } from "@/lib/store";
 import { cn, fmtDate, fmtTime, monthName, sameDay } from "@/lib/utils";
 import { StatusBadge } from "@/components/ui/badge";
@@ -92,7 +93,7 @@ export default function PortalConsultations() {
                     {view === "past" &&
                       shared.map((f) => (
                         <li key={f.id}>
-                          <button onClick={() => toast("Download started", `${f.name} (simulated)`, "success")} className="flex w-full items-center gap-3 rounded-lg border border-line px-3 py-2.5 text-left hover:border-line-strong hover:bg-canvas">
+                          <button onClick={() => (f.fileKey ? (window.location.href = mediaUrl("files", f.id, true)) : toast("Download started", `${f.name} (simulated)`, "success"))} className="flex w-full items-center gap-3 rounded-lg border border-line px-3 py-2.5 text-left hover:border-line-strong hover:bg-canvas">
                             <span className="flex size-8 items-center justify-center rounded-lg bg-canvas-2 text-ink-3"><FileText className="size-4" /></span>
                             <span className="min-w-0 flex-1 truncate text-[13.5px] text-ink">{f.name}</span>
                             <span className="text-[12px] text-accent">Download</span>

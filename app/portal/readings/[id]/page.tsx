@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState, FileKindIcon, KIND_LABEL, SimulatedBadge } from "@/components/ui/misc";
 import { usePortalClientId } from "@/components/portal/portal-shell";
 import { readingMeta, useSimulatedDownload } from "@/components/portal/reading-card";
+import { mediaUrl } from "@/lib/upload";
 import { AudioPlayer, DocumentViewer, VideoPlayer } from "@/components/portal/media";
 
 export default function ReadingDetail() {
@@ -85,12 +86,39 @@ export default function ReadingDetail() {
         {media && (
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-[13px] font-semibold text-ink">{r.kind === "audio" ? "Listen" : "Watch"}</h2>
-            <SimulatedBadge label="Simulated playback" />
+            {!r.fileKey && <SimulatedBadge label="Simulated playback" />}
           </div>
         )}
-        {r.kind === "audio" && <AudioPlayer duration={r.durationSec ?? 1800} title={r.title} />}
-        {r.kind === "video" && <VideoPlayer duration={r.durationSec ?? 1800} title={r.title} poster="Chart walkthrough" />}
-        {(r.kind === "pdf" || r.kind === "document") && (
+        {r.fileKey && r.kind === "audio" && (
+          <div className="rounded-2xl border border-line bg-surface p-5">
+            <audio controls preload="metadata" className="w-full" src={mediaUrl("readings", r.id)}>
+              Your browser can’t play this recording. <a href={mediaUrl("readings", r.id)}>Open it directly</a>.
+            </audio>
+          </div>
+        )}
+        {r.fileKey && r.kind === "video" && (
+          <video controls preload="metadata" playsInline className="aspect-video w-full rounded-2xl bg-ink" src={mediaUrl("readings", r.id)}>
+            Your browser can’t play this video. <a href={mediaUrl("readings", r.id)}>Open it directly</a>.
+          </video>
+        )}
+        {r.fileKey && r.kind === "pdf" && (
+          <>
+            <h2 className="mb-3 text-[13px] font-semibold text-ink">Read</h2>
+            <iframe title={r.title} src={mediaUrl("readings", r.id)} className="h-[78vh] w-full rounded-2xl border border-line bg-surface" />
+          </>
+        )}
+        {r.fileKey && r.kind === "document" && (
+          <a href={mediaUrl("readings", r.id)} target="_blank" rel="noreferrer" className="group flex items-center gap-4 rounded-2xl border border-line bg-surface p-5 hover:border-line-strong">
+            <FileKindIcon kind="document" className="size-12" />
+            <div className="min-w-0 flex-1">
+              <p className="font-medium text-ink group-hover:text-accent">Open {r.fileName ?? "document"}</p>
+              <p className="text-[13px] text-muted">Opens in your browser or your document app.</p>
+            </div>
+          </a>
+        )}
+        {!r.fileKey && r.kind === "audio" && <AudioPlayer duration={r.durationSec ?? 1800} title={r.title} />}
+        {!r.fileKey && r.kind === "video" && <VideoPlayer duration={r.durationSec ?? 1800} title={r.title} poster="Chart walkthrough" />}
+        {!r.fileKey && (r.kind === "pdf" || r.kind === "document") && (
           <>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-[13px] font-semibold text-ink">Read</h2>

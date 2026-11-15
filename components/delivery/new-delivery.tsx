@@ -12,7 +12,8 @@ import { Segmented } from "@/components/ui/tabs";
 import { FileKindIcon, KIND_LABEL, SimulatedNote } from "@/components/ui/misc";
 import { ChartTypeBadge } from "@/components/chart/chart-helpers";
 import type { Reading, ReadingKind } from "@/lib/data/types";
-import { cn, fmtDate } from "@/lib/utils";
+import { cn, DATA_MODE, daysFromToday, fmtDate } from "@/lib/utils";
+import { uploadFile, type UploadResult } from "@/lib/upload";
 import { PortalPreview } from "./portal-preview";
 
 const STEPS = ["Recipient", "Content", "Message & access", "Preview & send"];
@@ -85,7 +86,9 @@ export function NewDeliveryDialog({
     }
   }, [open, defaultClientId, defaultChartId]);
 
-  React.useEffect(() => () => { if (timer.current) clearInterval(timer.current); }, []);
+  React.useEffect(() => () => { if (timer.current) clearInterval(timer.current); abort.current?.abort(); }, []);
+  const stored = React.useRef<UploadResult | null>(null);
+  const abort = React.useRef<AbortController | null>(null);
 
   const person = people.find((p) => p.id === clientId);
   const clientCharts = charts.filter((c) => c.clientId === clientId);
@@ -110,6 +113,7 @@ export function NewDeliveryDialog({
     if (!f) return;
     const kind = kindFromFile(f);
     const base = { name: f.name, sizeMB: f.size / (1024 * 1024), kind };
+    stored.current = null;
     if (kind === "audio" || kind === "video") {
       const el = document.createElement(kind);
       const u = URL.createObjectURL(f);
@@ -120,7 +124,27 @@ export function NewDeliveryDialog({
       };
       el.src = u;
     }
-    startUpload(base);
+    if (DATA_MODE === "demo") {
+      startUpload(base);
+      return;
+    }
+    // Real upload with real progress.
+    setFile(base);
+    setProgress(0);
+    if (!title) setTitle(f.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " "));
+    abort.current?.abort();
+    abort.current = new AbortController();
+    uploadFile(f, setProgress, abort.current.signal).then(
+      (r) => {
+        stored.current = r;
+        setProgress(100);
+      },
+      (e: Error) => {
+        setFile(null);
+        setProgress(0);
+        if (e.message !== "Upload cancelled.") toast("Upload failed", e.message, "error");
+      },
+    );
   };
 
   const useSample = () => {
@@ -136,7 +160,7 @@ export function NewDeliveryDialog({
     true,
   ][step];
 
-  const expiresAt = expiry === "never" ? undefined : expiry === "30" ? "2026-12-14" : expiry === "90" ? "2027-02-12" : "2027-11-14";
+  const expiresAt = expiry === "never" ? undefined : expiry === "30" ? daysFromToday(30) : expiry === "90" ? daysFromToday(90) : daysFromToday(365);
 
   const finish = (send: boolean) => {
     const r = addReading({
@@ -146,6 +170,8 @@ export function NewDeliveryDialog({
       title: title.trim(),
       kind,
       fileName: mode === "upload" ? file?.name : undefined,
+      fileKey: mode === "upload" ? stored.current?.key : undefined,
+      contentType: mode === "upload" ? stored.current?.contentType : undefined,
       sizeMB: mode === "upload" ? Math.round((file?.sizeMB ?? 0) * 10) / 10 : undefined,
       durationSec: file?.durationSec,
       pages: file?.pages,
@@ -180,8 +206,8 @@ export function NewDeliveryDialog({
           done ? (
             <>
               <Button variant="secondary" onClick={() => { onOpenChange(false); onDone?.(done); }}>View delivery</Button>
-              {done.status === "delivered" && done.clientId === "c1" && (
-                <ButtonLink href={`/portal/readings/${done.id}`}><ExternalLink /> Open in client portal</ButtonLink>
+              {done.status === "delivered" && (DATA_MODE === "demo" ? done.clientId === "c1" : true) && (
+                <ButtonLink href={DATA_MODE === "demo" ? `/portal/readings/${done.id}` : `/portal/readings/${done.id}?as=${done.clientId}`}><ExternalLink /> {DATA_MODE === "demo" ? "Open in client portal" : "Preview in their portal"}</ButtonLink>
               )}
             </>
           ) : (
@@ -208,14 +234,17 @@ export function NewDeliveryDialog({
                 ? `Delivered to ${personName(person)}'s client portal. They'll see a notification the next time they sign in${notifyEmail ? " and receive an email" : ""}.`
                 : "Saved as a draft. You can finish and send it from the delivery queue."}
             </p>
-            {done.status === "delivered" && done.clientId === "c1" && (
+            {DATA_MODE === "demo" && done.status === "delivered" && done.clientId === "c1" && (
               <SimulatedNote className="mt-5 max-w-md text-left">
                 Workflow E: Amelia Hart is the demo client signed in to the portal. Open the client portal to see the notification and the new reading.{" "}
                 <Link href="/portal" className="font-medium underline">Go to /portal</Link>
               </SimulatedNote>
             )}
-            {done.status === "delivered" && done.clientId !== "c1" && (
+            {DATA_MODE === "demo" && done.status === "delivered" && done.clientId !== "c1" && (
               <SimulatedNote className="mt-5 max-w-md text-left">Email notification simulated. The client portal preview is signed in as Amelia Hart — deliver to her to see it arrive.</SimulatedNote>
+            )}
+            {DATA_MODE !== "demo" && done.status === "delivered" && (
+              <p className="mt-5 max-w-md text-[12.5px] text-muted">Clients with a portal login are emailed a link. Others will find it when they accept their invitation.</p>
             )}
           </div>
         ) : (
@@ -275,7 +304,7 @@ export function NewDeliveryDialog({
                       </Select>
                     </Field>
                     {clients.find((c) => c.id === clientId)?.portalAccess !== "active" && (
-                      <SimulatedNote className="sm:col-span-2">This client hasn't activated their portal yet. The reading will be waiting for them when they accept the invitation.</SimulatedNote>
+                      <SimulatedNote className="sm:col-span-2" >This client hasn't activated their portal yet. The reading will be waiting for them when they accept the invitation.</SimulatedNote>
                     )}
                   </>
                 )}
@@ -308,7 +337,7 @@ export function NewDeliveryDialog({
                           </p>
                         </div>
                         {progress >= 100 ? <FileCheck2 className="size-5 text-sage-dark" /> : null}
-                        <button onClick={() => { setFile(null); setProgress(0); }} className="rounded p-1 text-muted hover:text-ink" aria-label="Remove file"><X className="size-4" /></button>
+                        <button onClick={() => { abort.current?.abort(); stored.current = null; setFile(null); setProgress(0); }} className="rounded p-1 text-muted hover:text-ink" aria-label="Remove file"><X className="size-4" /></button>
                       </div>
                       <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-canvas-2">
                         <div className={cn("h-full transition-all", progress >= 100 ? "bg-sage" : "bg-accent")} style={{ width: `${progress}%` }} />
@@ -326,7 +355,7 @@ export function NewDeliveryDialog({
                       <p className="mt-1 text-[12.5px] text-muted">PDF, DOCX, M4A, MP3, MP4, MOV · up to 1.5 GB per file</p>
                       <div className="mt-4 flex flex-wrap justify-center gap-2">
                         <Button variant="secondary" size="sm" onClick={() => inputRef.current?.click()}>Choose file</Button>
-                        <Button variant="ghost" size="sm" onClick={useSample}><Sparkles /> Use a sample PDF</Button>
+                        {DATA_MODE === "demo" && <Button variant="ghost" size="sm" onClick={useSample}><Sparkles /> Use a sample PDF</Button>}
                       </div>
                       <input ref={inputRef} type="file" className="hidden" accept=".pdf,.doc,.docx,audio/*,video/*" onChange={(e) => onFile(e.target.files?.[0])} />
                     </div>
@@ -336,7 +365,7 @@ export function NewDeliveryDialog({
                     <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://" />
                   </Field>
                 )}
-                <SimulatedNote>Uploads are simulated: the file is read locally for its name and size, and the progress bar is animated. No file leaves your browser.</SimulatedNote>
+                {DATA_MODE === "demo" && <SimulatedNote>Uploads are simulated: the file is read locally for its name and size, and the progress bar is animated. No file leaves your browser.</SimulatedNote>}
               </div>
             )}
 

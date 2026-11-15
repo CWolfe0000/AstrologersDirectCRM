@@ -153,6 +153,8 @@ const reading = z
     title: str(300),
     kind: readingKind,
     fileName: opt(str(300)),
+    fileKey: opt(str(300)),
+    contentType: opt(str(120)),
     sizeMB: opt(z.number().min(0).max(100_000)),
     durationSec: opt(z.number().min(0).max(24 * 3600)),
     pages: opt(z.number().int().min(0).max(10_000)),
@@ -195,6 +197,8 @@ const file = z
     uploadedAt: iso,
     private: z.boolean(),
     note: opt(str(2000)),
+    fileKey: opt(str(300)),
+    contentType: opt(str(120)),
   })
   .strict();
 

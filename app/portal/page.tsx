@@ -8,6 +8,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SimulatedBadge } from "@/components/ui/misc";
+import { mediaUrl } from "@/lib/upload";
 import { DATA_MODE } from "@/lib/utils";
 import { usePortalClientId } from "@/components/portal/portal-shell";
 import { useMyConsultations, useMyReadings, useSharedFiles, PORTAL_NOW } from "@/components/portal/portal-data";
@@ -125,7 +126,7 @@ export default function PortalHome() {
                 <ul className="mt-3 divide-y divide-line">
                   {files.map((f) => (
                     <li key={f.id}>
-                      <button onClick={() => toast("Download started", `${f.name} (simulated)`, "success")} className="flex w-full items-center gap-3 py-2.5 text-left hover:text-accent">
+                      <button onClick={() => (f.fileKey ? (window.location.href = mediaUrl("files", f.id, true)) : toast("Download started", `${f.name} (simulated)`, "success"))} className="flex w-full items-center gap-3 py-2.5 text-left hover:text-accent">
                         <FileText className="size-4 text-muted" />
                         <span className="min-w-0 flex-1 truncate text-[13.5px]">{f.name}</span>
                         <span className="text-[12px] text-muted">{fmtDate(f.uploadedAt)}</span>

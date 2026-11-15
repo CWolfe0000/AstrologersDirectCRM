@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Download, Play, ExternalLink, FileText, ChevronRight } from "lucide-react";
 import type { Reading } from "@/lib/data/types";
+import { mediaUrl } from "@/lib/upload";
 import { useStore } from "@/lib/store";
 import { cn, fmtDate, fmtDuration } from "@/lib/utils";
 import { FileKindIcon, KIND_LABEL } from "@/components/ui/misc";
@@ -16,9 +17,16 @@ export function readingMeta(r: Reading) {
   return parts.join(" · ");
 }
 
+/** Downloads the stored file when there is one; otherwise (demo/sample data) simulates it. */
 export function useSimulatedDownload() {
   const toast = useStore((s) => s.toast);
-  return (r: Reading) => toast("Download started", `${r.fileName ?? r.title} (simulated in the prototype)`, "success");
+  return (r: Reading) => {
+    if (r.fileKey) {
+      window.location.href = mediaUrl("readings", r.id, true);
+      return;
+    }
+    toast("Download started", `${r.fileName ?? r.title} (simulated in the prototype)`, "success");
+  };
 }
 
 export function ReadingCard({ r, className }: { r: Reading; className?: string }) {

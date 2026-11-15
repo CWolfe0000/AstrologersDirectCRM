@@ -129,6 +129,9 @@ export interface Reading {
   title: string;
   kind: ReadingKind;
   fileName?: string;
+  /** Stored object (server mode). Absent for links and for sample data. */
+  fileKey?: string;
+  contentType?: string;
   sizeMB?: number;
   durationSec?: number;
   pages?: number;
@@ -168,6 +171,9 @@ export interface ClientFile {
   uploadedAt: string;
   private: boolean;
   note?: string;
+  /** Stored object (server mode). Absent for sample data. */
+  fileKey?: string;
+  contentType?: string;
 }
 
 export type NotificationType = "consultation" | "client" | "delivery" | "upload" | "task" | "account";

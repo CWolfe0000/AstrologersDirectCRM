@@ -9,11 +9,12 @@ import {
 import { useStore, personName } from "@/lib/store";
 import { chartTypeMeta } from "@/lib/astro";
 import type { ChartRecord, Client, Consultation, Observation, Person } from "@/lib/data/types";
-import { cn, fmtDate, fmtTime, fmtShort, fmtDuration, relDay, relTime, stripHtml, fmtClock } from "@/lib/utils";
+import { cn, fmtDate, fmtTime, fmtShort, fmtDuration, relDay, relTime, stripHtml, fmtClock, DATA_MODE } from "@/lib/utils";
 import { Card, CardHeader, CardBody } from "@/components/ui/card";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { StatusBadge, Badge } from "@/components/ui/badge";
 import { EmptyState, KeyValue, FileKindIcon, KIND_LABEL, SimulatedBadge } from "@/components/ui/misc";
+import { mediaUrl, uploadFile } from "@/lib/upload";
 import { SearchInput } from "@/components/ui/input";
 import { Segmented } from "@/components/ui/tabs";
 import { Avatar } from "@/components/ui/avatar";
@@ -533,9 +534,26 @@ export function FilesTab({ client }: { client: Client }) {
     if (!f) return;
     const ext = f.name.split(".").pop()?.toLowerCase() ?? "";
     const kind = ext === "pdf" ? "pdf" : ["jpg", "jpeg", "png", "heic"].includes(ext) ? "image" : ["doc", "docx", "txt"].includes(ext) ? "doc" : ["mp3", "m4a", "wav"].includes(ext) ? "audio" : "other";
-    d.s.addFile({ clientId: client.id, name: f.name, kind, sizeKB: Math.max(1, Math.round(f.size / 1024)), private: true });
-    d.s.toast("File added", `${f.name} was added as a private practitioner file (stored in this browser only).`, "success");
+    const sizeKB = Math.max(1, Math.round(f.size / 1024));
+    if (DATA_MODE === "demo") {
+      d.s.addFile({ clientId: client.id, name: f.name, kind, sizeKB, private: true });
+      d.s.toast("File added", `${f.name} was added as a private practitioner file (stored in this browser only).`, "success");
+      return;
+    }
+    setUploading({ name: f.name, pct: 0 });
+    uploadFile(f, (pct) => setUploading({ name: f.name, pct })).then(
+      (r) => {
+        d.s.addFile({ clientId: client.id, name: f.name, kind, sizeKB, private: true, fileKey: r.key, contentType: r.contentType });
+        d.s.toast("File uploaded", `${f.name} is private until you share it with the client.`, "success");
+        setUploading(null);
+      },
+      (e: Error) => {
+        d.s.toast("Upload failed", e.message, "error");
+        setUploading(null);
+      },
+    );
   };
+  const [uploading, setUploading] = React.useState<{ name: string; pct: number } | null>(null);
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -543,8 +561,8 @@ export function FilesTab({ client }: { client: Client }) {
           <Lock className="size-3.5" /> Private files are visible only to you. Shared files appear in the client&apos;s portal.
         </div>
         <div className="flex items-center gap-2">
-          <SimulatedBadge label="Simulated storage" />
-          <Button size="sm" onClick={() => inputRef.current?.click()}><Upload /> Upload file</Button>
+          {DATA_MODE === "demo" && <SimulatedBadge label="Simulated storage" />}
+          <Button size="sm" disabled={!!uploading} onClick={() => inputRef.current?.click()}><Upload /> {uploading ? `Uploading ${Math.round(uploading.pct)}%` : "Upload file"}</Button>
           <input ref={inputRef} type="file" className="sr-only" onChange={(e) => onFile(e.target.files?.[0])} />
         </div>
       </div>
@@ -569,7 +587,11 @@ export function FilesTab({ client }: { client: Client }) {
                 >
                   {f.private ? <Badge tone="neutral"><Lock className="size-3" /> Private</Badge> : <Badge tone="sage"><Globe className="size-3" /> Shared with client</Badge>}
                 </button>
-                <Button variant="ghost" size="icon-sm" aria-label="Download" onClick={() => d.s.toast("Download simulated", f.name)}><Download /></Button>
+                {f.fileKey ? (
+                  <a href={mediaUrl("files", f.id, true)} aria-label={`Download ${f.name}`} className="inline-flex size-8 items-center justify-center rounded-lg hover:bg-canvas-2"><Download className="size-4" /></a>
+                ) : (
+                  <Button variant="ghost" size="icon-sm" aria-label="Download" onClick={() => d.s.toast("Download simulated", f.name)}><Download /></Button>
+                )}
               </li>
             ))}
           </ul>
