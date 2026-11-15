@@ -56,7 +56,7 @@ This is `APP_ENCRYPTION_KEY`. **If it is lost or changed, encrypted client data 
 ## 5. Web app: Vercel
 
 1. **Add New → Project →** import `CWolfe0000/AstrologersDirectCRM` and choose the branch to deploy. The production branch is set under **Settings → Git**.
-2. Framework preset: **Next.js**. Keep the default build command.
+2. Framework preset: **Next.js**. Set the build command to `npm run ephemeris && npm run build`. This downloads the Swiss Ephemeris data files (about 2 MB, checksum-verified, the same files Sky uses) before building, and the build bundles them with the chart endpoints.
 3. Add these environment variables under **Settings → Environment Variables**:
 
 | Name | Value |
@@ -74,6 +74,7 @@ This is `APP_ENCRYPTION_KEY`. **If it is lost or changed, encrypted client data 
 | `S3_ACCESS_KEY_ID` | from step 3 |
 | `S3_SECRET_ACCESS_KEY` | from step 3 |
 | `CRON_SECRET` | another random value (`openssl rand -base64 32`). Vercel sends it to the reminder job. |
+| `SWISS_EPHEMERIS_LICENSE` | `staging` while testing; `confirmed` once you have checked the Professional License covers AstrologersDirect (the entity and the product). Charts, the timeline and solar returns stay off in production until this is set. |
 
 4. Deploy, then add your domain under **Settings → Domains**.
 
@@ -84,8 +85,11 @@ This is `APP_ENCRYPTION_KEY`. **If it is lost or changed, encrypted client data 
 - [ ] Upload a small PDF on the Reading Delivery screen and send it to a test client whose email address you control
 - [ ] Accept the portal invitation from that address and open the reading
 - [ ] Turn on two-factor in Settings → Security, then sign out and back in
+- [ ] Open a sample client's natal chart and the Timeline, and compare a few positions with your usual software
 
 ## Notes
+
+- **Swiss Ephemeris** runs inside the web app through the `sweph` package, which compiles a native module during `npm install`. This works on Vercel's Node runtime, but has not been tried there yet: if the first deploy fails at install or on the chart endpoints, tell me the error. Moving calculations to a separate service (for example on Render, next to Sky) is the fallback.
 
 - **Reminder emails** come from a scheduled job (`vercel.json`) that runs hourly. Vercel's free Hobby plan only runs scheduled jobs once a day: reminders still go out, but up to a day early rather than at the chosen time. The Pro plan runs them hourly.
 

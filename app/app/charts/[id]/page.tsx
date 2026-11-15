@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { PanelLeftClose, PanelLeftOpen, Sparkles, Star, UserRound, Mic, Send, SlidersHorizontal, MousePointerClick, CircleDot } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, Sparkles, Star, UserRound, Mic, Send, SlidersHorizontal, MousePointerClick, CircleDot, Waves } from "lucide-react";
 import { ASPECTS, BODIES, HOUSE_SYSTEMS, ZODIACS, bodyIn, chartTypeMeta, dignityOf, fmtDeg, fmtOrb, signOf, type ChartSettings } from "@/lib/astro";
 import { useStore, personName } from "@/lib/store";
 import { cn, fmtClock, fmtDate } from "@/lib/utils";
@@ -50,7 +50,10 @@ function Workspace() {
   const toast = useStore((s) => s.toast);
 
   const [overrides, setOverrides] = React.useState<Partial<ChartSettings>>({});
-  const [refDate, setRefDate] = React.useState<string | undefined>(chart?.refDate);
+  // ?date=YYYY-MM-DD opens a timing chart at another date (unsaved until "Save"), e.g. from the timeline.
+  const dateParam = params.get("date");
+  const linkedDate = dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : undefined;
+  const [refDate, setRefDate] = React.useState<string | undefined>(linkedDate ?? chart?.refDate);
   const [selected, setSelected] = React.useState<string | null>(null);
   const [hoverAspect, setHoverAspect] = React.useState<string | null>(null);
   const [tab, setTab] = React.useState("placements");
@@ -64,8 +67,27 @@ function Workspace() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, id]);
   React.useEffect(() => {
-    setRefDate(chart?.refDate);
-  }, [chart?.refDate]);
+    setRefDate(linkedDate ?? chart?.refDate);
+  }, [chart?.refDate, linkedDate]);
+  // ?note=1 starts a new observation (title, planets, aspect and house prefilled from the link).
+  const noteDraft = React.useMemo(() => {
+    if (params.get("note") !== "1") return undefined;
+    const planets = (params.get("planets") ?? "").split(",").filter((x): x is keyof typeof BODIES => x in BODIES);
+    const aspect = params.get("aspect");
+    const house = Number(params.get("house"));
+    return {
+      title: (params.get("title") ?? "").slice(0, 200),
+      planets,
+      aspects: aspect && aspect in ASPECTS ? [aspect as keyof typeof ASPECTS] : [],
+      houses: house >= 1 && house <= 12 ? [house] : [],
+    };
+  }, [params]);
+  React.useEffect(() => {
+    if (noteDraft) {
+      setTab("observations");
+      setEditing("new");
+    }
+  }, [noteDraft]);
   React.useEffect(() => {
     if (params.get("print") === "1" && chart) {
       const t = setTimeout(() => window.print(), 700);
@@ -163,6 +185,11 @@ function Workspace() {
           <ButtonLink href={`/app/clients/${chart.clientId}`} variant="secondary" aria-label="Client profile">
             <UserRound /> <span className="hidden sm:inline xl:hidden 2xl:inline">Client profile</span>
           </ButtonLink>
+          {chart.personIds.length === 1 && chart.personIds[0] === chart.clientId && (
+            <ButtonLink href={`/app/timeline?client=${chart.personIds[0]}`} variant="secondary" aria-label="Timeline">
+              <Waves /> <span className="hidden sm:inline xl:hidden 2xl:inline">Timeline</span>
+            </ButtonLink>
+          )}
           <ButtonLink href={`/app/studio?client=${chart.clientId}&chart=${chart.id}`} variant="secondary" aria-label="Record reading">
             <Mic /> <span className="hidden sm:inline">Record reading</span>
           </ButtonLink>
@@ -300,7 +327,7 @@ function Workspace() {
                   <ConditionTable view={view} />
                 </TabsContent>
                 <TabsContent value="observations">
-                  <WorkspaceObservations chart={chart} editing={editing} setEditing={setEditing} />
+                  <WorkspaceObservations chart={chart} editing={editing} setEditing={setEditing} draft={noteDraft} />
                 </TabsContent>
                 <TabsContent value="ai" forceMount className="data-[state=inactive]:hidden">
                   <AiAssistant

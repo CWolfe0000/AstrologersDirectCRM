@@ -12,7 +12,7 @@ const showAll = process.argv.includes("--all");
 const PUBLIC = ["/", "/features", "/how-it-works", "/pricing", "/about", "/contact", "/prototype", "/legal/privacy", "/auth/login", "/auth/signup", "/auth/reset"];
 const APP = [
   "/app", "/app/clients", "/app/clients/c1", "/app/clients/c1?tab=charts", "/app/clients/c1?tab=people", "/app/clients/c1?tab=consultations",
-  "/app/clients/c1?tab=observations", "/app/clients/c1?tab=readings", "/app/clients/c1?tab=files", "/app/clients/new", "/app/charts", "/app/charts/new",
+  "/app/clients/c1?tab=observations", "/app/clients/c1?tab=readings", "/app/clients/c1?tab=files", "/app/clients/new", "/app/charts", "/app/charts/new", "/app/timeline?client=c1",
   "/app/charts/ch1", "/app/charts/ch3", "/app/observations?id=o6", "/app/consultations", "/app/consultations?id=k1", "/app/tasks", "/app/tasks?id=t1",
   "/app/delivery", "/app/delivery?id=r11", "/app/studio", "/app/reports", "/app/notifications", "/app/settings", "/app/settings?section=astrology",
   "/app/settings?section=security", "/app/settings?section=notifications", "/app/settings?section=data",

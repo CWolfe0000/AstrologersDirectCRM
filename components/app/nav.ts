@@ -1,11 +1,12 @@
 import {
-  LayoutDashboard, Users, CircleDot, CalendarDays, NotebookPen, ListChecks, Send, Mic, BarChart3, Settings, Bell,
+  LayoutDashboard, Users, CircleDot, CalendarDays, NotebookPen, ListChecks, Send, Mic, BarChart3, Settings, Bell, Waves,
 } from "lucide-react";
 
 export const APP_NAV = [
   { href: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/app/clients", label: "Clients", icon: Users },
   { href: "/app/charts", label: "Charts", icon: CircleDot },
+  { href: "/app/timeline", label: "Timeline", icon: Waves },
   { href: "/app/consultations", label: "Consultations & Calendar", short: "Calendar", icon: CalendarDays },
   { href: "/app/observations", label: "Notes & Observations", short: "Observations", icon: NotebookPen },
   { href: "/app/tasks", label: "Tasks & Follow-Ups", short: "Tasks", icon: ListChecks },

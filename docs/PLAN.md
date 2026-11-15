@@ -39,9 +39,11 @@ Status key: ✅ done · 🟡 in progress · ⬜ not started · 🔒 blocked (the
 - ✅ Chart technique calculations built and unit-tested, not yet in the app (`lib/astro/techniques`, see `docs/techniques.md`): neutral synastry (inter-aspects, strict-cusp overlays, no scores), midpoint composite (two house methods), secondary progressions (four angle methods), solar arcs (three arc types), solar returns (precession option, relocation). Defaults are provisional until you decide.
 - 🔒 Make those defaults final (your method answers), and verify against reference charts (`tests/fixtures/reference-charts.template.json`)
 - ⬜ Extract Sky's calculation core into a shared package
-- ⬜ Astro API service on Render: natal and transits endpoints
+- ✅ Swiss Ephemeris on the server (2026-11-15): the same `sweph` version and checksum-pinned data files as Sky, a license gate (`SWISS_EPHEMERIS_LICENSE`), and `/api/v1/astro/*` for natal, positions, progressed, solar arc and solar return. It matches Sky exactly on the sample chart. A separate astro service is no longer needed unless Vercel can't run `sweph`.
 - ✅ Make the `AstrologyEngine` interface asynchronous and add loading states to the chart screens (shared cache; the previous chart stays on screen while recalculating)
-- ⬜ Connect the chart workspace to real natal calculations, replacing the demo engine for natal charts
+- ✅ Chart workspace on real calculations in server mode (natal, transits, progressions, solar arcs, solar returns), labelled "not yet checked against reference charts"
+- ✅ **Convergence timeline** (`/app/timeline`): transits, progressions, solar arcs, lunations and eclipses to the natal chart over 3–24 months or a custom range (up to 3 years). It shows orb windows, every exact pass (retrograde flagged), stations, a day-by-day density strip, and the busiest periods with their focus point and house. Opens the chart at any date and files observations on a timing chart. Weights and orbs are provisional (`docs/techniques.md`).
+- ⬜ Synastry and composite screens on the new techniques (built and tested in `lib/astro/techniques`)
 
 ### Files and delivery
 - ✅ File storage with two drivers: local disk for development, and S3-compatible storage for production (e.g. Cloudflare R2). In production, browsers upload directly to the bucket with signed URLs, so large files never pass through Vercel.
@@ -76,7 +78,7 @@ Status key: ✅ done · 🟡 in progress · ⬜ not started · 🔒 blocked (the
 - ✅ Two-factor test (full lifecycle) and RFC 4226 test vectors
 - ✅ Recording test (Chromium simulated microphone)
 - ✅ Storage test: real upload, client viewing and downloading, view-only and expiry rules, Range requests, private and shared files, isolation between practices, and file removal on delete
-- ✅ GitHub Actions CI: typecheck, unit tests, migrations, build, both end-to-end tests, and the standalone demo build
+- ✅ GitHub Actions CI: typecheck, unit tests, migrations, build, every end-to-end test (including the timeline, on real Swiss Ephemeris files), and the standalone demo build
 
 ## Phase 2: recording and intelligence
 - ✅ (started early) Recordings made with real devices upload when saved or delivered, and play in the portal (tested with a simulated microphone)
@@ -92,4 +94,6 @@ Status key: ✅ done · 🟡 in progress · ⬜ not started · 🔒 blocked (the
 ## Decisions needed from you
 1. Method for progressed angles; solar return conventions; composite house method; default aspects and orbs (see `docs/sky-engine-review.md`)
 2. Whether births before 1800 need supporting
+2b. Timeline defaults: orbs, default bodies, score weights (`docs/techniques.md`)
+2c. Swiss Ephemeris license: confirm the Professional License covers AstrologersDirect before setting `SWISS_EPHEMERIS_LICENSE=confirmed` in production
 3. Hosting accounts: Neon, Vercel, Resend (domain), and later Cloudflare R2 for file storage

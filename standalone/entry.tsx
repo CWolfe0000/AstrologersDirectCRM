@@ -31,6 +31,7 @@ import ClientProfile from "@/app/app/clients/[id]/page";
 import Charts from "@/app/app/charts/page";
 import NewChart from "@/app/app/charts/new/page";
 import ChartWorkspace from "@/app/app/charts/[id]/page";
+import Timeline from "@/app/app/timeline/page";
 import Observations from "@/app/app/observations/page";
 import Consultations from "@/app/app/consultations/page";
 import Tasks from "@/app/app/tasks/page";
@@ -72,6 +73,7 @@ const ROUTES: [string, Layout, Page][] = [
   ["/app/charts", AppLayout, Charts],
   ["/app/charts/new", AppLayout, NewChart],
   ["/app/charts/:id", AppLayout, ChartWorkspace],
+  ["/app/timeline", AppLayout, Timeline],
   ["/app/observations", AppLayout, Observations],
   ["/app/consultations", AppLayout, Consultations],
   ["/app/tasks", AppLayout, Tasks],

@@ -9,7 +9,7 @@ covers three connected environments:
 | Environment | Entry point | Screens |
 |---|---|---|
 | Public website | `/` | Home, Features, How It Works, Pricing, About, Contact & Support, Authentication (sign up, log in, reset, verify, invitation) |
-| Practitioner application | `/app` | Dashboard, Clients, Client Profile, Charts, Chart Workspace, Notes & Observations, Consultations & Calendar, Tasks, Reading Delivery, Recording Studio, Reports, Notifications, Settings |
+| Practitioner application | `/app` | Dashboard, Clients, Client Profile, Charts, Chart Workspace, Convergence Timeline, Notes & Observations, Consultations & Calendar, Tasks, Reading Delivery, Recording Studio, Reports, Notifications, Settings |
 | Client portal | `/portal` | Dashboard, My Readings, Reading Detail & Player, Consultation History, Account Settings |
 
 **Start at `/prototype`.** That page is the guide: it lists all 25 screens and
@@ -35,6 +35,7 @@ cp .env.example .env.local
 #   DATABASE_URL        your Postgres connection string
 #   APP_ENCRYPTION_KEY  output of: openssl rand -base64 32   (never change it once data exists)
 npm run db:migrate
+npm run ephemeris       # downloads the Swiss Ephemeris data files into .sweph-ephe/
 npm run dev             # http://localhost:3000 → Get Started
 ```
 
@@ -66,6 +67,7 @@ node tests/e2e/twofactor.mjs     # takes ~2 minutes: waits for fresh authenticat
 node tests/e2e/conflicts.mjs     # two devices, one account
 CRON_SECRET=… node tests/e2e/practice-tools.mjs   # CSV import, calendar feed, reminders (server needs the same CRON_SECRET)
 node tests/e2e/pwa.mjs           # installable app + offline page
+node tests/e2e/timeline.mjs      # convergence timeline (server needs SWISS_EPHEMERIS_LICENSE=staging in production mode)
 node tests/e2e/a11y.mjs [--mobile] [--all]   # accessibility scan (axe-core)
 
 # Test runs create many accounts from one address: start the server with RATE_LIMIT_MULTIPLIER=20 (never in production).
@@ -110,9 +112,10 @@ npm run screenshots                   # terminal 2
 ## Simulated functionality
 
 Simulated features carry a dashed amber **Simulated** badge in the interface.
-**Chart positions come from a demonstration engine.** They are approximate and
-always labelled. They are not verified calculations and must not be used for
-interpretation.
+In **demo mode**, chart positions come from a demonstration engine. They are
+approximate, always labelled, and must not be used for interpretation. In
+**server mode**, charts and the timeline use Swiss Ephemeris, labelled "not yet
+checked against reference charts" until verified (`docs/techniques.md`).
 
 [`SIMULATED_FEATURES.md`](./SIMULATED_FEATURES.md) lists every simulated
 feature and what it would take to make it functional.

@@ -45,10 +45,13 @@ export function WorkspaceObservations({
   chart,
   editing,
   setEditing,
+  draft,
 }: {
   chart: ChartRecord;
   editing: string | "new" | null;
   setEditing: (v: string | "new" | null) => void;
+  /** Starting values for a new observation (e.g. from the timeline). */
+  draft?: Partial<Pick<Observation, "title" | "planets" | "aspects" | "houses">>;
 }) {
   const observations = useStore((s) => s.observations);
   const people = useStore((s) => s.people);
@@ -75,7 +78,7 @@ export function WorkspaceObservations({
           compact
           lockChart
           observationId={editing === "new" ? null : editing}
-          initial={own}
+          initial={editing === "new" && draft ? { ...own, ...draft } : own}
           onDeleted={() => setEditing(null)}
         />
       </div>

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useParams, useRouter, useSearchParams, usePathname } from "next/navigation";
-import { Pencil, CalendarPlus, CircleDot, NotebookPen, Mail, Phone, Cake, Clock, MapPin, AlertTriangle, MoreHorizontal, Archive, ArchiveRestore, Mic, Send, KeyRound, ListPlus, Eye } from "lucide-react";
+import { Pencil, CalendarPlus, CircleDot, NotebookPen, Mail, Phone, Cake, Clock, MapPin, AlertTriangle, MoreHorizontal, Archive, ArchiveRestore, Mic, Send, KeyRound, ListPlus, Eye, Waves } from "lucide-react";
 import { useStore, personName } from "@/lib/store";
 import { DATA_MODE } from "@/lib/utils";
 import { api } from "@/lib/api";
@@ -117,6 +117,7 @@ function Profile() {
             <ButtonLink href={`/app/consultations?new=1&client=${id}`} size="sm"><CalendarPlus /> Schedule consultation</ButtonLink>
             <ButtonLink href={`/app/charts/new?client=${id}`} variant="secondary" size="sm"><CircleDot /> Create chart</ButtonLink>
             <ButtonLink href={`/app/observations?new=1&client=${id}`} variant="secondary" size="sm"><NotebookPen /> Add observation</ButtonLink>
+            <ButtonLink href={`/app/timeline?client=${id}`} variant="secondary" size="sm"><Waves /> Timeline</ButtonLink>
             <Dropdown>
               <DropdownTrigger asChild>
                 <Button variant="secondary" size="icon-sm" aria-label="More actions"><MoreHorizontal /></Button>

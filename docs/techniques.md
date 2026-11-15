@@ -2,7 +2,7 @@
 
 The code is in `lib/astro/techniques/` and is covered by unit tests (`tests/unit/techniques.test.ts`, `tests/unit/spherical.test.ts`).
 
-None of it is in the app yet. It will be connected to Sky's Swiss Ephemeris once Sky's fixes land. Until then, the screens still use the demonstration engine.
+In server mode these run on Swiss Ephemeris (`lib/server/swiss.ts`, the same `sweph` version and data files as Sky). Progressions, solar arcs and solar returns are live in the chart workspace, and all of them feed the convergence timeline. Synastry and composite are built and tested but not yet connected to the chart screens. Demo mode still uses the demonstration engine.
 
 Every method choice is an option. The defaults marked **provisional** are placeholders until you confirm them.
 
@@ -59,6 +59,26 @@ Applying and separating between two natal charts comes from each chart's natal s
 - **Precession-corrected** returns move the target forward by general precession since birth (50.29″ per year). The production version can use Swiss Ephemeris sidereal mode instead.
 - Cast for the birthplace by default, or for any location (relocated return).
 
+## Convergence timeline
+
+`convergenceTimeline()` in `lib/astro/timeline.ts`, served by `POST /api/v1/timeline` and shown at **Timeline** (`/app/timeline`). Tests: `tests/unit/timeline.test.ts`, `tests/e2e/timeline.mjs`.
+
+For a client and a date range (up to three years) it finds every contact to the natal planets, nodes, Chiron and, when the birth time is known, the Ascendant and Midheaven:
+
+| Technique | Moving points | Default orb | Sampling |
+|---|---|---|---|
+| Transits | Mars to Pluto, Node, Chiron (Sun, Mercury, Venus and Moon optional) | 1° | daily (6-hourly if the Moon or lunations are on) |
+| Secondary progressions | Sun, Moon, Mercury, Venus, Mars | 1° | every 5 days |
+| Solar arcs | every natal point, including ASC and MC (true solar arc) | 1° | every 5 days |
+| Lunations | new and full moons; conjunction, opposition, square only | 3° | from the Sun and Moon samples |
+| Eclipses | lunations Swiss Ephemeris identifies as eclipses | 5° | Swiss eclipse search |
+
+- Between samples, positions are interpolated with cubic Hermite curves (position and speed), so exact times are accurate to minutes for the planets. Each contact gets its **orb windows**, every **exact hit** numbered as pass 1, 2, 3 (retrograde hits flagged), and any **station** inside a window.
+- **Density score:** each day adds up the contacts in orb, weighted by mover (slow planets more), aspect (conjunction and hard aspects more) and target (Sun, Moon, angles and chart ruler × 1.3), and by closeness to exact. Lunations count for 7 days after, eclipses for 28. The weights are in `WEIGHTS` and are **provisional**.
+- **Busiest periods:** days above the range's mean + 0.75 standard deviations with at least three contacts in orb, merged across gaps of up to 5 days. The six strongest are shown, each with the natal point and house most contacts aim at.
+- Progressed angles are not included separately. With the provisional angle method they would duplicate the solar arc MC.
+- No interpretation text is generated. The score counts; it doesn't judge.
+
 ## Decisions still needed from you
 
 1. **Progressed angles:** which of the four methods should be the default? Should mean-quotidian be added?
@@ -66,6 +86,7 @@ Applying and separating between two natal charts comes from each chart's natal s
 3. **Solar return:** precession-corrected or not by default? Birthplace by default?
 4. **Composite houses:** derived from the composite MC, or midpoints of the cusps? Which reference place for derived houses?
 5. **Default aspects and orbs** for AstrologersDirect. The provisional set is Sky's: majors only, with 8° orbs (5° for the sextile).
+6. **Timeline defaults:** orbs (1° transits and directions, 3° lunations, 5° eclipses), which bodies are on by default, and the score weights.
 
 ## Connecting to Sky (Swiss Ephemeris)
 

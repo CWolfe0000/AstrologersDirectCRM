@@ -5,7 +5,7 @@
 The AstrologersDirect prototype is built for evaluating interface, navigation and
 workflow. Everything you can click works, but some of it is simulated. In the
 interface, simulated features carry a dashed amber **Simulated** badge or note.
-Calculated chart data always shows a **Demonstration positions** label.
+In demo mode, calculated chart data always shows a **Demonstration positions** label. In server mode, charts and the timeline are calculated with Swiss Ephemeris and labelled **not yet checked against reference charts** until they are verified.
 
 ## What actually works in the prototype
 
@@ -27,7 +27,7 @@ Calculated chart data always shows a **Demonstration positions** label.
 
 | Area | What the prototype does | What a production version needs |
 |---|---|---|
-| **Chart calculations** | `lib/astro/demo-engine.ts` produces deterministic, *approximate* positions (mean-motion formulas plus a seeded generator). House cusps are trisected quadrants, not true Placidus/Koch. Retrograde status is approximate. | An adapter that implements the `AstrologyEngine` interface in `lib/astro/types.ts` around the **existing calculation engine** (for example a Swiss Ephemeris service). Register it with `registerEngine(engine, true)` in `lib/astro/index.ts`. Review the existing engine's API, time-zone and atlas handling first. The UI needs no changes. |
+| **Chart calculations** (demo mode only) | `lib/astro/demo-engine.ts` produces deterministic, *approximate* positions (mean-motion formulas plus a seeded generator). House cusps are trisected quadrants, not true Placidus/Koch. The timeline uses `lib/astro/demo-ephemeris.ts` (circular orbits, so retrograde loops look right but positions can be off by degrees) and estimates eclipses from the distance to the lunar node. | **Done in server mode:** Swiss Ephemeris on the server (`lib/server/swiss.ts`), the same library and data files as Sky. Remaining: check results against reference charts, then mark the engine verified. |
 | **Place lookup / atlas** | A short built-in list of cities with coordinates and time zones. | A geocoding and historical time-zone service (atlas), ideally the one the existing engine already uses. |
 | **Interpretation engine** | Not connected. | Connect the existing interpretation engine behind its own interface, next to the calculation adapter. |
 | **AI Assistant** (chart workspace) | Deterministic responses assembled from real chart data and saved observations. Sources are labelled: *Calculated chart data* / *Your observations* / *Generated interpretation*. | An LLM backend with retrieval over the practitioner's observations, tool access to the calculation engine, a source-attribution contract that keeps the three labels, per-practitioner data isolation, and audit logging. |
