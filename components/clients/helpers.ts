@@ -1,5 +1,5 @@
 import type { Consultation } from "@/lib/data/types";
-import { DEMO_TODAY } from "@/lib/utils";
+import { DEMO_TODAY, TODAY } from "@/lib/utils";
 
 const NOW = DEMO_TODAY.getTime();
 
@@ -17,7 +17,7 @@ export function lastConsultation(all: Consultation[], clientId: string) {
     .sort((a, b) => b.start.localeCompare(a.start))[0];
 }
 
-export const TODAY_ISO = "2026-11-14";
+export const TODAY_ISO = TODAY;
 
 export const PLACES = [
   { place: "Portland, Oregon, USA", lat: 45.52, lon: -122.68, tz: "America/Los_Angeles" },

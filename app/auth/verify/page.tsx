@@ -1,5 +1,8 @@
 "use client";
 
+import { ServerVerify } from "@/components/auth/server-forms";
+import { DATA_MODE } from "@/lib/utils";
+
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -66,10 +69,14 @@ function Verify() {
   );
 }
 
-export default function VerifyPage() {
+function DemoVerifyPage() {
   return (
     <React.Suspense>
       <Verify />
     </React.Suspense>
   );
+}
+
+export default function VerifyPage() {
+  return DATA_MODE === "demo" ? <DemoVerifyPage /> : <ServerVerify />;
 }

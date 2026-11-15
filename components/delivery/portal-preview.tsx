@@ -5,7 +5,7 @@ import { useStore } from "@/lib/store";
 import { FileKindIcon, KIND_LABEL } from "@/components/ui/misc";
 import { Avatar } from "@/components/ui/avatar";
 import type { ReadingKind } from "@/lib/data/types";
-import { fmtDate, fmtDuration } from "@/lib/utils";
+import { fmtDate, fmtDuration, TODAY } from "@/lib/utils";
 
 /** How a delivered reading appears to the client in their portal. */
 export function PortalPreview({
@@ -47,7 +47,7 @@ export function PortalPreview({
           <Avatar name={pr.name} size="sm" />
           <div className="text-[12.5px]">
             <p className="font-medium">{pr.name}</p>
-            <p className="text-muted">Delivered {fmtDate("2026-11-14")}</p>
+            <p className="text-muted">Delivered {fmtDate(TODAY)}</p>
           </div>
         </div>
         {message && <p className="mt-4 whitespace-pre-line rounded-lg border border-line bg-surface p-3.5 text-[13.5px] leading-relaxed text-ink-3">{message}</p>}

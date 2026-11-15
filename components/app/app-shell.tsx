@@ -6,6 +6,7 @@ import * as D from "@radix-ui/react-dialog";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 import { Toaster } from "@/components/ui/misc";
+import { ServerGate, VerifyEmailBanner } from "./server-gate";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = React.useState(false);
@@ -13,6 +14,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   React.useEffect(() => setOpen(false), [path]);
 
   return (
+    <ServerGate view="app">
     <div className="min-h-screen bg-canvas">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[248px] lg:block">
         <Sidebar />
@@ -28,10 +30,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </D.Portal>
       </D.Root>
       <div className="lg:pl-[248px]">
+        <VerifyEmailBanner />
         <Topbar onMenu={() => setOpen(true)} />
         <main className="mx-auto w-full max-w-[1480px] px-4 py-6 md:px-6 md:py-8 lg:px-8">{children}</main>
       </div>
       <Toaster />
     </div>
+    </ServerGate>
   );
 }

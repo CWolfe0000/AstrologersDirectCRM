@@ -11,7 +11,7 @@ import type {
   Activity, AppNotification, ChartRecord, Client, ClientFile, Consultation, Observation, Person, PortalNotification,
   Practitioner, Reading, Recording, Task,
 } from "./data/types";
-import { DEMO_TODAY, uid } from "./utils";
+import { DATA_MODE, nowLocal, uid } from "./utils";
 
 /**
  * Prototype data store.
@@ -22,7 +22,23 @@ import { DEMO_TODAY, uid } from "./utils";
  * actions rather than mutating data directly.
  */
 
+export type SessionState = {
+  /** demo: seeded browser data; loading/ready/error: server-backed data. */
+  status: "demo" | "idle" | "loading" | "ready" | "error";
+  view?: "app" | "portal";
+  user?: { id: string; name: string; email: string; role: "owner" | "client"; emailVerified: boolean };
+  practice?: { id: string; name: string };
+  /** Practitioner previewing a client's portal. */
+  preview?: boolean;
+  error?: { status: number; message: string };
+};
+
 export interface DemoState {
+  session: SessionState;
+  /** The client whose portal is being shown. */
+  portalClientId: string;
+  /** Background saving state (server mode). */
+  sync: { pending: number; error: string | null; savedAt?: string };
   practitioner: Practitioner;
   defaults: ChartSettings;
   people: Person[];
@@ -84,13 +100,31 @@ export interface DemoState {
   resetDemo: () => void;
 }
 
-/** Demo clock: starts at DEMO_TODAY (09:00) when the page loads and advances in real time. */
-const SESSION_START = Date.now();
-const NOW = () => {
-  const d = new Date(DEMO_TODAY.getTime() + (Date.now() - SESSION_START));
-  const pad = (n: number) => n.toString().padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-};
+const NOW = () => nowLocal();
+
+const noStorage = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
+
+const EMPTY_PRACTITIONER: Practitioner = { name: "", firstName: "", title: "", email: "", phone: "", practice: "", website: "", timezone: "", bio: "", plan: "" };
+
+/** Server mode starts empty; data arrives from the API after sign-in. */
+function emptyState() {
+  return {
+    practitioner: EMPTY_PRACTITIONER,
+    defaults: DEFAULT_SETTINGS,
+    people: [],
+    clients: [],
+    charts: [],
+    consultations: [],
+    observations: [],
+    tasks: [],
+    readings: [],
+    recordings: [],
+    files: [],
+    notifications: [],
+    activity: [],
+    portalNotifications: [],
+  } as Pick<DemoState, "practitioner" | "defaults" | "people" | "clients" | "charts" | "consultations" | "observations" | "tasks" | "readings" | "recordings" | "files" | "notifications" | "activity" | "portalNotifications">;
+}
 
 function seedState() {
   return {
@@ -114,7 +148,10 @@ function seedState() {
 export const useStore = create<DemoState>()(
   persist(
     (set, get) => ({
-      ...seedState(),
+      ...(DATA_MODE === "demo" ? seedState() : emptyState()),
+      session: { status: DATA_MODE === "demo" ? "demo" : "idle" },
+      portalClientId: "c1",
+      sync: { pending: 0, error: null },
       toasts: [],
 
       toast: (title, body, tone = "default") => {
@@ -224,7 +261,7 @@ export const useStore = create<DemoState>()(
         set((s) => ({
           readings: s.readings.map((x) => (x.id === id ? { ...x, status: "delivered", deliveredAt: NOW(), notification: "sent", failureReason: undefined } : x)),
           // Simulated client notification — appears in the client portal for the demo client.
-          portalNotifications: [{ id: uid("pn"), title: "New reading available", body: `“${r.title}” has been shared with you.`, at: NOW(), read: false, href: `/portal/readings/${r.id}` }, ...s.portalNotifications],
+          portalNotifications: [{ id: uid("pn"), clientId: r.clientId, title: "New reading available", body: `“${r.title}” has been shared with you.`, at: NOW(), read: false, href: `/portal/readings/${r.id}` }, ...s.portalNotifications],
           notifications: [{ id: uid("n"), type: "delivery", title: "Reading delivered", body: `“${r.title}” was delivered to the client portal.`, at: NOW(), read: false, href: `/app/delivery?id=${r.id}` }, ...s.notifications],
         }));
         get().log({ kind: "reading", text: `Delivered “${r.title}”`, clientId: r.clientId, href: `/app/delivery?id=${r.id}` });
@@ -249,26 +286,31 @@ export const useStore = create<DemoState>()(
       updateDefaults: (patch) => set((s) => ({ defaults: { ...s.defaults, ...patch, orbs: { ...s.defaults.orbs, ...(patch.orbs ?? {}) } } })),
 
       resetDemo: () => {
+        if (DATA_MODE !== "demo") return;
         set({ ...seedState() });
         get().toast("Demo data reset", "All demonstration data has been restored.", "success");
       },
     }),
     {
       name: "astrologersdirect-demo-v1",
-      storage: createJSONStorage(() => localStorage),
+      // Only the demo keeps data in the browser. Real practice data is never written to localStorage.
+      storage: createJSONStorage(() => (DATA_MODE === "demo" ? localStorage : noStorage)),
       skipHydration: true,
-      partialize: ({ toasts, ...rest }) => {
+      partialize: ({ toasts, session, sync, portalClientId, ...rest }) => {
         void toasts;
+        void session;
+        void sync;
+        void portalClientId;
         return Object.fromEntries(Object.entries(rest).filter(([, v]) => typeof v !== "function"));
       },
     },
   ),
 );
 
-/** Rehydrates persisted demo data after first paint (avoids SSR mismatch). */
+/** Rehydrates persisted demo data after first paint (avoids SSR mismatch). Demo mode only. */
 export function StoreHydrator() {
   useEffect(() => {
-    useStore.persist.rehydrate();
+    if (DATA_MODE === "demo") useStore.persist.rehydrate();
   }, []);
   return null;
 }

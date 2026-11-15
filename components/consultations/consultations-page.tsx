@@ -10,7 +10,7 @@ import { PageHeader, SimulatedBadge } from "@/components/ui/misc";
 import { Segmented } from "@/components/ui/tabs";
 import { Select } from "@/components/ui/input";
 import { Sheet } from "@/components/ui/dialog";
-import { DEMO_TODAY, monthName, fmtShort, sameDay, cn } from "@/lib/utils";
+import { DEMO_TODAY, monthName, fmtShort, sameDay, cn, TODAY, daysFromToday } from "@/lib/utils";
 import { AgendaList, ConsultationRow, MonthView, TimeGrid, addDays, startOfWeek, type CalView } from "./calendar-views";
 import { ConsultationDetail } from "./consultation-detail";
 import { NewConsultationDialog } from "./new-consultation-dialog";
@@ -57,9 +57,9 @@ export function ConsultationsPage() {
   const types = [...new Set(consultations.map((c) => c.type))].sort();
   const filtered = consultations.filter((k) => (!type || k.type === type) && (!status || k.status === status) && (!client || k.clientId === client));
 
-  const nowIso = "2026-11-14T00:00:00";
+  const nowIso = TODAY + "T00:00:00";
   const upcoming = filtered.filter((k) => k.start >= nowIso && k.status === "scheduled").sort((a, b) => a.start.localeCompare(b.start));
-  const past = filtered.filter((k) => k.start < nowIso || k.status !== "scheduled").filter((k) => k.start < "2026-11-15").sort((a, b) => b.start.localeCompare(a.start));
+  const past = filtered.filter((k) => k.start < nowIso || k.status !== "scheduled").filter((k) => k.start < daysFromToday(1) + "").sort((a, b) => b.start.localeCompare(a.start));
 
   const shift = (dir: number) => {
     const d = new Date(date);

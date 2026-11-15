@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ExternalLink, RotateCcw } from "lucide-react";
-import { cn } from "@/lib/utils";
+import * as React from "react";
+import { Database, ExternalLink, RotateCcw } from "lucide-react";
+import { loadSampleData } from "@/lib/sync";
+import { cn, DATA_MODE, TODAY } from "@/lib/utils";
 import { useStore } from "@/lib/store";
 import { Wordmark } from "@/components/ui/misc";
 import { Avatar } from "@/components/ui/avatar";
@@ -13,9 +15,12 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const path = usePathname();
   const p = useStore((s) => s.practitioner);
   const unread = useStore((s) => s.notifications.filter((n) => !n.read).length);
-  const overdue = useStore((s) => s.tasks.filter((t) => t.status !== "done" && t.due < "2026-11-14").length);
+  const overdue = useStore((s) => s.tasks.filter((t) => t.status !== "done" && t.due < TODAY).length);
   const pending = useStore((s) => s.readings.filter((r) => r.status === "ready" || r.status === "failed" || r.status === "draft").length);
   const resetDemo = useStore((s) => s.resetDemo);
+  const toast = useStore((s) => s.toast);
+  const clientCount = useStore((s) => s.clients.length);
+  const [loadingSample, setLoadingSample] = React.useState(false);
 
   const isActive = (href: string, exact?: boolean) => (exact ? path === href : path === href || path.startsWith(href + "/"));
   const badge = (href: string) => (href === "/app/tasks" ? overdue : href === "/app/delivery" ? pending : href === "/app/notifications" ? unread : 0);
@@ -72,21 +77,54 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             );
           })}
         </ul>
-        <div className="mx-2 mt-6 rounded-lg border border-white/[0.08] bg-white/[0.03] p-3">
-          <p className="text-[11.5px] font-medium text-white">Prototype</p>
-          <p className="mt-0.5 text-[11.5px] leading-snug text-[#9C969E]">Demonstration data. Changes are saved in this browser.</p>
-          <div className="mt-2.5 flex flex-col gap-1.5">
-            <Link href="/portal" className="inline-flex items-center gap-1.5 text-[11.5px] text-[#E3C9D0] hover:text-white" onClick={onNavigate}>
-              <ExternalLink className="size-3" /> View client portal
-            </Link>
-            <Link href="/prototype" className="inline-flex items-center gap-1.5 text-[11.5px] text-[#E3C9D0] hover:text-white" onClick={onNavigate}>
-              <ExternalLink className="size-3" /> Prototype guide
-            </Link>
-            <button onClick={resetDemo} className="inline-flex items-center gap-1.5 text-left text-[11.5px] text-[#9C969E] hover:text-white">
-              <RotateCcw className="size-3" /> Reset demo data
-            </button>
+        {DATA_MODE === "demo" ? (
+          <div className="mx-2 mt-6 rounded-lg border border-white/[0.08] bg-white/[0.03] p-3">
+            <p className="text-[11.5px] font-medium text-white">Prototype</p>
+            <p className="mt-0.5 text-[11.5px] leading-snug text-[#9C969E]">Demonstration data. Changes are saved in this browser.</p>
+            <div className="mt-2.5 flex flex-col gap-1.5">
+              <Link href="/portal" className="inline-flex items-center gap-1.5 text-[11.5px] text-[#E3C9D0] hover:text-white" onClick={onNavigate}>
+                <ExternalLink className="size-3" /> View client portal
+              </Link>
+              <Link href="/prototype" className="inline-flex items-center gap-1.5 text-[11.5px] text-[#E3C9D0] hover:text-white" onClick={onNavigate}>
+                <ExternalLink className="size-3" /> Prototype guide
+              </Link>
+              <button onClick={resetDemo} className="inline-flex items-center gap-1.5 text-left text-[11.5px] text-[#9C969E] hover:text-white">
+                <RotateCcw className="size-3" /> Reset demo data
+              </button>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="mx-2 mt-6 rounded-lg border border-white/[0.08] bg-white/[0.03] p-3">
+            <p className="text-[11.5px] font-medium text-white">Beta</p>
+            {clientCount === 0 ? (
+              <>
+                <p className="mt-0.5 text-[11.5px] leading-snug text-[#9C969E]">Your practice is empty. Add your first client, or explore with sample data.</p>
+                <button
+                  disabled={loadingSample}
+                  onClick={async () => {
+                    setLoadingSample(true);
+                    try {
+                      await loadSampleData();
+                      toast("Sample data added", "12 example clients with charts, consultations and readings.", "success");
+                    } catch {
+                      toast("Couldn’t add sample data", "Please try again.", "error");
+                    } finally {
+                      setLoadingSample(false);
+                    }
+                  }}
+                  className="mt-2.5 inline-flex items-center gap-1.5 text-left text-[11.5px] text-[#E3C9D0] hover:text-white disabled:opacity-60"
+                >
+                  <Database className="size-3" /> {loadingSample ? "Adding sample data…" : "Load sample data"}
+                </button>
+              </>
+            ) : (
+              <p className="mt-0.5 text-[11.5px] leading-snug text-[#9C969E]">Chart positions are still from the demonstration engine.</p>
+            )}
+            <Link href="/portal" className="mt-1.5 inline-flex items-center gap-1.5 text-[11.5px] text-[#E3C9D0] hover:text-white" onClick={onNavigate}>
+              <ExternalLink className="size-3" /> Preview a client’s portal
+            </Link>
+          </div>
+        )}
       </nav>
       <Link href="/app/settings" onClick={onNavigate} className="flex items-center gap-3 border-t border-white/[0.07] px-5 py-3.5 hover:bg-white/[0.04]">
         <Avatar name={p.name} size="sm" className="bg-[#4A3A40] text-[#EBD7DC]" />

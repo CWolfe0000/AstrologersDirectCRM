@@ -208,6 +208,8 @@ export interface Practitioner {
 
 export interface PortalNotification {
   id: string;
+  /** The client this notification is for. */
+  clientId?: string;
   title: string;
   body: string;
   at: string;

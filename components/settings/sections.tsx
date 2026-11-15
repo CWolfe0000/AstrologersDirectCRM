@@ -1,11 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { Camera, Monitor, Smartphone, ShieldCheck, Download, Upload, Trash2, RotateCcw, Check, Palette } from "lucide-react";
+import { Camera, Monitor, Smartphone, ShieldCheck, Download, Upload, Trash2, RotateCcw, Check, Palette, Database } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { ASPECTS, BODIES, HOUSE_SYSTEMS, PLANET_IDS, ZODIACS, type AspectId, type BodyId, type HouseSystem, type ZodiacType } from "@/lib/astro";
-import { cn } from "@/lib/utils";
+import { cn, DATA_MODE } from "@/lib/utils";
+import { api } from "@/lib/api";
+import { bootstrap, loadSampleData } from "@/lib/sync";
 import { Card, CardHeader, CardBody, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select, Textarea, Checkbox } from "@/components/ui/input";
@@ -257,7 +259,21 @@ export function SecuritySection() {
           <Field label="Confirm new password"><Input type="password" value={pw.confirm} onChange={(e) => setPw({ ...pw, confirm: e.target.value })} /></Field>
         </CardBody>
         <CardFooter>
-          <Button disabled={!ok} onClick={() => { setPw({ cur: "", next: "", confirm: "" }); toast("Password updated (simulated)", undefined, "success"); }}>Update password</Button>
+          <Button
+            disabled={!ok}
+            onClick={async () => {
+              if (DATA_MODE === "demo") { setPw({ cur: "", next: "", confirm: "" }); toast("Password updated (simulated)", undefined, "success"); return; }
+              try {
+                await api("/api/auth/change-password", { body: { current: pw.cur, next: pw.next } });
+                setPw({ cur: "", next: "", confirm: "" });
+                toast("Password updated", "You’ve been signed out on your other devices.", "success");
+              } catch (e) {
+                toast("Password not changed", (e as Error).message, "error");
+              }
+            }}
+          >
+            Update password
+          </Button>
         </CardFooter>
       </Card>
       <Card>
@@ -357,12 +373,13 @@ export function DataSection() {
   const router = useRouter();
   const s = useStore();
   const [del, setDel] = React.useState(false);
+  const [clear, setClear] = React.useState(false);
   const [confirm, setConfirm] = React.useState("");
   const [privacy, setPrivacy] = React.useState({ anonymised: false, retention: "indefinite" });
 
   const exportAll = () => {
-    const { toasts, ...rest } = useStore.getState();
-    void toasts;
+    const { toasts, session, sync, portalClientId, ...rest } = useStore.getState();
+    void toasts; void session; void sync; void portalClientId;
     const data = Object.fromEntries(Object.entries(rest).filter(([, v]) => typeof v !== "function"));
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
@@ -401,13 +418,58 @@ export function DataSection() {
           </Row>
         </CardBody>
       </Card>
-      <Card>
-        <CardHeader title="Prototype data" description="Restore the original demonstration dataset." />
-        <CardBody className="flex items-center justify-between gap-4">
-          <p className="text-[13px] text-muted">Removes clients, charts, observations and deliveries you created while exploring.</p>
-          <Button variant="secondary" size="sm" onClick={s.resetDemo}><RotateCcw /> Reset demo data</Button>
-        </CardBody>
-      </Card>
+      {DATA_MODE === "demo" ? (
+        <Card>
+          <CardHeader title="Prototype data" description="Restore the original demonstration dataset." />
+          <CardBody className="flex items-center justify-between gap-4">
+            <p className="text-[13px] text-muted">Removes clients, charts, observations and deliveries you created while exploring.</p>
+            <Button variant="secondary" size="sm" onClick={s.resetDemo}><RotateCcw /> Reset demo data</Button>
+          </CardBody>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader title="Sample data" description="Explore with example clients, or start again with an empty practice." />
+          <CardBody className="divide-y divide-line py-1">
+            <Row title="Add sample data" desc="12 example clients with charts, consultations, observations and readings, dated around today.">
+              <Button variant="secondary" size="sm" onClick={async () => { try { await loadSampleData(); s.toast("Sample data added", undefined, "success"); } catch (e) { s.toast("Couldn’t add sample data", (e as Error).message, "error"); } }}><Database /> Add sample data</Button>
+            </Row>
+            <Row title="Delete all client records" desc="Removes every client, chart, observation, consultation, task and delivery, and all client portal logins. Your account stays.">
+              <Button variant="secondary" size="sm" onClick={() => setClear(true)}><Trash2 /> Delete records</Button>
+            </Row>
+          </CardBody>
+        </Card>
+      )}
+      <Dialog open={clear} onOpenChange={(o) => { setClear(o); setConfirm(""); }}>
+        <DialogContent
+          title="Delete all client records?"
+          description="This permanently removes every client record in your practice. Your account and settings stay."
+          size="sm"
+          footer={
+            <>
+              <Button variant="secondary" onClick={() => setClear(false)}>Cancel</Button>
+              <Button
+                variant="danger"
+                disabled={confirm !== "DELETE"}
+                onClick={async () => {
+                  try {
+                    await api("/api/v1/practice", { method: "DELETE", body: { confirm: "DELETE" } });
+                    setClear(false);
+                    useStore.setState({ session: { status: "idle" } });
+                    await bootstrap("app");
+                    s.toast("All client records deleted", undefined, "success");
+                  } catch (e) {
+                    s.toast("Nothing was deleted", (e as Error).message, "error");
+                  }
+                }}
+              >
+                Delete permanently
+              </Button>
+            </>
+          }
+        >
+          <Field label={<>Type <span className="font-mono">DELETE</span> to confirm</>}><Input value={confirm} onChange={(e) => setConfirm(e.target.value)} /></Field>
+        </DialogContent>
+      </Dialog>
       <Card className="border-danger/30">
         <CardHeader title={<span className="text-danger">Delete account</span>} description="Permanently delete your practice and all client records." />
         <CardBody className="flex items-center justify-between gap-4">
@@ -423,12 +485,26 @@ export function DataSection() {
           footer={
             <>
               <Button variant="secondary" onClick={() => setDel(false)}>Cancel</Button>
-              <Button variant="danger" disabled={confirm !== "DELETE"} onClick={() => { setDel(false); s.toast("Account deletion simulated", "Nothing was deleted in the prototype."); }}>Delete permanently</Button>
+              <Button
+                variant="danger"
+                disabled={confirm !== "DELETE"}
+                onClick={async () => {
+                  if (DATA_MODE === "demo") { setDel(false); s.toast("Account deletion simulated", "Nothing was deleted in the prototype."); return; }
+                  try {
+                    await api("/api/v1/account", { method: "DELETE", body: { confirm: "DELETE" } });
+                    window.location.href = "/";
+                  } catch (e) {
+                    s.toast("Account not deleted", (e as Error).message, "error");
+                  }
+                }}
+              >
+                Delete permanently
+              </Button>
             </>
           }
         >
           <Field label={<>Type <span className="font-mono">DELETE</span> to confirm</>}><Input value={confirm} onChange={(e) => setConfirm(e.target.value)} /></Field>
-          <SimulatedNote className="mt-4">Simulated — no data is deleted.</SimulatedNote>
+          {DATA_MODE === "demo" && <SimulatedNote className="mt-4">Simulated — no data is deleted.</SimulatedNote>}
         </DialogContent>
       </Dialog>
     </div>

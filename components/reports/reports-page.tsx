@@ -13,6 +13,7 @@ import { Segmented } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BASE_CLIENTS, CONSULT_TYPES, demoSeries } from "./demo-series";
+import { TODAY, daysFromToday } from "@/lib/utils";
 
 type Range = "30d" | "90d" | "12m" | "all";
 const RANGE_MONTHS: Record<Range, number> = { "30d": 1, "90d": 3, "12m": 12, all: 24 };
@@ -54,8 +55,8 @@ export function ReportsPage() {
 
   // live outstanding work from the prototype store
   const open = tasks.filter((t) => t.status !== "done");
-  const overdue = open.filter((t) => t.due < "2026-11-14");
-  const upcoming7 = consultations.filter((k) => k.status === "scheduled" && k.start >= "2026-11-14" && k.start < "2026-11-21");
+  const overdue = open.filter((t) => t.due < TODAY);
+  const upcoming7 = consultations.filter((k) => k.status === "scheduled" && k.start >= TODAY && k.start < daysFromToday(7));
   const outstanding = [
     { name: "Overdue tasks", value: overdue.length, color: C.accent, href: "/app/tasks?view=overdue" },
     { name: "Open tasks", value: open.length - overdue.length, color: C.stone, href: "/app/tasks" },

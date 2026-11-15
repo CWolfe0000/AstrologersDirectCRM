@@ -13,6 +13,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { GlobalSearch } from "./global-search";
 import { QUICK_CREATE } from "./quick-create";
 import { NotificationIcon } from "./notification-icon";
+import { SaveStatus } from "./server-gate";
+import { signOut } from "@/lib/sync";
+import { DATA_MODE } from "@/lib/utils";
 
 export function Topbar({ onMenu }: { onMenu: () => void }) {
   const router = useRouter();
@@ -45,6 +48,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
       />
 
       <div className="ml-auto flex items-center gap-1 md:gap-1.5">
+        <SaveStatus />
         <Dropdown>
           <DropdownTrigger asChild>
             <Button size="sm" className="px-2.5 sm:px-3" aria-label="Create">
@@ -134,7 +138,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
             <DropdownItem onSelect={() => router.push("/app/settings")}><Settings /> Settings</DropdownItem>
             <DropdownItem onSelect={() => router.push("/portal")}><ExternalLink /> Preview client portal</DropdownItem>
             <DropdownSeparator />
-            <DropdownItem onSelect={() => router.push("/auth/login")}><LogOut /> Sign out</DropdownItem>
+            <DropdownItem onSelect={() => (DATA_MODE === "demo" ? router.push("/auth/login") : void signOut())}><LogOut /> Sign out</DropdownItem>
           </DropdownContent>
         </Dropdown>
       </div>

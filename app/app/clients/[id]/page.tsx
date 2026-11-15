@@ -2,8 +2,11 @@
 
 import * as React from "react";
 import { useParams, useRouter, useSearchParams, usePathname } from "next/navigation";
-import { Pencil, CalendarPlus, CircleDot, NotebookPen, Mail, Phone, Cake, Clock, MapPin, AlertTriangle, MoreHorizontal, Archive, ArchiveRestore, Mic, Send, KeyRound, ListPlus } from "lucide-react";
+import { Pencil, CalendarPlus, CircleDot, NotebookPen, Mail, Phone, Cake, Clock, MapPin, AlertTriangle, MoreHorizontal, Archive, ArchiveRestore, Mic, Send, KeyRound, ListPlus, Eye } from "lucide-react";
 import { useStore, personName } from "@/lib/store";
+import { DATA_MODE } from "@/lib/utils";
+import { api } from "@/lib/api";
+import { flushNow } from "@/lib/sync";
 import { cn, fmtDate, fmtClock } from "@/lib/utils";
 import { PageHeader, EmptyState, Breadcrumbs } from "@/components/ui/misc";
 import { Button, ButtonLink } from "@/components/ui/button";
@@ -122,9 +125,26 @@ function Profile() {
                 <DropdownItem onSelect={() => router.push(`/app/studio?client=${id}`)}><Mic /> Record a reading</DropdownItem>
                 <DropdownItem onSelect={() => router.push(`/app/delivery?new=1&client=${id}`)}><Send /> Deliver a reading</DropdownItem>
                 <DropdownItem onSelect={() => router.push(`/app/tasks?new=1&client=${id}`)}><ListPlus /> New task</DropdownItem>
+                <DropdownItem onSelect={() => router.push(`/portal?as=${id}`)}><Eye /> Preview their portal</DropdownItem>
                 {client.portalAccess !== "active" && (
-                  <DropdownItem onSelect={() => { s.updateClient(id, { portalAccess: "invited" }); s.toast("Portal invitation sent", `${name} will receive an email invitation (simulated).`, "success"); }}>
-                    <KeyRound /> Send portal invitation
+                  <DropdownItem
+                    onSelect={async () => {
+                      if (DATA_MODE === "demo") {
+                        s.updateClient(id, { portalAccess: "invited" });
+                        s.toast("Portal invitation sent", `${name} will receive an email invitation (simulated).`, "success");
+                        return;
+                      }
+                      try {
+                        await flushNow();
+                        await api("/api/v1/portal/invite", { body: { clientId: id } });
+                        useStore.setState((st) => ({ clients: st.clients.map((c) => (c.id === id ? { ...c, portalAccess: "invited" } : c)) }));
+                        s.toast("Portal invitation sent", `${name} will receive an email with a link to set their password.`, "success");
+                      } catch (e) {
+                        s.toast("Invitation not sent", (e as Error).message, "error");
+                      }
+                    }}
+                  >
+                    <KeyRound /> {client.portalAccess === "invited" ? "Resend portal invitation" : "Send portal invitation"}
                   </DropdownItem>
                 )}
                 <DropdownSeparator />

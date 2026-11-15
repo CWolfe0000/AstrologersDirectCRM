@@ -6,7 +6,7 @@ import { ArrowRight, Info } from "lucide-react";
 import { CHART_TYPES, HOUSE_SYSTEMS, ZODIACS, chartTypeMeta, type HouseSystem, type ZodiacType } from "@/lib/astro";
 import type { ChartRecord, ChartType } from "@/lib/data/types";
 import { useStore, personName } from "@/lib/store";
-import { cn, fmtClock, fmtDate, monthName } from "@/lib/utils";
+import { cn, fmtClock, fmtDate, monthName, TODAY } from "@/lib/utils";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Field, Input, Select } from "@/components/ui/input";
@@ -35,7 +35,7 @@ function NewChart() {
   const [clientId, setClientId] = React.useState(params.get("client") ?? "c1");
   const [personA, setPersonA] = React.useState(params.get("client") ?? "c1");
   const [personB, setPersonB] = React.useState(params.get("with") ?? "");
-  const [refDate, setRefDate] = React.useState("2026-11-14");
+  const [refDate, setRefDate] = React.useState(TODAY);
   const [houseSystem, setHouseSystem] = React.useState<HouseSystem>(defaults.houseSystem);
   const [zodiac, setZodiac] = React.useState<ZodiacType>(defaults.zodiac);
   const [title, setTitle] = React.useState("");

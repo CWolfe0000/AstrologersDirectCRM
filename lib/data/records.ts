@@ -244,7 +244,7 @@ export const activity: Activity[] = [
 
 // ——— Client-portal notifications (for the demo client, Amelia Hart) —————
 export const portalNotifications: PortalNotification[] = [
-  { id: "pn1", title: "Upcoming consultation today", body: "Transit Review with Celeste Morrow at 10:00 AM.", at: "2026-11-14T08:00:00", read: false, href: "/portal/consultations" },
-  { id: "pn2", title: "Session scheduled", body: "Relationship Synastry on Wednesday, December 9 at 10:00 AM.", at: "2026-11-10T12:00:00", read: false, href: "/portal/consultations" },
-  { id: "pn3", title: "New reading available", body: "“Autumn 2026 Transit Review” is ready to watch.", at: "2026-10-09T11:00:00", read: true, href: "/portal/readings/r3" },
+  { id: "pn1", clientId: "c1", title: "Upcoming consultation today", body: "Transit Review with Celeste Morrow at 10:00 AM.", at: "2026-11-14T08:00:00", read: false, href: "/portal/consultations" },
+  { id: "pn2", clientId: "c1", title: "Session scheduled", body: "Relationship Synastry on Wednesday, December 9 at 10:00 AM.", at: "2026-11-10T12:00:00", read: false, href: "/portal/consultations" },
+  { id: "pn3", clientId: "c1", title: "New reading available", body: "“Autumn 2026 Transit Review” is ready to watch.", at: "2026-10-09T11:00:00", read: true, href: "/portal/readings/r3" },
 ];

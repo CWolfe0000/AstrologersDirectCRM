@@ -8,13 +8,14 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SimulatedBadge } from "@/components/ui/misc";
-import { PORTAL_CLIENT_ID } from "@/components/portal/portal-shell";
+import { usePortalClientId } from "@/components/portal/portal-shell";
 import { useMyConsultations, useMyReadings, useSharedFiles, PORTAL_NOW } from "@/components/portal/portal-data";
 import { ReadingCard } from "@/components/portal/reading-card";
 
 const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin } as const;
 
 export default function PortalHome() {
+  const PORTAL_CLIENT_ID = usePortalClientId();
   const me = useStore((s) => s.people.find((p) => p.id === PORTAL_CLIENT_ID));
   const pr = useStore((s) => s.practitioner);
   const notes = useStore((s) => s.portalNotifications);

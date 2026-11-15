@@ -1,5 +1,8 @@
 "use client";
 
+import { ServerInvite } from "@/components/auth/server-forms";
+import { DATA_MODE } from "@/lib/utils";
+
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Lock, BookOpen, CalendarDays } from "lucide-react";
@@ -9,7 +12,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { useStore } from "@/lib/store";
 import { AuthHeading } from "@/components/marketing/auth-ui";
 
-export default function InvitePage() {
+function DemoInvitePage() {
   const router = useRouter();
   const pr = useStore((s) => s.practitioner);
   const [loading, setLoading] = React.useState(false);
@@ -51,4 +54,8 @@ export default function InvitePage() {
       <p className="mt-6 text-center text-[12px] text-muted">Your astrologer’s private notes are never visible in the portal.</p>
     </>
   );
+}
+
+export default function InvitePage() {
+  return DATA_MODE === "demo" ? <DemoInvitePage /> : <ServerInvite />;
 }

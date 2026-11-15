@@ -39,7 +39,7 @@ const result = await build({
   format: "iife",
   target: "es2020",
   jsx: "automatic",
-  define: { "process.env.NODE_ENV": '"production"' },
+  define: { "process.env.NODE_ENV": '"production"', "process.env.NEXT_PUBLIC_DATA_MODE": '"demo"' },
   alias: { "next/link": path.join(root, "standalone/shims/link.tsx"), "next/navigation": path.join(root, "standalone/shims/navigation.ts") },
   loader: { ".css": "empty" },
   plugins: [rewriteAssets],

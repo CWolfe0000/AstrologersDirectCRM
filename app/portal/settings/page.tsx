@@ -9,7 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { SimulatedBadge } from "@/components/ui/misc";
-import { PORTAL_CLIENT_ID } from "@/components/portal/portal-shell";
+import { usePortalClientId } from "@/components/portal/portal-shell";
+import { DATA_MODE } from "@/lib/utils";
+import { api } from "@/lib/api";
 
 function Toggle({ label, desc, defaultChecked }: { label: string; desc: string; defaultChecked?: boolean }) {
   const [on, setOn] = React.useState(!!defaultChecked);
@@ -25,6 +27,7 @@ function Toggle({ label, desc, defaultChecked }: { label: string; desc: string; 
 }
 
 export default function PortalSettings() {
+  const PORTAL_CLIENT_ID = usePortalClientId();
   const me = useStore((s) => s.people.find((p) => p.id === PORTAL_CLIENT_ID));
   const client = useStore((s) => s.clients.find((c) => c.id === PORTAL_CLIENT_ID));
   const pr = useStore((s) => s.practitioner);
@@ -62,7 +65,7 @@ export default function PortalSettings() {
               <Field label="First name" htmlFor="pf"><Input id="pf" value={first} onChange={(e) => setFirst(e.target.value)} className="h-11 sm:h-9" /></Field>
               <Field label="Last name" htmlFor="pl"><Input id="pl" value={last} onChange={(e) => setLast(e.target.value)} className="h-11 sm:h-9" /></Field>
             </div>
-            <Field label="Email" htmlFor="pe" hint="Used to sign in and to receive notifications."><Input id="pe" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="h-11 sm:h-9" /></Field>
+            <Field label="Email" htmlFor="pe" hint={DATA_MODE === "demo" ? "Used to sign in and to receive notifications." : `Used to sign in. To change it, ask ${pr.firstName || "your astrologer"}.`}><Input id="pe" type="email" value={email} readOnly={DATA_MODE !== "demo"} onChange={(e) => setEmail(e.target.value)} className={DATA_MODE === "demo" ? "h-11 sm:h-9" : "h-11 bg-canvas-2 text-muted sm:h-9"} /></Field>
             <p className="text-[12.5px] text-muted">Birth details are managed by your astrologer. To correct them, send {pr.firstName} a message.</p>
             <div className="flex justify-end"><Button type="submit">Save changes</Button></div>
           </form>
@@ -73,13 +76,26 @@ export default function PortalSettings() {
         <CardHeader title="Password" />
         <CardBody>
           <form
-            onSubmit={(e) => { e.preventDefault(); (e.target as HTMLFormElement).reset(); toast("Password updated", "Simulated — no real credentials are stored.", "success"); }}
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const form = e.target as HTMLFormElement;
+              if (DATA_MODE === "demo") { form.reset(); toast("Password updated", "Simulated — no real credentials are stored.", "success"); return; }
+              const fd = new FormData(form);
+              if (fd.get("np") !== fd.get("np2")) { toast("Passwords don’t match", "Type the new password the same way twice.", "error"); return; }
+              try {
+                await api("/api/auth/change-password", { body: { current: fd.get("cp"), next: fd.get("np") } });
+                form.reset();
+                toast("Password updated", "You’ve been signed out on your other devices.", "success");
+              } catch (err) {
+                toast("Password not changed", (err as Error).message, "error");
+              }
+            }}
             className="space-y-4"
           >
-            <Field label="Current password" htmlFor="cp"><Input id="cp" type="password" required className="h-11 sm:h-9" autoComplete="current-password" /></Field>
+            <Field label="Current password" htmlFor="cp"><Input id="cp" name="cp" type="password" required className="h-11 sm:h-9" autoComplete="current-password" /></Field>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="New password" htmlFor="np" hint="At least 12 characters."><Input id="np" type="password" minLength={12} required className="h-11 sm:h-9" autoComplete="new-password" /></Field>
-              <Field label="Confirm new password" htmlFor="np2"><Input id="np2" type="password" minLength={12} required className="h-11 sm:h-9" autoComplete="new-password" /></Field>
+              <Field label="New password" htmlFor="np" hint="At least 10 characters."><Input id="np" name="np" type="password" minLength={10} required className="h-11 sm:h-9" autoComplete="new-password" /></Field>
+              <Field label="Confirm new password" htmlFor="np2"><Input id="np2" name="np2" type="password" minLength={10} required className="h-11 sm:h-9" autoComplete="new-password" /></Field>
             </div>
             <div className="flex justify-end"><Button type="submit" variant="secondary">Update password</Button></div>
           </form>

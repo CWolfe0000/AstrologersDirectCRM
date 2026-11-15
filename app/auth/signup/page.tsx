@@ -1,5 +1,8 @@
 "use client";
 
+import { ServerSignup } from "@/components/auth/server-forms";
+import { DATA_MODE } from "@/lib/utils";
+
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -74,10 +77,14 @@ function SignupForm() {
   );
 }
 
-export default function SignupPage() {
+function DemoSignupPage() {
   return (
     <React.Suspense>
       <SignupForm />
     </React.Suspense>
   );
+}
+
+export default function SignupPage() {
+  return DATA_MODE === "demo" ? <DemoSignupPage /> : <ServerSignup />;
 }

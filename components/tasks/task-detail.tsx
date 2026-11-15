@@ -10,10 +10,10 @@ import { StatusBadge, Badge } from "@/components/ui/badge";
 import { SectionTitle } from "@/components/ui/misc";
 import { ChartTypeBadge } from "@/components/chart/chart-helpers";
 import type { Task, TaskPriority, TaskStatus } from "@/lib/data/types";
-import { cn, fmtDate, fmtTime, uid } from "@/lib/utils";
+import { cn, fmtDate, fmtTime, uid, TODAY } from "@/lib/utils";
 
 export function isOverdue(t: Task) {
-  return t.status !== "done" && t.due < "2026-11-14";
+  return t.status !== "done" && t.due < TODAY;
 }
 
 export function TaskDetail({ id, onDeleted }: { id: string; onDeleted?: () => void }) {

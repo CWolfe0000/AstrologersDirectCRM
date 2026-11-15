@@ -5,8 +5,45 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** The prototype's fixed "today". All demonstration data is anchored to this date. */
-export const DEMO_TODAY = new Date("2026-11-14T09:00:00");
+/**
+ * "demo": seeded data stored in the browser (the clickable prototype).
+ * "server": real accounts and the database.
+ */
+export const DATA_MODE: "demo" | "server" = process.env.NEXT_PUBLIC_DATA_MODE === "demo" ? "demo" : "server";
+
+/** Date the seeded demonstration data is anchored to. */
+export const SEED_DATE = "2026-11-14";
+
+/**
+ * "Today" for the interface. In demo mode it is fixed to the seed date so the
+ * demonstration always looks the same; with real data it is the actual date.
+ */
+export const DEMO_TODAY = DATA_MODE === "demo" ? new Date(SEED_DATE + "T09:00:00") : new Date();
+
+function pad2(n: number) {
+  return n.toString().padStart(2, "0");
+}
+/** Local calendar date of a Date as YYYY-MM-DD. */
+export function isoDate(d: Date) {
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+/** Local timestamp YYYY-MM-DDTHH:mm:ss (no zone), matching the stored record format. */
+export function isoLocal(d: Date) {
+  return `${isoDate(d)}T${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+}
+const LOADED_AT = Date.now();
+/** Current moment as a local timestamp. In demo mode the clock starts at the seed date and runs in real time. */
+export function nowLocal() {
+  return isoLocal(new Date(DEMO_TODAY.getTime() + (Date.now() - LOADED_AT)));
+}
+/** Today's date (YYYY-MM-DD) in the interface's sense of "today". */
+export const TODAY = isoDate(DEMO_TODAY);
+/** Date `n` days from today, YYYY-MM-DD. */
+export function daysFromToday(n: number) {
+  const d = new Date(DEMO_TODAY);
+  d.setDate(d.getDate() + n);
+  return isoDate(d);
+}
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const MONTHS_LONG = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];

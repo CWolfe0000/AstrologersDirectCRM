@@ -11,13 +11,13 @@ import { SearchInput, Select, Checkbox } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Sheet } from "@/components/ui/dialog";
 import type { Task } from "@/lib/data/types";
-import { cn, relDay } from "@/lib/utils";
+import { cn, relDay, TODAY } from "@/lib/utils";
 import { NewTaskDialog } from "./new-task-dialog";
 import { TaskDetail, isOverdue } from "./task-detail";
 import { useMedia } from "@/components/consultations/use-media";
 
 type View = "all" | "today" | "upcoming" | "overdue" | "completed";
-const TODAY = "2026-11-14";
+
 
 const VIEWS: { id: View; label: string; icon: React.ElementType; test: (t: Task) => boolean }[] = [
   { id: "all", label: "All tasks", icon: Inbox, test: (t) => t.status !== "done" },

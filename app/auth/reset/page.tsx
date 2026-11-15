@@ -1,5 +1,8 @@
 "use client";
 
+import { ServerReset } from "@/components/auth/server-forms";
+import { DATA_MODE } from "@/lib/utils";
+
 import * as React from "react";
 import Link from "next/link";
 import { ArrowLeft, Loader2, Send } from "lucide-react";
@@ -7,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/input";
 import { AuthHeading } from "@/components/marketing/auth-ui";
 
-export default function ResetPage() {
+function DemoResetPage() {
   const [stage, setStage] = React.useState<"form" | "loading" | "sent" | "new" | "done">("form");
   const [email, setEmail] = React.useState("");
 
@@ -82,4 +85,8 @@ export default function ResetPage() {
       </form>
     </>
   );
+}
+
+export default function ResetPage() {
+  return DATA_MODE === "demo" ? <DemoResetPage /> : <ServerReset />;
 }

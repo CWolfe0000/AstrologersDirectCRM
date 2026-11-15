@@ -1,5 +1,8 @@
 "use client";
 
+import { ServerLogin } from "@/components/auth/server-forms";
+import { DATA_MODE } from "@/lib/utils";
+
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Checkbox } from "@/components/ui/input";
 import { AuthHeading, GoogleMark, OrDivider } from "@/components/marketing/auth-ui";
 
-export default function LoginPage() {
+function DemoLoginPage() {
   const router = useRouter();
   const [loading, setLoading] = React.useState(false);
   const submit = (e: React.FormEvent) => {
@@ -63,4 +66,8 @@ export default function LoginPage() {
       </div>
     </>
   );
+}
+
+export default function LoginPage() {
+  return DATA_MODE === "demo" ? <DemoLoginPage /> : <ServerLogin />;
 }

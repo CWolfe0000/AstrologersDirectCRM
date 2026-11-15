@@ -5,15 +5,16 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Download, ExternalLink, CalendarDays, Lock, Paperclip } from "lucide-react";
 import { useStore } from "@/lib/store";
-import { fmtDate, fmtTime } from "@/lib/utils";
+import { fmtDate, fmtTime, nowLocal } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { EmptyState, FileKindIcon, KIND_LABEL, SimulatedBadge } from "@/components/ui/misc";
-import { PORTAL_CLIENT_ID } from "@/components/portal/portal-shell";
+import { usePortalClientId } from "@/components/portal/portal-shell";
 import { readingMeta, useSimulatedDownload } from "@/components/portal/reading-card";
 import { AudioPlayer, DocumentViewer, VideoPlayer } from "@/components/portal/media";
 
 export default function ReadingDetail() {
+  const PORTAL_CLIENT_ID = usePortalClientId();
   const { id } = useParams<{ id: string }>();
   const reading = useStore((s) => s.readings.find((r) => r.id === id));
   const consultation = useStore((s) => s.consultations.find((k) => k.id === reading?.consultationId));
@@ -26,7 +27,7 @@ export default function ReadingDetail() {
   // Record the client's first view (the practitioner sees "Opened" in Reading Delivery).
   React.useEffect(() => {
     if (!visible || reading.openedAt) return;
-    const at = "2026-11-14T" + new Date().toTimeString().slice(0, 8);
+    const at = nowLocal();
     useStore.setState((s) => ({ readings: s.readings.map((r) => (r.id === reading.id ? { ...r, notification: "opened", openedAt: at } : r)) }));
   }, [visible, reading]);
 
