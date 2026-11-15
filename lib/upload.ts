@@ -52,6 +52,6 @@ export function uploadFile(file: File, onProgress: (pct: number) => void, signal
 }
 
 /** URL that streams (or downloads) a stored reading or client file. */
-export function mediaUrl(kind: "readings" | "files", id: string, download = false) {
+export function mediaUrl(kind: "readings" | "files" | "recordings", id: string, download = false) {
   return `/api/v1/media/${kind}/${encodeURIComponent(id)}${download ? "?download=1" : ""}`;
 }

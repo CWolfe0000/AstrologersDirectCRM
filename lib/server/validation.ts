@@ -184,6 +184,8 @@ const recording = z
     createdAt: iso,
     status: z.enum(["saved", "delivered"]),
     readingId: opt(id),
+    fileKey: opt(str(300)),
+    contentType: opt(str(120)),
   })
   .strict();
 

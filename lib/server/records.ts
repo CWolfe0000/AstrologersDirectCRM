@@ -116,3 +116,16 @@ export async function putSettings(practiceId: string, practitioner: unknown, def
     .values({ practiceId, practitioner, defaults })
     .onConflictDoUpdate({ target: schema.practiceSettings.practiceId, set: { practitioner, defaults, updatedAt: sql`now()` } });
 }
+
+/** Is a stored file still referenced by any reading, file or recording (other than the one given)? */
+export async function isFileReferenced(practiceId: string, key: string, except?: { collection: Collection; id: string }) {
+  for (const c of ["readings", "files", "recordings"] as const) {
+    const t = RECORD_TABLES[c];
+    const rows = await db()
+      .select({ id: t.id })
+      .from(t)
+      .where(and(eq(t.practiceId, practiceId), sql`${t.data}->>'fileKey' = ${key}`));
+    if (rows.some((r) => !(except && except.collection === c && except.id === r.id))) return true;
+  }
+  return false;
+}

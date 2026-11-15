@@ -160,6 +160,9 @@ export interface Recording {
   createdAt: string;
   status: "saved" | "delivered";
   readingId?: string;
+  /** Stored recording (server mode, real devices). */
+  fileKey?: string;
+  contentType?: string;
 }
 
 export interface ClientFile {

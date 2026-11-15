@@ -19,7 +19,8 @@ import { ChartWheel } from "@/components/chart/chart-wheel";
 import { ChartThumb, ChartTypeBadge, EngineNotice, useChartView } from "@/components/chart/chart-helpers";
 import { BODIES, SIGNS, fmtDeg, ordinal, ASPECTS } from "@/lib/astro";
 import type { RecordingMode } from "@/lib/data/types";
-import { cn, fmtDate, fmtDuration } from "@/lib/utils";
+import { cn, fmtDate, fmtDuration, DATA_MODE } from "@/lib/utils";
+import { uploadFile, type UploadResult } from "@/lib/upload";
 import { MicMeter, useMicLevel } from "./mic-meter";
 import { SimPlayer } from "./sim-player";
 
@@ -83,6 +84,9 @@ export function StudioPage() {
   const [deliveredReadingId, setDeliveredReadingId] = React.useState<string | null>(null);
   const recorder = React.useRef<MediaRecorder | null>(null);
   const chunks = React.useRef<Blob[]>([]);
+  const blobRef = React.useRef<Blob | null>(null);
+  const stored = React.useRef<UploadResult | null>(null);
+  const [uploadPct, setUploadPct] = React.useState<number | null>(null);
 
   const m = MODES.find((x) => x.id === mode)!;
   const person = people.find((p) => p.id === clientId);
@@ -162,6 +166,8 @@ export function StudioPage() {
         rec.onstop = () => {
           const type = m.screen || m.cam ? "video/webm" : "audio/webm";
           const b = new Blob(chunks.current, { type });
+          blobRef.current = b;
+          stored.current = null;
           setBlob({ url: URL.createObjectURL(b), type, size: b.size });
         };
         rec.start(500);
@@ -186,24 +192,49 @@ export function StudioPage() {
     if (savedId) deleteRecording(savedId);
     if (blob) URL.revokeObjectURL(blob.url);
     setBlob(null);
+    blobRef.current = null;
+    stored.current = null;
     setSavedId(null);
     setElapsed(0);
     setPhase("setup");
     toast("Recording discarded");
   };
-  const save = () => {
+  /** Server mode with a real recording: upload it once, reuse the stored key. */
+  const ensureUploaded = async () => {
+    if (DATA_MODE === "demo" || !blobRef.current) return null;
+    if (stored.current) return stored.current;
+    const ext = blobRef.current.type.startsWith("video") ? "webm" : "webm";
+    const file = new File([blobRef.current], `${(title.trim() || "Recording").replace(/[^\w]+/g, "_")}.${ext}`, { type: blobRef.current.type });
+    setUploadPct(0);
+    try {
+      stored.current = await uploadFile(file, setUploadPct);
+      return stored.current;
+    } finally {
+      setUploadPct(null);
+    }
+  };
+  const save = async () => {
     if (savedId) {
       updateRecording(savedId, { title });
       toast("Recording updated", title, "success");
       return savedId;
     }
-    const r = addRecording({ clientId, chartId: chartId || undefined, title: title.trim() || "Untitled recording", mode, durationSec: elapsed, status: "saved" });
+    let up: UploadResult | null = null;
+    try {
+      up = await ensureUploaded();
+    } catch (e) {
+      toast("Upload failed", (e as Error).message, "error");
+      return null;
+    }
+    const r = addRecording({ clientId, chartId: chartId || undefined, title: title.trim() || "Untitled recording", mode, durationSec: elapsed, status: "saved", fileKey: up?.key, contentType: up?.contentType });
     setSavedId(r.id);
     toast("Saved to client record", `${title} · ${personName(person)}`, "success");
     return r.id;
   };
-  const deliver = () => {
-    const recId = save();
+  const deliver = async () => {
+    const recId = await save();
+    if (!recId) return;
+    const up = stored.current;
     const isVideo = mode !== "audio";
     const reading = addReading({
       clientId,
@@ -211,6 +242,8 @@ export function StudioPage() {
       title: title.trim() || "Recorded reading",
       kind: isVideo ? "video" : "audio",
       fileName: `${title.replace(/[^\w]+/g, "_")}.${blob ? "webm" : isVideo ? "mp4" : "m4a"}`,
+      fileKey: up?.key,
+      contentType: up?.contentType,
       sizeMB: blob ? Math.round((blob.size / 1048576) * 10) / 10 : Math.round(elapsed * (isVideo ? 0.12 : 0.012) * 10) / 10 || 0.1,
       durationSec: elapsed,
       message,
@@ -228,6 +261,8 @@ export function StudioPage() {
     setPhase("setup");
     setElapsed(0);
     setBlob(null);
+    blobRef.current = null;
+    stored.current = null;
     setSavedId(null);
     setDeliveredReadingId(null);
     setTitleTouched(false);
@@ -423,7 +458,7 @@ export function StudioPage() {
                   <Switch checked={useReal} onCheckedChange={setUseReal} disabled={locked} />
                   <span>Use real devices <span className="text-muted">(beta — asks for camera, mic & screen permission)</span></span>
                 </label>
-                <span className="text-[11.5px] text-muted">{useReal ? "Recorded in your browser; nothing is uploaded." : "Simulated: no devices are accessed."}</span>
+                <span className="text-[11.5px] text-muted">{useReal ? (DATA_MODE === "demo" ? "Recorded in your browser; nothing is uploaded." : "Recorded in your browser, then uploaded when you save or deliver.") : "Simulated: no devices are accessed."}</span>
               </div>
             </Card>
           )}
@@ -463,8 +498,8 @@ export function StudioPage() {
                 <div className="flex flex-col-reverse gap-2 border-t border-line pt-4 sm:flex-row sm:items-center">
                   <Button variant="ghost" className="text-danger hover:bg-danger-50" onClick={discard}><Trash2 /> Discard</Button>
                   <div className="flex flex-col gap-2 sm:ml-auto sm:flex-row">
-                    <Button variant="secondary" onClick={save}><Save /> {savedId ? "Save changes" : "Save to client record"}</Button>
-                    <Button onClick={deliver}><Send /> Deliver to client portal</Button>
+                    <Button variant="secondary" disabled={uploadPct !== null} onClick={() => void save()}><Save /> {uploadPct !== null ? `Uploading ${Math.round(uploadPct)}%` : savedId ? "Save changes" : "Save to client record"}</Button>
+                    <Button disabled={uploadPct !== null} onClick={() => void deliver()}><Send /> Deliver to client portal</Button>
                   </div>
                 </div>
               </CardBody>

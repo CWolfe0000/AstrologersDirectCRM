@@ -64,7 +64,8 @@ Status key: ✅ done · 🟡 in progress · ⬜ not started · 🔒 blocked (the
 - ✅ GitHub Actions CI: typecheck, unit tests, migrations, build, both end-to-end tests, and the standalone demo build
 
 ## Phase 2: recording and intelligence
-- Recording studio uploads, with server-side transcoding
+- ✅ (started early) Recordings made with real devices upload when saved or delivered, and play in the portal (tested with a simulated microphone)
+- Server-side transcoding (WebM to MP4/HLS) for wider playback support
 - AI assistant over the practitioner's own observations and chart data, keeping Sky's split of calculated facts vs generated text
 - Reports from real data, reminder emails, importers from other astrology software
 
