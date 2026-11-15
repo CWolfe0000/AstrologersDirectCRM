@@ -32,6 +32,7 @@ function useSubmit() {
       await fn();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Something went wrong. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
@@ -48,16 +49,47 @@ function Login() {
   const { loading, error, run } = useSubmit();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [ticket, setTicket] = React.useState<string | null>(null);
+  const [code, setCode] = React.useState("");
+  const reset = useSearchParams().get("reset");
+  if (ticket)
+    return (
+      <>
+        <AuthHeading title="Enter your code" body="Open your authenticator app and enter the 6-digit code for AstrologersDirect. Lost your phone? Use one of your recovery codes." />
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            run(async () => {
+              const r = await api<{ redirect: string }>("/api/auth/login/2fa", { body: { ticket, code } });
+              router.replace(safeNext(next, r.redirect));
+              router.refresh();
+            });
+          }}
+        >
+          <ErrorNote message={error} />
+          <Field label="Code" htmlFor="code">
+            <Input id="code" inputMode="numeric" autoComplete="one-time-code" autoFocus value={code} onChange={(e) => setCode(e.target.value)} placeholder="123 456" required />
+          </Field>
+          <Button type="submit" size="lg" className="w-full" disabled={loading}>{loading && <Loader2 className="animate-spin" />} Verify and sign in</Button>
+        </form>
+        <button className="mt-6 text-[13.5px] text-muted hover:text-ink" onClick={() => { setTicket(null); setCode(""); }}>Use a different account</button>
+      </>
+    );
   return (
     <>
-      <AuthHeading title="Welcome back" body="Sign in to your practice workspace or client portal." />
+      <AuthHeading title="Welcome back" body={reset ? "Your password was changed. Sign in with your new password." : "Sign in to your practice workspace or client portal."} />
       <form
         className="space-y-4"
         onSubmit={(e) => {
           e.preventDefault();
           run(async () => {
-            const r = await api<{ redirect: string }>("/api/auth/login", { body: { email, password } });
-            router.replace(safeNext(next, r.redirect));
+            const r = await api<{ redirect?: string; twoFactor?: boolean; ticket?: string }>("/api/auth/login", { body: { email, password } });
+            if (r.twoFactor && r.ticket) {
+              setTicket(r.ticket);
+              return;
+            }
+            router.replace(safeNext(next, r.redirect ?? "/app"));
             router.refresh();
           });
         }}

@@ -13,7 +13,7 @@ Status key: ✅ done · 🟡 in progress · ⬜ not started · 🔒 blocked (the
 - ✅ Every record belongs to one practice. The API scopes every query to the signed-in practice. Tested: a second practice sees nothing from the first.
 - ✅ Encryption at rest (AES-256-GCM) for birth data, client contact details, notes, observation text and messages
 - ✅ Rate limits on login, sign-up, reset and invitations. Same-origin check on every write.
-- ⬜ Two-factor authentication (TOTP)
+- ✅ Two-factor authentication: authenticator app with QR setup, 10 single-use recovery codes, a code step at sign-in. A password reset no longer signs you in when two-factor is on.
 - ✅ Session list and remote sign-out in Settings → Security
 - ⬜ Sign-in email change with re-verification
 - ⬜ Professional security review before real client data goes in
@@ -60,6 +60,8 @@ Status key: ✅ done · 🟡 in progress · ⬜ not started · 🔒 blocked (the
 - ✅ Unit tests: encryption, validation, and a check that the server schema keeps up with the UI's data types
 - ✅ End-to-end smoke test: sign-up → verify → sample data → edit persists → wizard → encryption → invite → portal isolation → second-practice isolation → login
 - ✅ UI flow test: consultation, task, observation, link delivery, settings and delete. Fails on any rejected save.
+- ✅ Two-factor test (full lifecycle) and RFC 4226 test vectors
+- ✅ Recording test (Chromium simulated microphone)
 - ✅ Storage test: real upload, client viewing and downloading, view-only and expiry rules, Range requests, private and shared files, isolation between practices, and file removal on delete
 - ✅ GitHub Actions CI: typecheck, unit tests, migrations, build, both end-to-end tests, and the standalone demo build
 

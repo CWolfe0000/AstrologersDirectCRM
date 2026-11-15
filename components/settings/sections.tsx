@@ -7,6 +7,7 @@ import { useStore } from "@/lib/store";
 import { ASPECTS, BODIES, HOUSE_SYSTEMS, PLANET_IDS, ZODIACS, type AspectId, type BodyId, type HouseSystem, type ZodiacType } from "@/lib/astro";
 import { cn, DATA_MODE, fmtDate } from "@/lib/utils";
 import { api } from "@/lib/api";
+import { TwoFactorCard } from "./two-factor";
 import { bootstrap, loadSampleData } from "@/lib/sync";
 import { Card, CardHeader, CardBody, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -316,19 +317,23 @@ export function SecuritySection() {
           </Button>
         </CardFooter>
       </Card>
+      {DATA_MODE === "demo" ? (
       <Card>
-        <CardHeader title="Two-factor authentication" description="Protect client records with an authenticator app." action={<SimulatedBadge />} />
-        <CardBody className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <ShieldCheck className={cn("size-8", twofa ? "text-sage-dark" : "text-muted")} />
-            <div>
-              <p className="text-[13.5px] font-medium">{twofa ? "Enabled" : "Not enabled"}</p>
-              <p className="text-[12.5px] text-muted">{twofa ? "You'll be asked for a code on new devices." : "Recommended for practices holding client birth data."}</p>
+          <CardHeader title="Two-factor authentication" description="Protect client records with an authenticator app." action={<SimulatedBadge />} />
+          <CardBody className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <ShieldCheck className={cn("size-8", twofa ? "text-sage-dark" : "text-muted")} />
+              <div>
+                <p className="text-[13.5px] font-medium">{twofa ? "Enabled" : "Not enabled"}</p>
+                <p className="text-[12.5px] text-muted">{twofa ? "You'll be asked for a code on new devices." : "Recommended for practices holding client birth data."}</p>
+              </div>
             </div>
-          </div>
-          <Switch checked={twofa} onCheckedChange={(v) => { setTwofa(v); toast(v ? "Two-factor authentication enabled" : "Two-factor authentication disabled", "Simulated — no authenticator was configured.", "success"); }} />
-        </CardBody>
-      </Card>
+            <Switch checked={twofa} onCheckedChange={(v) => { setTwofa(v); toast(v ? "Two-factor authentication enabled" : "Two-factor authentication disabled", "Simulated — no authenticator was configured.", "success"); }} />
+          </CardBody>
+        </Card>
+      ) : (
+        <TwoFactorCard />
+      )}
       <Card>
         <CardHeader title="Active sessions" action={<Button variant="secondary" size="xs" onClick={() => void endSession({ others: true })}>Sign out all others</Button>} />
         <ul className="divide-y divide-line">

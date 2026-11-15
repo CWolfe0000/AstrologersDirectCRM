@@ -36,6 +36,11 @@ export const users = pgTable(
     /** For client-portal users: the client record they may see. */
     clientId: text("client_id"),
     emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
+    /** Encrypted TOTP secret (pending until totp_enabled_at is set). */
+    totpSecret: text("totp_secret"),
+    totpEnabledAt: timestamp("totp_enabled_at", { withTimezone: true }),
+    /** JSON array of SHA-256 hashes of unused recovery codes. */
+    recoveryCodes: text("recovery_codes"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [uniqueIndex("users_email_idx").on(t.email), index("users_practice_idx").on(t.practiceId)],
@@ -60,7 +65,7 @@ export const authTokens = pgTable(
     /** SHA-256 of the emailed token. */
     id: text("id").primaryKey(),
     userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-    kind: text("kind", { enum: ["verify", "reset", "invite"] }).notNull(),
+    kind: text("kind", { enum: ["verify", "reset", "invite", "mfa"] }).notNull(),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
     usedAt: timestamp("used_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

@@ -13,7 +13,9 @@ export const POST = handler(async (req) => {
   await db().update(schema.users).set({ passwordHash: await hashPassword(String(password)), emailVerifiedAt: new Date() }).where(eq(schema.users.id, userId));
   // Sign out every other session, then start a fresh one.
   await db().delete(schema.sessions).where(eq(schema.sessions.userId, userId));
+  const [u] = await db().select({ role: schema.users.role, totp: schema.users.totpEnabledAt }).from(schema.users).where(eq(schema.users.id, userId));
+  // With two-factor on, a reset link alone must not sign anyone in.
+  if (u?.totp) return json({ ok: true, redirect: "/auth/login?reset=1" });
   await createSession(userId);
-  const [u] = await db().select({ role: schema.users.role }).from(schema.users).where(eq(schema.users.id, userId));
   return json({ ok: true, redirect: u?.role === "client" ? "/portal" : "/app" });
 });

@@ -15,7 +15,7 @@ export const GET = handler(async (req) => {
   const user = await requireUser();
   const url = new URL(req.url);
   const view = url.searchParams.get("view") ?? "app";
-  const me = { id: user.id, name: user.name, email: user.email, role: user.role, emailVerified: user.emailVerified };
+  const me = { id: user.id, name: user.name, email: user.email, role: user.role, emailVerified: user.emailVerified, twoFactor: user.twoFactor };
 
   if (view === "portal") {
     let clientId = user.clientId;
