@@ -30,6 +30,20 @@ export interface BirthData {
   tz: string;
 }
 
+/** The practice's saved defaults for the convergence timeline. */
+export interface TimelineDefaults {
+  transits: boolean;
+  progressions: boolean;
+  solarArcs: boolean;
+  lunations: boolean;
+  transitBodies: BodyId[];
+  aspects: AspectId[];
+  /** Orbs in degrees by technique. */
+  orbs: { transit: number; directed: number; lunation: number; eclipse: number };
+  /** Optional per-planet transit orbs; a planet without one uses orbs.transit. */
+  transitOrbs: Partial<Record<BodyId, number>>;
+}
+
 export interface ChartSettings {
   houseSystem: HouseSystem;
   zodiac: ZodiacType;
@@ -39,6 +53,8 @@ export interface ChartSettings {
   showAspectLines: boolean;
   showHouseCusps: boolean;
   showDegrees: boolean;
+  /** Convergence timeline defaults (practice-wide). Missing means the built-in defaults. */
+  timeline?: TimelineDefaults;
 }
 
 export interface BodyPosition {

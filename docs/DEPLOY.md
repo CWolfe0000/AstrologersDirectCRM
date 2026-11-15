@@ -74,7 +74,7 @@ This is `APP_ENCRYPTION_KEY`. **If it is lost or changed, encrypted client data 
 | `S3_ACCESS_KEY_ID` | from step 3 |
 | `S3_SECRET_ACCESS_KEY` | from step 3 |
 | `CRON_SECRET` | another random value (`openssl rand -base64 32`). Vercel sends it to the reminder job. |
-| `SWISS_EPHEMERIS_LICENSE` | `staging` while testing; `confirmed` once you have checked the Professional License covers AstrologersDirect (the entity and the product). Charts, the timeline and solar returns stay off in production until this is set. |
+| `SWISS_EPHEMERIS_LICENSE` | `confirmed` (your Professional License covers AstrologersDirect, confirmed 2026-11-15). Charts, the timeline and solar returns stay off in production until this is set. |
 
 4. Deploy, then add your domain under **Settings → Domains**.
 

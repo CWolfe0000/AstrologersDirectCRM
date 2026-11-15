@@ -28,6 +28,20 @@ export const birthSchema = z
   })
   .strict();
 
+const orbDeg = z.number().min(0.1).max(15);
+export const timelineDefaultsSchema = z
+  .object({
+    transits: z.boolean(),
+    progressions: z.boolean(),
+    solarArcs: z.boolean(),
+    lunations: z.boolean(),
+    transitBodies: z.array(bodyId).max(14),
+    aspects: z.array(aspectId).min(1).max(9),
+    orbs: z.object({ transit: orbDeg, directed: orbDeg, lunation: orbDeg, eclipse: orbDeg }).strict(),
+    transitOrbs: z.record(bodyId, orbDeg),
+  })
+  .strict();
+
 export const settingsSchema = z
   .object({
     houseSystem: z.enum(["placidus", "whole-sign", "koch", "equal", "porphyry", "regiomontanus", "campanus"]),
@@ -38,6 +52,7 @@ export const settingsSchema = z
     showAspectLines: z.boolean(),
     showHouseCusps: z.boolean(),
     showDegrees: z.boolean(),
+    timeline: timelineDefaultsSchema.optional(),
   })
   .strict();
 

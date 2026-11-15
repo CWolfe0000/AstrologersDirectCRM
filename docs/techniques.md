@@ -65,6 +65,8 @@ Applying and separating between two natal charts comes from each chart's natal s
 
 For a client and a date range (up to three years) it finds every contact to the natal planets, nodes, Chiron and, when the birth time is known, the Ascendant and Midheaven:
 
+Orbs, transiting planets, aspects and techniques are **the practice's own settings** (Settings → Astrology → Timeline defaults, or "Save as my defaults" on the timeline), with optional per-planet transit orbs. The built-in starting values are below.
+
 | Technique | Moving points | Default orb | Sampling |
 |---|---|---|---|
 | Transits | Mars to Pluto, Node, Chiron (Sun, Mercury, Venus and Moon optional) | 1° | daily (6-hourly if the Moon or lunations are on) |
@@ -74,7 +76,7 @@ For a client and a date range (up to three years) it finds every contact to the 
 | Eclipses | lunations Swiss Ephemeris identifies as eclipses | 5° | Swiss eclipse search |
 
 - Between samples, positions are interpolated with cubic Hermite curves (position and speed), so exact times are accurate to minutes for the planets. Each contact gets its **orb windows**, every **exact hit** numbered as pass 1, 2, 3 (retrograde hits flagged), and any **station** inside a window.
-- **Density score:** each day adds up the contacts in orb, weighted by mover (slow planets more), aspect (conjunction and hard aspects more) and target (Sun, Moon, angles and chart ruler × 1.3), and by closeness to exact. Lunations count for 7 days after, eclipses for 28. The weights are in `WEIGHTS` and are **provisional**.
+- **Density score:** each day adds up the contacts in orb, weighted by mover (slow planets more), aspect (conjunction and hard aspects more) and target (Sun, Moon, angles and chart ruler × 1.3), and by closeness to exact. Lunations count for 7 days after, eclipses for 28. The weights are in `WEIGHTS` (agreed 2026-11-15).
 - **Busiest periods:** days above the range's mean + 0.75 standard deviations with at least three contacts in orb, merged across gaps of up to 5 days. The six strongest are shown, each with the natal point and house most contacts aim at.
 - Progressed angles are not included separately. With the provisional angle method they would duplicate the solar arc MC.
 - No interpretation text is generated. The score counts; it doesn't judge.
@@ -86,7 +88,7 @@ For a client and a date range (up to three years) it finds every contact to the 
 3. **Solar return:** precession-corrected or not by default? Birthplace by default?
 4. **Composite houses:** derived from the composite MC, or midpoints of the cusps? Which reference place for derived houses?
 5. **Default aspects and orbs** for AstrologersDirect. The provisional set is Sky's: majors only, with 8° orbs (5° for the sextile).
-6. **Timeline defaults:** orbs (1° transits and directions, 3° lunations, 5° eclipses), which bodies are on by default, and the score weights.
+Decided 2026-11-15: timeline orbs are set by each astrologer (built-in starting values 1° transits and directions, 3° lunations, 5° eclipses); default transiting planets Mars outward; the density weighting as described above.
 
 ## Connecting to Sky (Swiss Ephemeris)
 

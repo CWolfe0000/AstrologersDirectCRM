@@ -139,6 +139,15 @@ describe("convergence timeline", () => {
     expect(r.contacts.some((c) => c.source === c.target)).toBe(false);
   });
 
+  it("uses a planet's own transit orb when one is set", async () => {
+    const base = { ...only, transitBodies: ["saturn" as const] };
+    const wide = await convergenceTimeline({ natal, from: "2026-01-01", to: "2026-12-31", eph: fake, options: { ...base, transitOrbs: { saturn: 2 } } });
+    const w = wide.contacts.find((x) => x.id === "transit:saturn:conjunction:moon")!.windows[0]!;
+    // 2° at 0.1°/day → days 80–120 instead of 90–110.
+    expect(Math.abs(d(w.start) - 80)).toBeLessThan(0.01);
+    expect(Math.abs(d(w.end) - 120)).toBeLessThan(0.01);
+  });
+
   it("rejects ranges over three years", async () => {
     await expect(convergenceTimeline({ natal, from: "2026-01-01", to: "2030-01-01", eph: fake })).rejects.toThrow(/three years/);
   });

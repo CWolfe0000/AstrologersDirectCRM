@@ -4,7 +4,8 @@ import * as React from "react";
 import { Camera, Monitor, Smartphone, ShieldCheck, Download, Upload, Trash2, RotateCcw, Check, Palette, Database } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { ASPECTS, BODIES, HOUSE_SYSTEMS, PLANET_IDS, ZODIACS, type AspectId, type BodyId, type HouseSystem, type ZodiacType } from "@/lib/astro";
+import { ASPECTS, BODIES, DEFAULT_TIMELINE, HOUSE_SYSTEMS, PLANET_IDS, ZODIACS, type AspectId, type BodyId, type HouseSystem, type TimelineDefaults, type ZodiacType } from "@/lib/astro";
+import { sameTimeline, TimelineOptionsEditor } from "@/components/timeline/timeline-options";
 import { cn, DATA_MODE, fmtDate } from "@/lib/utils";
 import { api } from "@/lib/api";
 import { TwoFactorCard } from "./two-factor";
@@ -211,7 +212,33 @@ export function AstrologySection() {
           </Button>
         </CardFooter>
       </Card>
+
+      <TimelineDefaultsCard />
     </div>
+  );
+}
+
+function TimelineDefaultsCard() {
+  const t = useStore((s) => s.defaults.timeline) ?? DEFAULT_TIMELINE;
+  const update = useStore((s) => s.updateDefaults);
+  const toast = useStore((s) => s.toast);
+  const set = (timeline: TimelineDefaults, msg = "Timeline defaults updated") => {
+    update({ timeline });
+    toast(msg, "Used for every client’s timeline. You can still change them for one view on the timeline.", "success");
+  };
+  return (
+    <Card>
+      <CardHeader title="Timeline defaults" description="Orbs, transiting planets and aspects the convergence timeline starts with." />
+      <CardBody>
+        <TimelineOptionsEditor value={t} onChange={(v) => set(v)} />
+      </CardBody>
+      <CardFooter className="justify-between">
+        <span className="text-[12px] text-muted">Built-in defaults: 1° transits and directions, 3° lunations, 5° eclipses; Mars outward.</span>
+        <Button variant="ghost" size="sm" disabled={sameTimeline(t, DEFAULT_TIMELINE)} onClick={() => set(DEFAULT_TIMELINE, "Timeline defaults restored")}>
+          <RotateCcw /> Restore defaults
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }
 

@@ -37,6 +37,8 @@ export interface TimelineOptions {
   progressedBodies: BodyId[];
   aspects: AspectId[];
   orbs: { transit: number; directed: number; lunation: number; eclipse: number };
+  /** Per-planet transit orbs, overriding orbs.transit. */
+  transitOrbs?: Partial<Record<BodyId, number>>;
   /** Natal points to aim at. Defaults to every natal point available. */
   targets?: TargetId[];
 }
@@ -462,7 +464,7 @@ export async function convergenceTimeline(input: TimelineInput): Promise<Timelin
     for (const id of o.transitBodies) {
       const tr = tracks.get(id);
       if (!tr) continue;
-      addTrackContacts("transit", id, tr, o.orbs.transit, WEIGHTS.transit[id] ?? 1, id === "node" || id === "moon" ? [] : stationsOf(tr));
+      addTrackContacts("transit", id, tr, o.transitOrbs?.[id] ?? o.orbs.transit, WEIGHTS.transit[id] ?? 1, id === "node" || id === "moon" ? [] : stationsOf(tr));
     }
   }
 

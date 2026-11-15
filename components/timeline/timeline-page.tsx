@@ -3,10 +3,11 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CalendarRange, CircleDot, Info, Layers, Loader2, NotebookPen, SlidersHorizontal, Waves } from "lucide-react";
-import { ASPECTS, BODIES, fmtDeg, ordinal, PLANET_IDS, signOf, type AspectId, type BodyId } from "@/lib/astro";
+import { CalendarRange, CircleDot, Info, Layers, Loader2, NotebookPen, RotateCcw, Save, SlidersHorizontal, Waves } from "lucide-react";
+import { ASPECTS, BODIES, DEFAULT_TIMELINE, fmtDeg, ordinal, signOf, type BodyId, type TimelineDefaults } from "@/lib/astro";
 import { fetchTimeline, type TimelineResponse } from "@/lib/astro/timeline-client";
-import { TIMELINE_ASPECTS, type ConvergenceWindow, type TargetId, type TimelineContact, type TimelineOptions, type TimelineTechnique } from "@/lib/astro/timeline";
+import type { ConvergenceWindow, TargetId, TimelineContact, TimelineTechnique } from "@/lib/astro/timeline";
+import { sameTimeline, TimelineOptionsEditor } from "./timeline-options";
 import type { ChartRecord } from "@/lib/data/types";
 import { useStore, personName } from "@/lib/store";
 import { cn, TODAY } from "@/lib/utils";
@@ -88,24 +89,6 @@ function addMonths(date: string, n: number) {
 
 type RangePreset = "3" | "6" | "12" | "24" | "custom";
 type GroupBy = "point" | "house" | "technique" | "date";
-type BodyPreset = "slow" | "mars" | "all" | "custom";
-
-const BODY_PRESETS: Record<Exclude<BodyPreset, "custom">, BodyId[]> = {
-  slow: ["jupiter", "saturn", "uranus", "neptune", "pluto", "node", "chiron"],
-  mars: ["mars", "jupiter", "saturn", "uranus", "neptune", "pluto", "node", "chiron"],
-  all: ["sun", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto", "node", "chiron"],
-};
-
-const DEFAULT_OPTS: Required<Pick<TimelineOptions, "transits" | "progressions" | "solarArcs" | "lunations" | "transitBodies" | "aspects" | "orbs">> = {
-  transits: true,
-  progressions: true,
-  solarArcs: true,
-  lunations: true,
-  transitBodies: BODY_PRESETS.mars,
-  aspects: ["conjunction", "sextile", "square", "trine", "opposition"],
-  orbs: { transit: 1, directed: 1, lunation: 3, eclipse: 5 },
-};
-
 const resultCache = new Map<string, Promise<TimelineResponse>>();
 
 // ---------------------------------------------------------------------------
@@ -137,15 +120,19 @@ function Timeline() {
   const [preset, setPreset] = React.useState<RangePreset>("12");
   const [customEnd, setCustomEnd] = React.useState(addMonths(TODAY.slice(0, 8) + "01", 12));
   const end = preset === "custom" ? customEnd : addMonths(start, Number(preset));
-  const [opts, setOpts] = React.useState(DEFAULT_OPTS);
-  const [bodyPreset, setBodyPreset] = React.useState<BodyPreset>("mars");
+  const updateDefaults = useStore((s) => s.updateDefaults);
+  const toast = useStore((s) => s.toast);
+  const savedOpts = defaults.timeline ?? DEFAULT_TIMELINE;
+  const [opts, setOpts] = React.useState<TimelineDefaults>(savedOpts);
+  // Pick up the saved defaults once the store has loaded (and if they change elsewhere).
+  React.useEffect(() => setOpts(savedOpts), [savedOpts]);
   const [groupBy, setGroupBy] = React.useState<GroupBy>("point");
   const [focus, setFocus] = React.useState<ConvergenceWindow | null>(null);
   const [detail, setDetail] = React.useState<TimelineContact | null>(null);
   const [state, setState] = React.useState<{ data: TimelineResponse | null; loading: boolean; error: string | null }>({ data: null, loading: false, error: null });
 
   const rangeError = end < start ? "The end date is before the start date." : (Date.parse(end) - Date.parse(start)) / DAY > 3 * 366 ? "Choose a range of up to three years." : null;
-  const key = person?.birth && !rangeError ? JSON.stringify([person.birth, defaults, start, end, opts]) : null;
+  const key = person?.birth && !rangeError ? JSON.stringify([person.birth, { ...defaults, timeline: undefined }, start, end, opts]) : null;
 
   React.useEffect(() => {
     if (!hydrated || !key || !person?.birth) return;
@@ -154,7 +141,7 @@ function Timeline() {
     const t = setTimeout(() => {
       let p = resultCache.get(key);
       if (!p) {
-        p = fetchTimeline(person.birth!, defaults, start, end, opts);
+        p = fetchTimeline(person.birth!, { ...defaults, timeline: undefined }, start, end, opts);
         resultCache.set(key, p);
         if (resultCache.size > 20) resultCache.delete(resultCache.keys().next().value!);
       }
@@ -239,7 +226,16 @@ function Timeline() {
             )}
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <OptionsPopover opts={opts} setOpts={setOpts} bodyPreset={bodyPreset} setBodyPreset={setBodyPreset} />
+            <OptionsPopover
+              opts={opts}
+              setOpts={setOpts}
+              saved={sameTimeline(opts, savedOpts)}
+              onRevert={() => setOpts(savedOpts)}
+              onSave={() => {
+                updateDefaults({ timeline: opts });
+                toast("Timeline defaults saved", "Used for every client’s timeline. Change them any time in Settings → Astrology.", "success");
+              }}
+            />
           </div>
           <fieldset className="flex flex-wrap items-center gap-x-5 gap-y-2 lg:col-span-3">
             <legend className="sr-only">Techniques</legend>
@@ -297,26 +293,7 @@ function TechToggle({ label, color, checked, onChange }: { label: string; color:
   );
 }
 
-function OptionsPopover({
-  opts,
-  setOpts,
-  bodyPreset,
-  setBodyPreset,
-}: {
-  opts: typeof DEFAULT_OPTS;
-  setOpts: React.Dispatch<React.SetStateAction<typeof DEFAULT_OPTS>>;
-  bodyPreset: BodyPreset;
-  setBodyPreset: (b: BodyPreset) => void;
-}) {
-  const toggleBody = (b: BodyId, on: boolean) => {
-    setBodyPreset("custom");
-    setOpts((o) => ({ ...o, transitBodies: on ? [...o.transitBodies, b] : o.transitBodies.filter((x) => x !== b) }));
-  };
-  const toggleAspect = (a: AspectId, on: boolean) => setOpts((o) => ({ ...o, aspects: on ? [...o.aspects, a] : o.aspects.length > 1 ? o.aspects.filter((x) => x !== a) : o.aspects }));
-  const setOrb = (k: keyof typeof opts.orbs, v: string) => {
-    const n = Number(v);
-    if (Number.isFinite(n) && n >= 0.1 && n <= 10) setOpts((o) => ({ ...o, orbs: { ...o.orbs, [k]: n } }));
-  };
+function OptionsPopover({ opts, setOpts, saved, onSave, onRevert }: { opts: TimelineDefaults; setOpts: (v: TimelineDefaults) => void; saved: boolean; onSave: () => void; onRevert: () => void }) {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -324,57 +301,21 @@ function OptionsPopover({
           <SlidersHorizontal /> Bodies, aspects & orbs
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[min(92vw,420px)] p-4">
-        <p className="text-[12.5px] font-semibold text-ink">Transiting bodies</p>
-        <div className="mt-2">
-          <Segmented
-            size="sm"
-            value={bodyPreset}
-            onChange={(v) => {
-              setBodyPreset(v);
-              if (v !== "custom") setOpts((o) => ({ ...o, transitBodies: BODY_PRESETS[v] }));
-            }}
-            options={[
-              { value: "slow", label: "Jupiter →" },
-              { value: "mars", label: "Mars →" },
-              { value: "all", label: "All but Moon" },
-              { value: "custom", label: "Custom" },
-            ]}
-          />
+      <PopoverContent className="max-h-[min(80vh,640px)] w-[min(92vw,460px)] overflow-y-auto p-4">
+        <TimelineOptionsEditor value={opts} onChange={setOpts} compact />
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
+          <span className="text-[11.5px] text-muted">{saved ? "These are your saved defaults." : "Changed for this view only."}</span>
+          <span className="flex gap-2">
+            {!saved && (
+              <Button size="sm" variant="ghost" onClick={onRevert}>
+                <RotateCcw /> Use my defaults
+              </Button>
+            )}
+            <Button size="sm" variant="secondary" disabled={saved} onClick={onSave}>
+              <Save /> Save as my defaults
+            </Button>
+          </span>
         </div>
-        <div className="mt-2.5 grid grid-cols-3 gap-x-3 gap-y-1.5">
-          {PLANET_IDS.map((b) => (
-            <label key={b} className="flex items-center gap-1.5 text-[12.5px]">
-              <Checkbox checked={opts.transitBodies.includes(b)} onChange={(e) => toggleBody(b, e.target.checked)} />
-              <span aria-hidden className="w-4 text-center">{BODIES[b].glyph}</span> {BODIES[b].name}
-            </label>
-          ))}
-        </div>
-        <p className="mt-4 text-[12.5px] font-semibold text-ink">Aspects</p>
-        <div className="mt-2 grid grid-cols-3 gap-x-3 gap-y-1.5">
-          {TIMELINE_ASPECTS.map((a) => (
-            <label key={a.id} className="flex items-center gap-1.5 text-[12.5px]">
-              <Checkbox checked={opts.aspects.includes(a.id)} onChange={(e) => toggleAspect(a.id, e.target.checked)} />
-              <span aria-hidden className="w-4 text-center">{ASPECTS[a.id].glyph}</span> {ASPECTS[a.id].name}
-            </label>
-          ))}
-        </div>
-        <p className="mt-4 text-[12.5px] font-semibold text-ink">Orbs (degrees)</p>
-        <div className="mt-2 grid grid-cols-2 gap-3">
-          {(
-            [
-              ["transit", "Transits"],
-              ["directed", "Progressions & arcs"],
-              ["lunation", "Lunations"],
-              ["eclipse", "Eclipses"],
-            ] as const
-          ).map(([k, label]) => (
-            <Field key={k} label={label}>
-              <Input type="number" min={0.1} max={10} step={0.25} defaultValue={opts.orbs[k]} onBlur={(e) => setOrb(k, e.target.value)} onKeyDown={(e) => e.key === "Enter" && setOrb(k, (e.target as HTMLInputElement).value)} />
-            </Field>
-          ))}
-        </div>
-        <p className="mt-3 text-[11.5px] leading-snug text-muted">Progressions use the Sun through Mars and the Moon. Solar arcs direct every natal point, including the angles.</p>
       </PopoverContent>
     </Popover>
   );

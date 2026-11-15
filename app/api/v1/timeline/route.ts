@@ -8,7 +8,7 @@ import { PLANET_IDS } from "@/lib/astro/meta";
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const body = z.enum(PLANET_IDS as [string, ...string[]]);
-const orb = z.number().min(0.1).max(10);
+const orb = z.number().min(0.1).max(15);
 const schema = z.object({
   birth: birthSchema,
   settings: settingsSchema,
@@ -24,6 +24,7 @@ const schema = z.object({
       progressedBodies: z.array(body).max(12),
       aspects: z.array(z.enum(TIMELINE_ASPECTS.map((a) => a.id) as [string, ...string[]])).min(1).max(9),
       orbs: z.object({ transit: orb, directed: orb, lunation: orb, eclipse: orb }),
+      transitOrbs: z.record(body, orb),
     })
     .partial()
     .strict()

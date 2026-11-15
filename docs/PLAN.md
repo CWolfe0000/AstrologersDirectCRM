@@ -42,7 +42,7 @@ Status key: ✅ done · 🟡 in progress · ⬜ not started · 🔒 blocked (the
 - ✅ Swiss Ephemeris on the server (2026-11-15): the same `sweph` version and checksum-pinned data files as Sky, a license gate (`SWISS_EPHEMERIS_LICENSE`), and `/api/v1/astro/*` for natal, positions, progressed, solar arc and solar return. It matches Sky exactly on the sample chart. A separate astro service is no longer needed unless Vercel can't run `sweph`.
 - ✅ Make the `AstrologyEngine` interface asynchronous and add loading states to the chart screens (shared cache; the previous chart stays on screen while recalculating)
 - ✅ Chart workspace on real calculations in server mode (natal, transits, progressions, solar arcs, solar returns), labelled "not yet checked against reference charts"
-- ✅ **Convergence timeline** (`/app/timeline`): transits, progressions, solar arcs, lunations and eclipses to the natal chart over 3–24 months or a custom range (up to 3 years). It shows orb windows, every exact pass (retrograde flagged), stations, a day-by-day density strip, and the busiest periods with their focus point and house. Opens the chart at any date and files observations on a timing chart. Weights and orbs are provisional (`docs/techniques.md`).
+- ✅ **Convergence timeline** (`/app/timeline`): transits, progressions, solar arcs, lunations and eclipses to the natal chart over 3–24 months or a custom range (up to 3 years). It shows orb windows, every exact pass (retrograde flagged), stations, a day-by-day density strip, and the busiest periods with their focus point and house. Opens the chart at any date and files observations on a timing chart. Orbs (per technique and per planet), planets, aspects and techniques are each practice's own saved defaults (Settings → Astrology, or "Save as my defaults" on the timeline).
 - ⬜ Synastry and composite screens on the new techniques (built and tested in `lib/astro/techniques`)
 
 ### Files and delivery
@@ -94,6 +94,6 @@ Status key: ✅ done · 🟡 in progress · ⬜ not started · 🔒 blocked (the
 ## Decisions needed from you
 1. Method for progressed angles; solar return conventions; composite house method; default aspects and orbs (see `docs/sky-engine-review.md`)
 2. Whether births before 1800 need supporting
-2b. Timeline defaults: orbs, default bodies, score weights (`docs/techniques.md`)
-2c. Swiss Ephemeris license: confirm the Professional License covers AstrologersDirect before setting `SWISS_EPHEMERIS_LICENSE=confirmed` in production
+- ✅ Decided 2026-11-15: timeline orbs are each astrologer's own settings (built-in defaults 1°/1°/3°/5°); default transiting planets Mars outward; density weighting as built.
+- ✅ Decided 2026-11-15: the Swiss Ephemeris Professional License covers any tool you make, AstrologersDirect included. Set `SWISS_EPHEMERIS_LICENSE=confirmed` in production.
 3. Hosting accounts: Neon, Vercel, Resend (domain), and later Cloudflare R2 for file storage

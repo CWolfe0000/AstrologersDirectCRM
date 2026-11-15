@@ -1,4 +1,4 @@
-import type { AspectId, BodyId, ChartSettings, HouseSystem, SignId, ZodiacType } from "./types";
+import type { AspectId, BodyId, ChartSettings, HouseSystem, SignId, ZodiacType, TimelineDefaults } from "./types";
 
 /** ︎ forces text (not emoji) presentation of the glyph. */
 const T = "︎";
@@ -64,6 +64,18 @@ export const ZODIACS: { id: ZodiacType; name: string }[] = [
   { id: "sidereal-lahiri", name: "Sidereal (Lahiri)" },
   { id: "sidereal-fagan-bradley", name: "Sidereal (Fagan/Bradley)" },
 ];
+
+/** Built-in timeline defaults: each practice can change them in Settings → Astrology or from the timeline. */
+export const DEFAULT_TIMELINE: TimelineDefaults = {
+  transits: true,
+  progressions: true,
+  solarArcs: true,
+  lunations: true,
+  transitBodies: ["mars", "jupiter", "saturn", "uranus", "neptune", "pluto", "node", "chiron"],
+  aspects: ["conjunction", "sextile", "square", "trine", "opposition"],
+  orbs: { transit: 1, directed: 1, lunation: 3, eclipse: 5 },
+  transitOrbs: {},
+};
 
 export const DEFAULT_SETTINGS: ChartSettings = {
   houseSystem: "placidus",
