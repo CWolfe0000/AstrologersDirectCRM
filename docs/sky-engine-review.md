@@ -23,7 +23,7 @@ Sky does not yet cover everything the workspace needs:
 
 Each of these is a contained addition on top of Sky's Swiss Ephemeris wrapper. None requires redesigning the engine.
 
-Sky's synastry code should **not** be reused as it stands; see [Synastry and composite](#synastry-and-composite).
+**Decision (2026-11-15): Sky's synastry code will not be reused.** Synastry and composite will be written from scratch; see [Synastry and composite](#synastry-and-composite).
 
 ## What was verified
 
@@ -119,26 +119,30 @@ The prototype's UI talks only to the `AstrologyEngine` interface in `lib/astro/t
 | Secondary progressions | ❌ | Small, but needs a **method decision** for progressed angles (see below) |
 | Solar arc directions | ❌ | Small, with the same method decision |
 | Solar return | ❌ | Small: find the Sun's return with Sky's `event-math` bisection, then cast the chart. Needs a precession-correction decision. |
-| Synastry | ⚠️ Present in `we.js`, but opinionated | See [Synastry and composite](#synastry-and-composite) |
+| Synastry | ❌ Not reused (decision 2026-11-15) | New module, written from scratch |
 | Midpoint composite | ❌ | Small, with a house-method decision |
 | Birth years before 1800 | ❌ Hard limit of 1800–2050 in `birth-time.js` and `chart-context.js` | Decide whether historical charts matter. `sepl_18` covers 1800–2399, so years after 2050 only need the limit lifted and tested. |
 
 ## Synastry and composite
 
-`we.js` contains a full synastry engine, but it scores the relationship rather than reporting it:
+**Decision (2026-11-15): scrap Sky's synastry and rewrite it.** `we.js` contains a synastry engine, but none of it carries over to AstrologersDirect:
 
-- an overall compatibility percentage built from "harmony" and "tension" weights
-- an element-interchange "ease" score
-- interpretive labels ("Core Vitalization", "Unconscious Projection")
-- a weighted "native capacity" profile in the Arroyo style
-- house overlays computed with a **3° cusp gradient** (`houseOf`). This places a planet 3° before a cusp in the next house, which is not the standard placement and differs from the strict `houseOfStrict` the natal path uses.
+- the compatibility scoring (harmony and tension weights, an overall percentage)
+- element interchange
+- the Arroyo-style weighting
+- the interpretive labels
+- the 3° cusp gradient used for house overlays
 
-That suits a consumer product. A professional workspace should show the astrologer the inter-aspects and overlays and leave judgement to them. **Recommendation:**
+The extracted engine package should leave out `we.js`'s `synastry`, `nativeProfile`, `overlays`, `interchange` and `contactBetween`, and anything that depends only on them.
 
-- Reuse the Swiss-backed `buildChart` for both people.
-- Write a small, neutral synastry module: inter-aspects with configurable orbs, house overlays using strict cusps, and no scores.
-- Build the midpoint composite on the same module.
-- Validate both against reference charts that you or a trusted astrologer supply, before anything is labelled verified.
+The new module is written from scratch for the professional workspace. Scope:
+
+- **Inputs.** Each person's chart comes from the same Swiss-backed natal calculation as everything else, so there is no separate code path.
+- **Inter-aspects.** Every point in chart A against every point in chart B. The aspect set and orbs are configurable and use the same settings as natal aspects. Results include the orb and whether each aspect is applying or separating.
+- **House overlays.** Each person's points placed in the other's houses with strict cusps (`houseOfStrict` semantics), both ways.
+- **No compatibility scores, weights, rankings or interpretive labels.** The astrologer interprets.
+- **Midpoint composite** is built on the same module (house method still to be decided).
+- **Validation.** Tests check results against reference charts that you or a trusted astrologer supply. Results are labelled verified only after those pass.
 
 ## Recommended integration
 
@@ -158,7 +162,8 @@ That suits a consumer product. A professional workspace should show the astrolog
 3. **Composite houses:** midpoints of the cusps, or houses derived from the composite MC at the couple's location or the birthplace?
 4. **Default aspect set and orbs** for AstrologersDirect. Sky's current 8°/5° majors, or the prototype's wider set including the quincunx?
 5. **Historical charts:** do you need births before 1800?
-6. **Synastry:** confirm that the professional workspace should show **no compatibility scores**.
+
+Decided: synastry is scrapped and rewritten from scratch, with no compatibility scores (2026-11-15).
 
 ## Licence checklist (Swiss Ephemeris)
 
@@ -177,4 +182,4 @@ This is a list of things to check, not legal advice. The agreement's own wording
 1. Answer the decisions above.
 2. Set up the shared engine package and the astro API skeleton, with natal and transit endpoints only.
 3. Write an `AstrologyEngine` adapter in AstrologersDirect that calls the API. Keep the demo engine as an offline fallback, clearly labelled.
-4. Add progressions, solar arcs, solar returns, synastry and composite one at a time. Each needs reference-chart tests before the UI shows it as verified.
+4. Add progressions, solar arcs and solar returns one at a time, then the new synastry and composite module. Each needs reference-chart tests before the UI shows it as verified.
