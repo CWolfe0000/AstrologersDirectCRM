@@ -37,6 +37,8 @@ let serious = 0;
 for (const route of [...PUBLIC, ...APP]) {
   await page.goto(BASE + route, { waitUntil: "load" });
   await page.waitForTimeout(800);
+  // The timeline calculates after load: scan the finished page, not the loading state.
+  if (route.startsWith("/app/timeline")) await page.getByRole("heading", { name: "Busiest periods" }).waitFor({ timeout: 30000 });
   await page.addScriptTag({ path: axePath });
   const result = await page.evaluate(() => window.axe.run(document, { runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice"] } }));
   for (const v of result.violations) {

@@ -60,7 +60,7 @@ step("page: strip, busy periods, rows");
 await page.goto(BASE + "/app/timeline?client=c1");
 await page.getByRole("heading", { name: "Busiest periods" }).waitFor({ timeout: 30000 });
 assert.ok(await page.getByRole("img", { name: /Convergence from/ }).isVisible());
-const rows = page.locator('li > button[aria-label*="Open details"]');
+const rows = page.locator("li > button[data-contact]");
 const total = await rows.count();
 assert.ok(total > 20, `rows: ${total}`);
 
@@ -73,7 +73,7 @@ await page.getByRole("button", { name: "Show all", exact: true }).click();
 step("page: turning off techniques recalculates");
 await page.getByLabel("Progressions").uncheck();
 await page.getByLabel("Solar arcs").uncheck();
-await page.waitForFunction(() => !document.querySelector('[aria-busy="true"]') && ![...document.querySelectorAll('li > button[aria-label]')].some((b) => /^(Progressed|Solar arc) /.test(b.getAttribute("aria-label") || "")), null, { timeout: 30000 });
+await page.waitForFunction(() => !document.querySelector('[aria-busy="true"]') && ![...document.querySelectorAll("li > button[data-contact]")].some((b) => /^(progressed|solar-arc):/.test(b.dataset.contact || "")), null, { timeout: 30000 });
 
 step("orbs: change for this view, save as the practice default, persists on the server");
 await page.getByRole("button", { name: /Bodies, aspects & orbs/ }).click();
@@ -104,7 +104,7 @@ await page.goto(BASE + "/app/timeline?client=c1");
 await page.getByRole("heading", { name: "Busiest periods" }).waitFor({ timeout: 30000 });
 
 step("detail panel → observation on a timing chart");
-await page.locator('li > button[aria-label^="Pluto conjunction natal Moon"]').click();
+await page.locator('li > button[data-contact="transit:pluto:conjunction:moon"]').click();
 const dialog = page.getByRole("dialog");
 await dialog.getByText(/pass 1 of/).first().waitFor();
 await dialog.getByRole("button", { name: /Add observation/ }).click();

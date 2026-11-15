@@ -397,8 +397,6 @@ function DensityStrip({ tl, focus, onFocus }: { tl: NonNullable<TimelineResponse
       <CardBody className="pb-8 pt-8">
         <div
           className="relative h-[110px]"
-          role="img"
-          aria-label={`Convergence from ${fmt(tl.from.slice(0, 10))} to ${fmt(tl.days[n - 1]!.date)}. ${tl.convergences.length} busy periods. Busiest day ${fmt(peak.date)} with ${peak.count} contacts in orb.`}
           onMouseMove={(e) => {
             const r = e.currentTarget.getBoundingClientRect();
             setHover(Math.max(0, Math.min(n - 1, Math.floor(((e.clientX - r.left) / r.width) * n))));
@@ -416,7 +414,13 @@ function DensityStrip({ tl, focus, onFocus }: { tl: NonNullable<TimelineResponse
               style={{ left: `${axis.pct(w.start)}%`, width: `${Math.max(0.6, axis.pct(w.end) - axis.pct(w.start) + 100 / n)}%` }}
             />
           ))}
-          <svg viewBox="0 0 1000 100" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 size-full" aria-hidden>
+          <svg
+            viewBox="0 0 1000 100"
+            preserveAspectRatio="none"
+            className="pointer-events-none absolute inset-0 size-full"
+            role="img"
+            aria-label={`Convergence from ${fmt(tl.from.slice(0, 10))} to ${fmt(tl.days[n - 1]!.date)}. ${tl.convergences.length} busy periods. Busiest day ${fmt(peak.date)} with ${peak.count} contacts in orb.`}
+          >
             <defs>
               <linearGradient id="tl-fill" x1="0" x2="0" y1="0" y2="1">
                 <stop offset="0%" stopColor="#824B59" stopOpacity="0.55" />
@@ -660,7 +664,8 @@ function ContactRow({ c, axis, onOpen, groupBy }: { c: TimelineContact; axis: Re
         type="button"
         onClick={() => onOpen(c)}
         className="grid w-full grid-cols-1 gap-1 px-5 py-2 text-left transition-colors hover:bg-canvas-2 focus-visible:bg-canvas-2 md:grid-cols-[260px_1fr] md:items-center md:gap-0"
-        aria-label={`${contactLabel(c)}, ${summary}. Open details.`}
+        data-contact={c.id}
+        data-label={contactLabel(c)}
       >
         <span className="flex min-w-0 items-center gap-2 pr-3">
           <span className="w-[64px] shrink-0 text-ink">
@@ -668,7 +673,8 @@ function ContactRow({ c, axis, onOpen, groupBy }: { c: TimelineContact; axis: Re
           </span>
           <span className="min-w-0">
             <span className="block truncate text-[12.5px] text-ink">
-              {sourceName(c)} {ASPECTS[c.aspect].name.toLowerCase()} {groupBy === "point" ? "" : `natal ${pointName(c.target)}`}
+              {sourceName(c)} {ASPECTS[c.aspect].name.toLowerCase()}{" "}
+              {groupBy === "point" ? <span className="sr-only">natal {pointName(c.target)}</span> : `natal ${pointName(c.target)}`}
             </span>
             <span className="block truncate text-[11px] text-muted">{summary}</span>
           </span>
@@ -691,13 +697,13 @@ function ContactRow({ c, axis, onOpen, groupBy }: { c: TimelineContact; axis: Re
             w.exacts.map((e) => (
               <span key={e.utc} className="absolute top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center" style={{ left: `${axis.pct(e.utc)}%` }}>
                 <span className="block size-2.5 rotate-45 border-[1.5px] bg-surface" style={{ borderColor: t.color }} />
-                {e.retrograde && <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[9px] font-bold leading-none text-ink">R</span>}
+                {e.retrograde && <span aria-hidden className="absolute -top-3 left-1/2 -translate-x-1/2 text-[9px] font-bold leading-none text-ink">R</span>}
               </span>
             )),
           )}
           {c.windows.flatMap((w) =>
             w.stations.map((s) => (
-              <span key={s.utc} className="absolute top-1/2 -translate-x-1/2 translate-y-[3px] text-[9px] font-bold leading-none text-ink" style={{ left: `${axis.pct(s.utc)}%` }}>
+              <span key={s.utc} aria-hidden className="absolute top-1/2 -translate-x-1/2 translate-y-[3px] text-[9px] font-bold leading-none text-ink" style={{ left: `${axis.pct(s.utc)}%` }}>
                 S
               </span>
             )),
