@@ -21,9 +21,14 @@ describe("field encryption", () => {
 
   it("detects tampering", async () => {
     const { seal, unseal } = await import("@/lib/server/crypto");
-    const parts = seal({ a: 1 }).split(".");
-    parts[3] = parts[3]!.slice(0, -2) + (parts[3]!.endsWith("A") ? "BB" : "AA");
-    expect(() => unseal(parts.join("."))).toThrow();
+    // Flip a real ciphertext byte (editing base64 text can land on padding bits only).
+    for (let i = 0; i < 20; i++) {
+      const parts = seal({ a: i }).split(".");
+      const ct = Buffer.from(parts[3]!, "base64url");
+      ct[0] = ct[0]! ^ 0x01;
+      parts[3] = ct.toString("base64url");
+      expect(() => unseal(parts.join("."))).toThrow();
+    }
   });
 
   it("hashes tokens so the stored value can't be used as a cookie", async () => {
