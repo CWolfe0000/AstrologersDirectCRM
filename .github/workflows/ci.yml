@@ -25,6 +25,8 @@ jobs:
       CRON_SECRET: ci-only-cron-secret
       # Many test accounts are created from one address; never set this in production.
       RATE_LIMIT_MULTIPLIER: "20"
+      # Swiss Ephemeris in non-commercial test mode; data files downloaded below.
+      SWISS_EPHEMERIS_LICENSE: staging
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -32,6 +34,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Download Swiss Ephemeris data files (checksum-verified)
+        run: npm run ephemeris
       - name: Type check (includes UI ↔ server schema drift check)
         run: npm run typecheck
       - name: Unit tests
