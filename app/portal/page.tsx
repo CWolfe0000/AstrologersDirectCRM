@@ -8,6 +8,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SimulatedBadge } from "@/components/ui/misc";
+import { DATA_MODE } from "@/lib/utils";
 import { usePortalClientId } from "@/components/portal/portal-shell";
 import { useMyConsultations, useMyReadings, useSharedFiles, PORTAL_NOW } from "@/components/portal/portal-data";
 import { ReadingCard } from "@/components/portal/reading-card";
@@ -161,8 +162,8 @@ export default function PortalHome() {
             <p className="mt-2 text-[13px] leading-relaxed text-muted">{pr.bio}</p>
             <div className="mt-4 space-y-2 border-t border-line pt-4 text-[13px]">
               <a href={`mailto:${pr.email}`} className="flex items-center gap-2 text-ink-3 hover:text-accent"><Mail className="size-4 text-muted" />{pr.email}</a>
-              <p className="flex items-center gap-2 text-ink-3"><Phone className="size-4 text-muted" />{pr.phone}</p>
-              <p className="flex items-center gap-2 text-ink-3"><Globe className="size-4 text-muted" />{pr.website}</p>
+              {pr.phone && <p className="flex items-center gap-2 text-ink-3"><Phone className="size-4 text-muted" />{pr.phone}</p>}
+              {pr.website && <p className="flex items-center gap-2 text-ink-3"><Globe className="size-4 text-muted" />{pr.website}</p>}
             </div>
             <Button variant="secondary" className="mt-4 w-full" onClick={() => toast("Message sent", `${pr.firstName} will reply by email. (Simulated)`, "success")}>
               <Mail /> Message {pr.firstName}
@@ -172,7 +173,7 @@ export default function PortalHome() {
           <div className="rounded-2xl border border-line bg-surface">
             <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
               <p className="flex items-center gap-2 text-[14px] font-semibold"><Bell className="size-4 text-muted" /> Notifications</p>
-              <SimulatedBadge label="Demo" />
+              {DATA_MODE === "demo" && <SimulatedBadge label="Demo" />}
             </div>
             <ul>
               {notes.slice(0, 5).map((n) => (

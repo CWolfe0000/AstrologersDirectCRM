@@ -4,7 +4,8 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Check, ChevronLeft, ChevronRight, Sparkles, AlertTriangle, Info } from "lucide-react";
 import { useStore } from "@/lib/store";
-import { buildChart, BODIES, fmtDeg, signOf, HOUSE_SYSTEMS, type BirthData, type HouseSystem } from "@/lib/astro";
+import { useChartView } from "@/components/chart/chart-helpers";
+import { BODIES, fmtDeg, signOf, HOUSE_SYSTEMS, type BirthData, type HouseSystem } from "@/lib/astro";
 import type { ChartRecord, Person } from "@/lib/data/types";
 import { cn, fmtDate, fmtClock } from "@/lib/utils";
 import { PageHeader } from "@/components/ui/misc";
@@ -44,12 +45,15 @@ export default function NewClientPage() {
         birth: { date: birth.date, time: birth.timeAccuracy === "unknown" ? "12:00" : birth.time, timeAccuracy: birth.timeAccuracy, place: place!.place, lat: place!.lat, lon: place!.lon, tz: place!.tz },
       }
     : null;
-  const view = React.useMemo(() => {
-    if (!tempPerson) return null;
-    const rec: ChartRecord = { id: "__new", title: "", type: "natal", personIds: ["__new"], clientId: "__new", createdAt: "", updatedAt: "", settings: { houseSystem: effectiveHouse } };
-    return buildChart(rec, [tempPerson], undefined, s.defaults);
+  const tempKey = JSON.stringify(tempPerson);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const extraPeople = React.useMemo(() => (tempPerson ? [tempPerson] : undefined), [tempKey]);
+  const tempChart = React.useMemo<ChartRecord | undefined>(
+    () => (tempPerson ? { id: "__new", title: "", type: "natal", personIds: ["__new"], clientId: "__new", createdAt: "", updatedAt: "", settings: { houseSystem: effectiveHouse } } : undefined),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(tempPerson), effectiveHouse, s.defaults]);
+    [tempKey, effectiveHouse],
+  );
+  const view = useChartView(tempChart, undefined, extraPeople);
 
   const canNext = step === 0 ? contactOk : step === 1 ? birthOk : true;
 

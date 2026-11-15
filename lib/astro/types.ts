@@ -73,14 +73,18 @@ export interface EngineInfo {
   description: string;
 }
 
+/**
+ * Every method is asynchronous: production engines (e.g. the Sky / Swiss
+ * Ephemeris service) answer over the network.
+ */
 export interface AstrologyEngine {
   info: EngineInfo;
   /** Natal / radix positions for a birth moment. */
-  natal(birth: BirthData, settings: ChartSettings): ChartPoints;
+  natal(birth: BirthData, settings: ChartSettings): Promise<ChartPoints>;
   /** Positions of the moving bodies at a moment (for transits). */
-  positionsAt(isoDateTime: string, settings: ChartSettings, reference?: ChartPoints): ChartPoints;
+  positionsAt(isoDateTime: string, settings: ChartSettings, reference?: ChartPoints): Promise<ChartPoints>;
   /** Secondary progressions for a target date. */
-  progressed(birth: BirthData, targetDate: string, settings: ChartSettings): ChartPoints;
+  progressed(birth: BirthData, targetDate: string, settings: ChartSettings): Promise<ChartPoints>;
   /** Solar arc directions for a target date. */
-  solarArc(birth: BirthData, targetDate: string, settings: ChartSettings): ChartPoints;
+  solarArc(birth: BirthData, targetDate: string, settings: ChartSettings): Promise<ChartPoints>;
 }

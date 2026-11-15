@@ -146,34 +146,27 @@ function birthKey(b: BirthData) {
   return `${b.date}|${b.time}|${b.lat.toFixed(2)}|${b.lon.toFixed(2)}`;
 }
 
-export const DemoEngine: AstrologyEngine = {
-  info: {
-    id: "demo",
-    name: "Demonstration engine",
-    verified: false,
-    description:
-      "Approximate, illustrative positions generated for interface evaluation. Not calculated with an ephemeris — do not use for interpretation.",
-  },
-  natal(birth, settings) {
+/** Synchronous implementation (also handy for tests). */
+export const DemoEngineSync = {
+  natal(birth: BirthData, settings: ChartSettings): ChartPoints {
     return compute(daysSinceJ2000(birth.date, birth.time), birthKey(birth) + settings.houseSystem, settings);
   },
-  positionsAt(iso, settings, reference) {
+  positionsAt(iso: string, settings: ChartSettings, reference?: ChartPoints): ChartPoints {
     const [date, t] = iso.split("T");
-    const pts = compute(daysSinceJ2000(date!, (t ?? "12:00").slice(0, 5)), "transit" + date, settings, reference ? { asc: reference.asc, mc: reference.mc } : undefined, reference?.cusps);
-    return pts;
+    return compute(daysSinceJ2000(date!, (t ?? "12:00").slice(0, 5)), "transit" + date, settings, reference ? { asc: reference.asc, mc: reference.mc } : undefined, reference?.cusps);
   },
-  progressed(birth, targetDate, settings) {
+  progressed(birth: BirthData, targetDate: string, settings: ChartSettings): ChartPoints {
     const birthDays = daysSinceJ2000(birth.date, birth.time);
     const age = (daysSinceJ2000(targetDate, "12:00") - birthDays) / 365.25;
-    const natal = this.natal(birth, settings);
+    const natal = DemoEngineSync.natal(birth, settings);
     const prog = compute(birthDays + age, birthKey(birth) + "prog", settings);
     const arc = norm(prog.bodies.find((b) => b.id === "sun")!.lon - natal.bodies.find((b) => b.id === "sun")!.lon);
     const asc = norm(natal.asc + arc);
     const mc = norm(natal.mc + arc);
     return { ...prog, bodies: prog.bodies.map((b) => ({ ...b, house: houseOf(b.lon, natal.cusps) })), asc, mc, cusps: natal.cusps };
   },
-  solarArc(birth, targetDate, settings) {
-    const natal = this.natal(birth, settings);
+  solarArc(birth: BirthData, targetDate: string, settings: ChartSettings): ChartPoints {
+    const natal = DemoEngineSync.natal(birth, settings);
     const birthDays = daysSinceJ2000(birth.date, birth.time);
     const age = (daysSinceJ2000(targetDate, "12:00") - birthDays) / 365.25;
     const arc = norm(sunLon(birthDays + age) - sunLon(birthDays));
@@ -187,6 +180,20 @@ export const DemoEngine: AstrologyEngine = {
       mc: norm(natal.mc + arc),
     };
   },
+};
+
+export const DemoEngine: AstrologyEngine = {
+  info: {
+    id: "demo",
+    name: "Demonstration engine",
+    verified: false,
+    description:
+      "Approximate, illustrative positions generated for interface evaluation. Not calculated with an ephemeris — do not use for interpretation.",
+  },
+  natal: async (birth, settings) => DemoEngineSync.natal(birth, settings),
+  positionsAt: async (iso, settings, reference) => DemoEngineSync.positionsAt(iso, settings, reference),
+  progressed: async (birth, targetDate, settings) => DemoEngineSync.progressed(birth, targetDate, settings),
+  solarArc: async (birth, targetDate, settings) => DemoEngineSync.solarArc(birth, targetDate, settings),
 };
 
 export { houseOf };

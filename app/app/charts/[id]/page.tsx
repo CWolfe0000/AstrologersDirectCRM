@@ -77,7 +77,7 @@ function Workspace() {
   const view = useChartView(effective, overrides);
 
   if (!chart || !view) {
-    if (!hydrated) return <div className="h-[70vh] animate-pulse rounded-xl bg-canvas-2" />;
+    if (!hydrated || chart) return <div className="h-[70vh] animate-pulse rounded-xl bg-canvas-2" />;
     return (
       <div className="rounded-xl border border-line bg-surface">
         <EmptyState icon={<CircleDot />} title="Chart not found" body="It may have been removed, or demo data was reset." action={<ButtonLink href="/app/charts" size="sm">Back to charts</ButtonLink>} />

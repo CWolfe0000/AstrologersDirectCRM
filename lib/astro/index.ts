@@ -106,35 +106,35 @@ export function computeAspects(inner: ChartPoints, settings: ChartSettings, oute
 }
 
 /** Build everything the UI needs for a saved chart. */
-export function buildChart(chart: ChartRecord, people: Person[], overrides?: Partial<ChartSettings>, base?: ChartSettings): ChartView {
+export async function buildChart(chart: ChartRecord, people: Person[], overrides?: Partial<ChartSettings>, base?: ChartSettings): Promise<ChartView> {
   const engine = getEngine();
   const settings = resolveSettings({ ...chart.settings, ...overrides }, base);
   const pa = people.find((p) => p.id === chart.personIds[0]);
   const pb = people.find((p) => p.id === chart.personIds[1]);
   if (!pa) throw new Error("Chart subject not found");
-  const natalA = engine.natal(pa.birth, settings);
+  const natalA = await engine.natal(pa.birth, settings);
   const ref = chart.refDate ?? "2026-11-14";
   let inner = natalA;
   let outer: ChartPoints | undefined;
   switch (chart.type) {
     case "synastry":
-      if (pb) outer = engine.natal(pb.birth, settings);
+      if (pb) outer = await engine.natal(pb.birth, settings);
       break;
     case "composite":
-      if (pb) inner = composite(natalA, engine.natal(pb.birth, settings));
+      if (pb) inner = composite(natalA, await engine.natal(pb.birth, settings));
       break;
     case "transits":
-      outer = engine.positionsAt(ref + "T12:00", settings, natalA);
+      outer = await engine.positionsAt(ref + "T12:00", settings, natalA);
       break;
     case "progressions":
-      outer = engine.progressed(pa.birth, ref, settings);
+      outer = await engine.progressed(pa.birth, ref, settings);
       break;
     case "solar-arc":
-      outer = engine.solarArc(pa.birth, ref, settings);
+      outer = await engine.solarArc(pa.birth, ref, settings);
       break;
     case "solar-return": {
       const yr = ref.slice(0, 4);
-      inner = engine.natal({ ...pa.birth, date: `${yr}${pa.birth.date.slice(4)}` }, settings);
+      inner = await engine.natal({ ...pa.birth, date: `${yr}${pa.birth.date.slice(4)}` }, settings);
       break;
     }
   }
@@ -142,7 +142,7 @@ export function buildChart(chart: ChartRecord, people: Person[], overrides?: Par
 }
 
 /** Natal positions only — used for quick previews & thumbnails. */
-export function natalPoints(person: Person, settings: ChartSettings = DEFAULT_SETTINGS) {
+export function natalPoints(person: Person, settings: ChartSettings = DEFAULT_SETTINGS): Promise<ChartPoints> {
   return getEngine().natal(person.birth, settings);
 }
 

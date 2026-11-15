@@ -493,7 +493,7 @@ export function ReadingsTab({ client }: { client: Client }) {
                       </p>
                     </div>
                   </div>
-                  <div className="flex shrink-0 items-center gap-2 pl-12 sm:pl-0">
+                  <div className="flex shrink-0 flex-wrap items-center gap-2 pl-12 sm:pl-0">
                     <StatusBadge status={r.status} />
                     {r.status === "delivered" && <StatusBadge status={r.notification} label={r.notification === "opened" ? "Opened by client" : undefined} />}
                     {!r.allowDownload && r.status === "delivered" && <Badge tone="outline"><Lock className="size-3" /> Stream only</Badge>}
