@@ -54,7 +54,8 @@ const person = z
 const client = z
   .object({
     id,
-    email: z.string().email().max(200).or(z.literal("")),
+    // Practitioners may record incomplete contact details; the invite endpoint checks the address.
+    email: str(200),
     phone: opt(str(60)),
     pronouns: opt(str(40)),
     status: z.enum(["active", "new", "inactive", "archived"]),
@@ -155,7 +156,8 @@ const reading = z
     sizeMB: opt(z.number().min(0).max(100_000)),
     durationSec: opt(z.number().min(0).max(24 * 3600)),
     pages: opt(z.number().int().min(0).max(10_000)),
-    url: opt(z.string().url().max(2000)),
+    // Only web links; blocks javascript:/data: URLs being shown to clients as links.
+    url: opt(z.string().max(2000).regex(/^(https?:\/\/|[^:]*$)/i, "Links must start with https://")),
     message: str(10_000),
     status: z.enum(["draft", "ready", "delivered", "failed"]),
     createdAt: iso,

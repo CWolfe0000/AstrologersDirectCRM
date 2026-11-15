@@ -335,6 +335,7 @@ export function StudioPage() {
                 <div className="grid gap-4 md:grid-cols-3">
                   <Field label="Client">
                     <Select value={clientId} onChange={(e) => setClientId(e.target.value)}>
+                      {clients.length === 0 && <option value="">Add a client first</option>}
                       {clients.filter((c) => c.status !== "archived").map((c) => <option key={c.id} value={c.id}>{personName(people.find((p) => p.id === c.id))}</option>)}
                     </Select>
                   </Field>

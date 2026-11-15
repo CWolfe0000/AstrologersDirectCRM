@@ -149,7 +149,7 @@ export function NewDeliveryDialog({
       sizeMB: mode === "upload" ? Math.round((file?.sizeMB ?? 0) * 10) / 10 : undefined,
       durationSec: file?.durationSec,
       pages: file?.pages,
-      url: mode === "link" ? url : undefined,
+      url: mode === "link" ? (/^https?:\/\//i.test(url.trim()) ? url.trim() : "https://" + url.trim()) : undefined,
       message,
       status: send ? "ready" : "draft",
       allowDownload: kind === "link" ? false : allowDownload,

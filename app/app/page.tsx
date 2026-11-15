@@ -165,6 +165,11 @@ export default function DashboardPage() {
             {/* Recent clients */}
             <Card>
               <CardHeader title="Recent clients" icon={<Users />} action={<Link href="/app/clients" className="text-[12.5px] font-medium text-accent hover:underline">View all</Link>} />
+              {recentClients.length === 0 && (
+                <p className="px-5 py-6 text-[13px] text-muted">
+                  No clients yet. <Link href="/app/clients/new" className="font-medium text-accent hover:underline">Add your first client</Link>.
+                </p>
+              )}
               <ul className="divide-y divide-line">
                 {recentClients.map(({ c, lastAt, lastText, next }) => (
                   <li key={c.id}>
@@ -192,6 +197,7 @@ export default function DashboardPage() {
             {/* Activity */}
             <Card>
               <CardHeader title="Recent activity" icon={<ActivityIcon />} />
+              {s.activity.length === 0 && <p className="px-5 py-6 text-[13px] text-muted">Changes to clients, charts, observations and readings will appear here.</p>}
               <ul className="px-5 py-3">
                 {s.activity.slice(0, 7).map((a, i, arr) => {
                   const m = ACT_ICON[a.kind];

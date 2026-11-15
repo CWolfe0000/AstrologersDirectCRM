@@ -46,10 +46,10 @@ function Gate({ view, children }: { view: "app" | "portal"; children: React.Reac
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-canvas px-6 text-center">
         <Wordmark />
-        <p className="font-serif text-2xl">We couldn’t load your {view === "app" ? "workspace" : "portal"}</p>
+        <p className="font-serif text-2xl">{session.error.status === 404 ? "Nothing to show yet" : `We couldn’t load your ${view === "app" ? "workspace" : "portal"}`}</p>
         <p className="max-w-sm text-[14px] text-muted">{session.error.message}</p>
         <div className="flex gap-2">
-          <button className="h-9 rounded-lg bg-accent px-4 text-sm font-medium text-white" onClick={() => bootstrap(view, { as })}>Try again</button>
+          {session.error.status !== 404 && <button className="h-9 rounded-lg bg-accent px-4 text-sm font-medium text-white" onClick={() => bootstrap(view, { as })}>Try again</button>}
           {view === "portal" && <Link href="/app" className="flex h-9 items-center rounded-lg border border-line px-4 text-sm">Back to workspace</Link>}
         </div>
       </div>

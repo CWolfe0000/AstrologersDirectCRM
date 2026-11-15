@@ -115,8 +115,9 @@ function Observations() {
     const chart =
       (chartParam && charts.find((c) => c.id === chartParam)) ||
       (clientParam && (charts.find((c) => c.clientId === clientParam && c.type === "natal") ?? charts.find((c) => c.clientId === clientParam))) ||
-      charts.find((c) => c.type === "natal")!;
-    return ownershipFor(chart);
+      charts.find((c) => c.type === "natal") ||
+      charts[0];
+    return chart ? ownershipFor(chart) : null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params, charts, f.client, newKey]);
 
@@ -232,7 +233,14 @@ function Observations() {
   );
 
   const editor =
-    selected === "new" ? (
+    selected === "new" && !newInitial ? (
+      <EmptyState
+        icon={<NotebookPen />}
+        title="Add a client first"
+        body="Every observation belongs to a chart. Add a client and their natal chart, then write your first observation."
+        action={<Button size="sm" onClick={() => router.push("/app/clients/new")}><Plus /> Add client</Button>}
+      />
+    ) : selected === "new" && newInitial ? (
       <ObservationEditor key={`new-${newKey}`} initial={newInitial} onCreated={(id) => {
           createdRef.current = id;
           router.replace(`/app/observations?id=${id}`, { scroll: false });
