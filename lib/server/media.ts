@@ -2,7 +2,7 @@ import "server-only";
 import { HttpError, requireUser } from "./http";
 import { getRecord } from "./records";
 import { keyBelongs, serveObject } from "./storage";
-import { nowLocal } from "@/lib/utils";
+import { isExpired } from "./portal";
 
 /**
  * Who may open a stored file:
@@ -20,7 +20,7 @@ export async function serveMedia(req: Request, kind: "readings" | "files" | "rec
     if (kind === "recordings" || rec.clientId !== user.clientId) throw new HttpError(404, "File not found.");
     if (kind === "readings") {
       if (rec.status !== "delivered") throw new HttpError(404, "File not found.");
-      if (typeof rec.expiresAt === "string" && rec.expiresAt < nowLocal()) throw new HttpError(410, "This reading’s access period has ended. Ask your astrologer to share it again.");
+      if (isExpired(rec.expiresAt)) throw new HttpError(410, "This reading’s access period has ended. Ask your astrologer to share it again.");
       if (wantsDownload && !rec.allowDownload) throw new HttpError(403, "Your astrologer has shared this reading for viewing only.");
     } else if (rec.private) {
       throw new HttpError(404, "File not found.");

@@ -126,6 +126,16 @@ function Profile() {
                 <DropdownItem onSelect={() => router.push(`/app/delivery?new=1&client=${id}`)}><Send /> Deliver a reading</DropdownItem>
                 <DropdownItem onSelect={() => router.push(`/app/tasks?new=1&client=${id}`)}><ListPlus /> New task</DropdownItem>
                 <DropdownItem onSelect={() => router.push(`/portal?as=${id}`)}><Eye /> Preview their portal</DropdownItem>
+                {client.portalAccess !== "none" && (
+                  <DropdownItem
+                    onSelect={() => {
+                      s.updateClient(id, { portalAccess: "none" });
+                      s.toast("Portal access turned off", `${name} is signed out and can no longer open their portal. Send a new invitation to restore it.`, "success");
+                    }}
+                  >
+                    <KeyRound /> Turn off portal access
+                  </DropdownItem>
+                )}
                 {client.portalAccess !== "active" && (
                   <DropdownItem
                     onSelect={async () => {

@@ -26,7 +26,10 @@ export async function sendMail(to: string, subject: string, body: string) {
   } else {
     console.info(`\n[mail → ${to}] ${subject}\n${body}\n`);
   }
-  await db().insert(schema.outbox).values({ id: newId("mail"), to, subject, body, provider, status });
+  // With a real provider, never keep the body: it contains live sign-in links. In development the
+  // outbox is the delivery mechanism, so the body is kept there.
+  const stored = provider === "outbox" ? body : body.replace(/token=[\w-]+/g, "token=[redacted]");
+  await db().insert(schema.outbox).values({ id: newId("mail"), to, subject, body: stored, provider, status });
   return status;
 }
 

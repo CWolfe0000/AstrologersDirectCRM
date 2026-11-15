@@ -31,6 +31,8 @@ export function assertSameOrigin(req: Request) {
 }
 
 export async function readJson(req: Request, maxBytes = 1_000_000): Promise<unknown> {
+  const declared = Number(req.headers.get("content-length") ?? 0);
+  if (declared > maxBytes) throw new HttpError(413, "Request too large.");
   const text = await req.text();
   if (text.length > maxBytes) throw new HttpError(413, "Request too large.");
   try {
@@ -62,12 +64,32 @@ export function handler<A extends unknown[]>(fn: (req: Request, ...rest: A) => P
   };
 }
 
-/** Very small fixed-window rate limiter (per server instance). */
+/**
+ * Client IP for rate limiting. Uses the address set by the hosting proxy
+ * (x-real-ip on Vercel, or the last x-forwarded-for hop, which the trusted
+ * proxy appends) — never the client-controlled first hop.
+ */
+export function clientIp(req: Request) {
+  const real = req.headers.get("x-real-ip")?.trim();
+  if (real) return real;
+  const hops = req.headers.get("x-forwarded-for")?.split(",").map((h) => h.trim()).filter(Boolean) ?? [];
+  return hops[hops.length - 1] || "local";
+}
+
+/**
+ * Small fixed-window rate limiter (per server instance) — a first line of
+ * defence against floods. Account-level protection (lockout, 2FA attempt
+ * limits) lives in the database: see lib/server/guard.ts.
+ */
 const buckets = new Map<string, { n: number; reset: number }>();
+let lastPrune = 0;
 export function rateLimit(req: Request, key: string, limit: number, windowMs: number) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
-  const k = `${key}:${ip}`;
   const now = Date.now();
+  if (now - lastPrune > 60_000) {
+    for (const [k, b] of buckets) if (b.reset < now) buckets.delete(k);
+    lastPrune = now;
+  }
+  const k = `${key}:${clientIp(req)}`;
   const b = buckets.get(k);
   if (!b || b.reset < now) {
     buckets.set(k, { n: 1, reset: now + windowMs });

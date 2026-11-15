@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
-import { destroySession } from "@/lib/server/auth";
+import { destroySession, verifyPassword } from "@/lib/server/auth";
 import { db, schema } from "@/lib/server/db";
+import { removePracticeObjects } from "@/lib/server/storage";
 import { handler, HttpError, json, readJson, requireUser } from "@/lib/server/http";
 
 /**
@@ -10,9 +11,12 @@ import { handler, HttpError, json, readJson, requireUser } from "@/lib/server/ht
  */
 export const DELETE = handler(async (req) => {
   const user = await requireUser("owner");
-  const body = (await readJson(req)) as { confirm?: string };
+  const body = (await readJson(req)) as { confirm?: string; password?: string };
   if (body.confirm !== "DELETE") throw new HttpError(400, "Type DELETE to confirm.");
+  const [row] = await db().select().from(schema.users).where(eq(schema.users.id, user.id));
+  if (!(await verifyPassword(String(body.password ?? ""), row?.passwordHash ?? null))) throw new HttpError(400, "Your password isn’t right.");
   await destroySession();
   await db().delete(schema.practices).where(eq(schema.practices.id, user.practiceId));
+  await removePracticeObjects(user.practiceId);
   return json({ ok: true });
 });

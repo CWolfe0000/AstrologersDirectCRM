@@ -5,9 +5,10 @@ import path from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { randomBytes } from "node:crypto";
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, DeleteObjectsCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "./env";
+import { ALLOWED_TYPES } from "@/lib/media-types";
 import { newToken, sha256 } from "./crypto";
 
 /**
@@ -24,26 +25,7 @@ import { newToken, sha256 } from "./crypto";
  */
 
 export const MAX_UPLOAD_BYTES = 2 * 1024 ** 3; // 2 GB
-export const ALLOWED_TYPES = [
-  "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "image/jpeg",
-  "image/png",
-  "image/heic",
-  "audio/mpeg",
-  "audio/mp4",
-  "audio/x-m4a",
-  "audio/wav",
-  "audio/x-wav",
-  "audio/aac",
-  "audio/ogg",
-  "audio/webm",
-  "video/mp4",
-  "video/quicktime",
-  "video/webm",
-  "text/plain",
-];
+export { ALLOWED_TYPES };
 
 type Driver = "local" | "s3";
 function driver(): Driver {
@@ -76,7 +58,7 @@ function bucket() {
 }
 
 export function safeName(name: string) {
-  const base = name.normalize("NFKD").replace(/[^\w.\- ]+/g, "").replace(/\s+/g, "-").slice(-120);
+  const base = name.normalize("NFKD").replace(/[^\w.\- ]+/g, "").replace(/\s+/g, "-").replace(/^\.+/, "").slice(-120);
   return base || "file";
 }
 
@@ -90,7 +72,7 @@ export function keyBelongs(key: unknown, practiceId: string): key is string {
 }
 
 // ——— Local upload tickets (signed, single key, short-lived) ———————————————
-const tickets = new Map<string, { key: string; contentType: string; size: number; expires: number }>();
+const tickets = new Map<string, { key: string; practiceId: string; contentType: string; size: number; expires: number }>();
 
 export async function createUpload(practiceId: string, fileName: string, contentType: string, size: number) {
   const key = newKey(practiceId, fileName);
@@ -99,14 +81,17 @@ export async function createUpload(practiceId: string, fileName: string, content
     return { key, url, method: "PUT" as const, headers: { "Content-Type": contentType } };
   }
   const { raw, hash } = newToken();
-  tickets.set(hash, { key, contentType, size, expires: Date.now() + 3600_000 });
+  tickets.set(hash, { key, practiceId, contentType, size, expires: Date.now() + 3600_000 });
   return { key, url: `/api/v1/uploads/local?ticket=${raw}`, method: "PUT" as const, headers: { "Content-Type": contentType } };
 }
 
 /** Local driver only: stream an upload body to disk, enforcing the ticket. */
-export async function receiveLocalUpload(rawTicket: string, body: ReadableStream<Uint8Array> | null) {
+export async function receiveLocalUpload(rawTicket: string, practiceId: string, contentType: string | null, body: ReadableStream<Uint8Array> | null) {
   const t = tickets.get(sha256(rawTicket));
   if (!t || t.expires < Date.now()) throw Object.assign(new Error("Upload link expired. Try again."), { status: 400 });
+  // Checked before anything is written: the ticket belongs to this practice and this file type.
+  if (t.practiceId !== practiceId) throw Object.assign(new Error("Not allowed."), { status: 403 });
+  if ((contentType ?? "").split(";")[0]!.trim() !== t.contentType) throw Object.assign(new Error("File type doesn’t match the upload."), { status: 415 });
   tickets.delete(sha256(rawTicket));
   if (!body) throw Object.assign(new Error("Empty upload."), { status: 400 });
   const file = path.join(localDir(), t.key);
@@ -144,12 +129,34 @@ export async function removeObject(key: string) {
   else await rm(path.join(localDir(), key), { force: true });
 }
 
+/** Delete every stored object belonging to a practice (account deletion / clearing records). */
+export async function removePracticeObjects(practiceId: string) {
+  if (!/^[\w-]+$/.test(practiceId)) throw new Error("Invalid practice id");
+  if (driver() === "s3") {
+    let token: string | undefined;
+    do {
+      const page = await s3Client().send(new ListObjectsV2Command({ Bucket: bucket(), Prefix: practiceId + "/", ContinuationToken: token }));
+      const keys = (page.Contents ?? []).map((o) => ({ Key: o.Key! }));
+      if (keys.length) await s3Client().send(new DeleteObjectsCommand({ Bucket: bucket(), Delete: { Objects: keys } }));
+      token = page.IsTruncated ? page.NextContinuationToken : undefined;
+    } while (token);
+    return;
+  }
+  await rm(path.join(localDir(), practiceId), { recursive: true, force: true });
+}
+
 /**
  * Serve an object. S3: redirect to a short-lived signed URL.
  * Local: stream from disk with HTTP Range support (so audio/video can seek).
  */
+const INLINE_TYPES = /^(application\/pdf|audio\/|video\/|image\/(jpeg|png))/;
+
 export async function serveObject(req: Request, key: string, opts: { download: boolean; fileName: string; contentType?: string }) {
-  const disposition = `${opts.download ? "attachment" : "inline"}; filename="${safeName(opts.fileName)}"`;
+  // Only allowlisted types are served, and only media/PDF/images ever display inline.
+  const type = opts.contentType && ALLOWED_TYPES.includes(opts.contentType) ? opts.contentType : "application/octet-stream";
+  const inline = !opts.download && INLINE_TYPES.test(type);
+  const disposition = `${inline ? "inline" : "attachment"}; filename="${safeName(opts.fileName)}"`;
+  opts = { ...opts, contentType: type };
   if (driver() === "s3") {
     const url = await getSignedUrl(
       s3Client(),
@@ -168,6 +175,8 @@ export async function serveObject(req: Request, key: string, opts: { download: b
     "Accept-Ranges": "bytes",
     "Cache-Control": "private, no-store",
     "X-Content-Type-Options": "nosniff",
+    // Downloads can never run as a page on our origin. (Inline types are PDF/audio/video/images only.)
+    ...(inline ? {} : { "Content-Security-Policy": "sandbox; default-src 'none'" }),
   };
   const range = req.headers.get("range")?.match(/^bytes=(\d*)-(\d*)$/);
   if (range) {

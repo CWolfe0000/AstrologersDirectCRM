@@ -16,6 +16,8 @@ Status key: ✅ done · 🟡 in progress · ⬜ not started · 🔒 blocked (the
 - ✅ Two-factor authentication: authenticator app with QR setup, 10 single-use recovery codes, a code step at sign-in. A password reset no longer signs you in when two-factor is on.
 - ✅ Session list and remote sign-out in Settings → Security
 - ⬜ Sign-in email change with re-verification
+- ✅ Internal security review (AI-assisted, 2026-11-15). Fixed: 2FA brute force (5 tries per sign-in ticket, account lockout after 8 failures, codes can't be replayed, the client IP is taken from the trusted proxy); sign-in links no longer kept in the outbox in production; invites can't reset an existing password or skip 2FA; turning off portal access ends the client's sessions; stored files deleted with the account; open-redirect after login; content types allowlisted, and downloads served as attachments in a sandbox; recovery-code race; expiry lasts through the whole expiry day; account deletion needs the password.
+- ⬜ Open from that review (lower priority): client email addresses are unique platform-wide, so one person can't be a client of two astrologers, and an unverified sign-up can claim an address; rate limits are kept per server instance; "delivered" emails can repeat if a reading is toggled; simultaneous edits to the same record overwrite each other (last write wins); encrypted fields aren't bound to their row (defence in depth); 2FA setup doesn't re-ask for the password.
 - ⬜ Professional security review before real client data goes in
 
 ### Data

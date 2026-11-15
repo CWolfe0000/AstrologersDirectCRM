@@ -3,6 +3,13 @@ import { getSettings, listCollection } from "./records";
 
 type Rec = Record<string, unknown>;
 
+/** Access lasts through the whole expiry day. */
+export function isExpired(expiresAt: unknown, now = new Date()) {
+  if (typeof expiresAt !== "string" || !expiresAt) return false;
+  const today = now.toISOString().slice(0, 10);
+  return expiresAt.slice(0, 10) < today;
+}
+
 /**
  * Everything a client may see in their portal — and nothing else.
  * Never includes: observations, tasks, charts' working data, recordings,
@@ -27,7 +34,7 @@ export async function portalView(practiceId: string, clientId: string) {
     practitioner: { name: p.name, firstName: p.firstName, title: p.title, email: p.email, phone: p.phone, practice: p.practice, website: p.website, bio: p.bio, timezone: p.timezone, plan: "" },
     people: me ? [{ id: me.id, firstName: me.firstName, lastName: me.lastName, birth: me.birth }] : [],
     clients: client ? [{ id: client.id, email: client.email, status: client.status, createdAt: client.createdAt, tags: [], portalAccess: client.portalAccess }] : [],
-    readings: readings.filter((r) => r.clientId === clientId && r.status === "delivered"),
+    readings: readings.filter((r) => r.clientId === clientId && r.status === "delivered" && !isExpired(r.expiresAt)),
     consultations: consultations
       .filter((k) => k.clientId === clientId)
       .map((k) => ({

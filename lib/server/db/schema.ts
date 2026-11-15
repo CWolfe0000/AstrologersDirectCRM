@@ -1,4 +1,4 @@
-import { index, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { bigint, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 /**
  * Data model.
@@ -41,6 +41,11 @@ export const users = pgTable(
     totpEnabledAt: timestamp("totp_enabled_at", { withTimezone: true }),
     /** JSON array of SHA-256 hashes of unused recovery codes. */
     recoveryCodes: text("recovery_codes"),
+    /** Last accepted TOTP time step — a code can't be used twice. */
+    totpLastStep: bigint("totp_last_step", { mode: "number" }),
+    /** Consecutive failed sign-in attempts (password or code) and the resulting lockout. */
+    failedLogins: integer("failed_logins").notNull().default(0),
+    lockedUntil: timestamp("locked_until", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [uniqueIndex("users_email_idx").on(t.email), index("users_practice_idx").on(t.practiceId)],
@@ -68,6 +73,8 @@ export const authTokens = pgTable(
     kind: text("kind", { enum: ["verify", "reset", "invite", "mfa"] }).notNull(),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
     usedAt: timestamp("used_at", { withTimezone: true }),
+    /** Failed uses (2FA tickets are invalidated after a few wrong codes). */
+    attempts: integer("attempts").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [index("auth_tokens_user_idx").on(t.userId)],

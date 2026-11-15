@@ -1,0 +1,21 @@
+/** File types accepted for uploads and stored records (shared by server validation and storage). */
+export const ALLOWED_TYPES: string[] = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "image/jpeg",
+  "image/png",
+  "image/heic",
+  "audio/mpeg",
+  "audio/mp4",
+  "audio/x-m4a",
+  "audio/wav",
+  "audio/x-wav",
+  "audio/aac",
+  "audio/ogg",
+  "audio/webm",
+  "video/mp4",
+  "video/quicktime",
+  "video/webm",
+  "text/plain",
+];

@@ -176,6 +176,8 @@ await page.goto(BASE + "/app");
 await page.evaluate(() => fetch("/api/auth/logout", { method: "POST" }));
 await page.goto(BASE + "/app");
 await page.waitForURL(/\/auth\/login/);
+// A crafted ?next= must not send the user off-site after signing in.
+await page.goto(BASE + "/auth/login?next=" + encodeURIComponent("/\\evil.example/phish"));
 await page.fill("#email", owner.email);
 await page.fill("#password", "wrong-password-123");
 await page.click('button[type="submit"]');
@@ -183,7 +185,20 @@ await page.getByText("don't match").waitFor();
 await page.fill("#password", owner.password);
 await page.click('button[type="submit"]');
 await page.waitForURL(/\/app$/);
+assert.equal(new URL(page.url()).host, new URL(BASE).host, "stayed on our site");
 await page.getByText("Amelia Hart").first().waitFor({ timeout: 15000 });
+
+step("repeated wrong passwords lock the account for a while");
+{
+  const lctx = await browser.newContext();
+  const lp = await lctx.newPage();
+  await lp.goto(BASE + "/auth/login");
+  const tryLogin = (pw) => lp.evaluate(([e, p]) => fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json", "X-Forwarded-For": Math.random().toString() }, body: JSON.stringify({ email: e, password: p }) }).then((r) => r.status), [owner.email, pw]);
+  for (let i = 0; i < 8; i++) assert.equal(await tryLogin("wrong-" + i), 401);
+  assert.equal(await tryLogin(owner.password), 429, "locked even with the right password (and a spoofed IP header doesn't help)");
+  await db.query("update users set failed_logins=0, locked_until=null where email=$1", [owner.email]);
+  assert.equal(await tryLogin(owner.password), 200, "unlocked after the lock period");
+}
 
 await browser.close();
 await db.end();

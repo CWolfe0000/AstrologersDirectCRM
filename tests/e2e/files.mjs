@@ -108,6 +108,19 @@ assert.equal((await call(cp, `/api/v1/media/files/${file.id}`)).status, 404, "pr
 await put(page, "files", { ...file, private: false });
 assert.equal((await call(cp, `/api/v1/media/files/${file.id}`)).status, 200, "shared file visible");
 
+step("content types are allowlisted");
+s = await state(page);
+assert.equal((await put(page, "files", { ...s.files.find((f) => f.id === file.id), contentType: "text/html" })).status, 422, "HTML content type refused");
+
+step("re-inviting an active client doesn't reset their password");
+assert.equal((await call(page, "/api/v1/portal/invite", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clientId: "c1" }) })).status, 409);
+
+step("turning off portal access signs the client out");
+s = await state(page);
+await put(page, "clients", { ...s.clients.find((c) => c.id === "c1"), portalAccess: "none" });
+assert.equal((await call(cp, `/api/v1/media/files/${file.id}`)).status, 401, "client session ended");
+assert.equal((await call(cp, "/api/v1/bootstrap?view=portal")).status, 401);
+
 step("another practice can't open any of it");
 const otherCtx = await browser.newContext();
 const other = await signup(otherCtx, "Intruder");

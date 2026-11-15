@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ALLOWED_TYPES } from "@/lib/media-types";
 
 /**
  * Runtime validation for every record written through the API. Mirrors
@@ -10,6 +11,7 @@ const str = (max = 500) => z.string().max(max);
 const iso = z.string().max(40);
 const html = z.string().max(200_000);
 const opt = <T extends z.ZodTypeAny>(t: T) => t.optional();
+const contentType = z.enum(ALLOWED_TYPES as [string, ...string[]]);
 
 const bodyId = z.enum(["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto", "node", "chiron", "asc", "mc"]);
 const aspectId = z.enum(["conjunction", "opposition", "trine", "square", "sextile", "quincunx", "semisextile", "semisquare", "sesquiquadrate"]);
@@ -154,7 +156,7 @@ const reading = z
     kind: readingKind,
     fileName: opt(str(300)),
     fileKey: opt(str(300)),
-    contentType: opt(str(120)),
+    contentType: opt(contentType),
     sizeMB: opt(z.number().min(0).max(100_000)),
     durationSec: opt(z.number().min(0).max(24 * 3600)),
     pages: opt(z.number().int().min(0).max(10_000)),
@@ -185,7 +187,7 @@ const recording = z
     status: z.enum(["saved", "delivered"]),
     readingId: opt(id),
     fileKey: opt(str(300)),
-    contentType: opt(str(120)),
+    contentType: opt(contentType),
   })
   .strict();
 
@@ -200,7 +202,7 @@ const file = z
     private: z.boolean(),
     note: opt(str(2000)),
     fileKey: opt(str(300)),
-    contentType: opt(str(120)),
+    contentType: opt(contentType),
   })
   .strict();
 

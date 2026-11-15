@@ -22,10 +22,14 @@ export const PUT = handler(async (req: Request, ctx: Ctx) => {
   if ((collection === "readings" || collection === "files" || collection === "recordings") && body.fileKey !== undefined && !keyBelongs(body.fileKey, user.practiceId))
     throw new HttpError(422, "That file doesn’t belong to this practice.");
   const withFiles = collection === "readings" || collection === "files" || collection === "recordings";
-  const before = withFiles ? await getRecord(user.practiceId, collection, id) : null;
+  const before = withFiles || collection === "clients" ? await getRecord(user.practiceId, collection, id) : null;
   const saved = await upsertRecord(user.practiceId, collection, body);
   if (collection === "readings" && saved.status === "delivered" && before?.status !== "delivered") {
     await notifyDelivered(user.practiceId, saved);
+  }
+  // Portal access turned off (or client archived): remove their login, which ends their sessions.
+  if (collection === "clients" && (saved.portalAccess === "none" || saved.status === "archived") && before && (before.portalAccess !== saved.portalAccess || before.status !== saved.status)) {
+    await db().delete(schema.users).where(and(eq(schema.users.practiceId, user.practiceId), eq(schema.users.clientId, id), eq(schema.users.role, "client")));
   }
   // Replaced file: remove the old object.
   if (before?.fileKey && before.fileKey !== saved.fileKey && keyBelongs(before.fileKey, user.practiceId) && !(await isFileReferenced(user.practiceId, before.fileKey as string)))

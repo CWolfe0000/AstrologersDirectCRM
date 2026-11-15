@@ -15,6 +15,13 @@
       "when": 1794729378935,
       "tag": "0001_two_factor",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794729895298,
+      "tag": "0002_auth_hardening",
+      "breakpoints": true
     }
   ]
 }

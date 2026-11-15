@@ -7,7 +7,7 @@ export const PUT = handler(async (req) => {
   const user = await requireUser("owner");
   const ticket = new URL(req.url).searchParams.get("ticket") ?? "";
   try {
-    const r = await receiveLocalUpload(ticket, req.body);
+    const r = await receiveLocalUpload(ticket, user.practiceId, req.headers.get("content-type"), req.body);
     if (!keyBelongs(r.key, user.practiceId)) throw new HttpError(403, "Not allowed.");
     return json({ ok: true, key: r.key, bytes: r.bytes });
   } catch (e) {

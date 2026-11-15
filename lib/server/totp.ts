@@ -52,15 +52,20 @@ export function totp(secret: string, at = Date.now()) {
   return hotp(secret, Math.floor(at / 30_000));
 }
 
+/** The time step the code matches (current, or one either side for clock drift), or null. */
+export function matchTotpStep(secret: string, code: string, at = Date.now()): number | null {
+  const c = String(code).replace(/\s+/g, "");
+  if (!/^\d{6}$/.test(c)) return null;
+  const step = Math.floor(at / 30_000);
+  for (const d of [-1, 0, 1]) {
+    if (timingSafeEqual(Buffer.from(hotp(secret, step + d)), Buffer.from(c))) return step + d;
+  }
+  return null;
+}
+
 /** Accepts the current code and one step either side (clock drift). */
 export function verifyTotp(secret: string, code: string, at = Date.now()) {
-  const c = String(code).replace(/\s+/g, "");
-  if (!/^\d{6}$/.test(c)) return false;
-  const step = Math.floor(at / 30_000);
-  return [-1, 0, 1].some((d) => {
-    const expected = Buffer.from(hotp(secret, step + d));
-    return timingSafeEqual(expected, Buffer.from(c));
-  });
+  return matchTotpStep(secret, code, at) !== null;
 }
 
 export function otpauthUrl(secret: string, account: string, issuer = "AstrologersDirect") {

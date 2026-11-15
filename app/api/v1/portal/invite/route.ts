@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db, schema } from "@/lib/server/db";
 import { handler, HttpError, json, rateLimit, readJson, requireUser } from "@/lib/server/http";
 import { getRecord, getSettings, upsertRecord } from "@/lib/server/records";
@@ -22,10 +22,14 @@ export const POST = handler(async (req) => {
   const [existing] = await db().select().from(schema.users).where(eq(schema.users.email, email));
   let userId: string;
   if (existing) {
+    // Deliberately generic: don't reveal whether the address is used elsewhere on the platform.
     if (existing.practiceId !== owner.practiceId || existing.clientId !== clientId)
-      throw new HttpError(409, "This email address already belongs to another AstrologersDirect account.");
+      throw new HttpError(409, "We can’t send a portal invitation to this email address. Ask the client for another address.");
+    if (existing.passwordHash) throw new HttpError(409, `${person.firstName} already has portal access. They can sign in, or use “Forgot password” on the sign-in page.`);
     userId = existing.id;
   } else {
+    // One login per client: an older login under a previous email address is removed.
+    await db().delete(schema.users).where(and(eq(schema.users.practiceId, owner.practiceId), eq(schema.users.clientId, clientId!), eq(schema.users.role, "client")));
     userId = newId("usr");
     await db().insert(schema.users).values({ id: userId, practiceId: owner.practiceId, email, name, role: "client", clientId });
   }

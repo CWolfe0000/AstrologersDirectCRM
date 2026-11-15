@@ -419,6 +419,7 @@ export function DataSection() {
   const s = useStore();
   const [del, setDel] = React.useState(false);
   const [clear, setClear] = React.useState(false);
+  const [delPassword, setDelPassword] = React.useState("");
   const [confirm, setConfirm] = React.useState("");
   const [privacy, setPrivacy] = React.useState({ anonymised: false, retention: "indefinite" });
 
@@ -536,7 +537,7 @@ export function DataSection() {
                 onClick={async () => {
                   if (DATA_MODE === "demo") { setDel(false); s.toast("Account deletion simulated", "Nothing was deleted in the prototype."); return; }
                   try {
-                    await api("/api/v1/account", { method: "DELETE", body: { confirm: "DELETE" } });
+                    await api("/api/v1/account", { method: "DELETE", body: { confirm: "DELETE", password: delPassword } });
                     window.location.href = "/";
                   } catch (e) {
                     s.toast("Account not deleted", (e as Error).message, "error");
@@ -549,6 +550,7 @@ export function DataSection() {
           }
         >
           <Field label={<>Type <span className="font-mono">DELETE</span> to confirm</>}><Input value={confirm} onChange={(e) => setConfirm(e.target.value)} /></Field>
+          {DATA_MODE !== "demo" && <Field label="Your password" className="mt-3"><Input type="password" autoComplete="current-password" value={delPassword} onChange={(e) => setDelPassword(e.target.value)} /></Field>}
           {DATA_MODE === "demo" && <SimulatedNote className="mt-4">Simulated — no data is deleted.</SimulatedNote>}
         </DialogContent>
       </Dialog>

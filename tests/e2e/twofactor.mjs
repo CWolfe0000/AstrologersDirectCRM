@@ -27,6 +27,14 @@ function code(secret, offset = 0) {
   return ((h.readUInt32BE(o) & 0x7fffffff) % 1e6).toString().padStart(6, "0");
 }
 
+// Each code can be used once: wait for a time step we haven't used yet.
+let lastStep = -1;
+async function freshCode(secret) {
+  while (Math.floor(Date.now() / 30000) <= lastStep) await new Promise((r) => setTimeout(r, 1000));
+  lastStep = Math.floor(Date.now() / 30000);
+  return code(secret);
+}
+
 const browser = await chromium.launch();
 const page = await (await browser.newContext()).newPage();
 
@@ -45,7 +53,7 @@ const secret = (await dialog.locator("span.font-mono").innerText()).trim();
 await dialog.locator("#tfa").fill("000000");
 await dialog.getByRole("button", { name: "Turn on" }).click();
 await dialog.getByText("didn’t match").waitFor();
-await dialog.locator("#tfa").fill(code(secret));
+await dialog.locator("#tfa").fill(await freshCode(secret));
 await dialog.getByRole("button", { name: "Turn on" }).click();
 await page.getByText("Save your recovery codes").waitFor();
 const recovery = (await page.getByRole("dialog").locator(".font-mono span").allInnerTexts()).map((s) => s.trim());
@@ -63,9 +71,22 @@ assert.equal(await page.evaluate(() => fetch("/api/v1/bootstrap?view=app").then(
 await page.fill("#code", "123456");
 await page.click('button[type="submit"]');
 await page.getByText("didn’t match").waitFor();
-await page.fill("#code", code(secret));
+const loginCode = await freshCode(secret);
+await page.fill("#code", loginCode);
 await page.click('button[type="submit"]');
 await page.waitForURL(/\/app$/);
+
+step("a code can't be replayed, and a ticket dies after 5 wrong codes");
+{
+  await page.evaluate(() => fetch("/api/auth/logout", { method: "POST" }));
+  const t = await page.evaluate(([e, p]) => fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: e, password: p }) }).then((r) => r.json()), [email, password]);
+  const replay = await page.evaluate(([tk, c]) => fetch("/api/auth/login/2fa", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ticket: tk, code: c }) }).then((r) => r.status), [t.ticket, loginCode]);
+  assert.equal(replay, 401, "replayed code refused");
+  for (let i = 0; i < 4; i++) await page.evaluate((tk) => fetch("/api/auth/login/2fa", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ticket: tk, code: "000000" }) }), t.ticket);
+  const burnt = await page.evaluate(([tk, c]) => fetch("/api/auth/login/2fa", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ticket: tk, code: c }) }).then((r) => r.status), [t.ticket, await freshCode(secret)]);
+  assert.equal(burnt, 400, "ticket invalid after 5 wrong codes, even with a right one");
+  await db.query("update users set failed_logins=0, locked_until=null where email=$1", [email]);
+}
 
 step("a recovery code works once");
 async function loginWith(c) {
@@ -87,8 +108,9 @@ assert.equal(await page.evaluate(() => fetch("/api/v1/bootstrap?view=app").then(
 
 step("turn two-factor off");
 const r1 = await page.evaluate((e) => fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: e, password: "a-brand-new-pass" }) }).then((r) => r.json()), email);
-await page.evaluate(([t, c]) => fetch("/api/auth/login/2fa", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ticket: t, code: c }) }), [r1.ticket, code(secret)]);
-const off = await page.evaluate(([c]) => fetch("/api/auth/2fa/disable", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: "a-brand-new-pass", code: c }) }).then((r) => r.status), [code(secret)]);
+const in2 = await page.evaluate(([t, c]) => fetch("/api/auth/login/2fa", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ticket: t, code: c }) }).then((r) => r.status), [r1.ticket, await freshCode(secret)]);
+assert.equal(in2, 200);
+const off = await page.evaluate(([c]) => fetch("/api/auth/2fa/disable", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: "a-brand-new-pass", code: c }) }).then((r) => r.status), [await freshCode(secret)]);
 assert.equal(off, 200);
 const plain = await page.evaluate((e) => fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: e, password: "a-brand-new-pass" }) }).then((r) => r.json()), email);
 assert.ok(!plain.twoFactor, "no second step once turned off");
