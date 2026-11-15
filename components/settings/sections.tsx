@@ -5,7 +5,7 @@ import { Camera, Monitor, Smartphone, ShieldCheck, Download, Upload, Trash2, Rot
 import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { ASPECTS, BODIES, HOUSE_SYSTEMS, PLANET_IDS, ZODIACS, type AspectId, type BodyId, type HouseSystem, type ZodiacType } from "@/lib/astro";
-import { cn, DATA_MODE } from "@/lib/utils";
+import { cn, DATA_MODE, fmtDate } from "@/lib/utils";
 import { api } from "@/lib/api";
 import { bootstrap, loadSampleData } from "@/lib/sync";
 import { Card, CardHeader, CardBody, CardFooter } from "@/components/ui/card";
@@ -238,16 +238,56 @@ export function NotificationsSection() {
   );
 }
 
+/** Rough, readable device name from a user-agent string. */
+function describeAgent(ua: string | null) {
+  if (!ua) return { name: "Unknown device", mobile: false };
+  const browser = /Edg\//.test(ua) ? "Edge" : /Firefox\//.test(ua) ? "Firefox" : /Chrome\//.test(ua) ? "Chrome" : /Safari\//.test(ua) ? "Safari" : "Browser";
+  const os = /iPhone|iPad/.test(ua) ? "iOS" : /Android/.test(ua) ? "Android" : /Mac OS X/.test(ua) ? "macOS" : /Windows/.test(ua) ? "Windows" : /Linux/.test(ua) ? "Linux" : "";
+  return { name: os ? `${browser} on ${os}` : browser, mobile: /iPhone|Android|Mobile/.test(ua) };
+}
+
 // ——— Security ————————————————————————————————————————————————————————
 export function SecuritySection() {
   const toast = useStore((s) => s.toast);
   const [twofa, setTwofa] = React.useState(false);
   const [pw, setPw] = React.useState({ cur: "", next: "", confirm: "" });
-  const [sessions, setSessions] = React.useState([
-    { id: "1", icon: Monitor, name: "Chrome on macOS", where: "Portland, OR · this device", when: "Active now", current: true },
-    { id: "2", icon: Smartphone, name: "Safari on iPhone", where: "Portland, OR", when: "2 hours ago", current: false },
-    { id: "3", icon: Monitor, name: "Firefox on Windows", where: "Lisbon, Portugal", when: "Oct 30, 2026", current: false },
-  ]);
+  const [sessions, setSessions] = React.useState<{ id: string; icon: typeof Monitor; name: string; where: string; when: string; current: boolean }[]>(
+    DATA_MODE === "demo"
+      ? [
+          { id: "1", icon: Monitor, name: "Chrome on macOS", where: "Portland, OR · this device", when: "Active now", current: true },
+          { id: "2", icon: Smartphone, name: "Safari on iPhone", where: "Portland, OR", when: "2 hours ago", current: false },
+          { id: "3", icon: Monitor, name: "Firefox on Windows", where: "Lisbon, Portugal", when: "Oct 30, 2026", current: false },
+        ]
+      : [],
+  );
+  const loadSessions = React.useCallback(() => {
+    if (DATA_MODE === "demo") return;
+    api<{ sessions: { id: string; userAgent: string | null; createdAt: string; current: boolean }[] }>("/api/auth/sessions")
+      .then((r) =>
+        setSessions(
+          r.sessions.map((x) => {
+            const d = describeAgent(x.userAgent);
+            return { id: x.id, icon: d.mobile ? Smartphone : Monitor, name: d.name, where: x.current ? "This device" : "Signed in", when: `Since ${fmtDate(x.createdAt)}`, current: x.current };
+          }),
+        ),
+      )
+      .catch(() => {});
+  }, []);
+  React.useEffect(loadSessions, [loadSessions]);
+  const endSession = async (body: { id?: string; others?: boolean }) => {
+    if (DATA_MODE === "demo") {
+      setSessions((x) => (body.others ? x.filter((s) => s.current) : x.filter((s) => s.id !== body.id)));
+      if (body.others) toast("Signed out of other sessions");
+      return;
+    }
+    try {
+      await api("/api/auth/sessions", { method: "DELETE", body });
+      toast(body.others ? "Signed out of other sessions" : "Session signed out", undefined, "success");
+      loadSessions();
+    } catch (e) {
+      toast("Couldn’t sign out that session", (e as Error).message, "error");
+    }
+  };
   const ok = pw.cur && pw.next.length >= 10 && pw.next === pw.confirm;
   return (
     <div className="space-y-6">
@@ -290,7 +330,7 @@ export function SecuritySection() {
         </CardBody>
       </Card>
       <Card>
-        <CardHeader title="Active sessions" action={<Button variant="secondary" size="xs" onClick={() => { setSessions((x) => x.filter((s) => s.current)); toast("Signed out of other sessions"); }}>Sign out all others</Button>} />
+        <CardHeader title="Active sessions" action={<Button variant="secondary" size="xs" onClick={() => void endSession({ others: true })}>Sign out all others</Button>} />
         <ul className="divide-y divide-line">
           {sessions.map((x) => (
             <li key={x.id} className="flex items-center gap-3 px-5 py-3">
@@ -299,7 +339,7 @@ export function SecuritySection() {
                 <p className="text-[13.5px] font-medium">{x.name} {x.current && <Badge tone="sage" className="ml-1">This device</Badge>}</p>
                 <p className="text-[12px] text-muted">{x.where} · {x.when}</p>
               </div>
-              {!x.current && <Button variant="ghost" size="xs" onClick={() => setSessions((s) => s.filter((y) => y.id !== x.id))}>Revoke</Button>}
+              {!x.current && <Button variant="ghost" size="xs" onClick={() => void endSession({ id: x.id })}>Sign out</Button>}
             </li>
           ))}
         </ul>

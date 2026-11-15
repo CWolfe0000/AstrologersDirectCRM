@@ -14,7 +14,7 @@ Status key: ✅ done · 🟡 in progress · ⬜ not started · 🔒 blocked (the
 - ✅ Encryption at rest (AES-256-GCM) for birth data, client contact details, notes, observation text and messages
 - ✅ Rate limits on login, sign-up, reset and invitations. Same-origin check on every write.
 - ⬜ Two-factor authentication (TOTP)
-- ⬜ Session list and remote sign-out in Settings (the API exists; the screen is still simulated)
+- ✅ Session list and remote sign-out in Settings → Security
 - ⬜ Sign-in email change with re-verification
 - ⬜ Professional security review before real client data goes in
 

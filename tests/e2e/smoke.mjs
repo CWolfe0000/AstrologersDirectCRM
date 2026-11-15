@@ -156,6 +156,21 @@ await p2.evaluate(() =>
 const { rows: c1rows } = await db.query("select practice_id from clients where id='c1'");
 assert.ok(c1rows.some((r) => r.practice_id === practiceId), "original c1 untouched");
 
+step("session list: a second device appears and can be signed out remotely");
+const devCtx = await browser.newContext();
+const dev = await devCtx.newPage();
+await dev.goto(BASE + "/auth/login");
+await dev.fill("#email", owner.email);
+await dev.fill("#password", owner.password);
+await dev.click('button[type="submit"]');
+await dev.waitForURL(/\/app/);
+const list = await page.evaluate(() => fetch("/api/auth/sessions").then((r) => r.json()));
+assert.ok(list.sessions.length >= 2 && list.sessions.filter((x) => x.current).length === 1, "both sessions listed, one current");
+await page.evaluate(() => fetch("/api/auth/sessions", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ others: true }) }));
+const after2 = await dev.evaluate(() => fetch("/api/v1/bootstrap?view=app").then((r) => r.status));
+assert.equal(after2, 401, "other device signed out");
+assert.equal(await page.evaluate(() => fetch("/api/v1/bootstrap?view=app").then((r) => r.status)), 200, "this device still signed in");
+
 step("sign out, then sign back in");
 await page.goto(BASE + "/app");
 await page.evaluate(() => fetch("/api/auth/logout", { method: "POST" }));
