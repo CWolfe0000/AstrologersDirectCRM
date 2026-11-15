@@ -61,6 +61,8 @@ npm run build && npm start &
 npm run test:e2e      # end-to-end smoke test (needs Playwright + Chromium)
 node tests/e2e/flows.mjs
 node tests/e2e/files.mjs
+node tests/e2e/recording.mjs     # uses Chromium's simulated microphone
+node tests/e2e/twofactor.mjs     # takes ~2 minutes: waits for fresh authenticator codes
 ```
 
 CI (`.github/workflows/ci.yml`) runs all of these against a Postgres service on every push.
