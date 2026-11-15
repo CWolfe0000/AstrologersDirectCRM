@@ -38,9 +38,9 @@ Calculated chart data always shows a **Demonstration positions** label.
 | **Client notifications** | In-portal notification on delivery. In server mode an email is also sent to clients with a portal login (needs a Resend key; otherwise logged to the outbox). | A transactional email provider, notification preferences, and open tracking. |
 | **Recording Studio** | Recording is simulated by default (timer, meter, player). Real devices (`getUserMedia` / `getDisplayMedia` + `MediaRecorder`) can be tried in the browser, but recordings are not uploaded. | Upload of recorded media to storage, server-side transcoding (HLS), plus later transcription, trimming, chapters and captions. |
 | **Media playback in the portal** | ✅ **Real for uploaded files:** native audio and video players with seeking, and inline PDFs. Sample data and demo mode use simulated players. | Server-side transcoding (HLS) for long videos, and a branded PDF viewer. |
-| **Calendar** | Internal calendar only. | External calendar sync (Google/Microsoft), self-service booking, automated reminders, video-call links. |
+| **Calendar** | ✅ **Real in server mode:** reminder emails to clients and a private calendar feed (.ics). | Two-way Google and Microsoft calendar sync, self-service booking, video-call links. |
 | **Reports** | Demonstration numbers. Some series are derived from the store, others are seeded. | Analytics queries over real data. Revenue reporting once payments are integrated. |
-| **Import** | Simulated CSV import dialog. | A column-mapping importer and importers for common astrology software formats. |
+| **Import** | ✅ **Real:** CSV import with column matching and a review step. The birthplace lookup uses a short built-in list of cities, and coordinates in the file are used directly. | A geocoding service for any birthplace (Sky uses Geoapify), and importers for other astrology software's file formats. |
 | **Subscription & billing** | Placeholder plan names and usage meters. No prices. | A billing provider (e.g. Stripe), with plans and limits set by the business. |
 | **Chart export / print** | Print uses the browser's print dialog. Exports are client-side. | Server-rendered PDF/PNG exports with practice branding. |
 | **Marketing forms** (contact, advisory group) | Show a confirmation toast. | A CRM or helpdesk integration. |

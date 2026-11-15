@@ -144,7 +144,7 @@ function Signup() {
           e.preventDefault();
           run(async () => {
             const name = `${f.first.trim()} ${f.last.trim()}`.trim();
-            await api("/api/auth/signup", { body: { name, practice: f.practice.trim() || `${name}'s practice`, email: f.email, password: f.password } });
+            await api("/api/auth/signup", { body: { name, practice: f.practice.trim() || `${name}'s practice`, email: f.email, password: f.password, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone } });
             router.replace(`/auth/verify?sent=1&email=${encodeURIComponent(f.email)}`);
           });
         }}

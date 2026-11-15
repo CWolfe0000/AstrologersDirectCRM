@@ -213,6 +213,8 @@ export interface Practitioner {
   timezone: string;
   bio: string;
   plan: string;
+  /** Automatic consultation reminder emails to clients. */
+  reminders?: { clients: boolean; hoursBefore: number };
 }
 
 export interface PortalNotification {

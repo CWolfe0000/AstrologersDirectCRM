@@ -28,7 +28,10 @@ Status key: ✅ done · 🟡 in progress · ⬜ not started · 🔒 blocked (the
 - ✅ Edit-conflict protection: every record has a version, and a save from a device with an outdated copy is refused. The newest saved version wins, and for observations the other device's text is kept as a revision, so nothing is lost.
 - ✅ Changes and deletions made on another device appear within a minute, or as soon as the window is focused
 - ✅ Observation history kept on the server (encrypted, one version per 10 minutes of editing), with restore from the History panel
-- ⬜ Real CSV client import
+- ✅ CSV client import: automatic column matching, US or international dates, 12- or 24-hour times, coordinates with automatic time zone, matching against known cities, a review step to fix birthplaces, duplicate and bad-row detection, and a natal chart created for each client
+- ✅ Consultation reminder emails to clients (off by default, sent 3, 24 or 48 hours before, never twice, no notes included), plus a portal notification
+- ✅ Private calendar feed (.ics) for Google, Apple or Outlook calendars. It shows first name and last initial, session type and location only, and regenerating the link revokes the old one.
+- ✅ The practice time zone comes from the browser at sign-up, with the full time zone list in Settings
 
 ### Calculations: Sky engine
 - ✅ Reuse review (`docs/sky-engine-review.md`)

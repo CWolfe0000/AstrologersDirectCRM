@@ -6,6 +6,7 @@ import { hashPassword, issueToken } from "./auth";
 import { link, sendMail } from "./mail";
 import { putSettings } from "./records";
 import { DEFAULT_SETTINGS } from "@/lib/astro/meta";
+import { ianaZone } from "@/lib/timezones";
 
 export function normEmail(e: unknown) {
   return typeof e === "string" ? e.trim().toLowerCase() : "";
@@ -16,7 +17,7 @@ export async function findUserByEmail(email: string) {
   return u ?? null;
 }
 
-export async function createPractice(input: { name: string; practice: string; email: string; password: string }) {
+export async function createPractice(input: { name: string; practice: string; email: string; password: string; timezone?: string }) {
   const practiceId = newId("prc");
   const userId = newId("usr");
   const email = normEmail(input.email);
@@ -27,7 +28,7 @@ export async function createPractice(input: { name: string; practice: string; em
   const first = input.name.split(/\s+/)[0] ?? input.name;
   await putSettings(
     practiceId,
-    { name: input.name, firstName: first, title: "Consulting Astrologer", email, phone: "", practice: input.practice, website: "", timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, bio: "", plan: "Beta" },
+    { name: input.name, firstName: first, title: "Consulting Astrologer", email, phone: "", practice: input.practice, website: "", timezone: ianaZone(input.timezone), bio: "", plan: "Beta", reminders: { clients: false, hoursBefore: 24 } },
     DEFAULT_SETTINGS,
   );
   await sendVerification(userId, email, first);

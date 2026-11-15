@@ -1,5 +1,7 @@
 "use client";
 
+import { ImportClientsDialog } from "@/components/clients/import-dialog";
+
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -320,45 +322,7 @@ export default function ClientsPage() {
         </>
       )}
 
-      <Dialog open={importOpen} onOpenChange={setImportOpen}>
-        <DialogContent
-          title="Import clients"
-          description="Bring clients over from a spreadsheet or another astrology program."
-          footer={
-            <>
-              <Button variant="secondary" onClick={() => setImportOpen(false)}>
-                Cancel
-              </Button>
-              <Button
-                onClick={() => {
-                  setImportOpen(false);
-                  s.toast("Import simulated", "In the full product, matched records would be reviewed before import.");
-                }}
-              >
-                Continue
-              </Button>
-            </>
-          }
-        >
-          <div className="mb-4">
-            <SimulatedBadge />
-          </div>
-          <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-line-strong bg-canvas/60 px-6 py-10 text-center hover:border-accent-200">
-            <FileUp className="mb-2 size-6 text-muted" />
-            <p className="font-medium">Drop a CSV file here, or click to browse</p>
-            <p className="mt-1 text-[12.5px] text-muted">Columns: name, email, phone, birth date, birth time, birth place</p>
-            <input type="file" accept=".csv" className="sr-only" onChange={(e) => e.target.files?.[0] && s.toast("File selected", e.target.files[0].name)} />
-          </label>
-          <div className="mt-4 space-y-2 text-[13px]">
-            <p className="font-medium">Also planned</p>
-            <ul className="list-disc space-y-1 pl-5 text-muted">
-              <li>Chart files exported from desktop astrology software</li>
-              <li>Google Contacts / vCard</li>
-            </ul>
-          </div>
-          <SimulatedNote className="mt-4">Files are not parsed in the prototype. Production import would validate birth data and flag duplicates before creating records.</SimulatedNote>
-        </DialogContent>
-      </Dialog>
+      <ImportClientsDialog open={importOpen} onOpenChange={setImportOpen} />
     </div>
   );
 }

@@ -64,6 +64,7 @@ node tests/e2e/files.mjs
 node tests/e2e/recording.mjs     # uses Chromium's simulated microphone
 node tests/e2e/twofactor.mjs     # takes ~2 minutes: waits for fresh authenticator codes
 node tests/e2e/conflicts.mjs     # two devices, one account
+CRON_SECRET=… node tests/e2e/practice-tools.mjs   # CSV import, calendar feed, reminders (server needs the same CRON_SECRET)
 ```
 
 CI (`.github/workflows/ci.yml`) runs all of these against a Postgres service on every push.

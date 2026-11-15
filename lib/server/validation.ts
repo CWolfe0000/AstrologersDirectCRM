@@ -245,6 +245,7 @@ export const practitionerSchema = z
     timezone: str(120),
     bio: str(5000),
     plan: str(80),
+    reminders: opt(z.object({ clients: z.boolean(), hoursBefore: z.number().int().min(1).max(168) }).strict()),
   })
   .strict();
 

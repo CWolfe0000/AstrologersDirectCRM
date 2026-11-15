@@ -22,6 +22,7 @@ jobs:
       APP_ENCRYPTION_KEY: dGVzdC1rZXktdGVzdC1rZXktdGVzdC1rZXktdGVzdDA=
       APP_URL: http://localhost:3000
       NEXT_PUBLIC_DATA_MODE: server
+      CRON_SECRET: ci-only-cron-secret
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -49,5 +50,6 @@ jobs:
           node tests/e2e/recording.mjs
           node tests/e2e/twofactor.mjs
           node tests/e2e/conflicts.mjs
+          node tests/e2e/practice-tools.mjs
       - name: Standalone demo build still works
         run: npm run build:standalone

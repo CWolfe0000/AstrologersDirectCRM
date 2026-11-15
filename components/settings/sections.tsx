@@ -8,6 +8,8 @@ import { ASPECTS, BODIES, HOUSE_SYSTEMS, PLANET_IDS, ZODIACS, type AspectId, typ
 import { cn, DATA_MODE, fmtDate } from "@/lib/utils";
 import { api } from "@/lib/api";
 import { TwoFactorCard } from "./two-factor";
+import { CalendarFeedCard, RemindersCard } from "./practice-tools";
+import { allZones } from "@/lib/timezones";
 import { bootstrap, loadSampleData } from "@/lib/sync";
 import { Card, CardHeader, CardBody, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -88,7 +90,10 @@ export function PracticeSection() {
           <Field label="Public contact email"><Input value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} /></Field>
           <Field label="Time zone" className="sm:col-span-2">
             <Select value={f.timezone} onChange={(e) => setF({ ...f, timezone: e.target.value })}>
-              {["America/Los_Angeles (Pacific Time)", "America/Denver (Mountain Time)", "America/Chicago (Central Time)", "America/New_York (Eastern Time)", "Europe/London (UK)", "Europe/Lisbon", "Europe/Madrid (Central European)", "Australia/Sydney"].map((t) => <option key={t}>{t}</option>)}
+              {(DATA_MODE === "demo"
+                ? ["America/Los_Angeles (Pacific Time)", "America/Denver (Mountain Time)", "America/Chicago (Central Time)", "America/New_York (Eastern Time)", "Europe/London (UK)", "Europe/Lisbon", "Europe/Madrid (Central European)", "Australia/Sydney"]
+                : Array.from(new Set([f.timezone, ...allZones()]))
+              ).map((t) => <option key={t}>{t}</option>)}
             </Select>
           </Field>
         </div>
@@ -208,12 +213,27 @@ export function AstrologySection() {
 
 // ——— Notifications ——————————————————————————————————————————————————
 export function NotificationsSection() {
+  if (DATA_MODE !== "demo") return <ServerNotifications />;
+  return <DemoNotifications />;
+}
+
+function ServerNotifications() {
+  return (
+    <div className="space-y-6">
+      <RemindersCard />
+      <CalendarFeedCard />
+      <DemoNotifications />
+    </div>
+  );
+}
+
+function DemoNotifications() {
   const saved = useSaved();
   const [v, setV] = React.useState({ emailDigest: true, emailConsult: true, emailDelivery: false, inApp: true, clientReminders: true, reminderHours: "24", digestTime: "07:00" });
   const t = (k: keyof typeof v) => (c: boolean) => { setV({ ...v, [k]: c }); saved("Notification setting updated."); };
   return (
     <Card>
-      <CardHeader title="Notifications" description="Email, in-app notifications and automatic reminders." action={<SimulatedBadge />} />
+      <CardHeader title={DATA_MODE === "demo" ? "Notifications" : "Your notifications"} description={DATA_MODE === "demo" ? "Email, in-app notifications and automatic reminders." : "Emails and reminders for you (coming soon)."} action={<SimulatedBadge />} />
       <CardBody className="divide-y divide-line py-1">
         <p className="eyebrow pb-1 pt-3">Email</p>
         <Row title="Daily digest" desc="Today's consultations, overdue tasks and pending deliveries."><Switch checked={v.emailDigest} onCheckedChange={t("emailDigest")} /></Row>
@@ -225,7 +245,7 @@ export function NotificationsSection() {
           <Input type="time" value={v.digestTime} onChange={(e) => setV({ ...v, digestTime: e.target.value })} className="w-32" />
         </Row>
         <p className="eyebrow pb-1 pt-5">Reminders</p>
-        <Row title="Send clients consultation reminders" desc="Email reminder with joining details."><Switch checked={v.clientReminders} onCheckedChange={t("clientReminders")} /></Row>
+        {DATA_MODE === "demo" && <Row title="Send clients consultation reminders" desc="Email reminder with joining details."><Switch checked={v.clientReminders} onCheckedChange={t("clientReminders")} /></Row>}
         <Row title="Remind me before consultations">
           <Select value={v.reminderHours} onChange={(e) => { setV({ ...v, reminderHours: e.target.value }); saved("Reminder timing updated."); }} className="w-44">
             <option value="1">1 hour before</option>

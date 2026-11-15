@@ -73,6 +73,7 @@ This is `APP_ENCRYPTION_KEY`. **If it is lost or changed, encrypted client data 
 | `S3_ENDPOINT` | `https://<account-id>.r2.cloudflarestorage.com` |
 | `S3_ACCESS_KEY_ID` | from step 3 |
 | `S3_SECRET_ACCESS_KEY` | from step 3 |
+| `CRON_SECRET` | another random value (`openssl rand -base64 32`). Vercel sends it to the reminder job. |
 
 4. Deploy, then add your domain under **Settings → Domains**.
 
@@ -85,6 +86,8 @@ This is `APP_ENCRYPTION_KEY`. **If it is lost or changed, encrypted client data 
 - [ ] Turn on two-factor in Settings → Security, then sign out and back in
 
 ## Notes
+
+- **Reminder emails** come from a scheduled job (`vercel.json`) that runs hourly. Vercel's free Hobby plan only runs scheduled jobs once a day: reminders still go out, but up to a day early rather than at the chosen time. The Pro plan runs them hourly.
 
 - **Migrations:** run `npm run db:migrate` against Neon whenever `drizzle/` changes. A future improvement is to run this automatically before each production deploy.
 - **Backups:** Neon keeps point-in-time history according to your plan. R2 does not keep backups by default, so consider bucket replication once real readings are stored there.

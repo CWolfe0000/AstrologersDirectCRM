@@ -8,6 +8,7 @@ const Body = z.object({
   practice: z.string().trim().min(1).max(160),
   email: z.string().trim().email().max(200),
   password: z.string(),
+  timezone: z.string().max(80).optional(),
 });
 
 export const POST = handler(async (req) => {

@@ -159,6 +159,26 @@ export const observationSnapshots = pgTable(
   (t) => [index("observation_snapshots_obs_idx").on(t.practiceId, t.observationId, t.createdAt)],
 );
 
+/** Private calendar subscription link (one per practice; the token is stored hashed). */
+export const calendarFeeds = pgTable("calendar_feeds", {
+  practiceId: text("practice_id").primaryKey().references(() => practices.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+/** Consultation reminder emails already sent (so each is sent once). */
+export const remindersSent = pgTable(
+  "reminders_sent",
+  {
+    practiceId: text("practice_id").notNull().references(() => practices.id, { onDelete: "cascade" }),
+    consultationId: text("consultation_id").notNull(),
+    /** The consultation start the reminder was for — a rescheduled session gets a new reminder. */
+    start: text("start").notNull(),
+    sentAt: timestamp("sent_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.practiceId, t.consultationId, t.start] })],
+);
+
 export const RECORD_TABLES = {
   people,
   clients,
