@@ -44,5 +44,6 @@ jobs:
           npm start &
           npx --yes wait-on@8 http://localhost:3000 --timeout 60000
           npm run test:e2e
+          node tests/e2e/flows.mjs
       - name: Standalone demo build still works
         run: npm run build:standalone
