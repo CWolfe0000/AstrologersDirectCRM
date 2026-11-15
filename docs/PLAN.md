@@ -17,7 +17,7 @@ Status key: ✅ done · 🟡 in progress · ⬜ not started · 🔒 blocked (the
 - ✅ Session list and remote sign-out in Settings → Security
 - ⬜ Sign-in email change with re-verification
 - ✅ Internal security review (AI-assisted, 2026-11-15). Fixed: 2FA brute force (5 tries per sign-in ticket, account lockout after 8 failures, codes can't be replayed, the client IP is taken from the trusted proxy); sign-in links no longer kept in the outbox in production; invites can't reset an existing password or skip 2FA; turning off portal access ends the client's sessions; stored files deleted with the account; open-redirect after login; content types allowlisted, and downloads served as attachments in a sandbox; recovery-code race; expiry lasts through the whole expiry day; account deletion needs the password.
-- ⬜ Open from that review (lower priority): client email addresses are unique platform-wide, so one person can't be a client of two astrologers, and an unverified sign-up can claim an address; rate limits are kept per server instance; "delivered" emails can repeat if a reading is toggled; simultaneous edits to the same record overwrite each other (last write wins); encrypted fields aren't bound to their row (defence in depth); 2FA setup doesn't re-ask for the password.
+- ⬜ Open from that review (lower priority): a client of two astrologers on the platform can only be invited by the first. Agreed design (2026-11-15): one login and **one portal** per client, showing readings, sessions and files from every astrologer they see (grouped/filterable by astrologer); each astrologer still sees only their own records. Also, an unverified sign-up can claim an address; rate limits are kept per server instance; "delivered" emails can repeat if a reading is toggled; encrypted fields aren't bound to their row (defence in depth); 2FA setup doesn't re-ask for the password.
 - ⬜ Professional security review before real client data goes in
 
 ### Data
@@ -25,7 +25,9 @@ Status key: ✅ done · 🟡 in progress · ⬜ not started · 🔒 blocked (the
 - ✅ All 25 screens save to the database in the background, using the existing store with no screen rewrites. Shows "Saving… / All changes saved" and retries failed saves.
 - ✅ Sample-data loader, with dates shifted so "today" is the real today
 - ✅ Export of all practice data as JSON, deletion of all client records, and account deletion
-- ⬜ Server-side observation revision history. Revisions are currently stored inside the encrypted observation.
+- ✅ Edit-conflict protection: every record has a version, and a save from a device with an outdated copy is refused. The newest saved version wins, and for observations the other device's text is kept as a revision, so nothing is lost.
+- ✅ Changes and deletions made on another device appear within a minute, or as soon as the window is focused
+- ✅ Observation history kept on the server (encrypted, one version per 10 minutes of editing), with restore from the History panel
 - ⬜ Real CSV client import
 
 ### Calculations: Sky engine

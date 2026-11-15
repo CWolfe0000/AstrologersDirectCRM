@@ -1,5 +1,5 @@
 import "server-only";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, sql } from "drizzle-orm";
 import { db, schema } from "./db";
 import { RECORD_TABLES, type Collection } from "./db/schema";
 import { seal, unseal } from "./crypto";
@@ -38,6 +38,13 @@ export function isCollection(x: string): x is Collection {
   return (COLLECTIONS as string[]).includes(x);
 }
 
+/** A save was based on an older version of the record. */
+export class ConflictError extends Error {
+  constructor(public current: Record<string, unknown> | null, public version: number) {
+    super("This was changed on another device.");
+  }
+}
+
 export class ValidationError extends Error {
   constructor(public issues: unknown) {
     super("Invalid record");
@@ -68,10 +75,16 @@ function join(row: { data: unknown; sealed: string | null }) {
 }
 
 export async function listCollection(practiceId: string, collection: Collection, opts?: { clientIds?: string[] }) {
+  return (await listWithVersions(practiceId, collection, opts)).map((r) => r.record);
+}
+
+export async function listWithVersions(practiceId: string, collection: Collection, opts?: { clientIds?: string[]; since?: Date }) {
   const t = RECORD_TABLES[collection];
-  const where = opts?.clientIds ? and(eq(t.practiceId, practiceId), inArray(t.clientId, opts.clientIds)) : eq(t.practiceId, practiceId);
-  const rows = await db().select({ data: t.data, sealed: t.sealed }).from(t).where(where);
-  return rows.map(join);
+  const conds = [eq(t.practiceId, practiceId)];
+  if (opts?.clientIds) conds.push(inArray(t.clientId, opts.clientIds));
+  if (opts?.since) conds.push(gt(t.updatedAt, opts.since));
+  const rows = await db().select({ data: t.data, sealed: t.sealed, version: t.version }).from(t).where(and(...conds));
+  return rows.map((r) => ({ record: join(r), version: r.version }));
 }
 
 export async function getRecord(practiceId: string, collection: Collection, id: string) {
@@ -80,22 +93,102 @@ export async function getRecord(practiceId: string, collection: Collection, id: 
   return row ? join(row) : null;
 }
 
-/** Validate, encrypt and upsert. The record id is scoped to the practice. */
-export async function upsertRecord(practiceId: string, collection: Collection, value: unknown) {
+/**
+ * Validate, encrypt and upsert. The record id is scoped to the practice.
+ * With `baseVersion`, the save only succeeds if the stored record is still at
+ * that version (0 = must not exist yet); otherwise a ConflictError carries the
+ * current record. Returns the record and its new version.
+ */
+export async function upsertRecord(practiceId: string, collection: Collection, value: unknown, opts?: { baseVersion?: number }) {
   const rec = validate(collection, value);
   const t = RECORD_TABLES[collection];
   const { data, sealed } = split(collection, rec);
   const clientId = clientIdOf(collection, rec);
-  await db()
+  const id = rec.id as string;
+  const base = opts?.baseVersion;
+  const rows = await db()
     .insert(t)
-    .values({ practiceId, id: rec.id as string, clientId, data, sealed })
-    .onConflictDoUpdate({ target: [t.practiceId, t.id], set: { clientId, data, sealed, updatedAt: sql`now()` } });
-  return rec;
+    .values({ practiceId, id, clientId, data, sealed, version: 1 })
+    .onConflictDoUpdate({
+      target: [t.practiceId, t.id],
+      set: { clientId, data, sealed, version: sql`${t.version} + 1`, updatedAt: sql`now()` },
+      // A create (base 0) never overwrites; an update must match the stored version.
+      setWhere: base === undefined ? undefined : base === 0 ? sql`false` : eq(t.version, base),
+    })
+    .returning({ version: t.version });
+  if (!rows.length) {
+    const [cur] = await db().select({ data: t.data, sealed: t.sealed, version: t.version }).from(t).where(and(eq(t.practiceId, practiceId), eq(t.id, id)));
+    throw new ConflictError(cur ? join(cur) : null, cur?.version ?? 0);
+  }
+  if (base === 0 || base === undefined) {
+    await db().delete(schema.tombstones).where(and(eq(schema.tombstones.practiceId, practiceId), eq(schema.tombstones.collection, collection), eq(schema.tombstones.id, id)));
+  }
+  return { ...rec, __version: rows[0]!.version } as Record<string, unknown> & { __version: number };
 }
 
 export async function deleteRecord(practiceId: string, collection: Collection, id: string) {
   const t = RECORD_TABLES[collection];
-  await db().delete(t).where(and(eq(t.practiceId, practiceId), eq(t.id, id)));
+  const gone = await db().delete(t).where(and(eq(t.practiceId, practiceId), eq(t.id, id))).returning({ id: t.id });
+  if (gone.length) {
+    await db()
+      .insert(schema.tombstones)
+      .values({ practiceId, collection, id })
+      .onConflictDoUpdate({ target: [schema.tombstones.practiceId, schema.tombstones.collection, schema.tombstones.id], set: { deletedAt: sql`now()` } });
+  }
+}
+
+/** Everything changed or deleted since a server timestamp (for other open devices). */
+export async function changesSince(practiceId: string, since: Date) {
+  const upserts: Record<string, { record: Record<string, unknown>; version: number }[]> = {};
+  for (const c of COLLECTIONS) {
+    const rows = await listWithVersions(practiceId, c, { since });
+    if (rows.length) upserts[c] = rows;
+  }
+  const deletes = await db()
+    .select({ collection: schema.tombstones.collection, id: schema.tombstones.id })
+    .from(schema.tombstones)
+    .where(and(eq(schema.tombstones.practiceId, practiceId), gt(schema.tombstones.deletedAt, since)));
+  return { upserts, deletes };
+}
+
+// ——— Observation history ———————————————————————————————————————————————
+const SNAPSHOT_WINDOW_MS = 10 * 60_000;
+const MAX_SNAPSHOTS = 200;
+
+/** Keep the observation text on the server: one snapshot per 10 minutes of editing. */
+export async function snapshotObservation(practiceId: string, observationId: string, title: string, body: string) {
+  const s = schema.observationSnapshots;
+  const [latest] = await db()
+    .select()
+    .from(s)
+    .where(and(eq(s.practiceId, practiceId), eq(s.observationId, observationId)))
+    .orderBy(desc(s.createdAt))
+    .limit(1);
+  const sealedBody = seal({ title, body });
+  if (latest && Date.now() - latest.createdAt.getTime() < SNAPSHOT_WINDOW_MS) {
+    await db().update(s).set({ sealed: sealedBody, updatedAt: sql`now()` }).where(eq(s.id, latest.id));
+    return;
+  }
+  await db().insert(s).values({ id: `snp_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`, practiceId, observationId, sealed: sealedBody });
+  // Trim the oldest beyond the cap.
+  await db().execute(sql`delete from observation_snapshots where id in (
+    select id from observation_snapshots where practice_id = ${practiceId} and observation_id = ${observationId}
+    order by created_at desc offset ${MAX_SNAPSHOTS})`);
+}
+
+export async function listSnapshots(practiceId: string, observationId: string) {
+  const s = schema.observationSnapshots;
+  const rows = await db()
+    .select()
+    .from(s)
+    .where(and(eq(s.practiceId, practiceId), eq(s.observationId, observationId)))
+    .orderBy(desc(s.createdAt));
+  return rows.map((r) => ({ id: r.id, at: r.updatedAt.toISOString(), startedAt: r.createdAt.toISOString(), ...unseal<{ title: string; body: string }>(r.sealed) }));
+}
+
+export async function serverNow() {
+  const r = await db().execute(sql`select now() as now`);
+  return new Date((r.rows[0] as { now: string | Date }).now);
 }
 
 export async function deleteAllRecords(practiceId: string) {

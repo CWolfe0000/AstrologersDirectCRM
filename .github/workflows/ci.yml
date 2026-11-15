@@ -48,5 +48,6 @@ jobs:
           node tests/e2e/files.mjs
           node tests/e2e/recording.mjs
           node tests/e2e/twofactor.mjs
+          node tests/e2e/conflicts.mjs
       - name: Standalone demo build still works
         run: npm run build:standalone

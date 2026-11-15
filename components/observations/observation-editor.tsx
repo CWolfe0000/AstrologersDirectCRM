@@ -5,7 +5,8 @@ import Link from "next/link";
 import { Check, CircleDot, History, Loader2, Pin, RotateCcw, Trash2, UserRound, Info, CalendarDays, ChevronDown } from "lucide-react";
 import type { Observation } from "@/lib/data/types";
 import { useStore, personName } from "@/lib/store";
-import { cn, fmtDate, fmtTime, relTime, stripHtml } from "@/lib/utils";
+import { cn, fmtDate, fmtTime, relTime, stripHtml, DATA_MODE } from "@/lib/utils";
+import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Field, Select } from "@/components/ui/input";
 import { Sheet } from "@/components/ui/dialog";
@@ -320,7 +321,39 @@ export function ObservationEditor({ observationId, initial, lockChart, onCreated
             </li>
           ))}
         </ol>
+        {DATA_MODE !== "demo" && existing && <ServerVersions observationId={existing.id} onRestore={(body, at) => restore(body, at)} />}
       </Sheet>
+    </div>
+  );
+}
+
+/** Versions of the text kept on the server (one per 10 minutes of editing). */
+function ServerVersions({ observationId, onRestore }: { observationId: string; onRestore: (body: string, at: string) => void }) {
+  const [versions, setVersions] = React.useState<{ id: string; at: string; title: string; body: string }[] | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    api<{ versions: { id: string; at: string; title: string; body: string }[] }>(`/api/v1/observations/${encodeURIComponent(observationId)}/history`)
+      .then((r) => setVersions(r.versions))
+      .catch((e: Error) => setError(e.message));
+  }, [observationId]);
+  return (
+    <div className="border-t border-line px-6 py-5">
+      <p className="text-[13px] font-semibold text-ink">Saved versions</p>
+      <p className="mb-3 text-[12px] text-muted">Kept on the server automatically while you write: one version for every 10 minutes of editing.</p>
+      {error && <p className="text-[12.5px] text-danger">{error}</p>}
+      {!versions && !error && <p className="text-[12.5px] text-muted">Loading…</p>}
+      {versions?.length === 0 && <p className="text-[12.5px] text-muted">No saved versions yet.</p>}
+      <ul className="space-y-3">
+        {versions?.map((v) => (
+          <li key={v.id} className="rounded-lg border border-line bg-canvas/60 p-3">
+            <p className="text-[12px] text-muted">{fmtDate(v.at)} · {fmtTime(v.at)}</p>
+            <p className="mt-1 line-clamp-3 text-[12.5px] text-ink-3">{stripHtml(v.body) || "(empty)"}</p>
+            <Button variant="secondary" size="xs" className="mt-2" onClick={() => onRestore(v.body, v.at)}>
+              <RotateCcw /> Restore this version
+            </Button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

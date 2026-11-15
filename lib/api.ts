@@ -7,12 +7,12 @@ export class ApiError extends Error {
 }
 
 /** JSON fetch against our own API. Throws ApiError with the server's message. */
-export async function api<T = unknown>(path: string, opts: { method?: string; body?: unknown; keepalive?: boolean } = {}): Promise<T> {
+export async function api<T = unknown>(path: string, opts: { method?: string; body?: unknown; keepalive?: boolean; headers?: Record<string, string> } = {}): Promise<T> {
   let res: Response;
   try {
     res = await fetch(path, {
       method: opts.method ?? (opts.body === undefined ? "GET" : "POST"),
-      headers: opts.body === undefined ? undefined : { "Content-Type": "application/json" },
+      headers: { ...(opts.body === undefined ? {} : { "Content-Type": "application/json" }), ...(opts.headers ?? {}) },
       body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
       credentials: "same-origin",
       cache: "no-store",

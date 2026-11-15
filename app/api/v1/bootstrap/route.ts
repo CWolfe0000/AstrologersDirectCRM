@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db, schema } from "@/lib/server/db";
 import { handler, HttpError, json, requireUser } from "@/lib/server/http";
-import { COLLECTIONS, getSettings, listCollection } from "@/lib/server/records";
+import { COLLECTIONS, getSettings, listCollection, listWithVersions, serverNow } from "@/lib/server/records";
 import { portalView } from "@/lib/server/portal";
 import { DEFAULT_SETTINGS } from "@/lib/astro/meta";
 
@@ -31,7 +31,10 @@ export const GET = handler(async (req) => {
   }
 
   if (user.role !== "owner") throw new HttpError(403, "This area is for practitioners.", { redirect: "/portal" });
-  const entries = await Promise.all(COLLECTIONS.map(async (c) => [c, await listCollection(user.practiceId, c)] as const));
+  const cursor = await serverNow();
+  const lists = await Promise.all(COLLECTIONS.map(async (c) => [c, await listWithVersions(user.practiceId, c)] as const));
+  const entries = lists.map(([c, rows]) => [c, rows.map((r) => r.record)] as const);
+  const versions = Object.fromEntries(lists.map(([c, rows]) => [c, Object.fromEntries(rows.map((r) => [r.record.id as string, r.version]))]));
   const settings = await getSettings(user.practiceId);
   const [practice] = await db().select().from(schema.practices).where(eq(schema.practices.id, user.practiceId));
   return json({
@@ -41,5 +44,7 @@ export const GET = handler(async (req) => {
     practitioner: settings?.practitioner,
     defaults: settings?.defaults ?? DEFAULT_SETTINGS,
     ...Object.fromEntries(entries),
+    versions,
+    cursor: cursor.toISOString(),
   });
 });

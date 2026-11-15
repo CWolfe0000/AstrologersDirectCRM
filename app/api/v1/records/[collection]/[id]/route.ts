@@ -1,7 +1,7 @@
 import { eq, and } from "drizzle-orm";
 import { db, schema } from "@/lib/server/db";
 import { handler, HttpError, json, readJson, requireUser } from "@/lib/server/http";
-import { deleteRecord, getRecord, isCollection, isFileReferenced, upsertRecord } from "@/lib/server/records";
+import { deleteRecord, getRecord, isCollection, isFileReferenced, snapshotObservation, upsertRecord } from "@/lib/server/records";
 import { notifyDelivered } from "@/lib/server/notify";
 import { keyBelongs, removeObject } from "@/lib/server/storage";
 
@@ -22,8 +22,15 @@ export const PUT = handler(async (req: Request, ctx: Ctx) => {
   if ((collection === "readings" || collection === "files" || collection === "recordings") && body.fileKey !== undefined && !keyBelongs(body.fileKey, user.practiceId))
     throw new HttpError(422, "That file doesn’t belong to this practice.");
   const withFiles = collection === "readings" || collection === "files" || collection === "recordings";
-  const before = withFiles || collection === "clients" ? await getRecord(user.practiceId, collection, id) : null;
-  const saved = await upsertRecord(user.practiceId, collection, body);
+  const before = withFiles || collection === "clients" || collection === "observations" ? await getRecord(user.practiceId, collection, id) : null;
+  // Edit-conflict protection: the client says which version its change is based on.
+  const baseHeader = req.headers.get("x-base-version");
+  const baseVersion = baseHeader === null ? undefined : Number.parseInt(baseHeader, 10);
+  if (baseVersion !== undefined && (!Number.isInteger(baseVersion) || baseVersion < 0)) throw new HttpError(400, "Invalid version.");
+  const saved = await upsertRecord(user.practiceId, collection, body, { baseVersion });
+  if (collection === "observations" && (before === null || before.body !== saved.body || before.title !== saved.title)) {
+    await snapshotObservation(user.practiceId, id, String(saved.title ?? ""), String(saved.body ?? ""));
+  }
   if (collection === "readings" && saved.status === "delivered" && before?.status !== "delivered") {
     await notifyDelivered(user.practiceId, saved);
   }
@@ -34,7 +41,7 @@ export const PUT = handler(async (req: Request, ctx: Ctx) => {
   // Replaced file: remove the old object.
   if (before?.fileKey && before.fileKey !== saved.fileKey && keyBelongs(before.fileKey, user.practiceId) && !(await isFileReferenced(user.practiceId, before.fileKey as string)))
     await removeObject(before.fileKey as string);
-  return json({ ok: true });
+  return json({ ok: true, version: saved.__version });
 });
 
 export const DELETE = handler(async (_req: Request, ctx: Ctx) => {

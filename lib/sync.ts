@@ -31,6 +31,11 @@ type Op =
   | { kind: "portal"; path: string; method: "POST" | "PUT"; body?: unknown };
 
 let applyingRemote = false;
+/** Server version of each record ("coll:id" → version), for edit-conflict protection. */
+const versions = new Map<string, number>();
+/** Server timestamp up to which this device has seen other devices' changes. */
+let cursor: string | null = null;
+let pollTimer: ReturnType<typeof setInterval> | null = null;
 let unsubscribe: (() => void) | null = null;
 const queue = new Map<string, Op>();
 let timer: ReturnType<typeof setTimeout> | null = null;
@@ -49,10 +54,21 @@ function enqueue(key: string, op: Op) {
 
 async function send(op: Op) {
   switch (op.kind) {
-    case "put":
-      return api(`/api/v1/records/${op.coll}/${encodeURIComponent(op.rec.id)}`, { method: "PUT", body: op.rec });
-    case "delete":
-      return api(`/api/v1/records/${op.coll}/${encodeURIComponent(op.id)}`, { method: "DELETE" });
+    case "put": {
+      const key = `${op.coll}:${op.rec.id}`;
+      const r = await api<{ version: number }>(`/api/v1/records/${op.coll}/${encodeURIComponent(op.rec.id)}`, {
+        method: "PUT",
+        body: op.rec,
+        headers: { "x-base-version": String(versions.get(key) ?? 0) },
+      });
+      versions.set(key, r.version);
+      return r;
+    }
+    case "delete": {
+      const r = await api(`/api/v1/records/${op.coll}/${encodeURIComponent(op.id)}`, { method: "DELETE" });
+      versions.delete(`${op.coll}:${op.id}`);
+      return r;
+    }
     case "settings": {
       const s = useStore.getState();
       return api("/api/v1/settings", { method: "PUT", body: { practitioner: s.practitioner, defaults: s.defaults } });
@@ -80,6 +96,10 @@ async function flush() {
             window.location.href = `/auth/login?next=${encodeURIComponent(location.pathname)}`;
             return;
           }
+          if (err.status === 409 && op.kind === "put") {
+            await resolveConflict(op, err.details as { current: Rec | null; version: number });
+            break;
+          }
           // Validation / permission errors won't succeed on retry.
           if ((err.status >= 400 && err.status < 500) || ++attempt >= 4) {
             useStore.getState().toast("A change couldn’t be saved", err.message, "error");
@@ -97,6 +117,89 @@ async function flush() {
   } finally {
     flushing = false;
   }
+}
+
+/**
+ * Another device saved this record first. The newer saved version wins on
+ * screen. For observations nothing is lost: this device's text is kept as a
+ * revision on the saved version.
+ */
+async function resolveConflict(op: Extract<Op, { kind: "put" }>, d: { current: Rec | null; version: number }) {
+  const key = `${op.coll}:${op.rec.id}`;
+  const st = useStore.getState();
+  if (!d.current) {
+    // Deleted elsewhere: don't resurrect it silently.
+    versions.delete(key);
+    applyRemote(() => useStore.setState({ [op.coll]: (st[op.coll] as unknown as Rec[]).filter((r) => r.id !== op.rec.id) } as never));
+    st.toast("That item was deleted on another device", "Your change wasn’t saved.", "error");
+    return;
+  }
+  versions.set(key, d.version);
+  let merged = d.current;
+  if (op.coll === "observations" && op.rec.body !== d.current.body) {
+    const revisions = Array.isArray(d.current.revisions) ? (d.current.revisions as unknown[]) : [];
+    merged = {
+      ...d.current,
+      revisions: [...revisions, { at: new Date().toISOString().slice(0, 19), summary: "Edit from another device, kept here so nothing is lost", body: op.rec.body }],
+    };
+    enqueue(key, { kind: "put", coll: op.coll, rec: merged });
+    st.toast("This observation was also edited on another device", "The newest version is shown; your text is saved in its revision history.");
+  } else {
+    st.toast("This was changed on another device", "The latest version is shown. Make your change again if it’s still needed.");
+  }
+  applyRemote(() => useStore.setState({ [op.coll]: (useStore.getState()[op.coll] as unknown as Rec[]).map((r) => (r.id === merged.id ? merged : r)) } as never));
+}
+
+function applyRemote(fn: () => void) {
+  applyingRemote = true;
+  try {
+    fn();
+  } finally {
+    applyingRemote = false;
+  }
+}
+
+/** Pull other devices' changes (only when nothing local is waiting to be saved). */
+export async function pullChanges() {
+  const st = useStore.getState();
+  if (!cursor || st.session.status !== "ready" || st.session.view !== "app" || queue.size || flushing) return;
+  let r: { cursor: string; upserts: Record<string, { record: Rec; version: number }[]>; deletes: { collection: string; id: string }[] };
+  try {
+    r = await api(`/api/v1/changes?since=${encodeURIComponent(cursor)}`);
+  } catch {
+    return;
+  }
+  if (queue.size || flushing) return; // a local edit started meanwhile; try next time
+  cursor = r.cursor;
+  const patch: Record<string, Rec[]> = {};
+  const cur = useStore.getState();
+  for (const [coll, rows] of Object.entries(r.upserts)) {
+    if (!(COLLECTIONS as readonly string[]).includes(coll)) continue;
+    let list = [...(cur[coll as Coll] as unknown as Rec[])];
+    for (const { record, version } of rows) {
+      const key = `${coll}:${record.id}`;
+      if ((versions.get(key) ?? 0) >= version) continue; // already have it (e.g. our own save)
+      versions.set(key, version);
+      const i = list.findIndex((x) => x.id === record.id);
+      if (i >= 0) list[i] = record;
+      else list = [record, ...list];
+    }
+    patch[coll] = list;
+  }
+  for (const { collection, id } of r.deletes) {
+    if (!(COLLECTIONS as readonly string[]).includes(collection)) continue;
+    versions.delete(`${collection}:${id}`);
+    patch[collection] = (patch[collection] ?? (cur[collection as Coll] as unknown as Rec[])).filter((x) => x.id !== id);
+  }
+  if (Object.keys(patch).length) applyRemote(() => useStore.setState(patch as never));
+}
+
+function startPolling() {
+  if (pollTimer) return;
+  pollTimer = setInterval(() => {
+    if (document.visibilityState === "visible") void pullChanges();
+  }, 60_000);
+  window.addEventListener("focus", () => void pullChanges());
 }
 
 function diff(coll: Coll, next: Rec[], prev: Rec[], view: "app" | "portal") {
@@ -134,6 +237,8 @@ function watch() {
 }
 
 type BootstrapResponse = Partial<DemoState> & {
+  versions?: Record<string, Record<string, number>>;
+  cursor?: string;
   view: "app" | "portal";
   user: NonNullable<DemoState["session"]["user"]>;
   practice?: { id: string; name: string };
@@ -155,6 +260,9 @@ export async function bootstrap(view: "app" | "portal", opts: { as?: string | nu
     for (const c of COLLECTIONS) (patch as Record<string, unknown>)[c] = (data as Record<string, unknown>)[c] ?? [];
     if (data.practitioner) patch.practitioner = data.practitioner;
     if (data.defaults) patch.defaults = data.defaults;
+    versions.clear();
+    for (const [coll, byId] of Object.entries(data.versions ?? {})) for (const [id, v] of Object.entries(byId)) versions.set(`${coll}:${id}`, v);
+    cursor = data.cursor ?? null;
     useStore.setState({
       ...patch,
       portalClientId: data.portalClientId ?? st.portalClientId,
@@ -168,6 +276,7 @@ export async function bootstrap(view: "app" | "portal", opts: { as?: string | nu
     applyingRemote = false;
   }
   watch();
+  if (view === "app") startPolling();
 }
 
 /** Save anything pending immediately (e.g. before navigating away). */

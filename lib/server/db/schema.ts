@@ -107,10 +107,16 @@ function recordTable(name: string) {
       clientId: text("client_id"),
       data: jsonb("data").notNull(),
       sealed: text("sealed"),
+      /** Increments on every save; writes based on an older version are rejected (edit-conflict protection). */
+      version: integer("version").notNull().default(1),
       createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
       updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
     },
-    (t) => [primaryKey({ columns: [t.practiceId, t.id] }), index(`${name}_client_idx`).on(t.practiceId, t.clientId)],
+    (t) => [
+      primaryKey({ columns: [t.practiceId, t.id] }),
+      index(`${name}_client_idx`).on(t.practiceId, t.clientId),
+      index(`${name}_updated_idx`).on(t.practiceId, t.updatedAt),
+    ],
   );
 }
 
@@ -126,6 +132,32 @@ export const files = recordTable("files");
 export const notifications = recordTable("notifications");
 export const activity = recordTable("activity");
 export const portalNotifications = recordTable("portal_notifications");
+
+/** Deleted records, so other open devices can remove them too. */
+export const tombstones = pgTable(
+  "tombstones",
+  {
+    practiceId: text("practice_id").notNull().references(() => practices.id, { onDelete: "cascade" }),
+    collection: text("collection").notNull(),
+    id: text("id").notNull(),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.practiceId, t.collection, t.id] }), index("tombstones_deleted_idx").on(t.practiceId, t.deletedAt)],
+);
+
+/** Server-kept history of observation text (encrypted). At most one snapshot per 10 minutes of editing. */
+export const observationSnapshots = pgTable(
+  "observation_snapshots",
+  {
+    id: text("id").primaryKey(),
+    practiceId: text("practice_id").notNull().references(() => practices.id, { onDelete: "cascade" }),
+    observationId: text("observation_id").notNull(),
+    sealed: text("sealed").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [index("observation_snapshots_obs_idx").on(t.practiceId, t.observationId, t.createdAt)],
+);
 
 export const RECORD_TABLES = {
   people,

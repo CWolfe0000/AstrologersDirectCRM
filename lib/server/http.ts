@@ -2,7 +2,7 @@ import "server-only";
 import { NextResponse } from "next/server";
 import { getUser, type SessionUser } from "./auth";
 import { env } from "./env";
-import { ValidationError } from "./records";
+import { ConflictError, ValidationError } from "./records";
 
 export class HttpError extends Error {
   constructor(public status: number, message: string, public details?: unknown) {
@@ -58,6 +58,7 @@ export function handler<A extends unknown[]>(fn: (req: Request, ...rest: A) => P
     } catch (e) {
       if (e instanceof HttpError) return json({ error: e.message, details: e.details }, e.status);
       if (e instanceof ValidationError) return json({ error: "Some fields are invalid.", details: e.issues }, 422);
+      if (e instanceof ConflictError) return json({ error: e.message, details: { current: e.current, version: e.version } }, 409);
       console.error(e);
       return json({ error: "Something went wrong. Please try again." }, 500);
     }
