@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { FlaskConical } from "lucide-react";
-import { buildChart, chartTypeMeta, type ChartSettings, type ChartView } from "@/lib/astro";
+import { buildChart, chartTypeMeta, getEngine, type ChartSettings, type ChartView } from "@/lib/astro";
 import type { ChartRecord, Person } from "@/lib/data/types";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -15,7 +15,7 @@ const CACHE_LIMIT = 300;
 
 function cacheKey(chart: ChartRecord, people: Person[], overrides: Partial<ChartSettings> | undefined, defaults: ChartSettings) {
   const subjects = chart.personIds.map((id) => people.find((p) => p.id === id)?.birth ?? null);
-  return JSON.stringify([chart.type, chart.personIds, chart.refDate, chart.settings, subjects, overrides ?? null, defaults]);
+  return JSON.stringify([getEngine().info.id, chart.type, chart.personIds, chart.refDate, chart.settings, subjects, overrides ?? null, defaults]);
 }
 
 export type ChartViewState = { view: ChartView | null; loading: boolean; error: string | null };
@@ -81,18 +81,21 @@ export function ChartThumb({ chart, className }: { chart: ChartRecord; className
   return <ChartWheel view={view} compact className={className} />;
 }
 
-/** Required label wherever calculated positions are shown in the prototype. */
+/** Required label wherever calculated positions are shown, until results are verified against reference charts. */
 export function EngineNotice({ className, compact }: { className?: string; compact?: boolean }) {
+  const info = getEngine().info;
+  if (info.verified) return null;
+  const swiss = info.id === "swiss";
   return (
     <span
-      title="Positions come from the prototype's demonstration engine. They are approximate and illustrative — not verified ephemeris calculations."
+      title={info.description}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border border-dashed border-warn/50 bg-warn-50 px-2 py-0.5 text-[11px] font-medium text-[#7C5A22]",
+        "inline-flex items-center gap-1.5 rounded-full border border-dashed border-warn/50 bg-warn-50 px-2 py-0.5 text-[11px] font-medium text-[#6E4B16]",
         className,
       )}
     >
       <FlaskConical className="size-3" />
-      {compact ? "Demo positions" : "Demonstration positions — not verified calculations"}
+      {swiss ? (compact ? "Not yet verified" : "Swiss Ephemeris — not yet checked against reference charts") : compact ? "Demo positions" : "Demonstration positions — not verified calculations"}
     </span>
   );
 }

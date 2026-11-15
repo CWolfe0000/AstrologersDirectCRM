@@ -2,6 +2,8 @@
 
 import { useStore, type DemoState } from "./store";
 import { api, ApiError } from "./api";
+import { registerEngine } from "./astro";
+import { SwissApiEngine } from "./astro/swiss-client";
 
 /**
  * Server sync for the practice store.
@@ -276,7 +278,11 @@ export async function bootstrap(view: "app" | "portal", opts: { as?: string | nu
     applyingRemote = false;
   }
   watch();
-  if (view === "app") startPolling();
+  if (view === "app") {
+    // Real calculations for practitioners (Swiss Ephemeris on the server).
+    registerEngine(SwissApiEngine, true);
+    startPolling();
+  }
 }
 
 /** Save anything pending immediately (e.g. before navigating away). */

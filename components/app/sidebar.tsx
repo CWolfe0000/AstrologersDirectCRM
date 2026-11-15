@@ -118,7 +118,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 </button>
               </>
             ) : (
-              <p className="mt-0.5 text-[11.5px] leading-snug text-[#9C969E]">Chart positions are still from the demonstration engine.</p>
+              <p className="mt-0.5 text-[11.5px] leading-snug text-[#9C969E]">Charts use Swiss Ephemeris — check a few against your usual software before relying on them.</p>
             )}
             <Link href="/portal" className="mt-1.5 inline-flex items-center gap-1.5 text-[11.5px] text-[#E3C9D0] hover:text-white" onClick={onNavigate}>
               <ExternalLink className="size-3" /> Preview a client’s portal

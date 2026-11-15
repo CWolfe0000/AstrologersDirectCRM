@@ -87,4 +87,6 @@ export interface AstrologyEngine {
   progressed(birth: BirthData, targetDate: string, settings: ChartSettings): Promise<ChartPoints>;
   /** Solar arc directions for a target date. */
   solarArc(birth: BirthData, targetDate: string, settings: ChartSettings): Promise<ChartPoints>;
+  /** Solar return for a year (engines without it fall back to a birthday chart). */
+  solarReturn?(birth: BirthData, year: number, settings: ChartSettings): Promise<ChartPoints>;
 }

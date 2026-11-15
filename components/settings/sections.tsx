@@ -205,7 +205,7 @@ export function AstrologySection() {
           ))}
         </CardBody>
         <CardFooter className="justify-between">
-          <SimulatedNote className="py-1.5">Calculations use the prototype&apos;s demonstration engine.</SimulatedNote>
+          {DATA_MODE === "demo" ? <SimulatedNote className="py-1.5">Calculations use the prototype&apos;s demonstration engine.</SimulatedNote> : <span className="text-[12px] text-muted">Calculated with Swiss Ephemeris on the server.</span>}
           <Button variant="ghost" size="sm" onClick={() => set({ bodies: [...PLANET_IDS], aspects: ["conjunction", "opposition", "trine", "square", "sextile", "quincunx"], orbs: { conjunction: 8, opposition: 8, trine: 7, square: 7, sextile: 5, quincunx: 3, semisextile: 2, semisquare: 2, sesquiquadrate: 2 } }, "Defaults restored")}>
             <RotateCcw /> Restore defaults
           </Button>

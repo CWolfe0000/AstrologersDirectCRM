@@ -134,7 +134,9 @@ export async function buildChart(chart: ChartRecord, people: Person[], overrides
       break;
     case "solar-return": {
       const yr = ref.slice(0, 4);
-      inner = await engine.natal({ ...pa.birth, date: `${yr}${pa.birth.date.slice(4)}` }, settings);
+      inner = engine.solarReturn
+        ? await engine.solarReturn(pa.birth, Number(yr), settings)
+        : await engine.natal({ ...pa.birth, date: `${yr}${pa.birth.date.slice(4)}` }, settings);
       break;
     }
   }

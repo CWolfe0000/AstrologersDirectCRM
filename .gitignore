@@ -8,3 +8,4 @@ next-env.d.ts
 .next-*
 dist-standalone
 .uploads
+.sweph-ephe
