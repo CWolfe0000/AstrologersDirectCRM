@@ -143,7 +143,7 @@ export function ChartControls({
                       </span>
                     }
                   />
-                  <span className={cn("tabular-nums text-[12px]", on ? "text-ink-3" : "text-muted/60")}>{orb.toFixed(1)}°</span>
+                  <span className={cn("tabular-nums text-[12px]", on ? "text-ink-3" : "text-muted")}>{orb.toFixed(1)}°</span>
                 </div>
                 {on && (
                   <input

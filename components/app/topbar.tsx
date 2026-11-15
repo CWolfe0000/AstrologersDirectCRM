@@ -67,7 +67,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
 
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Notifications" className="relative">
+            <Button variant="ghost" size="icon" aria-label={unread ? `Notifications, ${unread} unread` : "Notifications"} className="relative">
               <Bell />
               {unread > 0 && <span className="absolute right-1.5 top-1.5 flex size-4 items-center justify-center rounded-full bg-accent text-[9.5px] font-bold text-white">{unread}</span>}
             </Button>

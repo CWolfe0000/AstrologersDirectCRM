@@ -39,6 +39,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-canvas pb-20 md:pb-0">
+      <a href="#main" className="sr-only z-[100] rounded-lg bg-ink px-4 py-2 text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Skip to content</a>
       {showBanner && <div className="bg-ink text-[12px] text-[#CFCAD0]">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-1.5 md:px-6">
           <span className="truncate">{DATA_MODE === "demo" ? `Client portal preview — signed in as demo client ${personName(me)}` : `Previewing ${personName(me)}’s portal — this is what they see`}</span>
@@ -63,7 +64,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
           <div className="ml-auto flex items-center gap-2 md:ml-0">
             <Popover>
               <PopoverTrigger asChild>
-                <button className="relative rounded-lg p-2 text-ink-3 hover:bg-canvas-2" aria-label="Notifications">
+                <button className="relative rounded-lg p-2 text-ink-3 hover:bg-canvas-2" aria-label={unread ? `Notifications, ${unread} unread` : "Notifications"}>
                   <Bell className="size-[18px]" />
                   {unread > 0 && <span className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-accent text-[9.5px] font-bold text-white">{unread}</span>}
                 </button>
@@ -81,8 +82,9 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
             </Popover>
             <Popover>
               <PopoverTrigger asChild>
-                <button aria-label="Account menu">
+                <button>
                   <Avatar name={personName(me)} size="sm" />
+                  <span className="sr-only">Account menu</span>
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-56 p-1">
@@ -101,7 +103,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-4 py-6 md:px-6 md:py-10">{children}</main>
+      <main id="main" className="mx-auto max-w-5xl px-4 py-6 md:px-6 md:py-10">{children}</main>
       <footer className="mx-auto hidden max-w-5xl px-6 pb-10 text-[12px] text-muted md:block">
         Your readings and consultation records are private to you and {pr.name}. <Link href="/legal/privacy" className="underline">Privacy</Link>
       </footer>

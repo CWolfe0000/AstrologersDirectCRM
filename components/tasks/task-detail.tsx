@@ -131,7 +131,7 @@ export function TaskDetail({ id, onDeleted }: { id: string; onDeleted?: () => vo
         <ul className="space-y-1">
           {t.checklist.map((c) => (
             <li key={c.id} className="group flex items-center gap-2.5 rounded-md px-1 py-1 hover:bg-canvas">
-              <Checkbox checked={c.done} onChange={() => toggle(t.id, c.id)} />
+              <Checkbox checked={c.done} onChange={() => toggle(t.id, c.id)} aria-label={`Done: ${c.label}`} />
               <span className={cn("flex-1 text-[13.5px]", c.done && "text-muted line-through")}>{c.label}</span>
               <button
                 onClick={() => update(t.id, { checklist: t.checklist.filter((x) => x.id !== c.id) })}
@@ -144,7 +144,7 @@ export function TaskDetail({ id, onDeleted }: { id: string; onDeleted?: () => vo
           ))}
         </ul>
         <div className="mt-2 flex gap-2">
-          <Input value={newItem} onChange={(e) => setNewItem(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addItem()} placeholder="Add checklist item" className="h-8 text-[13px]" />
+          <Input value={newItem} onChange={(e) => setNewItem(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addItem()} placeholder="Add checklist item" aria-label="New checklist item" className="h-8 text-[13px]" />
           <Button size="sm" variant="secondary" onClick={addItem}><Plus /> Add</Button>
         </div>
       </div>

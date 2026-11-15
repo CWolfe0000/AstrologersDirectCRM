@@ -63,6 +63,12 @@ Status key: ✅ done · 🟡 in progress · ⬜ not started · 🔒 blocked (the
 ### Billing
 - ⬜ Stripe subscription (plans and prices to be decided)
 
+### Accessibility and installable app
+- ✅ Accessibility review: axe-core scan of 46 screens at desktop and phone width. Serious and critical issues went from 669 to 0 (contrast, form labels, control names, link names, keyboard access to scrolling regions). The scan now runs in CI.
+- ✅ "Skip to content" link, labelled landmarks, a main region on every page
+- ✅ Installable app (PWA): manifest, app icons, app shortcuts, a service worker that caches static files only (never data), and an offline page
+- ⬜ Manual screen-reader pass (VoiceOver/NVDA) on the main workflows. Automated checks catch most but not all issues.
+
 ### Quality
 - ✅ Unit tests: encryption, validation, and a check that the server schema keeps up with the UI's data types
 - ✅ End-to-end smoke test: sign-up → verify → sample data → edit persists → wizard → encryption → invite → portal isolation → second-practice isolation → login

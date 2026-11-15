@@ -182,7 +182,7 @@ export function Toaster() {
 export function Wordmark({ className, light, compact }: { className?: string; light?: boolean; compact?: boolean }) {
   return (
     <span className={cn("inline-flex items-center gap-2", className)}>
-      <span className={cn("flex size-7 items-center justify-center rounded-md font-serif text-[17px] leading-none", light ? "bg-white/10 text-white" : "bg-ink text-white")}>A</span>
+      <span aria-hidden className={cn("flex size-7 items-center justify-center rounded-md font-serif text-[17px] leading-none", light ? "bg-white/10 text-white" : "bg-ink text-white")}>A</span>
       {!compact && (
         <span className={cn("font-serif text-[20px] leading-none tracking-[-0.01em]", light ? "text-white" : "text-ink")}>
           Astrologers<span className={light ? "text-[#D9B9C2]" : "text-accent"}>Direct</span>

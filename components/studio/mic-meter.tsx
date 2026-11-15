@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 /** Level 0–1 → segmented meter. */
 export function MicMeter({ level, className, bars = 14 }: { level: number; className?: string; bars?: number }) {
   return (
-    <div className={cn("flex h-4 items-end gap-[2px]", className)} aria-label="Microphone level">
+    <div className={cn("flex h-4 items-end gap-[2px]", className)} role="img" aria-label={`Microphone level ${Math.round(level * 100)}%`}>
       {Array.from({ length: bars }, (_, i) => {
         const on = level * bars > i;
         return (

@@ -112,7 +112,7 @@ export default function NotificationsPage() {
             ))}
           </ul>
           <p className="border-t border-line px-5 py-3 text-[12px] text-muted">
-            More options in <Link href="/app/settings?section=notifications" className="text-accent hover:underline">Settings → Notifications</Link>. Email delivery is simulated.
+            More options in <Link href="/app/settings?section=notifications" className="text-accent underline underline-offset-2">Settings → Notifications</Link>. Email delivery is simulated.
           </p>
         </Card>
       </div>

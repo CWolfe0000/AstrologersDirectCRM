@@ -19,7 +19,7 @@ type Range = "30d" | "90d" | "12m" | "all";
 const RANGE_MONTHS: Record<Range, number> = { "30d": 1, "90d": 3, "12m": 12, all: 24 };
 const RANGE_LABEL: Record<Range, string> = { "30d": "last 30 days", "90d": "last 90 days", "12m": "last 12 months", all: "last 24 months" };
 
-const C = { accent: "#824B59", sage: "#83978B", ink: "#29272B", stone: "#D6CFC6", gold: "#B07A2A", muted: "#77736F", line: "#E7E2DC" };
+const C = { accent: "#824B59", sage: "#83978B", ink: "#29272B", stone: "#D6CFC6", gold: "#B07A2A", muted: "#68645F", line: "#E7E2DC" };
 
 const tooltipStyle = {
   contentStyle: { borderRadius: 10, border: `1px solid ${C.line}`, boxShadow: "0 8px 30px rgba(41,39,43,0.10)", fontSize: 12.5, padding: "8px 12px" },

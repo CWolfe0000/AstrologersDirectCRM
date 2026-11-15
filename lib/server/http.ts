@@ -96,5 +96,7 @@ export function rateLimit(req: Request, key: string, limit: number, windowMs: nu
     buckets.set(k, { n: 1, reset: now + windowMs });
     return;
   }
-  if (++b.n > limit) throw new HttpError(429, "Too many attempts. Please wait a few minutes and try again.");
+  // Test runs create many accounts from one address; they raise the limits with RATE_LIMIT_MULTIPLIER.
+  const scale = Math.max(1, Number(process.env.RATE_LIMIT_MULTIPLIER) || 1);
+  if (++b.n > limit * scale) throw new HttpError(429, "Too many attempts. Please wait a few minutes and try again.");
 }

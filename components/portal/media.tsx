@@ -74,7 +74,7 @@ export function AudioPlayer({ duration, title }: { duration: number; title: stri
         <button
           onClick={() => p.setSpeed(SPEEDS[(SPEEDS.indexOf(p.speed) + 1) % SPEEDS.length]!)}
           className="h-10 w-16 rounded-lg border border-line text-[13px] font-semibold tabular-nums text-ink-3 hover:bg-canvas-2"
-          aria-label="Playback speed"
+          aria-label={`Playback speed ${p.speed}×`}
         >
           {p.speed}×
         </button>
@@ -142,7 +142,7 @@ export function VideoPlayer({ duration, title, poster }: { duration: number; tit
           </button>
           <span className="ml-1 text-[12px] tabular-nums text-white/75">{fmtDuration(p.t)} / {fmtDuration(duration)}</span>
           <div className="ml-auto flex items-center gap-1">
-            <button onClick={() => p.setSpeed(SPEEDS[(SPEEDS.indexOf(p.speed) + 1) % SPEEDS.length]!)} className="rounded-md px-2 py-1.5 text-[12px] font-semibold tabular-nums hover:bg-white/10" aria-label="Playback speed">
+            <button onClick={() => p.setSpeed(SPEEDS[(SPEEDS.indexOf(p.speed) + 1) % SPEEDS.length]!)} className="rounded-md px-2 py-1.5 text-[12px] font-semibold tabular-nums hover:bg-white/10" aria-label={`Playback speed ${p.speed}×`}>
               {p.speed}×
             </button>
             <button className="hidden rounded-md p-2 text-white/50 sm:block" aria-label="Captions (coming soon)" title="Captions — planned feature" disabled><Captions className="size-[18px]" /></button>

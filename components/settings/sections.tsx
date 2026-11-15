@@ -8,6 +8,7 @@ import { ASPECTS, BODIES, HOUSE_SYSTEMS, PLANET_IDS, ZODIACS, type AspectId, typ
 import { cn, DATA_MODE, fmtDate } from "@/lib/utils";
 import { api } from "@/lib/api";
 import { TwoFactorCard } from "./two-factor";
+import { LabelledByContext } from "@/components/ui/label-context";
 import { CalendarFeedCard, RemindersCard } from "./practice-tools";
 import { allZones } from "@/lib/timezones";
 import { bootstrap, loadSampleData } from "@/lib/sync";
@@ -21,13 +22,16 @@ import { SimulatedBadge, SimulatedNote } from "@/components/ui/misc";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 function Row({ title, desc, children }: { title: string; desc?: string; children: React.ReactNode }) {
+  const id = React.useId();
   return (
     <div className="flex flex-col gap-2 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
       <div>
-        <p className="text-[13.5px] font-medium">{title}</p>
+        <p id={id} className="text-[13.5px] font-medium">{title}</p>
         {desc && <p className="text-[12.5px] text-muted">{desc}</p>}
       </div>
-      <div className="shrink-0">{children}</div>
+      <LabelledByContext.Provider value={id}>
+        <div className="shrink-0">{children}</div>
+      </LabelledByContext.Provider>
     </div>
   );
 }
@@ -179,7 +183,7 @@ export function AstrologySection() {
                   <span className="text-[12px] text-muted">{ASPECTS[a].angle}°</span>
                   {ASPECTS[a].nature === "minor" && <Badge tone="outline">Minor</Badge>}
                 </div>
-                <div className={cn("flex items-center gap-3", !on && "opacity-40")}>
+                <div className={cn("flex items-center gap-3", !on && "text-muted [&_input]:opacity-40")}>
                   <input type="range" min={0.5} max={12} step={0.5} value={orb} disabled={!on} onChange={(e) => update({ orbs: { [a]: Number(e.target.value) } })} className="w-20 accent-[#824B59] sm:w-40" aria-label={`${ASPECTS[a].name} orb`} />
                   <span className="w-9 text-right text-[12.5px] tabular-nums">{orb}°</span>
                 </div>

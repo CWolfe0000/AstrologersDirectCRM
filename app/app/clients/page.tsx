@@ -200,7 +200,7 @@ export default function ClientsPage() {
                   </th>
                   <th className="px-3 py-2.5 font-medium">Status</th>
                   <th className="hidden px-3 py-2.5 font-medium lg:table-cell">Tags</th>
-                  <th className="w-12 px-3 py-2.5" />
+                  <th className="w-12 px-3 py-2.5"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">

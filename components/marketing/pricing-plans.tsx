@@ -117,7 +117,7 @@ export function PricingPlans() {
       <div className="mt-20">
         <h2 className="font-serif text-[30px] text-ink md:text-[36px]">Compare plans</h2>
         <p className="mt-2 text-[14px] text-muted">Storage and usage allowances are placeholders and will be confirmed before launch.</p>
-        <div className="mt-6 overflow-x-auto rounded-xl border border-line bg-surface">
+        <div className="mt-6 overflow-x-auto rounded-xl border border-line bg-surface" tabIndex={0} role="region" aria-label="Plan comparison table">
           <table className="w-full min-w-[640px] text-left text-[13.5px]">
             <thead>
               <tr className="border-b border-line bg-canvas">

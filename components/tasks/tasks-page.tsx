@@ -109,7 +109,7 @@ export function TasksPage() {
         <div className="min-w-0">
           <div className="mb-3 flex flex-col gap-2 sm:flex-row">
             <SearchInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search tasks or clients…" className="flex-1" />
-            <Select value={priority} onChange={(e) => setPriority(e.target.value)} className="sm:w-44">
+            <Select value={priority} onChange={(e) => setPriority(e.target.value)} className="sm:w-44" aria-label="Filter by priority">
               <option value="">All priorities</option>
               <option value="high">High priority</option>
               <option value="medium">Medium priority</option>

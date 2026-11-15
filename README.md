@@ -65,6 +65,10 @@ node tests/e2e/recording.mjs     # uses Chromium's simulated microphone
 node tests/e2e/twofactor.mjs     # takes ~2 minutes: waits for fresh authenticator codes
 node tests/e2e/conflicts.mjs     # two devices, one account
 CRON_SECRET=… node tests/e2e/practice-tools.mjs   # CSV import, calendar feed, reminders (server needs the same CRON_SECRET)
+node tests/e2e/pwa.mjs           # installable app + offline page
+node tests/e2e/a11y.mjs [--mobile] [--all]   # accessibility scan (axe-core)
+
+# Test runs create many accounts from one address: start the server with RATE_LIMIT_MULTIPLIER=20 (never in production).
 ```
 
 CI (`.github/workflows/ci.yml`) runs all of these against a Postgres service on every push.

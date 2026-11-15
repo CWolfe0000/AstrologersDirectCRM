@@ -34,7 +34,7 @@ function spread(items: { key: string; lon: number }[], minSep: number) {
   return Object.fromEntries(sorted.map((s) => [s.key, norm(s.pos)])) as Record<string, number>;
 }
 
-const ASPECT_COLOR = { hard: "#824B59", soft: "#5E7266", neutral: "#77736F", minor: "#A39D96" } as const;
+const ASPECT_COLOR = { hard: "#824B59", soft: "#5E7266", neutral: "#68645F", minor: "#A39D96" } as const;
 
 export interface ChartWheelProps {
   view: ChartView;
@@ -114,7 +114,7 @@ export function ChartWheel({ view, compact, className, selected, onSelect, highl
           {BODIES[b.id].glyph}
         </text>
         {!compact && showDegrees && (
-          <text {...(() => { const [x, y] = pt(degR, a); return { x, y }; })()} textAnchor="middle" dominantBaseline="central" fontSize={11.5} fill="#77736F" fontFamily="Inter Variable, Inter, sans-serif">
+          <text {...(() => { const [x, y] = pt(degR, a); return { x, y }; })()} textAnchor="middle" dominantBaseline="central" fontSize={11.5} fill="#68645F" fontFamily="Inter Variable, Inter, sans-serif">
             {Math.floor(d)}°{b.speed < 0 ? "℞" : ""}
           </text>
         )}

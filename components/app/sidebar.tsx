@@ -32,8 +32,8 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           <Wordmark light />
         </Link>
       </div>
-      <nav className="scrollbar-thin flex-1 overflow-y-auto px-3 pb-4">
-        <div className="px-2 pb-2 pt-3 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[#8C868E]">Practice</div>
+      <nav aria-label="Main" className="scrollbar-thin flex-1 overflow-y-auto px-3 pb-4">
+        <div className="px-2 pb-2 pt-3 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-[#9C969E]">Practice</div>
         <ul className="space-y-0.5">
           {APP_NAV.map((n) => {
             const active = isActive(n.href, n.exact);

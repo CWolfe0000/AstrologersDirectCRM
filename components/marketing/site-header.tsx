@@ -30,7 +30,7 @@ export function SiteHeader() {
   return (
     <header className={cn("sticky top-0 z-40 border-b transition-colors", scrolled || open ? "border-line bg-canvas/95 backdrop-blur" : "border-transparent bg-canvas")}>
       <div className="container flex h-16 items-center gap-8">
-        <Link href="/" aria-label="AstrologersDirect home">
+        <Link href="/">
           <Wordmark />
         </Link>
         <nav className="hidden items-center gap-7 md:flex">

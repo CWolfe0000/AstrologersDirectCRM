@@ -563,7 +563,7 @@ export function FilesTab({ client }: { client: Client }) {
         <div className="flex items-center gap-2">
           {DATA_MODE === "demo" && <SimulatedBadge label="Simulated storage" />}
           <Button size="sm" disabled={!!uploading} onClick={() => inputRef.current?.click()}><Upload /> {uploading ? `Uploading ${Math.round(uploading.pct)}%` : "Upload file"}</Button>
-          <input ref={inputRef} type="file" className="sr-only" onChange={(e) => onFile(e.target.files?.[0])} />
+          <input ref={inputRef} type="file" className="sr-only" aria-label="Upload a file" tabIndex={-1} onChange={(e) => onFile(e.target.files?.[0])} />
         </div>
       </div>
       <Card>

@@ -15,7 +15,7 @@ const variants: Record<Variant, string> = {
   subtle: "bg-canvas-2 text-ink hover:bg-canvas-3",
   danger: "bg-danger text-white hover:bg-danger/90",
   link: "text-accent hover:text-accent-hover underline-offset-4 hover:underline px-0 h-auto",
-  sage: "bg-sage text-white hover:bg-sage-dark",
+  sage: "bg-sage-dark text-white hover:bg-[#4F6156]",
   dark: "bg-ink text-white hover:bg-ink-2",
 };
 

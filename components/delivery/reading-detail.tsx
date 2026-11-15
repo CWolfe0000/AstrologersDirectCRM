@@ -64,7 +64,7 @@ export function ReadingDetail({ id, onClose }: { id: string; onClose: () => void
       {r.status === "failed" && (
         <div className="rounded-lg border border-danger/25 bg-danger-50 p-3.5 text-[13px] text-danger">
           <p className="flex items-center gap-2 font-medium"><AlertTriangle className="size-4" /> Delivery failed</p>
-          <p className="mt-1 text-danger/90">{r.failureReason ?? "The upload did not complete."}</p>
+          <p className="mt-1 text-danger">{r.failureReason ?? "The upload did not complete."}</p>
           <Button size="sm" variant="danger" className="mt-3" onClick={retry} disabled={retrying}>
             {retrying ? <Loader2 className="animate-spin" /> : <RotateCcw />} {retrying ? "Retrying…" : "Retry delivery"}
           </Button>

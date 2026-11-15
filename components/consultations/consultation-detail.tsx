@@ -146,7 +146,7 @@ export function ConsultationDetail({ id }: { id: string }) {
           <ul className="space-y-1.5">
             {followUps.map((t) => (
               <li key={t.id} className="flex items-center gap-3 rounded-lg border border-line bg-surface px-3 py-2">
-                <Checkbox checked={t.status === "done"} onChange={(e) => updateTask(t.id, { status: e.target.checked ? "done" : "todo" }, e.target.checked ? "Completed" : "Reopened")} />
+                <Checkbox checked={t.status === "done"} aria-label={`Complete: ${t.title}`} onChange={(e) => updateTask(t.id, { status: e.target.checked ? "done" : "todo" }, e.target.checked ? "Completed" : "Reopened")} />
                 <Link href={`/app/tasks?id=${t.id}`} className={cn("min-w-0 flex-1 truncate text-[13.5px] hover:text-accent", t.status === "done" && "text-muted line-through")}>{t.title}</Link>
                 <span className="text-[11.5px] text-muted">{fmtDate(t.due)}</span>
               </li>

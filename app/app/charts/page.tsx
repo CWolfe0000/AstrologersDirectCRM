@@ -170,7 +170,7 @@ function ChartDirectory() {
                 </div>
                 <p className="mt-1 text-[12.5px] text-muted">
                   Client:{" "}
-                  <Link href={`/app/clients/${c.clientId}`} onClick={(e) => e.stopPropagation()} className="text-ink-3 hover:text-accent hover:underline">
+                  <Link href={`/app/clients/${c.clientId}`} onClick={(e) => e.stopPropagation()} className="text-ink-3 underline decoration-line-strong underline-offset-2 hover:text-accent">
                     {name(c.clientId)}
                   </Link>
                   {c.personIds.some((p) => p !== c.clientId) && <> · {subjects(c.personIds)}</>}
@@ -217,7 +217,7 @@ function ChartDirectory() {
                     </td>
                     <td className="px-4 py-2.5"><ChartTypeBadge type={c.type} /></td>
                     <td className="px-4 py-2.5">
-                      <Link href={`/app/clients/${c.clientId}`} onClick={(e) => e.stopPropagation()} className="hover:text-accent hover:underline">{name(c.clientId)}</Link>
+                      <Link href={`/app/clients/${c.clientId}`} onClick={(e) => e.stopPropagation()} className="underline decoration-line-strong underline-offset-2 hover:text-accent">{name(c.clientId)}</Link>
                     </td>
                     <td className="px-4 py-2.5 text-muted">{c.savedConfig ?? "Practice defaults"}</td>
                     <td className="px-4 py-2.5 text-muted">{fmtDate(c.updatedAt)}</td>

@@ -427,19 +427,19 @@ export function StudioPage() {
                       <span className="flex items-center gap-1"><Mic className="size-3.5" /> Microphone</span>
                       <MicMeter level={level} className="text-ink" bars={10} />
                     </div>
-                    <Select value={mic} onChange={(e) => setMic(e.target.value)} className="[&_select]:h-8 [&_select]:text-[12.5px]">
+                    <Select value={mic} onChange={(e) => setMic(e.target.value)} aria-label="Microphone" className="[&_select]:h-8 [&_select]:text-[12.5px]">
                       {mics.map((x) => <option key={x}>{x}</option>)}
                     </Select>
                   </div>
                   <div>
                     <p className="mb-1 flex items-center gap-1 text-[11.5px] text-muted"><Camera className="size-3.5" /> Camera</p>
-                    <Select value={cam} onChange={(e) => setCam(e.target.value)} disabled={!m.cam || live} className="[&_select]:h-8 [&_select]:text-[12.5px]">
+                    <Select value={cam} onChange={(e) => setCam(e.target.value)} disabled={!m.cam || live} aria-label="Camera" className="[&_select]:h-8 [&_select]:text-[12.5px]">
                       {m.cam ? cams.map((x) => <option key={x}>{x}</option>) : <option>Not used in this mode</option>}
                     </Select>
                   </div>
                   <div>
                     <p className="mb-1 flex items-center gap-1 text-[11.5px] text-muted"><MonitorSmartphone className="size-3.5" /> Screen share</p>
-                    <Select value={shareTarget} onChange={(e) => setShareTarget(e.target.value)} disabled={!m.screen || (live && useReal)} className="[&_select]:h-8 [&_select]:text-[12.5px]">
+                    <Select value={shareTarget} onChange={(e) => setShareTarget(e.target.value)} disabled={!m.screen || (live && useReal)} aria-label="Screen to share" className="[&_select]:h-8 [&_select]:text-[12.5px]">
                       {m.screen ? (
                         <>
                           <option>AstrologersDirect — Chart workspace</option>
@@ -635,7 +635,7 @@ export function StudioPage() {
             { i: ListOrdered, t: "Chapters", d: "Mark sections like “Moon” or “2027 timing”." },
             { i: Captions, t: "Captions", d: "Accessible captions for video readings." },
           ].map((f) => (
-            <div key={f.t} className="flex gap-3 opacity-80">
+            <div key={f.t} className="flex gap-3">
               <f.i className="mt-0.5 size-4 shrink-0 text-muted" />
               <div>
                 <p className="text-[13px] font-medium text-ink-3">{f.t}</p>

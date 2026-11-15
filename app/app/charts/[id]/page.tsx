@@ -160,10 +160,10 @@ function Workspace() {
           >
             <Star className={cn(chart.favorite && "fill-accent text-accent")} />
           </Button>
-          <ButtonLink href={`/app/clients/${chart.clientId}`} variant="secondary">
+          <ButtonLink href={`/app/clients/${chart.clientId}`} variant="secondary" aria-label="Client profile">
             <UserRound /> <span className="hidden sm:inline xl:hidden 2xl:inline">Client profile</span>
           </ButtonLink>
-          <ButtonLink href={`/app/studio?client=${chart.clientId}&chart=${chart.id}`} variant="secondary">
+          <ButtonLink href={`/app/studio?client=${chart.clientId}&chart=${chart.id}`} variant="secondary" aria-label="Record reading">
             <Mic /> <span className="hidden sm:inline">Record reading</span>
           </ButtonLink>
           <ButtonLink href={`/app/delivery?new=1&client=${chart.clientId}&chart=${chart.id}`}>

@@ -11,9 +11,9 @@ const config: Config = {
         surface: "#FFFFFF",
         accent: { DEFAULT: "#824B59", hover: "#693A47", 50: "#F6EEF0", 100: "#EDDCE1", 200: "#D9B9C2" },
         sage: { DEFAULT: "#83978B", dark: "#5E7266", 50: "#EFF3F0", 100: "#DEE6E0" },
-        muted: "#77736F",
+        muted: "#68645F",
         line: { DEFAULT: "#E7E2DC", strong: "#D6CFC6" },
-        warn: { DEFAULT: "#B07A2A", 50: "#FBF3E6" },
+        warn: { DEFAULT: "#8F6420", 50: "#FBF3E6" },
         danger: { DEFAULT: "#A9443F", 50: "#F9ECEB" },
       },
       fontFamily: {

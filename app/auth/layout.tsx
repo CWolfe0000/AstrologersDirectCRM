@@ -9,15 +9,17 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="grid min-h-screen bg-canvas lg:grid-cols-[1fr_minmax(0,0.9fr)]">
       <div className="flex flex-col px-5 py-6 sm:px-10 md:px-16">
-        <Link href="/" className="self-start" aria-label="AstrologersDirect home">
+        <Link href="/" className="self-start">
           <Wordmark />
         </Link>
-        <div className="flex flex-1 items-center justify-center py-10">
+        <main id="main" className="flex flex-1 items-center justify-center py-10">
           <div className="w-full max-w-[400px]">{children}</div>
-        </div>
-        <p className="text-center text-[12px] text-muted">
-          Prototype — authentication is simulated. <Link href="/prototype" className="underline hover:text-ink">Prototype guide</Link>
-        </p>
+        </main>
+        {process.env.NEXT_PUBLIC_DATA_MODE === "demo" && (
+          <p className="text-center text-[12px] text-muted">
+            Prototype — authentication is simulated. <Link href="/prototype" className="underline hover:text-ink">Prototype guide</Link>
+          </p>
+        )}
       </div>
       <aside className="relative hidden overflow-hidden bg-ink p-12 text-white lg:flex lg:flex-col xl:p-16">
         <p className="eyebrow text-[#C9B3BA]">AstrologersDirect</p>

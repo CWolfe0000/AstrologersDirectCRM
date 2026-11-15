@@ -10,7 +10,7 @@ import { PageHeader, EmptyState, FileKindIcon, KIND_LABEL, StatCard, SimulatedNo
 import { StatusBadge } from "@/components/ui/badge";
 import { Sheet } from "@/components/ui/dialog";
 import { SearchInput } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import type { Reading } from "@/lib/data/types";
 import { cn, fmtDate, relDay } from "@/lib/utils";
 import { NewDeliveryDialog } from "./new-delivery";
@@ -98,6 +98,8 @@ export function DeliveryPage() {
                 );
               })}
             </TabsList>
+            {/* The list below is the panel for every tab; empty panels keep the tab ↔ panel links valid. */}
+            {QUEUES.map((x) => <TabsContent key={x.id} value={x.id} />)}
           </Tabs>
           <div className="pb-3 md:w-64"><SearchInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search readings or clients…" /></div>
         </div>

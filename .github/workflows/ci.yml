@@ -23,6 +23,8 @@ jobs:
       APP_URL: http://localhost:3000
       NEXT_PUBLIC_DATA_MODE: server
       CRON_SECRET: ci-only-cron-secret
+      # Many test accounts are created from one address; never set this in production.
+      RATE_LIMIT_MULTIPLIER: "20"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -51,5 +53,8 @@ jobs:
           node tests/e2e/twofactor.mjs
           node tests/e2e/conflicts.mjs
           node tests/e2e/practice-tools.mjs
+          node tests/e2e/pwa.mjs
+          node tests/e2e/a11y.mjs
+          node tests/e2e/a11y.mjs --mobile
       - name: Standalone demo build still works
         run: npm run build:standalone

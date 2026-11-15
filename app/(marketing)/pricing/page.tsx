@@ -31,7 +31,7 @@ export default function PricingPage() {
           <div>
             <p className="eyebrow mb-3 text-accent">FAQ</p>
             <h2 className="font-serif text-[32px] leading-tight text-ink md:text-[40px]">Frequently asked questions</h2>
-            <p className="mt-3 text-[14.5px] text-muted">Can’t find what you’re looking for? <a href="/contact" className="text-accent hover:underline">Contact us</a>.</p>
+            <p className="mt-3 text-[14.5px] text-muted">Can’t find what you’re looking for? <a href="/contact" className="text-accent underline underline-offset-2">Contact us</a>.</p>
           </div>
           <Faq items={FAQ} />
         </div>

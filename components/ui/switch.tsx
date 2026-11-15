@@ -3,10 +3,15 @@
 import * as React from "react";
 import * as S from "@radix-ui/react-switch";
 import { cn } from "@/lib/utils";
+import { FieldIdContext, LabelledByContext } from "./label-context";
 
 export function Switch({ className, ...props }: React.ComponentProps<typeof S.Root>) {
+  const labelledBy = React.useContext(LabelledByContext);
+  const fieldId = React.useContext(FieldIdContext);
   return (
     <S.Root
+      id={props.id ?? fieldId ?? undefined}
+      aria-labelledby={props["aria-labelledby"] ?? (!props["aria-label"] && labelledBy ? labelledBy : undefined)}
       className={cn(
         "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border border-transparent bg-line-strong transition-colors data-[state=checked]:bg-accent focus-visible:ring-2 focus-visible:ring-accent/30 disabled:opacity-50",
         className,
