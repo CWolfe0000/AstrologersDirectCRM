@@ -65,6 +65,10 @@ node tests/e2e/files.mjs
 
 CI (`.github/workflows/ci.yml`) runs all of these against a Postgres service on every push.
 
+### Deploying
+
+See [`docs/DEPLOY.md`](docs/DEPLOY.md) for Neon, Vercel, Resend and Cloudflare R2 setup.
+
 ### Production build
 
 ```bash
