@@ -8,6 +8,7 @@ set -euo pipefail
 npm run ephemeris
 if [ "${VERCEL_ENV:-}" = "production" ]; then
   echo "Applying database migrations…"
-  npx drizzle-kit migrate
+  # Migrations use the direct (unpooled) connection when it is set.
+  DATABASE_URL="${DATABASE_URL_UNPOOLED:-$DATABASE_URL}" npx drizzle-kit migrate
 fi
 npm run build
