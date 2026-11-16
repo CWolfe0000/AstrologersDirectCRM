@@ -48,18 +48,18 @@ Status key: ✅ done · 🟡 in progress · ⬜ not started · 🔒 blocked (the
 ### Files and delivery
 - ✅ File storage with two drivers: local disk for development, and S3-compatible storage for production (e.g. Cloudflare R2). In production, browsers upload directly to the bucket with signed URLs, so large files never pass through Vercel.
 - ✅ Real reading uploads with real progress, plus client file uploads. Download, "view only" and expiry rules are enforced on the server for every request. Audio and video support seeking.
-- 🟡 S3 driver is written and type-checked but not yet run against a real bucket (needs an R2 or S3 account)
+- ✅ S3 driver running against Cloudflare R2 in production (2026-11-16): direct browser uploads, serving, Range requests and cleanup on account deletion all checked on the live site
 - ⬜ Clean up abandoned uploads (files uploaded but never attached to a reading)
 - ✅ Email to the client when a reading is delivered (needs Resend configured to actually send)
 - ✅ Real audio, video and PDF viewing in the portal for uploaded files (sample data still uses the simulated players)
 
 ### Email
 - ✅ Email sending through Resend. Without a key, emails go to the `outbox` table and the server log.
-- 🔒 Connect Resend for AstrologersDirect. Needs an API key and a verified sending domain.
+- ✅ Resend connected: mail.astrologersdirect.com verified, send-only key in the app, delivery confirmed
 
 ### Hosting
-- 🔒 Neon database for AstrologersDirect (needs your Neon account)
-- 🔒 Vercel project for the web app (needs your Vercel account)
+- ✅ Neon database (organization 0xCassie, Oregon) with migrations on every production deploy
+- ✅ Vercel project on the Pro team, live at https://app.astrologersdirect.com (main domain and www redirect there)
 - ⬜ Production environment variables and a backup policy
 
 ### Billing
