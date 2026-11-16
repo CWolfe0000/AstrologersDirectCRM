@@ -5,7 +5,7 @@ import path from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { randomBytes } from "node:crypto";
-import { DeleteObjectCommand, DeleteObjectsCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "./env";
 import { ALLOWED_TYPES } from "@/lib/media-types";
@@ -47,6 +47,11 @@ function s3Client() {
       endpoint: process.env.S3_ENDPOINT || undefined,
       forcePathStyle: !!process.env.S3_ENDPOINT,
       credentials: { accessKeyId: process.env.S3_ACCESS_KEY_ID || "", secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "" },
+      // Recent AWS SDKs add a CRC32 checksum to every request by default. In a presigned upload URL that
+      // checksum is computed for an empty body, so R2 rejects the real upload. Only send checksums when
+      // an operation requires them.
+      requestChecksumCalculation: "WHEN_REQUIRED",
+      responseChecksumValidation: "WHEN_REQUIRED",
     });
   }
   return s3;
@@ -136,8 +141,9 @@ export async function removePracticeObjects(practiceId: string) {
     let token: string | undefined;
     do {
       const page = await s3Client().send(new ListObjectsV2Command({ Bucket: bucket(), Prefix: practiceId + "/", ContinuationToken: token }));
-      const keys = (page.Contents ?? []).map((o) => ({ Key: o.Key! }));
-      if (keys.length) await s3Client().send(new DeleteObjectsCommand({ Bucket: bucket(), Delete: { Objects: keys } }));
+      const keys = (page.Contents ?? []).map((o) => o.Key!);
+      // One request per object: the batch delete needs a checksum header that not every S3-compatible store accepts.
+      for (let i = 0; i < keys.length; i += 20) await Promise.all(keys.slice(i, i + 20).map((Key) => s3Client().send(new DeleteObjectCommand({ Bucket: bucket(), Key }))));
       token = page.IsTruncated ? page.NextContinuationToken : undefined;
     } while (token);
     return;

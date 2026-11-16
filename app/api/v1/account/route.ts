@@ -17,6 +17,7 @@ export const DELETE = handler(async (req) => {
   if (!(await verifyPassword(String(body.password ?? ""), row?.passwordHash ?? null))) throw new HttpError(400, "Your password isn’t right.");
   await destroySession();
   await db().delete(schema.practices).where(eq(schema.practices.id, user.practiceId));
-  await removePracticeObjects(user.practiceId);
+  // The account is gone either way; stored files that fail to delete are logged for a retry, not shown as an error.
+  await removePracticeObjects(user.practiceId).catch((e) => console.error(`[account] stored files for ${user.practiceId} not removed:`, e));
   return json({ ok: true });
 });
