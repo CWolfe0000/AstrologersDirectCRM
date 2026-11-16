@@ -11,6 +11,7 @@
     "screenshots": "node scripts/screenshots.mjs",
     "build:standalone": "node scripts/build-standalone.mjs",
     "plan": "node scripts/set-plan.mjs",
+    "vercel-build": "bash scripts/vercel-build.sh",
     "test": "vitest run",
     "test:e2e": "node tests/e2e/smoke.mjs",
     "db:generate": "drizzle-kit generate",
