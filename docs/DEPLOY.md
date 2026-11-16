@@ -99,3 +99,16 @@ This is `APP_ENCRYPTION_KEY`. **If it is lost or changed, encrypted client data 
 - **Backups:** Neon keeps point-in-time history according to your plan. R2 does not keep backups by default, so consider bucket replication once real readings are stored there.
 - **Rate limits** are kept in each server instance's memory. That is fine for a beta. With heavy traffic, move them to Redis (for example Upstash).
 - **The demo prototype** is unaffected. It is a separate single-file build (`npm run build:standalone`).
+
+## Current production setup (2026-11-16)
+
+| Piece | Where |
+|---|---|
+| App | Vercel team **astrologersdirect** (Pro) → project **astrologers-direct-crm**, functions in Oregon (`pdx1`), production branch `claude/astrologersdirect-prototype-dyg1dn` |
+| Address | **https://app.astrologersdirect.com** (canonical). `astrologersdirect.com`, `www.astrologersdirect.com` and `astrologers-direct-crm.vercel.app` redirect to it (308). DNS at GoDaddy. |
+| Database | Neon organization **0xCassie** → project **astrologersdirect** (`aws-us-west-2`, Postgres 16). Migrations run automatically on production deploys (`scripts/vercel-build.sh`, direct connection). |
+| Email | Resend domain **mail.astrologersdirect.com** (verified; DKIM, SPF, return path in GoDaddy). The app uses a send-only key limited to that domain; sender `AstrologersDirect <no-reply@mail.astrologersdirect.com>`. |
+| Environment variables (production) | `DATABASE_URL` (pooled), `DATABASE_URL_UNPOOLED` (migrations), `APP_ENCRYPTION_KEY`, `APP_URL`, `NEXT_PUBLIC_DATA_MODE=server`, `CRON_SECRET`, `SWISS_EPHEMERIS_LICENSE=confirmed`, `DEFAULT_PLAN=premium` (beta), `RESEND_API_KEY`, `EMAIL_FROM` |
+| Not yet | File storage (Cloudflare R2): until `STORAGE_DRIVER=s3` is set, don't upload real files — Vercel does not keep local files. |
+
+**Keep a copy of `APP_ENCRYPTION_KEY`** (Vercel → project → Settings → Environment Variables) in a password manager. Without it, encrypted client data cannot be read.
