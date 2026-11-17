@@ -29,16 +29,36 @@ export async function searchPlaces(q: string, lang = "en"): Promise<PlaceResult[
   const key = `${lang}|${q.toLowerCase()}`;
   const hit = cache.get(key);
   if (hit && Date.now() - hit.at < TTL) return hit.results;
-  const params = new URLSearchParams({
-    q,
-    maxRows: "8",
-    featureClass: "P",
-    style: "FULL",
-    orderby: "relevance",
-    isNameRequired: "true",
-    lang,
-    username: process.env.GEONAMES_USERNAME ?? "",
-  });
+  // While typing ("Porto Ale"), match the start of the name; a full query ("Paris, Texas") uses word search.
+  // Prefix results fall back to word search when nothing starts with what was typed.
+  const prefix = !q.includes(",");
+  let results = await query(prefix ? { name_startsWith: q, orderby: "population", maxRows: "25" } : { q, orderby: "relevance", isNameRequired: "true", maxRows: "8" }, lang);
+  if (prefix) {
+    const want = fold(q);
+    results = results.filter((r) => fold(r.name).startsWith(want) || fold(r.place).startsWith(want));
+    if (results.length === 0) results = await query({ q, orderby: "relevance", isNameRequired: "true", maxRows: "8" }, lang);
+  }
+  const out: PlaceResult[] = [];
+  const seen = new Set<string>();
+  for (const { name, ...r } of results) {
+    void name;
+    if (seen.has(r.place)) continue;
+    seen.add(r.place);
+    out.push(r);
+    if (out.length === 8) break;
+  }
+  if (cache.size > 2000) cache.delete(cache.keys().next().value!);
+  cache.set(key, { at: Date.now(), results: out });
+  return out;
+}
+
+/** Lower-case, accents removed: "São" matches "sao". */
+function fold(s: string) {
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
+
+async function query(extra: Record<string, string>, lang: string): Promise<(PlaceResult & { name: string })[]> {
+  const params = new URLSearchParams({ ...extra, featureClass: "P", style: "FULL", lang, username: process.env.GEONAMES_USERNAME ?? "" });
   let data: { geonames?: Raw[]; status?: { message: string; value: number } } | null = null;
   let lastError: unknown;
   for (const host of ["https://secure.geonames.org", "http://api.geonames.org"]) {
@@ -53,17 +73,14 @@ export async function searchPlaces(q: string, lang = "en"): Promise<PlaceResult[
   }
   if (!data) throw lastError instanceof Error ? lastError : new Error("GeoNames unavailable");
   if (data.status) throw new Error(`GeoNames: ${data.status.message}`);
-  const results: PlaceResult[] = [];
-  const seen = new Set<string>();
-  for (const g of data.geonames ?? []) {
-    const tz = g.timezone?.timeZoneId;
-    if (!tz) continue;
-    const place = [g.name, g.adminName1 && g.adminName1 !== g.name ? g.adminName1 : null, g.countryName].filter(Boolean).join(", ");
-    if (seen.has(place)) continue;
-    seen.add(place);
-    results.push({ place, lat: Number(g.lat), lon: Number(g.lng), tz: ianaZone(tz), population: g.population || undefined });
-  }
-  if (cache.size > 2000) cache.delete(cache.keys().next().value!);
-  cache.set(key, { at: Date.now(), results });
-  return results;
+  return (data.geonames ?? [])
+    .filter((g) => g.timezone?.timeZoneId)
+    .map((g) => ({
+      name: g.name,
+      place: [g.name, g.adminName1 && g.adminName1 !== g.name ? g.adminName1 : null, g.countryName].filter(Boolean).join(", "),
+      lat: Number(g.lat),
+      lon: Number(g.lng),
+      tz: ianaZone(g.timezone!.timeZoneId!),
+      population: g.population || undefined,
+    }));
 }
