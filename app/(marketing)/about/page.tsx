@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
-import { Compass, Layers, KeyRound, Search, UserRound } from "lucide-react";
+import { Compass, Layers, KeyRound, Search, Sparkles, UserRound } from "lucide-react";
 import { PageIntro } from "@/components/marketing/section";
 import { AdvisoryForm } from "@/components/marketing/forms";
 
 export const metadata: Metadata = { title: "About" };
 
 const PRINCIPLES = [
-  { icon: UserRound, title: "The astrologer comes first.", body: "Technology should support professional judgement, not replace it." },
+  { icon: UserRound, title: "The relationship is the real work.", body: "A chart is where understanding begins. Trust, conversation and time are where it grows." },
+  { icon: Compass, title: "The astrologer comes first.", body: "Technology should support professional judgement, not replace it." },
   { icon: Layers, title: "Knowledge should accumulate.", body: "What you discover through your work should stay accessible and useful for years." },
-  { icon: Compass, title: "Complexity shouldn’t mean complication.", body: "Sophisticated tools can be powerful without being difficult to use." },
+  { icon: Sparkles, title: "Complexity shouldn’t mean complication.", body: "Sophisticated tools can be powerful without being difficult to use." },
   { icon: KeyRound, title: "Your work belongs to you.", body: "Your clients, observations and methods stay under your control, and you can export them at any time." },
   { icon: Search, title: "Better questions lead to better understanding.", body: "We want to make it easier to investigate patterns, compare observations and learn from experience." },
 ];
@@ -16,11 +17,11 @@ const PRINCIPLES = [
 export default function AboutPage() {
   return (
     <>
-      <PageIntro eyebrow="About AstrologersDirect" title="We believe astrology deserves better tools. And a stronger future.">
+      <PageIntro eyebrow="About AstrologersDirect" title="We believe astrology deserves better tools. And stronger client relationships.">
         <div className="mt-5 max-w-2xl space-y-3 text-[17px] leading-relaxed text-muted">
-          <p>Professional astrology is built on more than calculations. It’s built on observation, interpretation, experience, and the ongoing study of how planetary configurations show up in people’s lives.</p>
-          <p>Every working astrologer adds to that understanding. Yet much of what practitioners learn stays scattered across notebooks, isolated chart programs and years of client records.</p>
-          <p className="text-ink">We believe that knowledge deserves a better home. That’s why we’re building AstrologersDirect.</p>
+          <p>Professional astrology is built on more than calculations. It’s built on conversation, trust, interpretation and experience, and on relationships that often last for years.</p>
+          <p>Yet the tools astrologers use were designed around the moment a chart is calculated. Everything else, the client’s story, the work between sessions, years of observation, ends up scattered across notebooks, inboxes and separate programs.</p>
+          <p className="text-ink">We believe the whole relationship deserves a better home. That’s why we’re building AstrologersDirect.</p>
         </div>
       </PageIntro>
 
@@ -33,7 +34,7 @@ export default function AboutPage() {
           <p>We believe the future of astrology depends on giving practitioners better ways to work, to preserve what they know, and to investigate what they observe.</p>
           <p>That starts with something practical: professional software designed around the whole practice.</p>
           <p className="font-medium text-ink">Not just the chart.</p>
-          <p>The person behind it. The consultation. The observations. The questions that emerge. The insight that develops over time.</p>
+          <p>The person behind it. The consultation. The work between sessions. The questions that emerge. The insight that develops over time.</p>
           <p>When those stay connected, astrologers spend less time managing information and more time deepening their understanding.</p>
         </div>
       </section>

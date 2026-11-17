@@ -25,6 +25,8 @@ const desktop = [
   ["reports.png", "/app/reports"],
   ["charts.png", "/app/charts"],
   ["portal.png", "/portal"],
+  ["between-sessions.png", "/app/clients/c1?tab=work&work=w1"],
+  ["portal-work.png", "/portal/work/w1"],
 ];
 
 const browser = await chromium.launch();

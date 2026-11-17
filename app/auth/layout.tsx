@@ -29,9 +29,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <br />
             <span className="italic text-[#E3C9D0]">Connected.</span>
           </h2>
-          <p className="mt-5 max-w-md text-[15.5px] leading-relaxed text-[#CFCAD0]">Charts, clients, consultations and your professional knowledge — in one calm, capable workspace.</p>
+          <p className="mt-5 max-w-md text-[15.5px] leading-relaxed text-[#CFCAD0]">Your clients, charts, consultations and the work between sessions, together in one professional workspace.</p>
           <ul className="mt-8 space-y-3 text-[14px] text-[#E4E0E5]">
-            {["Every chart linked to the client it describes", "Observations that persist for years", "Readings delivered to a private client portal"].map((t) => (
+            {["Every chart linked to the client it describes", "Observations that build on each other for years", "Work that continues between sessions", "Readings delivered to a private client portal"].map((t) => (
               <li key={t} className="flex items-center gap-3">
                 <span className="flex size-5 items-center justify-center rounded-full bg-white/10">
                   <Check className="size-3" />
@@ -42,7 +42,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </ul>
         </div>
         <figure className="mt-14 border-t border-white/10 pt-8">
-          <blockquote className="font-serif text-[21px] leading-snug text-[#F1EDEF]">“The technology should support the astrologer’s expertise, not compete with it.”</blockquote>
+          <blockquote className="font-serif text-[21px] leading-snug text-[#F1EDEF]">“The technology does the organising. You do the interpreting.”</blockquote>
           <figcaption className="mt-3 text-[12.5px] text-[#9C969E]">AstrologersDirect product philosophy</figcaption>
         </figure>
       </aside>

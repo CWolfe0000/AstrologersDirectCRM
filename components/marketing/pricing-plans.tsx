@@ -15,7 +15,7 @@ const PLANS = [
     name: "Solo",
     tagline: "Build your foundation.",
     for: "For independent astrologers establishing their practice. Bring your clients, charts, observations and reading delivery together from the start.",
-    highlights: ["Client management", "Natal & synastry charts", "Notes & observations", "Reading delivery", "Private client portal"],
+    highlights: ["Client management", "Natal & synastry charts", "Notes & observations", "Between-session work with clients", "Reading delivery", "Private client portal"],
   },
   {
     id: "professional",
@@ -43,6 +43,7 @@ const ROWS: { group: string; rows: [string, Cell, Cell, Cell][] }[] = [
       ["Associated people & relationship charts", true, true, true],
       ["Consultations & calendar", true, true, true],
       ["Tasks & follow-ups", true, true, true],
+      ["Between sessions: assignments, prompts, goals & activities", true, true, true],
       ["Practice insights", false, true, true],
       ["Practitioner seats", "1", "1", "TBD"],
     ],

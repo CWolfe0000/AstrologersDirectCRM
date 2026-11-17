@@ -48,10 +48,20 @@ const STEPS = [
     link: { href: "/app/delivery", label: "Explore Reading Delivery" },
   },
   {
+    title: "Keep the conversation going.",
+    body: [
+      "Share a journaling prompt, an assignment, a goal or a practice to try before you meet again.",
+      "Your client responds in their portal, in their own time. You see what they wrote, and when they’ve finished, on their record.",
+    ],
+    close: "The relationship doesn’t pause between appointments. Neither does the work.",
+    shot: "/screenshots/between-sessions.png",
+    link: { href: "/app/clients/c1?tab=work", label: "Explore Between Sessions" },
+  },
+  {
     title: "Pick up where you left off.",
     body: [
       "Six months later, your client returns.",
-      "Their charts are there. Their previous readings are there. Your observations and consultation history are there.",
+      "Their charts are there. Their previous readings are there. Everything they wrote between sessions is there, alongside your observations and consultation history.",
     ],
     close: "You spend your time exploring what’s changed, not searching for what happened.",
     shot: "/screenshots/portal.png",
@@ -62,10 +72,10 @@ const STEPS = [
 export default function HowItWorksPage() {
   return (
     <>
-      <PageIntro eyebrow="How it works" title="Less time managing your practice. More time practising astrology.">
+      <PageIntro eyebrow="How it works" title="A practice built around the whole client journey.">
         <div className="mt-5 max-w-2xl space-y-3 text-[17px] leading-relaxed text-muted">
-          <p>The best workflow is the one you don’t have to think about.</p>
-          <p>From the first consultation to the tenth, AstrologersDirect keeps your work organised, connected and ready when you need it. Here’s what that looks like.</p>
+          <p>A client relationship isn’t a series of separate appointments. It’s one continuous story.</p>
+          <p>From the first consultation to the tenth, AstrologersDirect keeps that story organised, connected and ready when you need it. Here’s what that looks like.</p>
         </div>
       </PageIntro>
       <div className="container py-16 md:py-24">

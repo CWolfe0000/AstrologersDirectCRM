@@ -38,8 +38,8 @@ export function PageIntro({ eyebrow, title, body, children }: { eyebrow: string;
 }
 
 export function FinalCta({
-  title = "Help build the future of professional astrology.",
-  body = "We’re creating the workspace we believe astrologers should have had years ago. Explore it, and join the early practitioner community shaping what comes next.",
+  title = "Build stronger client relationships.",
+  body = "We’re building the workspace we believe astrologers should have had years ago: one that supports the whole journey with each client. Explore it, and join the early practitioner community shaping what comes next.",
 }: {
   title?: string;
   body?: string;

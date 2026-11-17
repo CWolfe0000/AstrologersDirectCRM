@@ -32,6 +32,7 @@ const ENVIRONMENTS = [
       [8, "Practitioner Dashboard", "/app"],
       [9, "Client Directory", "/app/clients"],
       [10, "Client Profile — Amelia Hart", "/app/clients/c1"],
+      [10, "Client Profile — Between Sessions", "/app/clients/c1?tab=work"],
       [11, "Chart Directory", "/app/charts"],
       [12, "Chart Workspace — Amelia Hart natal", "/app/charts/ch1"],
       [13, "Notes & Observations", "/app/observations"],
@@ -54,6 +55,7 @@ const ENVIRONMENTS = [
       [23, "Reading Detail & Media Player", "/portal/readings/r3"],
       [24, "Consultation History", "/portal/consultations"],
       [25, "Account Settings", "/portal/settings"],
+      [26, "Between Sessions", "/portal/work"],
     ],
   },
 ] as const;
@@ -133,16 +135,27 @@ const WORKFLOWS: { id: string; title: string; summary: string; steps: [string, s
       ["Go to client", "/app/clients/c1"],
     ],
   },
+  {
+    id: "G",
+    title: "Between sessions",
+    summary: "Share a journaling prompt with Amelia, then see it, and respond, as she does.",
+    steps: [
+      ["Open Amelia’s Between Sessions", "/app/clients/c1?tab=work"],
+      ["Read her journal entries", "/app/clients/c1?tab=work&work=w1"],
+      ["Share something new", "/app/clients/c1?tab=work&newWork=1"],
+      ["See it in her portal", "/portal/work"],
+      ["Respond as Amelia", "/portal/work/w1"],
+    ],
+  },
 ];
 
 const SIMULATED = [
-  ["Chart calculations", "Positions come from a clearly labelled demonstration engine behind an abstraction layer. A production adapter for an existing ephemeris-based engine is needed."],
-  ["AI assistant", "Responses are scripted from the chart data and saved observations. Requires an LLM integration with retrieval over the practitioner’s records."],
-  ["Recording Studio", "Recording uses the browser where permitted, otherwise a simulated timer and preview. Needs media capture, upload and transcoding services."],
-  ["File uploads & delivery", "Files are not uploaded; deliveries update local state only. Needs object storage, signed URLs and an email/notification service."],
-  ["Authentication", "Sign-in, sign-up, verification, reset and invitations are visual flows only. Needs an identity provider and role-based access."],
-  ["Data persistence", "Demo data lives in the browser (localStorage) and can be reset. Needs a database and API matching the store’s actions."],
-  ["Import/export, billing, calendar sync, reminders", "Shown as interface only; integrations are future work."],
+  ["Chart calculations", "The demo uses an approximate demonstration engine. The live platform calculates with Swiss Ephemeris."],
+  ["AI assistant", "A preview everywhere: responses are assembled from the chart and your saved observations. A full assistant is in development."],
+  ["Files, recordings & delivery", "The demo keeps everything in your browser. The live platform stores files privately and emails clients when something is shared."],
+  ["Accounts & sign-in", "The demo is already signed in as Celeste Morrow. The live platform has real accounts, email verification and two-factor sign-in."],
+  ["Data", "Demo data lives in your browser and can be reset. The live platform stores your practice in an encrypted database."],
+  ["Billing, calendar sync", "Not yet built. Calendar feeds (Google, Apple, Outlook) and reminder emails already work on the live platform."],
 ];
 
 export default function PrototypeGuidePage() {
@@ -151,10 +164,11 @@ export default function PrototypeGuidePage() {
       <section className="border-b border-line">
         <div className="container py-14 md:py-20">
           <p className="eyebrow mb-4 text-accent">Prototype guide</p>
-          <h1 className="max-w-3xl font-serif text-[40px] leading-[1.05] text-ink md:text-[56px]">Explore all 25 screens and six workflows.</h1>
-          <p className="mt-5 max-w-2xl text-[16.5px] leading-relaxed text-muted">
-            This is a navigable prototype with realistic demonstration data. Changes you make in the practitioner app are saved in your browser — use “Reset demo data” in the sidebar to start again.
-          </p>
+          <h1 className="max-w-3xl font-serif text-[40px] leading-[1.05] text-ink md:text-[56px]">Don’t just imagine a better way to work. Explore it.</h1>
+          <div className="mt-5 max-w-2xl space-y-3 text-[16.5px] leading-relaxed text-muted">
+            <p>Follow a client from their first chart to a completed consultation, through the work between sessions, to a delivered reading. See the practitioner’s workspace and what the client sees in their portal.</p>
+            <p>The demo uses realistic sample data. Changes you make are saved in your browser; use “Reset demo data” in the sidebar to start again.</p>
+          </div>
           <div className="mt-8 flex flex-wrap gap-3">
             <ButtonLink href="/app">Open practitioner app <ArrowRight /></ButtonLink>
             <ButtonLink href="/portal" variant="secondary">Open client portal</ButtonLink>
@@ -220,10 +234,10 @@ export default function PrototypeGuidePage() {
       <section id="simulated" className="container scroll-mt-20 py-14 md:py-20">
         <div className="flex items-center gap-2">
           <FlaskConical className="size-5 text-warn" />
-          <h2 className="font-serif text-[30px] text-ink md:text-[36px]">Simulated functionality</h2>
+          <h2 className="font-serif text-[30px] text-ink md:text-[36px]">What the demo simulates</h2>
         </div>
         <p className="mt-2 max-w-2xl text-[14.5px] text-muted">
-          Throughout the app, simulated features carry a dashed amber “Simulated” label. The full list, with what each would need to become functional, is in <code className="rounded bg-canvas-2 px-1.5 py-0.5 text-[12.5px]">SIMULATED_FEATURES.md</code> in the repository.
+          In the demo, anything simulated carries a dashed amber “Simulated” label.
         </p>
         <div className="mt-8 overflow-hidden rounded-xl border border-line bg-surface">
           {SIMULATED.map(([t, d]) => (

@@ -19,7 +19,7 @@ function SignupForm() {
   const [email, setEmail] = React.useState("");
   return (
     <>
-      <AuthHeading title="Create your practice" body="Set up your AstrologersDirect workspace in a few minutes." />
+      <AuthHeading title="Build stronger client relationships." body="Create your practice and join the early practitioner community shaping AstrologersDirect. It takes a few minutes." />
       {plan && (
         <p className="-mt-4 mb-6 text-[13px] text-muted">
           Interested in <Badge tone="accent" className="capitalize">{plan}</Badge> — pricing to be announced.

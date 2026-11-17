@@ -21,7 +21,7 @@ function DemoLoginPage() {
   };
   return (
     <>
-      <AuthHeading title="Welcome back" body="Sign in to your practice workspace." />
+      <AuthHeading title="Welcome back to your practice." body="Your clients, charts, observations and the work between sessions, together in one place." />
       <Button variant="secondary" className="w-full" onClick={() => router.push("/app")}>
         <GoogleMark /> Continue with Google
       </Button>

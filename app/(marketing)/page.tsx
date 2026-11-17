@@ -8,7 +8,7 @@ const SCATTERED = ["Client records in one place.", "Notes somewhere else.", "App
 const PILLARS = [
   { icon: Users, title: "Know your clients better.", body: "Keep their charts, personal history, previous consultations and your observations together." },
   { icon: MessagesSquare, title: "Make every consultation count.", body: "Prepare with context, record important insights, and build on previous conversations." },
-  { icon: HeartHandshake, title: "Stay connected between sessions.", body: "Share assignments, journaling prompts, goals and follow-up activities that support your clients’ ongoing development.", soon: true },
+  { icon: HeartHandshake, title: "Stay connected between sessions.", body: "Share assignments, journaling prompts, goals and follow-up activities that support your clients’ ongoing development. They respond in their portal; you see it on their record." },
   { icon: LayoutPanelTop, title: "Deliver a professional experience.", body: "Record and share readings, share files and resources, and give clients a private portal for their work with you." },
   { icon: CalendarCheck, title: "Spend less time managing. More time practising.", body: "Appointments, client records, follow-up tasks and reminders in one place, instead of a collection of disconnected systems." },
 ];
@@ -78,10 +78,7 @@ export default function HomePage() {
         <div className="mt-14 grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-6">
           {PILLARS.map((p, i) => (
             <div key={p.title} className={`bg-surface p-6 md:p-7 ${i < 3 ? "lg:col-span-2" : "lg:col-span-3"} ${i === PILLARS.length - 1 ? "sm:col-span-2" : ""}`}>
-              <div className="flex items-center gap-2">
-                <p.icon className="size-5 text-accent" />
-                {p.soon && <span className="rounded-full border border-line px-2 py-px text-[11px] text-muted">In development</span>}
-              </div>
+              <p.icon className="size-5 text-accent" />
               <h3 className="mt-5 text-[17px] font-semibold text-ink">{p.title}</h3>
               <p className="mt-2 text-[14.5px] leading-relaxed text-muted">{p.body}</p>
             </div>
@@ -116,7 +113,7 @@ export default function HomePage() {
               Explore AstrologersDirect <ArrowRight />
             </ButtonLink>
           </div>
-          <p className="mx-auto mt-8 max-w-xl text-[12.5px] text-[#9C969E]">AstrologersDirect is in private beta. Some features, including client assignments and the AI assistant, are still in development.</p>
+          <p className="mx-auto mt-8 max-w-xl text-[12.5px] text-[#9C969E]">AstrologersDirect is in private beta. The AI assistant is still in development.</p>
         </div>
       </section>
     </>

@@ -1,4 +1,4 @@
-import { Users, CircleDot, NotebookPen, Sparkles, CalendarDays, Send, LayoutPanelTop, Mic } from "lucide-react";
+import { Users, CircleDot, NotebookPen, Sparkles, CalendarDays, Send, LayoutPanelTop, Mic, Sprout } from "lucide-react";
 
 /**
  * Marketing copy for each feature: why it matters first, then what it does.
@@ -105,6 +105,22 @@ export const FEATURES: Feature[] = [
     shot: "/screenshots/calendar.png",
     href: "/app/consultations",
     cta: "Explore Consultations",
+  },
+  {
+    id: "between",
+    icon: Sprout,
+    title: "Between Sessions",
+    headline: "The work continues after the session ends.",
+    story: [
+      "Clients reflect, make decisions and live through the patterns you discussed. The most valuable insight often arrives between consultations.",
+      "Share an assignment, a journaling prompt, a goal or a follow-up activity. Your client sees it in their portal, writes their responses, and marks it done. You see everything on their record, ready for the next session.",
+    ],
+    close: "Every client can feel remembered, understood and supported, even between appointments.",
+    points: ["Assignments, journaling prompts, goals and follow-up activities", "Clients respond and mark work done in their portal", "You’re notified when they respond"],
+    detail: ["Save drafts privately; share when you’re ready", "Link work to the consultation it came from", "Responses are encrypted and only visible to you and your client"],
+    shot: "/screenshots/between-sessions.png",
+    href: "/app/clients/c1?tab=work",
+    cta: "Explore Between Sessions",
   },
   {
     id: "recording",

@@ -10,10 +10,10 @@ export const metadata: Metadata = { title: "Features" };
 export default function FeaturesPage() {
   return (
     <>
-      <PageIntro eyebrow="Features" title="Powerful tools. One purpose: better astrology.">
+      <PageIntro eyebrow="Features" title="Every tool serves one purpose: the relationship with your client.">
         <div className="mt-5 max-w-2xl space-y-3 text-[17px] leading-relaxed text-muted">
           <p>Your work is more than the sum of its charts, appointments and files.</p>
-          <p>Every part of your practice adds to a larger understanding of the people you serve. AstrologersDirect keeps those parts connected, so your technology works with you instead of creating more work for you.</p>
+          <p>It’s a relationship that unfolds over months and years. Every part of AstrologersDirect is designed to support it: before the session, during it, and in everything that happens between.</p>
         </div>
         <div className="mt-10 flex flex-wrap gap-2">
           {FEATURES.map((f) => (
