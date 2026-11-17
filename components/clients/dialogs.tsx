@@ -6,7 +6,7 @@ import type { BirthData } from "@/lib/astro";
 import type { Client, ClientStatus, Person } from "@/lib/data/types";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Field, Input, Select, Textarea } from "@/components/ui/input";
+import { Checkbox, Field, Input, Select, Textarea } from "@/components/ui/input";
 import { PlaceLookup, type PlaceValue } from "./place-lookup";
 
 export function EditClientDialog({ open, onOpenChange, client, person }: { open: boolean; onOpenChange: (o: boolean) => void; client: Client; person: Person }) {
@@ -90,15 +90,33 @@ function BirthFields({ birth, setBirth, place, setPlace }: { birth: BirthData; s
   );
 }
 
-export function AddPersonDialog({ open, onOpenChange, clientId }: { open: boolean; onOpenChange: (o: boolean) => void; clientId: string }) {
+export const RELATIONSHIPS = ["Partner", "Spouse", "Ex-partner", "Mother", "Father", "Daughter", "Son", "Sibling", "Grandparent", "Child", "Friend", "Business partner", "Colleague", "Other"];
+
+export function AddPersonDialog({
+  open,
+  onOpenChange,
+  clientId,
+  onAdded,
+  defaultRelationship = "Partner",
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  clientId: string;
+  /** Called with the new person (e.g. to chart them straight away). */
+  onAdded?: (p: Person) => void;
+  defaultRelationship?: string;
+}) {
   const s = useStore();
-  const empty = { firstName: "", lastName: "", relationship: "Partner", notes: "" };
+  const [saveChart, setSaveChart] = React.useState(true);
+  const clientFirst = s.people.find((x) => x.id === clientId)?.firstName ?? "the client";
+  const empty = { firstName: "", lastName: "", relationship: defaultRelationship, notes: "" };
   const [f, setF] = React.useState(empty);
   const [birth, setBirth] = React.useState<BirthData>({ date: "", time: "12:00", timeAccuracy: "exact", place: "", lat: 0, lon: 0, tz: "" });
   const [place, setPlace] = React.useState<PlaceValue | null>(null);
   React.useEffect(() => {
     if (open) {
       setF(empty);
+      setSaveChart(true);
       setPlace(null);
       setBirth({ date: "", time: "12:00", timeAccuracy: "exact", place: "", lat: 0, lon: 0, tz: "" });
     }
@@ -109,21 +127,22 @@ export function AddPersonDialog({ open, onOpenChange, clientId }: { open: boolea
   const save = () => {
     if (!place) return;
     const p = s.addPerson({ firstName: f.firstName, lastName: f.lastName, relationship: f.relationship, notes: f.notes || undefined, clientId, birth: { ...birth, ...place } });
-    s.addChart({ title: `${p.firstName} ${p.lastName} — Natal`, type: "natal", personIds: [p.id], clientId });
-    s.toast("Person added", `${p.firstName}'s natal chart was created and linked to this client.`, "success");
+    if (saveChart) s.addChart({ title: `${p.firstName} ${p.lastName} — Natal`, type: "natal", personIds: [p.id], clientId });
+    s.toast("Person added", saveChart ? `${p.firstName}'s natal chart was saved to ${clientFirst}'s record.` : `${p.firstName} was added to ${clientFirst}'s record.`, "success");
     onOpenChange(false);
+    onAdded?.(p);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        title="Add associated person"
-        description="Partners, family members or others relevant to this client's consultations."
+        title="Add Associated Person"
+        description={`Partners, family members or others relevant to ${clientFirst}'s consultations. They're saved to ${clientFirst}'s record.`}
         size="lg"
         footer={
           <>
             <Button variant="secondary" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button disabled={!ok} onClick={save}>Add person & create natal chart</Button>
+            <Button disabled={!ok} onClick={save}>{saveChart ? "Add Person & Save Natal Chart" : "Add Person"}</Button>
           </>
         }
       >
@@ -132,13 +151,16 @@ export function AddPersonDialog({ open, onOpenChange, clientId }: { open: boolea
           <Field label="Last name"><Input value={f.lastName} onChange={(e) => setF({ ...f, lastName: e.target.value })} /></Field>
           <Field label="Relationship">
             <Select value={f.relationship} onChange={(e) => setF({ ...f, relationship: e.target.value })}>
-              {["Partner", "Spouse", "Mother", "Father", "Daughter", "Son", "Sibling", "Friend", "Business partner", "Other"].map((r) => <option key={r}>{r}</option>)}
+              {RELATIONSHIPS.map((r) => <option key={r}>{r}</option>)}
             </Select>
           </Field>
         </div>
         <p className="eyebrow mb-3 mt-6">Birth data</p>
         <BirthFields birth={birth} setBirth={setBirth} place={place} setPlace={setPlace} />
         <Field label="Notes" optional className="mt-4"><Textarea value={f.notes} onChange={(e) => setF({ ...f, notes: e.target.value })} /></Field>
+        <div className="mt-4">
+          <Checkbox label={`Also save ${f.firstName || "their"}${f.firstName ? "'s" : ""} natal chart to ${clientFirst}'s record`} checked={saveChart} onChange={(e) => setSaveChart(e.target.checked)} />
+        </div>
       </DialogContent>
     </Dialog>
   );

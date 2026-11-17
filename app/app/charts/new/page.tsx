@@ -15,6 +15,9 @@ import { Field, Input, Select } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/misc";
 import { ChartWheel } from "@/components/chart/chart-wheel";
 import { EngineNotice, useChartView } from "@/components/chart/chart-helpers";
+import { AddPersonDialog } from "@/components/clients/dialogs";
+
+const NEW = "__new";
 
 export default function NewChartPage() {
   return (
@@ -43,6 +46,8 @@ function NewChart() {
   const [houseSystem, setHouseSystem] = React.useState<HouseSystem>(defaults.houseSystem);
   const [zodiac, setZodiac] = React.useState<ZodiacType>(defaults.zodiac);
   const [title, setTitle] = React.useState("");
+  /** Which slot a newly added person fills ("A" or "B"), while the Add Person dialog is open. */
+  const [adding, setAdding] = React.useState<"A" | "B" | null>(null);
   const [titleTouched, setTitleTouched] = React.useState(false);
 
   const meta = chartTypeMeta(type);
@@ -151,22 +156,24 @@ function NewChart() {
                 </Select>
               </Field>
               <Field label={meta.people === 2 ? "Person A (inner wheel)" : "Subject"}>
-                <Select value={personA} onChange={(e) => setPersonA(e.target.value)}>
+                <Select value={personA} onChange={(e) => (e.target.value === NEW ? setAdding("A") : setPersonA(e.target.value))}>
                   {pool.map((p) => (
                     <option key={p.id} value={p.id}>
                       {personName(p)}{p.relationship ? ` (${p.relationship})` : ""}
                     </option>
                   ))}
+                  <option value={NEW}>+ Add a new person…</option>
                 </Select>
               </Field>
               {meta.people === 2 && (
-                <Field label="Person B (outer wheel)" hint="Associated people of this client are listed first.">
-                  <Select value={personB} onChange={(e) => setPersonB(e.target.value)}>
+                <Field label="Person B (Outer Wheel)" hint={`${name(clientId)}’s associated people are listed first. Not on file yet? Choose “Add a new person”.`}>
+                  <Select value={personB} onChange={(e) => (e.target.value === NEW ? setAdding("B") : setPersonB(e.target.value))}>
                     {[...others].sort((a, b) => Number(b.clientId === clientId) - Number(a.clientId === clientId)).map((p) => (
                       <option key={p.id} value={p.id}>
                         {personName(p)}{p.relationship ? ` (${p.relationship})` : ""}
                       </option>
                     ))}
+                    <option value={NEW}>+ Add a new person…</option>
                   </Select>
                 </Field>
               )}
@@ -210,6 +217,13 @@ function NewChart() {
             </CardBody>
           </Card>
         </div>
+
+        <AddPersonDialog
+          open={!!adding}
+          onOpenChange={(o) => !o && setAdding(null)}
+          clientId={clientId}
+          onAdded={(p) => (adding === "A" ? setPersonA(p.id) : setPersonB(p.id))}
+        />
 
         <div className="lg:sticky lg:top-24 lg:self-start">
           <Card>
