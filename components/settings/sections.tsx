@@ -342,13 +342,17 @@ export function SecuritySection() {
       toast("Couldn’t sign out that session", (e as Error).message, "error");
     }
   };
-  const ok = pw.cur && pw.next.length >= 10 && pw.next === pw.confirm;
+  const hasPassword = useStore((s) => s.session.user?.hasPassword) ?? true;
+  const ok = (pw.cur || !hasPassword) && pw.next.length >= 10 && pw.next === pw.confirm;
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader title="Password" />
-        <CardBody className="grid gap-4 sm:grid-cols-3">
-          <Field label="Current password"><Input type="password" value={pw.cur} onChange={(e) => setPw({ ...pw, cur: e.target.value })} /></Field>
+        <CardHeader
+          title={hasPassword ? "Password" : "Password (optional)"}
+          description={hasPassword ? "You can sign in with your password or with an emailed link." : "You sign in with emailed links. Add a password if you’d also like to sign in with one."}
+        />
+        <CardBody className={cn("grid gap-4", hasPassword ? "sm:grid-cols-3" : "sm:grid-cols-2")}>
+          {hasPassword && <Field label="Current password"><Input type="password" value={pw.cur} onChange={(e) => setPw({ ...pw, cur: e.target.value })} /></Field>}
           <Field label="New password" hint="At least 10 characters."><Input type="password" value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} /></Field>
           <Field label="Confirm new password"><Input type="password" value={pw.confirm} onChange={(e) => setPw({ ...pw, confirm: e.target.value })} /></Field>
         </CardBody>
@@ -360,13 +364,14 @@ export function SecuritySection() {
               try {
                 await api("/api/auth/change-password", { body: { current: pw.cur, next: pw.next } });
                 setPw({ cur: "", next: "", confirm: "" });
-                toast("Password updated", "You’ve been signed out on your other devices.", "success");
+                if (!hasPassword) useStore.setState((st) => (st.session.user ? { session: { ...st.session, user: { ...st.session.user, hasPassword: true } } } : {}));
+                toast(hasPassword ? "Password updated" : "Password added", "You’ve been signed out on your other devices.", "success");
               } catch (e) {
                 toast("Password not changed", (e as Error).message, "error");
               }
             }}
           >
-            Update password
+            {hasPassword ? "Update password" : "Add password"}
           </Button>
         </CardFooter>
       </Card>
@@ -635,7 +640,7 @@ export function DataSection() {
           }
         >
           <Field label={<>Type <span className="font-mono">DELETE</span> to confirm</>}><Input value={confirm} onChange={(e) => setConfirm(e.target.value)} /></Field>
-          {DATA_MODE !== "demo" && <Field label="Your password" className="mt-3"><Input type="password" autoComplete="current-password" value={delPassword} onChange={(e) => setDelPassword(e.target.value)} /></Field>}
+          {DATA_MODE !== "demo" && s.session.user?.hasPassword !== false && <Field label="Your password" className="mt-3"><Input type="password" autoComplete="current-password" value={delPassword} onChange={(e) => setDelPassword(e.target.value)} /></Field>}
           {DATA_MODE === "demo" && <SimulatedNote className="mt-4">Simulated — no data is deleted.</SimulatedNote>}
         </DialogContent>
       </Dialog>

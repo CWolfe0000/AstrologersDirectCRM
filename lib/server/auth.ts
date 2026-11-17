@@ -19,6 +19,8 @@ export type SessionUser = {
   clientId: string | null;
   emailVerified: boolean;
   twoFactor: boolean;
+  /** False for accounts that sign in with emailed links only. */
+  hasPassword: boolean;
 };
 
 export async function hashPassword(pw: string) {
@@ -77,11 +79,11 @@ export async function getUser(): Promise<SessionUser | null> {
     await db().update(schema.sessions).set({ expiresAt: new Date(Date.now() + SESSION_DAYS * DAY) }).where(eq(schema.sessions.id, id));
   }
   const u = row.u;
-  return { id: u.id, practiceId: u.practiceId, email: u.email, name: u.name, role: u.role, clientId: u.clientId, emailVerified: !!u.emailVerifiedAt, twoFactor: !!u.totpEnabledAt };
+  return { id: u.id, practiceId: u.practiceId, email: u.email, name: u.name, role: u.role, clientId: u.clientId, emailVerified: !!u.emailVerifiedAt, twoFactor: !!u.totpEnabledAt, hasPassword: !!u.passwordHash };
 }
 
 /** Single-use emailed token (verify / reset / invite). Returns the raw token for the link. */
-export async function issueToken(userId: string, kind: "verify" | "reset" | "invite" | "mfa", hours: number) {
+export async function issueToken(userId: string, kind: "verify" | "reset" | "invite" | "mfa" | "login", hours: number) {
   const { raw, hash } = newToken();
   // Older unused tokens of the same kind are invalidated.
   await db()
@@ -93,7 +95,7 @@ export async function issueToken(userId: string, kind: "verify" | "reset" | "inv
 }
 
 /** Consume a token: returns the user id if valid, unused and unexpired. */
-export async function consumeToken(raw: string, kind: "verify" | "reset" | "invite" | "mfa") {
+export async function consumeToken(raw: string, kind: "verify" | "reset" | "invite" | "mfa" | "login") {
   if (typeof raw !== "string" || raw.length < 20 || raw.length > 100) return null;
   const [t] = await db()
     .update(schema.authTokens)
@@ -104,7 +106,7 @@ export async function consumeToken(raw: string, kind: "verify" | "reset" | "invi
 }
 
 /** Peek without consuming (to show the invite page). */
-export async function peekToken(raw: string, kind: "verify" | "reset" | "invite" | "mfa") {
+export async function peekToken(raw: string, kind: "verify" | "reset" | "invite" | "mfa" | "login") {
   if (typeof raw !== "string" || raw.length < 20 || raw.length > 100) return null;
   const [t] = await db()
     .select()

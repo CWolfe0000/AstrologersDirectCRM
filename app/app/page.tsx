@@ -17,6 +17,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/input";
 import { Segmented } from "@/components/ui/tabs";
 import { MiniCalendar } from "@/components/dashboard/mini-calendar";
+import { TwoFactorNudge } from "@/components/dashboard/two-factor-nudge";
 import { isUpcoming, lastConsultation, nextConsultation, TODAY_ISO } from "@/components/clients/helpers";
 import type { Activity, Consultation } from "@/lib/data/types";
 
@@ -83,6 +84,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      <TwoFactorNudge />
       {/* Welcome */}
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>

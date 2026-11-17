@@ -159,7 +159,7 @@ assert.ok(c1rows.some((r) => r.practice_id === practiceId), "original c1 untouch
 step("session list: a second device appears and can be signed out remotely");
 const devCtx = await browser.newContext();
 const dev = await devCtx.newPage();
-await dev.goto(BASE + "/auth/login");
+await dev.goto(BASE + "/auth/login?method=password");
 await dev.fill("#email", owner.email);
 await dev.fill("#password", owner.password);
 await dev.click('button[type="submit"]');
@@ -177,7 +177,7 @@ await page.evaluate(() => fetch("/api/auth/logout", { method: "POST" }));
 await page.goto(BASE + "/app");
 await page.waitForURL(/\/auth\/login/);
 // A crafted ?next= must not send the user off-site after signing in.
-await page.goto(BASE + "/auth/login?next=" + encodeURIComponent("/\\evil.example/phish"));
+await page.goto(BASE + "/auth/login?method=password&next=" + encodeURIComponent("/\\evil.example/phish"));
 await page.fill("#email", owner.email);
 await page.fill("#password", "wrong-password-123");
 await page.click('button[type="submit"]');
@@ -192,7 +192,7 @@ step("repeated wrong passwords lock the account for a while");
 {
   const lctx = await browser.newContext();
   const lp = await lctx.newPage();
-  await lp.goto(BASE + "/auth/login");
+  await lp.goto(BASE + "/auth/login?method=password");
   const tryLogin = (pw) => lp.evaluate(([e, p]) => fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json", "X-Forwarded-For": Math.random().toString() }, body: JSON.stringify({ email: e, password: p }) }).then((r) => r.status), [owner.email, pw]);
   for (let i = 0; i < 8; i++) assert.equal(await tryLogin("wrong-" + i), 401);
   assert.equal(await tryLogin(owner.password), 429, "locked even with the right password (and a spoofed IP header doesn't help)");

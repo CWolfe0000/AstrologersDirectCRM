@@ -72,11 +72,13 @@ export const authTokens = pgTable(
     /** SHA-256 of the emailed token. */
     id: text("id").primaryKey(),
     userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-    kind: text("kind", { enum: ["verify", "reset", "invite", "mfa"] }).notNull(),
+    kind: text("kind", { enum: ["verify", "reset", "invite", "mfa", "login"] }).notNull(),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
     usedAt: timestamp("used_at", { withTimezone: true }),
-    /** Failed uses (2FA tickets are invalidated after a few wrong codes). */
+    /** Failed uses (2FA tickets and emailed sign-in codes are invalidated after a few wrong codes). */
     attempts: integer("attempts").notNull().default(0),
+    /** Emailed sign-in: SHA-256 of the user id and the 6-digit code sent with the link. */
+    codeHash: text("code_hash"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [index("auth_tokens_user_idx").on(t.userId)],

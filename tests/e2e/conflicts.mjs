@@ -29,7 +29,7 @@ await A.check('input[type="checkbox"][required]');
 await A.click('button[type="submit"]');
 await A.waitForURL(/verify/);
 await A.evaluate(() => fetch("/api/v1/sample-data", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }));
-await B.goto(BASE + "/auth/login");
+await B.goto(BASE + "/auth/login?method=password");
 await B.fill("#email", email);
 await B.fill("#password", password);
 await B.click('button[type="submit"]');

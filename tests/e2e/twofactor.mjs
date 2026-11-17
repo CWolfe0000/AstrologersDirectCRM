@@ -62,7 +62,7 @@ await page.getByRole("button", { name: "I’ve saved them" }).click();
 
 step("sign-in now needs a code");
 await page.evaluate(() => fetch("/api/auth/logout", { method: "POST" }));
-await page.goto(BASE + "/auth/login");
+await page.goto(BASE + "/auth/login?method=password");
 await page.fill("#email", email);
 await page.fill("#password", password);
 await page.click('button[type="submit"]');

@@ -84,13 +84,14 @@ export function clientIp(req: Request) {
  */
 const buckets = new Map<string, { n: number; reset: number }>();
 let lastPrune = 0;
-export function rateLimit(req: Request, key: string, limit: number, windowMs: number) {
+/** `global`: one bucket for the key across every address (e.g. per email), not per client IP. */
+export function rateLimit(req: Request, key: string, limit: number, windowMs: number, opts: { global?: boolean } = {}) {
   const now = Date.now();
   if (now - lastPrune > 60_000) {
     for (const [k, b] of buckets) if (b.reset < now) buckets.delete(k);
     lastPrune = now;
   }
-  const k = `${key}:${clientIp(req)}`;
+  const k = opts.global ? `${key}:*` : `${key}:${clientIp(req)}`;
   const b = buckets.get(k);
   if (!b || b.reset < now) {
     buckets.set(k, { n: 1, reset: now + windowMs });

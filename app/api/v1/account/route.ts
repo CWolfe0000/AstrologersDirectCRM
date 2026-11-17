@@ -14,7 +14,8 @@ export const DELETE = handler(async (req) => {
   const body = (await readJson(req)) as { confirm?: string; password?: string };
   if (body.confirm !== "DELETE") throw new HttpError(400, "Type DELETE to confirm.");
   const [row] = await db().select().from(schema.users).where(eq(schema.users.id, user.id));
-  if (!(await verifyPassword(String(body.password ?? ""), row?.passwordHash ?? null))) throw new HttpError(400, "Your password isn’t right.");
+  // Accounts with a password confirm with it; passwordless accounts confirm by typing DELETE in a signed-in session.
+  if (row?.passwordHash && !(await verifyPassword(String(body.password ?? ""), row.passwordHash))) throw new HttpError(400, "Your password isn’t right.");
   await destroySession();
   await db().delete(schema.practices).where(eq(schema.practices.id, user.practiceId));
   // The account is gone either way; stored files that fail to delete are logged for a retry, not shown as an error.

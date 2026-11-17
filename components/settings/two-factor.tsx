@@ -136,17 +136,17 @@ export function TwoFactorCard() {
       <Dialog open={off} onOpenChange={setOff}>
         <DialogContent
           title="Turn off two-factor authentication?"
-          description="Enter your password and a current code (or a recovery code)."
+          description={user?.hasPassword === false ? "Enter a current code (or a recovery code)." : "Enter your password and a current code (or a recovery code)."}
           size="sm"
           footer={
             <>
               <Button variant="secondary" onClick={() => setOff(false)}>Cancel</Button>
-              <Button variant="danger" onClick={disable} disabled={busy || !password || !code}>Turn off</Button>
+              <Button variant="danger" onClick={disable} disabled={busy || (user?.hasPassword !== false && !password) || !code}>Turn off</Button>
             </>
           }
         >
           <div className="space-y-3">
-            <Field label="Password" htmlFor="tfa-pw"><Input id="tfa-pw" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} /></Field>
+            {user?.hasPassword !== false && <Field label="Password" htmlFor="tfa-pw"><Input id="tfa-pw" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} /></Field>}
             <Field label="Code" htmlFor="tfa-code"><Input id="tfa-code" autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value)} /></Field>
             {error && <p className="text-[13px] text-danger">{error}</p>}
           </div>

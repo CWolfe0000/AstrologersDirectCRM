@@ -6,7 +6,7 @@ import { sha256 } from "@/lib/server/crypto";
 import { cookies } from "next/headers";
 import { SESSION_COOKIE } from "@/lib/server/auth";
 
-/** Change password; signs out the user's other sessions. */
+/** Set or change the password; signs out the user's other sessions. Accounts without a password can set one directly. */
 export const POST = handler(async (req) => {
   rateLimit(req, "change-password", 10, 15 * 60_000);
   const u = await requireUser();
@@ -14,7 +14,7 @@ export const POST = handler(async (req) => {
   const problem = passwordProblem(String(next ?? ""));
   if (problem) throw new HttpError(422, problem);
   const [row] = await db().select().from(schema.users).where(eq(schema.users.id, u.id));
-  if (!(await verifyPassword(String(current ?? ""), row?.passwordHash ?? null))) throw new HttpError(400, "Your current password isn’t right.");
+  if (row?.passwordHash && !(await verifyPassword(String(current ?? ""), row.passwordHash))) throw new HttpError(400, "Your current password isn’t right.");
   await db().update(schema.users).set({ passwordHash: await hashPassword(String(next)) }).where(eq(schema.users.id, u.id));
   const raw = (await cookies()).get(SESSION_COOKIE)?.value ?? "";
   await db().delete(schema.sessions).where(and(eq(schema.sessions.userId, u.id), ne(schema.sessions.id, sha256(raw))));

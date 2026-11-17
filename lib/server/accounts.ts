@@ -18,13 +18,13 @@ export async function findUserByEmail(email: string) {
   return u ?? null;
 }
 
-export async function createPractice(input: { name: string; practice: string; email: string; password: string; timezone?: string }) {
+export async function createPractice(input: { name: string; practice: string; email: string; password?: string; timezone?: string }) {
   const practiceId = newId("prc");
   const userId = newId("usr");
   const email = normEmail(input.email);
   await db().transaction(async (tx) => {
     await tx.insert(schema.practices).values({ id: practiceId, name: input.practice, plan: defaultPlan() });
-    await tx.insert(schema.users).values({ id: userId, practiceId, email, name: input.name, role: "owner", passwordHash: await hashPassword(input.password) });
+    await tx.insert(schema.users).values({ id: userId, practiceId, email, name: input.name, role: "owner", passwordHash: input.password ? await hashPassword(input.password) : null });
   });
   const first = input.name.split(/\s+/)[0] ?? input.name;
   await putSettings(
