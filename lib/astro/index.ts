@@ -1,4 +1,4 @@
-import type { Aspect, AspectId, AstrologyEngine, BodyId, BodyPosition, ChartPoints, ChartSettings } from "./types";
+import type { Aspect, AspectId, AstrologyEngine, BirthData, BodyId, BodyPosition, ChartPoints, ChartSettings } from "./types";
 import type { ChartRecord, ChartType, Person } from "@/lib/data/types";
 import { ASPECTS, DEFAULT_SETTINGS, norm } from "./meta";
 import { DemoEngine, houseOf } from "./demo-engine";
@@ -30,6 +30,8 @@ export const CHART_TYPES: { id: ChartType; name: string; short: string; people: 
   { id: "progressions", name: "Secondary Progressions", short: "Progressions", people: 1, timing: true, description: "Day-for-a-year progressed positions." },
   { id: "solar-arc", name: "Solar Arc Directions", short: "Solar Arcs", people: 1, timing: true, description: "Natal chart directed by the solar arc." },
   { id: "solar-return", name: "Solar Return", short: "Solar Return", people: 1, timing: true, description: "Chart for the Sun's return to its natal position." },
+  { id: "horary", name: "Horary", short: "Horary", people: 1, timing: false, description: "Chart for the moment and place a question is asked." },
+  { id: "astrocartography", name: "Astrocartography", short: "Astrocartography", people: 1, timing: false, description: "World map of where each planet rises, sets and culminates." },
 ];
 
 export function chartTypeMeta(t: ChartType) {
@@ -113,9 +115,19 @@ export function computeAspects(inner: ChartPoints, settings: ChartSettings, oute
 }
 
 /** Build everything the UI needs for a saved chart. */
+/** A horary question's moment and place, as birth data for the engine. */
+export function horaryBirth(h: NonNullable<ChartRecord["horary"]>): BirthData {
+  return { date: h.at.slice(0, 10), time: h.at.slice(11, 16), timeAccuracy: "exact", place: h.place, lat: h.lat, lon: h.lon, tz: h.tz };
+}
+
 export async function buildChart(chart: ChartRecord, people: Person[], overrides?: Partial<ChartSettings>, base?: ChartSettings): Promise<ChartView> {
   const engine = getEngine();
   const settings = resolveSettings({ ...chart.settings, ...overrides }, base);
+  if (chart.type === "horary") {
+    if (!chart.horary) throw new Error("This horary chart has no question time and place.");
+    const inner = await engine.natal(horaryBirth(chart.horary), settings);
+    return { engine: engine.info, type: chart.type, inner, aspects: computeAspects(inner, settings), settings };
+  }
   const pa = people.find((p) => p.id === chart.personIds[0]);
   const pb = people.find((p) => p.id === chart.personIds[1]);
   if (!pa) throw new Error("Chart subject not found");

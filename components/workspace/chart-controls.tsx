@@ -69,7 +69,16 @@ export function ChartControls({
         </Link>
       </Section>
 
-      <Section title={subjects.length > 1 ? "Subjects & birth data" : "Subject & birth data"}>
+      {chart.type === "horary" && chart.horary ? (
+        <Section title="Question & Moment">
+          <div className="rounded-lg border border-line bg-canvas/50 p-2.5">
+            <p className="font-medium text-ink">Querent: {personName(subjects[0])}</p>
+            <p className="mt-0.5 text-[12px] text-muted">{fmtDate(chart.horary.at.slice(0, 10))} · {fmtClock(chart.horary.at.slice(11, 16))}</p>
+            <p className="text-[12px] text-muted">{chart.horary.place}</p>
+          </div>
+        </Section>
+      ) : (
+      <Section title={subjects.length > 1 ? "Subjects & Birth Data" : "Subject & Birth Data"}>
         <div className="space-y-2.5">
           {subjects.map((p, i) => (
             <div key={p!.id} className="rounded-lg border border-line bg-canvas/50 p-2.5">
@@ -95,8 +104,9 @@ export function ChartControls({
           </label>
         )}
       </Section>
+      )}
 
-      <Section title="House system & zodiac">
+      <Section title="House System & Zodiac">
         <div className="space-y-2">
           <Select value={settings.houseSystem} onChange={(e) => onChange({ houseSystem: e.target.value as HouseSystem })} aria-label="House system">
             {HOUSE_SYSTEMS.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
@@ -107,7 +117,7 @@ export function ChartControls({
         </div>
       </Section>
 
-      <Section title="Planets & points">
+      <Section title="Planets & Points">
         <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
           {POINTS.map((b) => (
             <Checkbox
@@ -125,7 +135,7 @@ export function ChartControls({
         </div>
       </Section>
 
-      <Section title="Aspects & orbs">
+      <Section title="Aspects & Orbs">
         <div className="space-y-2">
           {ALL_ASPECTS.map((a) => {
             const on = settings.aspects.includes(a);

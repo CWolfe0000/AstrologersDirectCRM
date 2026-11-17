@@ -27,7 +27,18 @@ export interface Client {
   summary?: string;
 }
 
-export type ChartType = "natal" | "synastry" | "composite" | "transits" | "progressions" | "solar-arc" | "solar-return";
+export type ChartType = "natal" | "synastry" | "composite" | "transits" | "progressions" | "solar-arc" | "solar-return" | "horary" | "astrocartography";
+
+/** The question and the moment and place it was asked (horary charts). */
+export interface HoraryData {
+  question: string;
+  /** Local date and time the question was asked, YYYY-MM-DDTHH:mm. */
+  at: string;
+  place: string;
+  lat: number;
+  lon: number;
+  tz: string;
+}
 
 export interface ChartRecord {
   id: string;
@@ -39,6 +50,8 @@ export interface ChartRecord {
   clientId: string;
   /** Reference date for timing charts (transits/progressions/solar arc/solar return). */
   refDate?: string;
+  /** Horary charts: the question, and when and where it was asked. personIds holds the querent. */
+  horary?: HoraryData;
   settings?: Partial<ChartSettings>;
   createdAt: string;
   updatedAt: string;

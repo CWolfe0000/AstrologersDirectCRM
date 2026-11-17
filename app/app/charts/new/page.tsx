@@ -8,14 +8,16 @@ import { PremiumBadge, PremiumNote, usePremium } from "@/components/plan/premium
 import { CHART_TYPES, HOUSE_SYSTEMS, ZODIACS, chartTypeMeta, type HouseSystem, type ZodiacType } from "@/lib/astro";
 import type { ChartRecord, ChartType } from "@/lib/data/types";
 import { useStore, personName } from "@/lib/store";
-import { cn, fmtClock, fmtDate, monthName, TODAY } from "@/lib/utils";
+import { cn, fmtClock, fmtDate, monthName, nowLocal, TODAY } from "@/lib/utils";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
-import { Field, Input, Select } from "@/components/ui/input";
+import { Field, Input, Select, Textarea } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/misc";
 import { ChartWheel } from "@/components/chart/chart-wheel";
 import { EngineNotice, useChartView } from "@/components/chart/chart-helpers";
 import { AddPersonDialog } from "@/components/clients/dialogs";
+import { PlaceLookup, type PlaceValue } from "@/components/clients/place-lookup";
+import { AstroMap } from "@/components/workspace/astro-map";
 
 const NEW = "__new";
 
@@ -49,6 +51,18 @@ function NewChart() {
   /** Which slot a newly added person fills ("A" or "B"), while the Add Person dialog is open. */
   const [adding, setAdding] = React.useState<"A" | "B" | null>(null);
   const [titleTouched, setTitleTouched] = React.useState(false);
+  // Horary: the question, and the moment and place it was asked (defaults to now).
+  const [question, setQuestion] = React.useState("");
+  const [askedDate, setAskedDate] = React.useState(TODAY);
+  const [askedTime, setAskedTime] = React.useState(() => nowLocal().slice(11, 16));
+  const [askedPlace, setAskedPlace] = React.useState<PlaceValue | null>(null);
+  const isHorary = type === "horary";
+  const isMap = type === "astrocartography";
+  // Horary is traditionally read with Regiomontanus houses.
+  React.useEffect(() => {
+    setHouseSystem(isHorary ? "regiomontanus" : defaults.houseSystem);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHorary]);
 
   const meta = chartTypeMeta(type);
   const name = (id?: string) => personName(people.find((p) => p.id === id));
@@ -56,6 +70,10 @@ function NewChart() {
   const pool = people.filter((p) => p.id === clientId || p.clientId === clientId);
   const others = people.filter((p) => p.id !== personA && (p.id === clientId || p.clientId === clientId || clients.some((c) => c.id === p.id)));
 
+  React.useEffect(() => {
+    if (isHorary) setPersonA(clientId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHorary, clientId]);
   React.useEffect(() => {
     if (!pool.some((p) => p.id === personA)) setPersonA(clientId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -72,12 +90,17 @@ function NewChart() {
     const a = people.find((p) => p.id === personA);
     const b = people.find((p) => p.id === personB);
     if (!a) return "";
+    if (type === "horary") {
+      const q = question.trim().replace(/\?$/, "");
+      return `${a.firstName} — Horary${q ? `: ${q.length > 48 ? q.slice(0, 47).trimEnd() + "…" : q}?` : ""}`;
+    }
+    if (type === "astrocartography") return `${name(personA)} — Astrocartography`;
     if (meta.people === 2 && b) return `${a.firstName} & ${b.firstName} — ${meta.short}`;
     if (type === "natal") return `${name(personA)} — Natal`;
     if (type === "solar-return") return `${a.firstName} — Solar Return ${refDate.slice(0, 4)}`;
     return `${a.firstName} — ${meta.short} ${monthName(+refDate.slice(5, 7) - 1)} ${refDate.slice(0, 4)}`;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [personA, personB, type, refDate, people]);
+  }, [personA, personB, type, refDate, people, question]);
   React.useEffect(() => {
     if (!titleTouched) setTitle(autoTitle);
   }, [autoTitle, titleTouched]);
@@ -90,14 +113,16 @@ function NewChart() {
       personIds: meta.people === 2 ? [personA, personB].filter(Boolean) : [personA],
       clientId,
       refDate: meta.timing ? refDate : undefined,
+      horary: isHorary && askedPlace ? { question: question.trim() || "…", at: `${askedDate}T${askedTime}`, ...askedPlace } : undefined,
       settings: { houseSystem, zodiac },
       createdAt: "",
       updatedAt: "",
     }),
-    [title, type, personA, personB, clientId, refDate, houseSystem, zodiac, meta],
+    [title, type, personA, personB, clientId, refDate, houseSystem, zodiac, meta, isHorary, askedPlace, question, askedDate, askedTime],
   );
-  const view = useChartView(draft);
-  const valid = !!personA && (meta.people === 1 || (!!personB && personB !== personA)) && title.trim().length > 0;
+  const view = useChartView(isHorary && !askedPlace ? undefined : draft);
+  const valid =
+    !!personA && (meta.people === 1 || (!!personB && personB !== personA)) && title.trim().length > 0 && (!isHorary || (!!question.trim() && !!askedPlace && /^\d\d:\d\d$/.test(askedTime)));
   const subject = people.find((p) => p.id === personA);
 
   const save = () => {
@@ -119,7 +144,7 @@ function NewChart() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,460px)]">
         <div className="space-y-5">
           <Card>
-            <CardHeader title="1. Chart type" />
+            <CardHeader title="1. Chart Type" />
             <CardBody className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
               {CHART_TYPES.map((t) => (
                 <button
@@ -146,7 +171,7 @@ function NewChart() {
           </Card>
 
           <Card>
-            <CardHeader title="2. Client & subjects" description="Choose the client record this chart is filed under, then who is charted." />
+            <CardHeader title={isHorary ? "2. Client & Question" : "2. Client & Subjects"} description={isHorary ? "The client asking (the querent), their question, and when and where you received it." : "Choose the client record this chart is filed under, then who is charted."} />
             <CardBody className="grid gap-4 sm:grid-cols-2">
               <Field label="Client record">
                 <Select value={clientId} onChange={(e) => setClientId(e.target.value)}>
@@ -155,6 +180,19 @@ function NewChart() {
                   ))}
                 </Select>
               </Field>
+              {isHorary && (
+                <>
+                  <Field label="Question" className="sm:col-span-2" hint="In the querent’s own words, as closely as you can.">
+                    <Textarea rows={2} maxLength={1000} value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="e.g. Will I get the job I interviewed for on Monday?" />
+                  </Field>
+                  <Field label="Date asked"><Input type="date" value={askedDate} onChange={(e) => setAskedDate(e.target.value)} /></Field>
+                  <Field label="Time asked" hint="Local time where it was asked. Defaults to now."><Input type="time" value={askedTime} onChange={(e) => setAskedTime(e.target.value)} /></Field>
+                  <Field label="Where it was asked" className="sm:col-span-2" hint="Usually where you were when you received and understood the question.">
+                    <PlaceLookup value={askedPlace} onChange={setAskedPlace} id="horary-place" />
+                  </Field>
+                </>
+              )}
+              {!isHorary && (
               <Field label={meta.people === 2 ? "Person A (Inner Wheel)" : "Subject"}>
                 <Select value={personA} onChange={(e) => (e.target.value === NEW ? setAdding("A") : setPersonA(e.target.value))}>
                   {pool.map((p) => (
@@ -165,6 +203,7 @@ function NewChart() {
                   <option value={NEW}>+ Add a new person…</option>
                 </Select>
               </Field>
+              )}
               {meta.people === 2 && (
                 <Field label="Person B (Outer Wheel)" hint={`${name(clientId)}’s associated people are listed first. Not on file yet? Choose “Add a new person”.`}>
                   <Select value={personB} onChange={(e) => (e.target.value === NEW ? setAdding("B") : setPersonB(e.target.value))}>
@@ -182,7 +221,7 @@ function NewChart() {
                   <Input type="date" value={refDate} onChange={(e) => setRefDate(e.target.value)} />
                 </Field>
               )}
-              {subject && (
+              {subject && !isHorary && (
                 <div className="rounded-lg border border-line bg-canvas/60 p-3 text-[12.5px] sm:col-span-2">
                   <p className="font-medium text-ink">Birth data on file — {personName(subject)}</p>
                   <p className="mt-0.5 text-muted">
@@ -201,7 +240,9 @@ function NewChart() {
           <Card>
             <CardHeader title="3. Settings" description="Defaults come from Settings › Astrology defaults. You can change them later in the workspace." />
             <CardBody className="grid gap-4 sm:grid-cols-2">
-              <Field label="House system">
+              {!isMap && (
+              <>
+              <Field label="House system" hint={isHorary ? "Regiomontanus is the traditional choice for horary." : undefined}>
                 <Select value={houseSystem} onChange={(e) => setHouseSystem(e.target.value as HouseSystem)}>
                   {HOUSE_SYSTEMS.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
                 </Select>
@@ -211,6 +252,8 @@ function NewChart() {
                   {ZODIACS.map((z) => <option key={z.id} value={z.id}>{z.name}</option>)}
                 </Select>
               </Field>
+              </>
+              )}
               <Field label="Chart title" className="sm:col-span-2">
                 <Input value={title} onChange={(e) => { setTitle(e.target.value); setTitleTouched(true); }} />
               </Field>
@@ -229,7 +272,13 @@ function NewChart() {
           <Card>
             <CardHeader title="Preview" description={title || "Untitled chart"} action={<EngineNotice compact />} />
             <CardBody>
-              {view ? <ChartWheel view={view} /> : <div className="aspect-square rounded-full bg-canvas-2" />}
+              {isMap && subject && !locked ? (
+                <AstroMap birth={subject.birth} settings={{ ...defaults, houseSystem, zodiac }} compact />
+              ) : view ? (
+                <ChartWheel view={view} />
+              ) : (
+                <div className="flex aspect-square items-center justify-center rounded-full bg-canvas-2 p-10 text-center text-[12.5px] text-muted">{isHorary && !askedPlace ? "Add where the question was asked to see the chart." : ""}</div>
+              )}
               <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                 <ButtonLink href="/app/charts" variant="secondary" className="sm:flex-1">Cancel</ButtonLink>
                 <Button onClick={save} disabled={!valid || locked} className="sm:flex-[2]">

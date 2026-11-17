@@ -71,6 +71,7 @@ jobs:
           node tests/e2e/admin.mjs
           node tests/e2e/portal-account.mjs
           node tests/e2e/chart-people.mjs
+          node tests/e2e/horary-acg.mjs
           node tests/e2e/pwa.mjs
           node tests/e2e/a11y.mjs
           node tests/e2e/a11y.mjs --mobile

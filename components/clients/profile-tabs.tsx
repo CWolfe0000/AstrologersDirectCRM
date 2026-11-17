@@ -179,16 +179,18 @@ export function OverviewTab({ client, person, onTab }: { client: Client; person:
 // ——— Charts ———————————————————————————————————————————————————————————
 const CHART_GROUPS: { title: string; types: ChartRecord["type"][]; desc: string }[] = [
   { title: "Natal", types: ["natal"], desc: "Birth charts for the client and associated people" },
-  { title: "Transits & timing", types: ["transits", "progressions", "solar-arc", "solar-return"], desc: "Saved timing charts" },
+  { title: "Transits & Timing", types: ["transits", "progressions", "solar-arc", "solar-return"], desc: "Saved timing charts" },
   { title: "Synastry", types: ["synastry"], desc: "Relationship comparison bi-wheels" },
   { title: "Composite", types: ["composite"], desc: "Midpoint composite charts" },
+  { title: "Horary", types: ["horary"], desc: "Charts for the moment a question was asked" },
+  { title: "Astrocartography", types: ["astrocartography"], desc: "Planetary lines on the world map" },
 ];
 
 export function ChartsTab({ client }: { client: Client }) {
   const d = useClientData(client.id);
   const known = CHART_GROUPS.flatMap((g) => g.types);
   const other = d.charts.filter((c) => !known.includes(c.type));
-  const groups = [...CHART_GROUPS.map((g) => ({ ...g, charts: d.charts.filter((c) => g.types.includes(c.type)) })), { title: "Other saved configurations", desc: "", types: [], charts: other }];
+  const groups = [...CHART_GROUPS.map((g) => ({ ...g, charts: d.charts.filter((c) => g.types.includes(c.type)) })), { title: "Other Saved Configurations", desc: "", types: [], charts: other }];
 
   return (
     <div className="space-y-8">
@@ -200,7 +202,7 @@ export function ChartsTab({ client }: { client: Client }) {
         </div>
       </div>
       {groups.map((g) =>
-        g.charts.length === 0 && g.title === "Other saved configurations" ? null : (
+        g.charts.length === 0 && g.title === "Other Saved Configurations" ? null : (
           <section key={g.title}>
             <div className="mb-3 flex items-baseline gap-3">
               <h3 className="font-serif text-[20px]">{g.title}</h3>

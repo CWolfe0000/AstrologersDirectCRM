@@ -27,11 +27,12 @@ export const FEATURES: Feature[] = [
     headline: "The chart is where the work begins. Not where it ends.",
     story: [
       "A chart holds the astronomical facts. Your experience gives them meaning.",
-      "Work with natal charts, synastry, midpoint composites, transits, secondary progressions, solar arcs and solar returns in a workspace built for serious analysis. Every chart stays connected to the person it describes and the observations it inspired.",
+      "Work with natal charts, synastry, midpoint composites, transits, secondary progressions, solar arcs, solar returns, horary charts and astrocartography in a workspace built for serious analysis. Every chart stays connected to the person it describes and the observations it inspired.",
     ],
     close: "Your techniques. Your settings. Your interpretation.",
     points: [
-      "Natal, synastry, composite, transits, progressions, solar arcs and solar returns",
+      "Natal, synastry, composite, transits, progressions, solar arcs, solar returns and horary",
+      "Astrocartography: planetary lines on a world map, and the lines near any city",
       "Calculated with Swiss Ephemeris",
       "Synastry aspect grid and house overlays in both directions",
       "Convergence timeline: transits, progressions, solar arcs and eclipses to the natal chart over any period",

@@ -1,3 +1,4 @@
+import { approxAcg } from "./acg";
 import type { AstrologyEngine, BirthData, BodyId, BodyPosition, ChartPoints, ChartSettings } from "./types";
 import { norm } from "./meta";
 
@@ -194,6 +195,8 @@ export const DemoEngine: AstrologyEngine = {
   positionsAt: async (iso, settings, reference) => DemoEngineSync.positionsAt(iso, settings, reference),
   progressed: async (birth, targetDate, settings) => DemoEngineSync.progressed(birth, targetDate, settings),
   solarArc: async (birth, targetDate, settings) => DemoEngineSync.solarArc(birth, targetDate, settings),
+  // Illustrative only: demo longitudes, ecliptic latitude taken as 0, birth time read as UTC.
+  acg: async (birth, settings) => approxAcg(`${birth.date}T${birth.time || "12:00"}:00Z`, DemoEngineSync.natal(birth, settings).bodies),
 };
 
 export { houseOf };

@@ -88,10 +88,22 @@ const chart = z
   .object({
     id,
     title: str(200),
-    type: z.enum(["natal", "synastry", "composite", "transits", "progressions", "solar-arc", "solar-return"]),
+    type: z.enum(["natal", "synastry", "composite", "transits", "progressions", "solar-arc", "solar-return", "horary", "astrocartography"]),
     personIds: z.array(id).min(1).max(2),
     clientId: id,
     refDate: opt(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)),
+    horary: opt(
+      z
+        .object({
+          question: str(1000).min(1),
+          at: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/),
+          place: str(200),
+          lat: z.number().min(-90).max(90),
+          lon: z.number().min(-180).max(180),
+          tz: str(80),
+        })
+        .strict(),
+    ),
     settings: opt(settingsSchema.partial()),
     createdAt: iso,
     updatedAt: iso,

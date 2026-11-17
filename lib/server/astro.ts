@@ -3,7 +3,7 @@ import type { BirthData, BodyId, ChartPoints, ChartSettings, HouseSystem } from 
 import { houseOf } from "@/lib/astro/techniques/aspects";
 import { secondaryProgressions, solarArcDirections, solarReturn } from "@/lib/astro/techniques/directions";
 import { zonedToUtc } from "@/lib/timezones";
-import { bodiesAt, housesAt, swissEphemeris } from "./swiss";
+import { bodiesAt, equatorialAt, housesAt, swissEphemeris } from "./swiss";
 
 /** Birth data (local wall time + IANA zone) → UTC instant. */
 export function birthUtc(b: BirthData) {
@@ -21,6 +21,11 @@ export function natalChart(birth: BirthData, s: ChartSettings): ChartPoints & { 
   const utc = birthUtc(birth);
   const h = housesAt(utc, birth.lat, birth.lon, s.houseSystem, s.zodiac);
   return { bodies: toPoints(bodiesAt(utc, { zodiac: s.zodiac }), h.cusps, s.bodies), cusps: h.cusps, asc: h.asc, mc: h.mc, houseFallback: h.fallback };
+}
+
+/** Astrocartography inputs for a birth: each body's RA/declination and the sidereal time. */
+export function acgChart(birth: BirthData, bodies: BodyId[]) {
+  return equatorialAt(birthUtc(birth), bodies.filter((b) => b !== "asc" && b !== "mc"));
 }
 
 /** Moving bodies at a moment, placed in a reference chart's houses (transit bi-wheels). */

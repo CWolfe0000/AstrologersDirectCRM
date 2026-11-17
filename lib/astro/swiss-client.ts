@@ -27,6 +27,9 @@ export const SwissApiEngine: AstrologyEngine = {
   async solarArc(birth, target, settings) {
     return (await api<Resp>("/api/v1/astro/solar-arc", { body: { birth, target, settings } })).points;
   },
+  async acg(birth, settings) {
+    return (await api<{ acg: import("./acg").AcgData }>("/api/v1/astro/acg", { body: { birth, settings } })).acg;
+  },
   async solarReturn(birth, year, settings) {
     return (await api<Resp>("/api/v1/astro/solar-return", { body: { birth, year, settings } })).points;
   },

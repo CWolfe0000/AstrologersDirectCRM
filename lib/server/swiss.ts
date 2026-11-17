@@ -82,6 +82,21 @@ export function bodiesAt(utc: string, opts: { zodiac?: ZodiacType; bodies?: Body
   return out;
 }
 
+/** Right ascension and declination (true equator of date) and Greenwich apparent sidereal time, for astrocartography. */
+export function equatorialAt(utc: string, bodies: BodyId[] = SWISS_BODIES) {
+  const jd = julianDay(utc);
+  const gst = sw.sidtime(jd) * 15;
+  const out: { id: BodyId; ra: number; dec: number }[] = [];
+  for (const id of bodies) {
+    const code = BODY_CODES[id];
+    if (code === undefined) continue;
+    const r = sw.calc_ut(jd, code, C.SEFLG_SWIEPH | C.SEFLG_EQUATORIAL);
+    if (r.flag < 0 || !(r.flag & C.SEFLG_SWIEPH)) throw new Error(`Swiss file-backed calculation unavailable for ${id}: ${r.error || r.flag}`);
+    out.push({ id, ra: r.data[0], dec: r.data[1] });
+  }
+  return { gst, bodies: out };
+}
+
 export function obliquityAt(utc: string) {
   const r = sw.calc_ut(julianDay(utc), C.SE_ECL_NUT, 0);
   return r.data[0]; // true obliquity

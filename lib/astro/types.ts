@@ -95,6 +95,8 @@ export interface EngineInfo {
  */
 export interface AstrologyEngine {
   info: EngineInfo;
+  /** Astrocartography inputs (right ascension, declination, sidereal time) for a birth. */
+  acg?(birth: BirthData, settings: ChartSettings): Promise<import("./acg").AcgData>;
   /** Natal / radix positions for a birth moment. */
   natal(birth: BirthData, settings: ChartSettings): Promise<ChartPoints>;
   /** Positions of the moving bodies at a moment (for transits). */

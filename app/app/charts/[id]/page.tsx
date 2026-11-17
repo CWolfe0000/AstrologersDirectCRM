@@ -15,6 +15,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Breadcrumbs, EmptyState } from "@/components/ui/misc";
 import { ChartWheel } from "@/components/chart/chart-wheel";
 import { ChartTypeBadge, EngineNotice, useChartView } from "@/components/chart/chart-helpers";
+import { AstroMap } from "@/components/workspace/astro-map";
+import { HoraryPanel } from "@/components/workspace/horary-panel";
 import { ChartActionsMenu } from "@/components/chart/chart-actions";
 import { ChartControls } from "@/components/workspace/chart-controls";
 import { AspectsTable, ConditionTable, HousesTable, PlacementsTable, RingTag } from "@/components/workspace/analysis-tables";
@@ -185,15 +187,21 @@ function Workspace() {
             <ChartTypeBadge type={chart.type} />
           </div>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] text-muted">
-            {subjects.map((p) => (
+            {chart.type === "horary" && chart.horary ? (
+              <span>
+                <span className="font-medium text-ink-3">Querent: {name(chart.personIds[0])}</span> · Asked {fmtDate(chart.horary.at.slice(0, 10))}, {fmtClock(chart.horary.at.slice(11, 16))} · {chart.horary.place.split(",")[0]}
+              </span>
+            ) : subjects.map((p) => (
               <span key={p!.id}>
                 <span className="font-medium text-ink-3">{personName(p)}</span> · {fmtDate(p!.birth.date)}, {fmtClock(p!.birth.time)} · {p!.birth.place.split(",")[0]}
               </span>
             ))}
             {meta.timing && refDate && <span>Reference: {fmtDate(refDate)}</span>}
-            <span>
-              {HOUSE_SYSTEMS.find((h) => h.id === s.houseSystem)?.name} · {ZODIACS.find((z) => z.id === s.zodiac)?.name}
-            </span>
+            {chart.type !== "astrocartography" && (
+              <span>
+                {HOUSE_SYSTEMS.find((h) => h.id === s.houseSystem)?.name} · {ZODIACS.find((z) => z.id === s.zodiac)?.name}
+              </span>
+            )}
           </div>
           <EngineNotice className="mt-2.5" />
         </div>
@@ -210,7 +218,7 @@ function Workspace() {
           <ButtonLink href={`/app/clients/${chart.clientId}`} variant="secondary" aria-label="Client profile">
             <UserRound /> <span className="hidden sm:inline xl:hidden 2xl:inline">Client Profile</span>
           </ButtonLink>
-          {chart.personIds.length === 1 && chart.personIds[0] === chart.clientId && (
+          {chart.personIds.length === 1 && chart.personIds[0] === chart.clientId && chart.type !== "horary" && (
             <ButtonLink href={`/app/timeline?client=${chart.personIds[0]}`} variant="secondary" aria-label="Timeline">
               <Waves /> <span className="hidden sm:inline xl:hidden 2xl:inline">Timeline</span>
             </ButtonLink>
@@ -221,10 +229,19 @@ function Workspace() {
           <ButtonLink href={`/app/delivery?new=1&client=${chart.clientId}&chart=${chart.id}`}>
             <Send /> Deliver
           </ButtonLink>
-          <ChartActionsMenu chart={chart} svg={() => svgRef.current} inWorkspace />
+          <ChartActionsMenu chart={chart} svg={() => svgRef.current ?? document.querySelector<SVGSVGElement>('svg[aria-label^="Astrocartography map"]')} inWorkspace />
         </div>
       </div>
 
+      {chart.type === "astrocartography" && subjects[0] ? (
+        <div className="rounded-xl border border-line bg-surface p-3 shadow-card sm:p-5">
+          <AstroMap birth={subjects[0].birth} settings={s} />
+          {subjects[0].birth.timeAccuracy !== "exact" && (
+            <p className="mt-3 text-[12.5px] text-warn">Birth time is {subjects[0].birth.timeAccuracy}: lines move about 15° of longitude for each hour of error.</p>
+          )}
+        </div>
+      ) : (
+      <>
       <div className={cn("ws-noprint mb-4 flex items-center gap-2", docked && "min-[1400px]:hidden")}>
         <Button variant="secondary" size="sm" onClick={() => setControlsOpen(true)} className={cn(!docked && "min-[1400px]:hidden")}>
           <SlidersHorizontal /> Chart Controls
@@ -255,6 +272,7 @@ function Workspace() {
 
         {/* CENTER: wheel */}
         <section className="min-w-0">
+          {chart.type === "horary" && chart.horary && <HoraryPanel horary={chart.horary} view={view} className="mb-4" />}
           <div className="ws-wheel rounded-xl border border-line bg-surface p-3 shadow-card sm:p-5">
             {view.outer && (
               <div className="mb-2 flex items-center justify-center gap-3 text-[12px] text-muted">
@@ -384,6 +402,8 @@ function Workspace() {
           </div>
         </section>
       </div>
+      </>
+      )}
     </div>
   );
 }

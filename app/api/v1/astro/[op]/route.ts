@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { handler, HttpError, json, readJson, requireUser } from "@/lib/server/http";
 import { birthSchema, settingsSchema } from "@/lib/server/validation";
-import { natalChart, positionsAt, progressedChart, solarArcChart, solarReturnChart } from "@/lib/server/astro";
+import { acgChart, natalChart, positionsAt, progressedChart, solarArcChart, solarReturnChart } from "@/lib/server/astro";
 import { SWISS_INFO } from "@/lib/server/swiss";
 import { requirePremium } from "@/lib/server/plan";
 
@@ -12,6 +12,7 @@ const Bodies = {
   positions: z.object({ utc: z.string().max(40), settings: settingsSchema, reference: points.optional() }),
   progressed: z.object({ birth: birthSchema, target: date, settings: settingsSchema }),
   "solar-arc": z.object({ birth: birthSchema, target: date, settings: settingsSchema }),
+  acg: z.object({ birth: birthSchema, settings: settingsSchema }),
   "solar-return": z.object({ birth: birthSchema, year: z.number().int().min(1800).max(2399), settings: settingsSchema, place: z.object({ lat: z.number(), lon: z.number() }).optional() }),
 };
 
@@ -38,6 +39,8 @@ export const POST = handler(async (req: Request, ctx: { params: Promise<{ op: st
         return json({ engine: SWISS_INFO, points: await progressedChart(b.birth, b.target, b.settings) });
       case "solar-arc":
         return json({ engine: SWISS_INFO, points: await solarArcChart(b.birth, b.target, b.settings) });
+      case "acg":
+        return json({ engine: SWISS_INFO, acg: acgChart(b.birth, (b.settings as { bodies: never[] }).bodies) });
       case "solar-return":
         return json({ engine: SWISS_INFO, points: await solarReturnChart(b.birth, b.year, b.settings, b.place) });
     }
