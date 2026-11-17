@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import {
-  CalendarDays, Clock, Video, Phone, MapPin, CheckCircle2, XCircle, Mic, Send, ListPlus, NotebookPen, History, FileText, ArrowUpRight, Pin, Mail, RotateCcw,
+  CalendarDays, Clock, Video, Phone, MapPin, CheckCircle2, XCircle, Mic, Send, ListPlus, NotebookPen, History, FileText, ArrowUpRight, Pin, Mail, RotateCcw, Sprout,
 } from "lucide-react";
 import { useStore, personName } from "@/lib/store";
 import { Button, ButtonLink } from "@/components/ui/button";
@@ -86,6 +86,7 @@ export function ConsultationDetail({ id }: { id: string }) {
           )}
           <ButtonLink size="sm" variant="secondary" href={`/app/studio?client=${k.clientId}${firstChart ? `&chart=${firstChart}` : ""}`}><Mic /> Record</ButtonLink>
           <ButtonLink size="sm" variant="secondary" href={`/app/delivery?new=1&client=${k.clientId}${firstChart ? `&chart=${firstChart}` : ""}`}><Send /> Deliver reading</ButtonLink>
+          <ButtonLink size="sm" variant="secondary" href={`/app/clients/${k.clientId}?tab=work&newWork=1&consultation=${k.id}`}><Sprout /> Share work for between sessions</ButtonLink>
         </div>
       </div>
 

@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, BookOpen, CalendarDays, Settings, Bell, LogOut, ArrowLeftRight } from "lucide-react";
+import { Home, BookOpen, CalendarDays, Settings, Bell, LogOut, ArrowLeftRight, Sprout } from "lucide-react";
 import { cn, DATA_MODE, relTime } from "@/lib/utils";
 import { signOut } from "@/lib/sync";
 import { useStore, personName } from "@/lib/store";
@@ -19,6 +19,7 @@ export function usePortalClientId() {
 const NAV = [
   { href: "/portal", label: "Home", icon: Home, exact: true },
   { href: "/portal/readings", label: "My Readings", short: "Readings", icon: BookOpen },
+  { href: "/portal/work", label: "Between Sessions", short: "Between", icon: Sprout },
   { href: "/portal/consultations", label: "Consultations", short: "Sessions", icon: CalendarDays },
   { href: "/portal/settings", label: "Account", icon: Settings },
 ];
@@ -108,7 +109,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
         Your readings and consultation records are private to you and {pr.name}. <Link href="/legal/privacy" className="underline">Privacy</Link>
       </footer>
       {/* mobile tab bar */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
         {NAV.map((n) => (
           <Link key={n.href} href={n.href} className={cn("flex flex-col items-center gap-0.5 py-2.5 text-[11px]", active(n.href, n.exact) ? "text-accent" : "text-muted")}>
             <n.icon className="size-5" />

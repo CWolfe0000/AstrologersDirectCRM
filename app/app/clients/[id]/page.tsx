@@ -15,6 +15,7 @@ import { StatusBadge, Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dropdown, DropdownContent, DropdownItem, DropdownSeparator, DropdownTrigger } from "@/components/ui/dropdown";
+import { ClientWorkTab } from "@/components/client-work/client-work-tab";
 import { EditClientDialog } from "@/components/clients/dialogs";
 import { OverviewTab, ChartsTab, PeopleTab, ConsultationsTab, ObservationsTab, ReadingsTab, FilesTab } from "@/components/clients/profile-tabs";
 
@@ -23,6 +24,7 @@ const TABS = [
   { id: "charts", label: "Charts" },
   { id: "people", label: "Associated People" },
   { id: "consultations", label: "Consultations" },
+  { id: "work", label: "Between Sessions" },
   { id: "observations", label: "Observations" },
   { id: "readings", label: "Readings" },
   { id: "files", label: "Files" },
@@ -51,6 +53,7 @@ function Profile() {
     charts: s.charts.filter((c) => c.clientId === id).length,
     people: s.people.filter((p) => p.clientId === id).length,
     consultations: s.consultations.filter((k) => k.clientId === id).length,
+    work: s.clientWork.filter((w) => w.clientId === id && w.status !== "archived").length,
     observations: s.observations.filter((o) => o.clientId === id).length,
     readings: s.readings.filter((r) => r.clientId === id).length,
     files: s.files.filter((f) => f.clientId === id).length,
@@ -181,6 +184,7 @@ function Profile() {
         <TabsContent value="charts"><ChartsTab client={client} /></TabsContent>
         <TabsContent value="people"><PeopleTab client={client} /></TabsContent>
         <TabsContent value="consultations"><ConsultationsTab client={client} /></TabsContent>
+        <TabsContent value="work"><ClientWorkTab client={client} /></TabsContent>
         <TabsContent value="observations"><ObservationsTab client={client} /></TabsContent>
         <TabsContent value="readings"><ReadingsTab client={client} /></TabsContent>
         <TabsContent value="files"><FilesTab client={client} /></TabsContent>

@@ -47,6 +47,10 @@ Status key: ✅ done · 🟡 in progress · ⬜ not started · 🔒 blocked (the
 - ✅ Birthplace search from GeoNames (any town worldwide, with its time zone) on the live site; the built-in list in demo mode or if GeoNames is unavailable
 - ⬜ Composite screen on the new technique (derived-MC houses; Premium)
 
+### Between sessions (client engagement)
+- ✅ Assignments, journaling prompts, goals and follow-up activities (2026-11-17): created on the client's **Between Sessions** tab (or from a consultation), saved as private drafts or shared. Clients see shared work in their portal (**Between Sessions**), write entries and mark it done; the practitioner sees responses on the client record with a notification, and the client gets an email when work is first shared. Instructions and responses are encrypted. Drafts and archived work never reach the portal; clients' responses can't be changed by the practitioner.
+- ⬜ Reminders for suggested dates; attachments on shared work; templates for prompts you reuse
+
 ### Files and delivery
 - ✅ File storage with two drivers: local disk for development, and S3-compatible storage for production (e.g. Cloudflare R2). In production, browsers upload directly to the bucket with signed URLs, so large files never pass through Vercel.
 - ✅ Real reading uploads with real progress, plus client file uploads. Download, "view only" and expiry rules are enforced on the server for every request. Audio and video support seeking.

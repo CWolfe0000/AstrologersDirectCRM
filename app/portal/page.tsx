@@ -11,7 +11,9 @@ import { SimulatedBadge } from "@/components/ui/misc";
 import { mediaUrl } from "@/lib/upload";
 import { DATA_MODE } from "@/lib/utils";
 import { usePortalClientId } from "@/components/portal/portal-shell";
-import { useMyConsultations, useMyReadings, useSharedFiles, PORTAL_NOW } from "@/components/portal/portal-data";
+import { useMyConsultations, useMyReadings, useMyWork, useSharedFiles, PORTAL_NOW } from "@/components/portal/portal-data";
+import { WorkCard } from "@/components/portal/work-card";
+import { workState } from "@/components/client-work/work-meta";
 import { ReadingCard } from "@/components/portal/reading-card";
 
 const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin } as const;
@@ -26,6 +28,9 @@ export default function PortalHome() {
   const readings = useMyReadings();
   const upcoming = useMyConsultations().filter((k) => k.status === "scheduled" && k.start >= PORTAL_NOW.slice(0, 10));
   const files = useSharedFiles();
+  const work = useMyWork();
+  const workResponses = useStore((s) => s.workResponses);
+  const openWork = work.filter((w) => !workState(w, workResponses).done);
   const media = readings.filter((r) => r.kind === "audio" || r.kind === "video");
 
   return (
@@ -35,7 +40,7 @@ export default function PortalHome() {
         <p className="eyebrow">{fmtLong(PORTAL_NOW)}</p>
         <h1 className="mt-2 font-serif text-[36px] leading-[1.1] text-ink md:text-[44px]">Good morning, {me?.firstName ?? "there"}.</h1>
         <p className="mt-2 max-w-xl text-[15px] text-muted">
-          Everything {pr.firstName} has shared with you lives here — your readings, recordings and upcoming sessions.
+          Everything {pr.firstName} has shared with you lives here: your readings, recordings, sessions, and the work you’re doing between them.
         </p>
       </section>
 
@@ -86,6 +91,21 @@ export default function PortalHome() {
               </div>
             )}
           </section>
+
+          {/* Between sessions */}
+          {openWork.length > 0 && (
+            <section>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="font-serif text-[24px] text-ink">Between sessions</h2>
+                <Link href="/portal/work" className="text-[13px] font-medium text-accent hover:underline">View all</Link>
+              </div>
+              <div className="space-y-3">
+                {openWork.slice(0, 3).map((w) => (
+                  <WorkCard key={w.id} w={w} />
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Recent readings */}
           <section>

@@ -150,7 +150,7 @@ export default function PortalSettings() {
         <CardHeader title="Privacy" />
         <CardBody className="space-y-4 text-[13.5px] leading-relaxed text-ink-3">
           <p>
-            <span className="font-medium text-ink">What {pr.firstName} can see:</span> your contact details, birth information, the readings shared with you and whether you&apos;ve opened them, and your consultation history.
+            <span className="font-medium text-ink">What {pr.firstName} can see:</span> your contact details, birth information, the readings shared with you and whether you&apos;ve opened them, your consultation history, and what you write in Between Sessions.
           </p>
           <p>
             <span className="font-medium text-ink">What stays private to {pr.firstName}:</span> their working notes and chart observations. These are professional records and aren&apos;t shown in your portal.

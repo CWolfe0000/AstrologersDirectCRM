@@ -10,7 +10,7 @@ covers three connected environments:
 |---|---|---|
 | Public website | `/` | Home, Features, How It Works, Pricing, About, Contact & Support, Authentication (sign up, log in, reset, verify, invitation) |
 | Practitioner application | `/app` | Dashboard, Clients, Client Profile, Charts, Chart Workspace, Convergence Timeline, Notes & Observations, Consultations & Calendar, Tasks, Reading Delivery, Recording Studio, Reports, Notifications, Settings |
-| Client portal | `/portal` | Dashboard, My Readings, Reading Detail & Player, Consultation History, Account Settings |
+| Client portal | `/portal` | Dashboard, My Readings, Reading Detail & Player, Between Sessions, Consultation History, Account Settings |
 
 **Start at `/prototype`.** That page is the guide: it lists all 25 screens and
 gives a clickable walkthrough for each of the six workflows (A–F) in the brief.
@@ -71,6 +71,7 @@ CRON_SECRET=… node tests/e2e/practice-tools.mjs   # CSV import, calendar feed,
 node tests/e2e/pwa.mjs           # installable app + offline page
 node tests/e2e/timeline.mjs      # convergence timeline (server needs SWISS_EPHEMERIS_LICENSE=staging in production mode)
 node tests/e2e/premium.mjs       # standard vs Premium plan (needs DATABASE_URL)
+node tests/e2e/client-work.mjs   # between-session work: share, client responds, privacy (needs DATABASE_URL)
 
 # Most e2e tests expect Premium: start the server with DEFAULT_PLAN=premium.
 node tests/e2e/a11y.mjs [--mobile] [--all]   # accessibility scan (axe-core)

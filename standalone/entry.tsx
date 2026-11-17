@@ -43,6 +43,8 @@ import Settings from "@/app/app/settings/page";
 
 import PortalHome from "@/app/portal/page";
 import PortalReadings from "@/app/portal/readings/page";
+import PortalWork from "@/app/portal/work/page";
+import PortalWorkDetail from "@/app/portal/work/[id]/page";
 import PortalReading from "@/app/portal/readings/[id]/page";
 import PortalConsultations from "@/app/portal/consultations/page";
 import PortalSettings from "@/app/portal/settings/page";
@@ -84,6 +86,8 @@ const ROUTES: [string, Layout, Page][] = [
   ["/app/settings", AppLayout, Settings],
   ["/portal", PortalLayout, PortalHome],
   ["/portal/readings", PortalLayout, PortalReadings],
+  ["/portal/work", PortalLayout, PortalWork],
+  ["/portal/work/:id", PortalLayout, PortalWorkDetail],
   ["/portal/readings/:id", PortalLayout, PortalReading],
   ["/portal/consultations", PortalLayout, PortalConsultations],
   ["/portal/settings", PortalLayout, PortalSettings],

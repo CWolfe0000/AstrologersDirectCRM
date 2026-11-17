@@ -41,3 +41,13 @@ export function useSharedFiles() {
 }
 
 export const PORTAL_NOW = isoLocal(DEMO_TODAY);
+
+/** Work shared with the signed-in client (never drafts or archived items), newest first. */
+export function useMyWork() {
+  const PORTAL_CLIENT_ID = usePortalClientId();
+  const work = useStore((s) => s.clientWork);
+  return useMemo(
+    () => work.filter((w) => w.clientId === PORTAL_CLIENT_ID && (w.status === "shared" || w.status === "completed")).sort((a, b) => (b.sharedAt ?? "").localeCompare(a.sharedAt ?? "")),
+    [work, PORTAL_CLIENT_ID],
+  );
+}
