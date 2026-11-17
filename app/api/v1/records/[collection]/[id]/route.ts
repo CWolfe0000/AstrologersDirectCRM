@@ -2,7 +2,7 @@ import { eq, and } from "drizzle-orm";
 import { db, schema } from "@/lib/server/db";
 import { handler, HttpError, json, readJson, requireUser } from "@/lib/server/http";
 import { deleteRecord, getRecord, isCollection, isFileReferenced, snapshotObservation, upsertRecord } from "@/lib/server/records";
-import { notifyDelivered } from "@/lib/server/notify";
+import { notifyDelivered, notifyWorkShared } from "@/lib/server/notify";
 import { keyBelongs, removeObject } from "@/lib/server/storage";
 
 type Ctx = { params: Promise<{ collection: string; id: string }> };
@@ -10,6 +10,8 @@ type Ctx = { params: Promise<{ collection: string; id: string }> };
 async function target(ctx: Ctx) {
   const { collection, id } = await ctx.params;
   if (!isCollection(collection)) throw new HttpError(404, "Unknown collection.");
+  // Clients' own responses are written only through the portal; practitioners can read them, not change them.
+  if (collection === "workResponses") throw new HttpError(403, "Client responses can’t be changed.");
   return { collection, id };
 }
 
@@ -22,7 +24,7 @@ export const PUT = handler(async (req: Request, ctx: Ctx) => {
   if ((collection === "readings" || collection === "files" || collection === "recordings") && body.fileKey !== undefined && !keyBelongs(body.fileKey, user.practiceId))
     throw new HttpError(422, "That file doesn’t belong to this practice.");
   const withFiles = collection === "readings" || collection === "files" || collection === "recordings";
-  const before = withFiles || collection === "clients" || collection === "observations" ? await getRecord(user.practiceId, collection, id) : null;
+  const before = withFiles || collection === "clients" || collection === "observations" || collection === "clientWork" ? await getRecord(user.practiceId, collection, id) : null;
   // Edit-conflict protection: the client says which version its change is based on.
   const baseHeader = req.headers.get("x-base-version");
   const baseVersion = baseHeader === null ? undefined : Number.parseInt(baseHeader, 10);
@@ -33,6 +35,9 @@ export const PUT = handler(async (req: Request, ctx: Ctx) => {
   }
   if (collection === "readings" && saved.status === "delivered" && before?.status !== "delivered") {
     await notifyDelivered(user.practiceId, saved);
+  }
+  if (collection === "clientWork" && saved.status === "shared" && before?.status !== "shared" && !before?.sharedAt) {
+    await notifyWorkShared(user.practiceId, saved);
   }
   // Portal access turned off (or client archived): remove their login, which ends their sessions.
   if (collection === "clients" && (saved.portalAccess === "none" || saved.status === "archived") && before && (before.portalAccess !== saved.portalAccess || before.status !== saved.status)) {

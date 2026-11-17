@@ -4,7 +4,7 @@ import { COLLECTION_SCHEMAS } from "@/lib/server/validation";
 import { associatedPeople, clientPeople, clients } from "@/lib/data/people";
 import * as seed from "@/lib/data/records";
 import type {
-  Activity, AppNotification, ChartRecord, Client, ClientFile, Consultation, Observation, Person, PortalNotification, Reading, Recording, Task,
+  Activity, AppNotification, ChartRecord, Client, ClientFile, Consultation, Observation, Person, PortalNotification, Reading, Recording, Task, ClientWork, WorkResponse,
 } from "@/lib/data/types";
 
 /**
@@ -30,7 +30,9 @@ const drift: [
   Accepts<typeof COLLECTION_SCHEMAS.notifications, AppNotification>,
   Accepts<typeof COLLECTION_SCHEMAS.activity, Activity>,
   Accepts<typeof COLLECTION_SCHEMAS.portalNotifications, PortalNotification>,
-] = [true, true, true, true, true, true, true, true, true, true, true, true];
+  Accepts<typeof COLLECTION_SCHEMAS.clientWork, ClientWork>,
+  Accepts<typeof COLLECTION_SCHEMAS.workResponses, WorkResponse>,
+] = [true, true, true, true, true, true, true, true, true, true, true, true, true, true];
 void drift;
 
 const SEED: [keyof typeof COLLECTION_SCHEMAS, unknown[]][] = [
@@ -46,6 +48,8 @@ const SEED: [keyof typeof COLLECTION_SCHEMAS, unknown[]][] = [
   ["notifications", seed.notifications],
   ["activity", seed.activity],
   ["portalNotifications", seed.portalNotifications],
+  ["clientWork", seed.clientWork],
+  ["workResponses", seed.workResponses],
 ];
 
 describe("server validation", () => {

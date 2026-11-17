@@ -264,6 +264,34 @@ export const practitionerSchema = z
   })
   .strict();
 
+const clientWork = z
+  .object({
+    id,
+    clientId: id,
+    kind: z.enum(["assignment", "journal", "goal", "activity"]),
+    title: str(200).min(1),
+    instructions: str(10_000),
+    dueDate: opt(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)),
+    consultationId: opt(id),
+    status: z.enum(["draft", "shared", "completed", "archived"]),
+    sharedAt: opt(iso),
+    completedAt: opt(iso),
+    createdAt: iso,
+    updatedAt: iso,
+  })
+  .strict();
+
+export const workResponse = z
+  .object({
+    id,
+    workId: id,
+    clientId: id,
+    type: z.enum(["entry", "done", "undone"]),
+    text: opt(str(10_000)),
+    createdAt: iso,
+  })
+  .strict();
+
 export const COLLECTION_SCHEMAS = {
   people: person,
   clients: client,
@@ -277,4 +305,6 @@ export const COLLECTION_SCHEMAS = {
   notifications: notification,
   activity: activity,
   portalNotifications: portalNotification,
+  clientWork,
+  workResponses: workResponse,
 } as const;

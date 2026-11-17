@@ -15,13 +15,14 @@ import { SwissApiEngine } from "./astro/swiss-client";
  * Failed saves are retried; persistent failures are surfaced to the user.
  *
  * In the client portal only a few changes are allowed (opening a reading,
- * reading a notification, editing one's own name); everything else is
+ * reading a notification, editing one's own name, responding to shared work); everything else is
  * read-only and never sent.
  */
 
 const COLLECTIONS = [
   "people", "clients", "charts", "observations", "consultations", "tasks",
   "readings", "recordings", "files", "notifications", "activity", "portalNotifications",
+  "clientWork", "workResponses",
 ] as const;
 type Coll = (typeof COLLECTIONS)[number];
 type Rec = { id: string } & Record<string, unknown>;
@@ -212,8 +213,13 @@ function diff(coll: Coll, next: Rec[], prev: Rec[], view: "app" | "portal") {
     const old = before.get(rec.id);
     if (old === rec) continue;
     if (view === "app") {
-      enqueue(`${coll}:${rec.id}`, { kind: "put", coll, rec });
+      // Client responses are the client's own: practitioners read them but never write them.
+      if (coll !== "workResponses") enqueue(`${coll}:${rec.id}`, { kind: "put", coll, rec });
     } else {
+      if (coll === "workResponses" && !old) {
+        const { workId, ...r } = rec as Rec & { workId: string };
+        enqueue(`response:${rec.id}`, { kind: "portal", method: "POST", path: `/api/v1/portal/work/${encodeURIComponent(workId)}/responses`, body: { ...r, workId } });
+      }
       // Portal: translate the few permitted changes into their dedicated endpoints.
       if (coll === "readings" && rec.notification === "opened" && old?.notification !== "opened")
         enqueue(`opened:${rec.id}`, { kind: "portal", method: "POST", path: `/api/v1/portal/readings/${encodeURIComponent(rec.id)}/opened` });
@@ -223,7 +229,7 @@ function diff(coll: Coll, next: Rec[], prev: Rec[], view: "app" | "portal") {
         enqueue(`profile`, { kind: "portal", method: "PUT", path: "/api/v1/portal/profile", body: { firstName: rec.firstName, lastName: rec.lastName } });
     }
   }
-  if (view === "app") for (const id of before.keys()) if (!seen.has(id)) enqueue(`${coll}:${id}`, { kind: "delete", coll, id });
+  if (view === "app" && coll !== "workResponses") for (const id of before.keys()) if (!seen.has(id)) enqueue(`${coll}:${id}`, { kind: "delete", coll, id });
 }
 
 function watch() {

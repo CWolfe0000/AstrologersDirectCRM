@@ -9,8 +9,8 @@ import { DEFAULT_SETTINGS } from "@/lib/astro/meta";
 import { associatedPeople, clientPeople, clients as seedClients, practitioner as seedPractitioner } from "./data/people";
 import * as seed from "./data/records";
 import type {
-  Activity, AppNotification, ChartRecord, Client, ClientFile, Consultation, Observation, Person, PortalNotification,
-  Practitioner, Reading, Recording, Task,
+  Activity, AppNotification, ChartRecord, Client, ClientFile, ClientWork, Consultation, Observation, Person, PortalNotification,
+  Practitioner, Reading, Recording, Task, WorkResponse,
 } from "./data/types";
 import { DATA_MODE, nowLocal, uid } from "./utils";
 
@@ -56,6 +56,10 @@ export interface DemoState {
   notifications: AppNotification[];
   activity: Activity[];
   portalNotifications: PortalNotification[];
+  /** Between-session work shared with clients (assignments, prompts, goals, activities). */
+  clientWork: ClientWork[];
+  /** Clients' responses to that work. Written in the portal only. */
+  workResponses: WorkResponse[];
   /** Toasts are transient (not persisted). */
   toasts: { id: string; title: string; body?: string; tone?: "default" | "success" | "error" }[];
 
@@ -93,6 +97,12 @@ export interface DemoState {
 
   addFile: (f: Omit<ClientFile, "id" | "uploadedAt">) => void;
 
+  addWork: (w: Omit<ClientWork, "id" | "createdAt" | "updatedAt">) => ClientWork;
+  updateWork: (id: string, patch: Partial<ClientWork>) => void;
+  deleteWork: (id: string) => void;
+  /** Portal: the client responds, or marks the work done / not done. */
+  respondToWork: (workId: string, type: WorkResponse["type"], text?: string) => void;
+
   markNotification: (id: string, read: boolean) => void;
   markAllNotifications: () => void;
   markPortalNotification: (id: string) => void;
@@ -127,7 +137,9 @@ function emptyState() {
     notifications: [],
     activity: [],
     portalNotifications: [],
-  } as Pick<DemoState, "practitioner" | "plan" | "defaults" | "people" | "clients" | "charts" | "consultations" | "observations" | "tasks" | "readings" | "recordings" | "files" | "notifications" | "activity" | "portalNotifications">;
+    clientWork: [],
+    workResponses: [],
+  } as Pick<DemoState, "practitioner" | "plan" | "defaults" | "people" | "clients" | "charts" | "consultations" | "observations" | "tasks" | "readings" | "recordings" | "files" | "notifications" | "activity" | "portalNotifications" | "clientWork" | "workResponses">;
 }
 
 function seedState() {
@@ -147,6 +159,8 @@ function seedState() {
     notifications: seed.notifications,
     activity: seed.activity,
     portalNotifications: seed.portalNotifications,
+    clientWork: seed.clientWork,
+    workResponses: seed.workResponses,
   };
 }
 
@@ -229,6 +243,53 @@ export const useStore = create<DemoState>()(
         return k;
       },
       updateConsultation: (id, patch) => set((s) => ({ consultations: s.consultations.map((c) => (c.id === id ? { ...c, ...patch } : c)) })),
+
+      addWork: (w) => {
+        const work: ClientWork = { ...w, id: uid("w"), createdAt: NOW(), updatedAt: NOW(), ...(w.status === "shared" ? { sharedAt: NOW() } : {}) };
+        set((s) => ({
+          clientWork: [work, ...s.clientWork],
+          portalNotifications:
+            work.status === "shared"
+              ? [{ id: uid("pn"), clientId: work.clientId, title: "New from your astrologer", body: `“${work.title}” has been shared with you.`, at: NOW(), read: false, href: `/portal/work/${work.id}` }, ...s.portalNotifications]
+              : s.portalNotifications,
+        }));
+        get().log({ kind: "client", text: `${work.status === "shared" ? "Shared" : "Drafted"} “${work.title}”`, clientId: work.clientId, href: `/app/clients/${work.clientId}?tab=work&work=${work.id}` });
+        return work;
+      },
+      updateWork: (id, patch) => {
+        const before = get().clientWork.find((w) => w.id === id);
+        if (!before) return;
+        const sharingNow = patch.status === "shared" && before.status === "draft";
+        const next: ClientWork = {
+          ...before,
+          ...patch,
+          updatedAt: NOW(),
+          ...(sharingNow ? { sharedAt: NOW() } : {}),
+          ...(patch.status === "completed" && before.status !== "completed" ? { completedAt: NOW() } : {}),
+        };
+        set((s) => ({
+          clientWork: s.clientWork.map((w) => (w.id === id ? next : w)),
+          // The client sees a notice in their portal when work is first shared.
+          portalNotifications: sharingNow
+              ? [{ id: uid("pn"), clientId: next.clientId, title: "New from your astrologer", body: `“${next.title}” has been shared with you.`, at: NOW(), read: false, href: `/portal/work/${id}` }, ...s.portalNotifications]
+              : s.portalNotifications,
+        }));
+        if (sharingNow) get().log({ kind: "client", text: `Shared “${next.title}”`, clientId: next.clientId, href: `/app/clients/${next.clientId}?tab=work&work=${id}` });
+      },
+      deleteWork: (id) => set((s) => ({ clientWork: s.clientWork.filter((w) => w.id !== id) })),
+      respondToWork: (workId, type, text) => {
+        const work = get().clientWork.find((w) => w.id === workId);
+        if (!work) return;
+        const r: WorkResponse = { id: uid("wr"), workId, clientId: work.clientId, type, ...(type === "entry" ? { text } : {}), createdAt: NOW() };
+        set((s) => ({
+          workResponses: [...s.workResponses, r],
+          // Demo: the practitioner's notification (the server creates it in server mode).
+          notifications:
+            DATA_MODE === "demo"
+              ? [{ id: uid("n"), type: "client", title: type === "entry" ? "New client response" : "Client work updated", body: `Your client ${type === "entry" ? "responded to" : type === "done" ? "marked as done" : "reopened"} “${work.title}”.`, at: NOW(), read: false, href: `/app/clients/${work.clientId}?tab=work&work=${workId}` }, ...s.notifications]
+              : s.notifications,
+        }));
+      },
 
       addTask: (t) => {
         const task: Task = { checklist: [], ...t, id: uid("t"), history: [{ at: NOW(), text: "Created" }] };

@@ -1,4 +1,5 @@
-import type { Activity, AppNotification, ChartRecord, ClientFile, Consultation, Observation, PortalNotification, Reading, Recording, Task } from "./types";
+import type {
+  ClientWork, WorkResponse, Activity, AppNotification, ChartRecord, ClientFile, Consultation, Observation, PortalNotification, Reading, Recording, Task } from "./types";
 
 // ——— Charts ———————————————————————————————————————————————————————————
 export const charts: ChartRecord[] = [
@@ -247,4 +248,36 @@ export const portalNotifications: PortalNotification[] = [
   { id: "pn1", clientId: "c1", title: "Upcoming consultation today", body: "Transit Review with Celeste Morrow at 10:00 AM.", at: "2026-11-14T08:00:00", read: false, href: "/portal/consultations" },
   { id: "pn2", clientId: "c1", title: "Session scheduled", body: "Relationship Synastry on Wednesday, December 9 at 10:00 AM.", at: "2026-11-10T12:00:00", read: false, href: "/portal/consultations" },
   { id: "pn3", clientId: "c1", title: "New reading available", body: "“Autumn 2026 Transit Review” is ready to watch.", at: "2026-10-09T11:00:00", read: true, href: "/portal/readings/r3" },
+];
+
+/** Between-session work shared with Amelia (and one draft). */
+export const clientWork: ClientWork[] = [
+  {
+    id: "w1", clientId: "c1", kind: "journal", title: "What is Saturn asking of you?",
+    instructions: "Over the next two weeks, write a few lines whenever you notice a familiar pressure: a responsibility you want to put down, or a structure you want to build.\n\nNo need to interpret it. Just note the date, what happened and how it felt. We'll look at the pattern together next session.",
+    dueDate: "2026-11-28", consultationId: "k14", status: "shared", sharedAt: "2026-11-03T15:10:00", createdAt: "2026-11-03T15:05:00", updatedAt: "2026-11-03T15:10:00",
+  },
+  {
+    id: "w2", clientId: "c1", kind: "assignment", title: "Lisbon or Portland: what does each place give you?",
+    instructions: "Make two short lists: what Lisbon offers you, and what Portland offers you. Then circle the three things that matter most.\n\nBring both lists to our relocation session.",
+    dueDate: "2026-12-05", status: "shared", sharedAt: "2026-11-12T10:20:00", createdAt: "2026-11-12T10:15:00", updatedAt: "2026-11-12T10:20:00",
+  },
+  {
+    id: "w3", clientId: "c1", kind: "goal", title: "Have the conversation about the move",
+    instructions: "Before the new moon on the 20th, have one honest conversation with Daniel about the move: not to decide, just to share where you are.",
+    dueDate: "2026-11-20", status: "shared", sharedAt: "2026-10-29T11:40:00", createdAt: "2026-10-29T11:35:00", updatedAt: "2026-10-29T11:40:00",
+  },
+  {
+    id: "w4", clientId: "c1", kind: "activity", title: "Track your energy around the full moon",
+    instructions: "For three days either side of the full moon, rate your energy from 1 to 5 each evening.",
+    status: "draft", createdAt: "2026-11-13T17:00:00", updatedAt: "2026-11-13T17:00:00",
+  },
+];
+
+/** Amelia's responses (written in her portal). */
+export const workResponses: WorkResponse[] = [
+  { id: "wr1", workId: "w1", clientId: "c1", type: "entry", text: "Nov 6: Offered to take on the team reorganisation at work, then felt instantly heavy about it. Same feeling as last year when I said yes to the board role.", createdAt: "2026-11-06T21:12:00" },
+  { id: "wr2", workId: "w1", clientId: "c1", type: "entry", text: "Nov 10: Turned down a weekend commitment for the first time in months. Relief, then guilt, then relief again.", createdAt: "2026-11-10T22:03:00" },
+  { id: "wr3", workId: "w3", clientId: "c1", type: "entry", text: "We talked on Sunday. Daniel is more open to Lisbon than I expected.", createdAt: "2026-11-09T19:30:00" },
+  { id: "wr4", workId: "w3", clientId: "c1", type: "done", createdAt: "2026-11-09T19:31:00" },
 ];

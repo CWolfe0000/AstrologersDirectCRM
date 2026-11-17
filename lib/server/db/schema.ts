@@ -134,6 +134,8 @@ export const files = recordTable("files");
 export const notifications = recordTable("notifications");
 export const activity = recordTable("activity");
 export const portalNotifications = recordTable("portal_notifications");
+export const clientWork = recordTable("client_work");
+export const workResponses = recordTable("work_responses");
 
 /** Deleted records, so other open devices can remove them too. */
 export const tombstones = pgTable(
@@ -194,6 +196,8 @@ export const RECORD_TABLES = {
   notifications,
   activity,
   portalNotifications,
+  clientWork,
+  workResponses,
 } as const;
 
 export type Collection = keyof typeof RECORD_TABLES;

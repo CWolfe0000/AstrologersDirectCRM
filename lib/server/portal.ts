@@ -12,19 +12,21 @@ export function isExpired(expiresAt: unknown, now = new Date()) {
 
 /**
  * Everything a client may see in their portal — and nothing else.
- * Never includes: observations, tasks, charts' working data, recordings,
+ * Never includes: observations, tasks, draft or archived client work, charts' working data, recordings,
  * practitioner notes (prep/session notes, person notes, client summary),
  * private files, drafts or failed deliveries, or any other client's records.
  */
 export async function portalView(practiceId: string, clientId: string) {
   const ids = [clientId];
-  const [people, clients, readings, consultations, files, portalNotifications, settings] = await Promise.all([
+  const [people, clients, readings, consultations, files, portalNotifications, clientWork, workResponses, settings] = await Promise.all([
     listCollection(practiceId, "people", { clientIds: ids }),
     listCollection(practiceId, "clients", { clientIds: ids }),
     listCollection(practiceId, "readings", { clientIds: ids }),
     listCollection(practiceId, "consultations", { clientIds: ids }),
     listCollection(practiceId, "files", { clientIds: ids }),
     listCollection(practiceId, "portalNotifications", { clientIds: ids }),
+    listCollection(practiceId, "clientWork", { clientIds: ids }),
+    listCollection(practiceId, "workResponses", { clientIds: ids }),
     getSettings(practiceId),
   ]);
   const me = people.find((p) => p.id === clientId);
@@ -43,5 +45,8 @@ export async function portalView(practiceId: string, clientId: string) {
       })),
     files: files.filter((f) => f.clientId === clientId && !f.private).map(({ note, ...f }) => (void note, f)),
     portalNotifications: portalNotifications.filter((n) => n.clientId === clientId),
+    // Only work that has been shared: never drafts or archived items.
+    clientWork: clientWork.filter((w) => w.clientId === clientId && (w.status === "shared" || w.status === "completed")),
+    workResponses: workResponses.filter((r) => r.clientId === clientId),
   };
 }

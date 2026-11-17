@@ -43,6 +43,8 @@ export async function loadSampleData(practiceId: string, today = new Date()) {
     ["notifications", seed.notifications],
     ["activity", seed.activity],
     ["portalNotifications", seed.portalNotifications],
+    ["clientWork", seed.clientWork],
+    ["workResponses", seed.workResponses],
   ];
   let count = 0;
   for (const [collection, rows] of sets) {

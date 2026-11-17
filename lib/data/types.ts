@@ -227,3 +227,40 @@ export interface PortalNotification {
   read: boolean;
   href?: string;
 }
+
+/**
+ * Between-session work the practitioner shares with a client: an assignment, a
+ * journaling prompt, a goal or a follow-up activity. Drafts and archived items
+ * never reach the portal.
+ */
+export type WorkKind = "assignment" | "journal" | "goal" | "activity";
+export type WorkStatus = "draft" | "shared" | "completed" | "archived";
+
+export interface ClientWork {
+  id: string;
+  clientId: string;
+  kind: WorkKind;
+  title: string;
+  /** Instructions or prompt shown to the client (plain text). */
+  instructions: string;
+  dueDate?: string; // YYYY-MM-DD
+  consultationId?: string;
+  status: WorkStatus;
+  sharedAt?: string;
+  completedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Written by the client in their portal (never by the practitioner): a response
+ * or journal entry, or marking the work done / not done.
+ */
+export interface WorkResponse {
+  id: string;
+  workId: string;
+  clientId: string;
+  type: "entry" | "done" | "undone";
+  text?: string;
+  createdAt: string;
+}

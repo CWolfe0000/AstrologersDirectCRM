@@ -25,6 +25,8 @@ export const SEALED_FIELDS: Record<Collection, string[]> = {
   notifications: [],
   activity: [],
   portalNotifications: [],
+  clientWork: ["instructions"],
+  workResponses: ["text"],
 };
 
 /** Which field links a record to a client (for indexing / portal filtering). */
