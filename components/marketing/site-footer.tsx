@@ -13,8 +13,8 @@ export function SiteFooter() {
       <div className="container grid gap-10 py-14 md:grid-cols-[1.4fr_repeat(3,1fr)]">
         <div>
           <Wordmark />
-          <p className="mt-4 max-w-xs text-[13.5px] text-muted">Practice management and professional chart software, designed for working astrologers.</p>
-          <p className="mt-4 font-serif text-[18px] italic text-ink-3">Your expertise deserves better tools.</p>
+          <p className="mt-4 max-w-xs text-[13.5px] text-muted">Professional chart tools and client relationships, together in one workspace for working astrologers.</p>
+          <p className="mt-4 font-serif text-[18px] italic text-ink-3">Better tools. Stronger client relationships.</p>
         </div>
         {COLS.map((c) => (
           <div key={c.title}>
@@ -33,7 +33,7 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-line">
         <div className="container flex flex-col gap-3 py-5 text-[12.5px] text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 AstrologersDirect. Prototype — not a live service.</p>
+          <p>© 2026 AstrologersDirect. Private beta.</p>
           <div className="flex gap-5">
             <Link href="/legal/privacy" className="hover:text-ink">Privacy Policy</Link>
             <Link href="/legal/terms" className="hover:text-ink">Terms of Service</Link>
