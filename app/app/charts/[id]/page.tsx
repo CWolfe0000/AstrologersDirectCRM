@@ -18,6 +18,7 @@ import { ChartTypeBadge, EngineNotice, useChartView } from "@/components/chart/c
 import { ChartActionsMenu } from "@/components/chart/chart-actions";
 import { ChartControls } from "@/components/workspace/chart-controls";
 import { AspectsTable, ConditionTable, HousesTable, PlacementsTable, RingTag } from "@/components/workspace/analysis-tables";
+import { AspectGrid, OverlaysTable } from "@/components/workspace/synastry-tables";
 import { WorkspaceObservations } from "@/components/workspace/workspace-observations";
 import { AiAssistant } from "@/components/workspace/ai-assistant";
 import { ringLabels } from "@/components/workspace/ring-labels";
@@ -327,15 +328,16 @@ function Workspace() {
         <section className="ws-noprint min-w-0">
           <div className="rounded-xl border border-line bg-surface shadow-card xl:sticky xl:top-20 xl:flex xl:max-h-[calc(100vh-6rem)] xl:flex-col">
             <Tabs value={tab} onValueChange={setTab} className="flex min-h-0 flex-1 flex-col">
-              <TabsList className="grid shrink-0 grid-cols-6 gap-0 px-1">
-                <TabsTrigger value="placements" className="justify-center gap-1 px-1 text-[12.5px]">Planets</TabsTrigger>
-                <TabsTrigger value="aspects" className="justify-center gap-1 px-1 text-[12.5px]">Aspects</TabsTrigger>
-                <TabsTrigger value="houses" className="justify-center gap-1 px-1 text-[12.5px]">Houses</TabsTrigger>
-                <TabsTrigger value="condition" className="justify-center gap-1 px-1 text-[12.5px]">Condition</TabsTrigger>
-                <TabsTrigger value="observations" className="justify-center gap-1 px-1 text-[12.5px]">
+              <TabsList className="scrollbar-thin flex shrink-0 gap-0 overflow-x-auto px-1">
+                <TabsTrigger value="placements" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">Planets</TabsTrigger>
+                <TabsTrigger value="aspects" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">Aspects</TabsTrigger>
+                <TabsTrigger value="grid" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">Grid</TabsTrigger>
+                <TabsTrigger value="houses" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">{chart.type === "synastry" ? "Overlays" : "Houses"}</TabsTrigger>
+                <TabsTrigger value="condition" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">Condition</TabsTrigger>
+                <TabsTrigger value="observations" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">
                   Notes{obsCount > 0 && <span className="text-[10.5px] text-accent">{obsCount}</span>}
                 </TabsTrigger>
-                <TabsTrigger value="ai" className="justify-center gap-1 px-1 text-[12.5px]"><Sparkles className="!size-3.5 text-accent" /> AI</TabsTrigger>
+                <TabsTrigger value="ai" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]"><Sparkles className="!size-3.5 text-accent" /> AI</TabsTrigger>
               </TabsList>
               <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto p-4">
                 <TabsContent value="placements">
@@ -344,8 +346,22 @@ function Workspace() {
                 <TabsContent value="aspects">
                   <AspectsTable view={view} labels={labels} hovered={hoverAspect} onHover={setHoverAspect} selected={selected} onSelectBody={setSelected} />
                 </TabsContent>
+                <TabsContent value="grid">
+                  <AspectGrid view={view} labels={labels} hovered={hoverAspect} onHover={setHoverAspect} outerAngles={chart.type === "synastry"} />
+                </TabsContent>
                 <TabsContent value="houses">
-                  <HousesTable view={view} />
+                  {chart.type === "synastry" ? (
+                    <OverlaysTable
+                      view={view}
+                      labels={labels}
+                      timeKnown={{
+                        inner: people.find((p) => p.id === chart.personIds[0])?.birth.timeAccuracy !== "unknown",
+                        outer: people.find((p) => p.id === chart.personIds[1])?.birth.timeAccuracy !== "unknown",
+                      }}
+                    />
+                  ) : (
+                    <HousesTable view={view} />
+                  )}
                 </TabsContent>
                 <TabsContent value="condition">
                   <ConditionTable view={view} />

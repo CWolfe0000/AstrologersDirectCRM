@@ -78,26 +78,33 @@ function sep(a: number, b: number) {
   return d > 180 ? 360 - d : d;
 }
 
-export function computeAspects(inner: ChartPoints, settings: ChartSettings, outer?: ChartPoints): Aspect[] {
+/**
+ * Aspects within one chart, or between two rings. Each pair gets its tightest aspect within orb.
+ * `outerAngles`: include the outer ring's ASC/MC (synastry — both are real natal angles). Transit,
+ * progressed and directed rings borrow the natal angles, so theirs are left out.
+ */
+export function computeAspects(inner: ChartPoints, settings: ChartSettings, outer?: ChartPoints, opts: { outerAngles?: boolean } = {}): Aspect[] {
   const out: Aspect[] = [];
   const A = withAngles(inner);
   const types = settings.aspects;
   const check = (x: BodyPosition, y: BodyPosition, xr: "inner" | "outer", yr: "inner" | "outer") => {
-    if ((x.id === "asc" || x.id === "mc") && (y.id === "asc" || y.id === "mc")) return;
+    const angles = (x.id === "asc" || x.id === "mc") && (y.id === "asc" || y.id === "mc");
+    // Within one chart, ASC–MC is always a fixed relation; between two people it is a real contact.
+    if (angles && !(outer && opts.outerAngles)) return;
     const s = sep(x.lon, y.lon);
+    let best: { t: AspectId; orb: number } | null = null;
     for (const t of types) {
       const orbMax = settings.orbs[t] ?? ASPECTS[t].defaultOrb;
       const orb = Math.abs(s - ASPECTS[t].angle);
-      if (orb <= orbMax) {
-        const s2 = sep(x.lon + x.speed * 0.1, y.lon + y.speed * 0.1);
-        const orb2 = Math.abs(s2 - ASPECTS[t].angle);
-        out.push({ a: x.id, b: y.id, aRing: xr, bRing: yr, type: t, orb, applying: orb2 < orb });
-        break;
-      }
+      if (orb <= orbMax && (!best || orb < best.orb)) best = { t, orb };
     }
+    if (!best) return;
+    const s2 = sep(x.lon + x.speed * 0.1, y.lon + y.speed * 0.1);
+    const orb2 = Math.abs(s2 - ASPECTS[best.t].angle);
+    out.push({ a: x.id, b: y.id, aRing: xr, bRing: yr, type: best.t, orb: best.orb, applying: orb2 < best.orb });
   };
   if (outer) {
-    const B = withAngles(outer).filter((b) => b.id !== "asc" && b.id !== "mc");
+    const B = opts.outerAngles ? withAngles(outer) : outer.bodies;
     for (const y of B) for (const x of A) check(y, x, "outer", "inner");
   } else {
     for (let i = 0; i < A.length; i++) for (let j = i + 1; j < A.length; j++) check(A[i]!, A[j]!, "inner", "inner");
@@ -140,7 +147,7 @@ export async function buildChart(chart: ChartRecord, people: Person[], overrides
       break;
     }
   }
-  return { engine: engine.info, type: chart.type, inner, outer, aspects: computeAspects(inner, settings, outer), settings };
+  return { engine: engine.info, type: chart.type, inner, outer, aspects: computeAspects(inner, settings, outer, { outerAngles: chart.type === "synastry" }), settings };
 }
 
 /** Natal positions only — used for quick previews & thumbnails. */

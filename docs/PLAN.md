@@ -43,7 +43,9 @@ Status key: ✅ done · 🟡 in progress · ⬜ not started · 🔒 blocked (the
 - ✅ Make the `AstrologyEngine` interface asynchronous and add loading states to the chart screens (shared cache; the previous chart stays on screen while recalculating)
 - ✅ Chart workspace on real calculations in server mode (natal, transits, progressions, solar arcs, solar returns), labelled "not yet checked against reference charts"
 - ✅ **Convergence timeline** (`/app/timeline`): transits, progressions, solar arcs, lunations and eclipses to the natal chart over 3–24 months or a custom range (up to 3 years). It shows orb windows, every exact pass (retrograde flagged), stations, a day-by-day density strip, and the busiest periods with their focus point and house. Opens the chart at any date and files observations on a timing chart. Orbs (per technique and per planet), planets, aspects and techniques are each practice's own saved defaults (Settings → Astrology, or "Save as my defaults" on the timeline).
-- ⬜ Synastry and composite screens on the new techniques (built and tested in `lib/astro/techniques`)
+- ✅ Synastry on Swiss Ephemeris: bi-wheel, inter-aspect list, **aspect grid** (both people's planets and angles), **house overlays both ways** (strict cusps; left out when a birth time is unknown). Natal charts get the triangular aspect grid. Each pair now gets its tightest aspect.
+- ✅ Birthplace search from GeoNames (any town worldwide, with its time zone) on the live site; the built-in list in demo mode or if GeoNames is unavailable
+- ⬜ Composite screen on the new technique (derived-MC houses; Premium)
 
 ### Files and delivery
 - ✅ File storage with two drivers: local disk for development, and S3-compatible storage for production (e.g. Cloudflare R2). In production, browsers upload directly to the bucket with signed URLs, so large files never pass through Vercel.
