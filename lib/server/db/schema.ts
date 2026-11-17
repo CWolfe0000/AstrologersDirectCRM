@@ -219,3 +219,13 @@ export const RECORD_TABLES = {
 } as const;
 
 export type Collection = keyof typeof RECORD_TABLES;
+
+/** What the platform admin did (plan changes, practice deletions). */
+export const adminEvents = pgTable("admin_events", {
+  id: text("id").primaryKey(),
+  adminEmail: text("admin_email").notNull(),
+  action: text("action").notNull(),
+  practiceId: text("practice_id").notNull(),
+  detail: text("detail"),
+  at: timestamp("at", { withTimezone: true }).defaultNow().notNull(),
+});

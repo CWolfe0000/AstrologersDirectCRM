@@ -64,6 +64,13 @@
       "when": 1794905431199,
       "tag": "0008_client_access",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794954215695,
+      "tag": "0009_admin_events",
+      "breakpoints": true
     }
   ]
 }

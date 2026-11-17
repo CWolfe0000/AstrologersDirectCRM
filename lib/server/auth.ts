@@ -10,6 +10,12 @@ export const SESSION_COOKIE = "ad_session";
 const SESSION_DAYS = 30;
 const DAY = 86_400_000;
 
+/** Platform admins, by email (comma-separated ADMIN_EMAILS). */
+export function isAdminEmail(email: string) {
+  const list = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+  return list.includes(email.trim().toLowerCase());
+}
+
 export type SessionUser = {
   id: string;
   practiceId: string;
@@ -21,6 +27,8 @@ export type SessionUser = {
   twoFactor: boolean;
   /** False for accounts that sign in with emailed links only. */
   hasPassword: boolean;
+  /** Platform admin (ADMIN_EMAILS). Admin pages also require two-step verification. */
+  admin: boolean;
 };
 
 export async function hashPassword(pw: string) {
@@ -79,7 +87,7 @@ export async function getUser(): Promise<SessionUser | null> {
     await db().update(schema.sessions).set({ expiresAt: new Date(Date.now() + SESSION_DAYS * DAY) }).where(eq(schema.sessions.id, id));
   }
   const u = row.u;
-  return { id: u.id, practiceId: u.practiceId, email: u.email, name: u.name, role: u.role, clientId: u.clientId, emailVerified: !!u.emailVerifiedAt, twoFactor: !!u.totpEnabledAt, hasPassword: !!u.passwordHash };
+  return { id: u.id, practiceId: u.practiceId, email: u.email, name: u.name, role: u.role, clientId: u.clientId, emailVerified: !!u.emailVerifiedAt, twoFactor: !!u.totpEnabledAt, hasPassword: !!u.passwordHash, admin: u.role === "owner" && isAdminEmail(u.email) };
 }
 
 /** Single-use emailed token (verify / reset / invite). Returns the raw token for the link. */

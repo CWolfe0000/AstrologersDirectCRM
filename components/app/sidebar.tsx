@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
-import { Database, ExternalLink, Lock, RotateCcw } from "lucide-react";
+import { Database, ExternalLink, Lock, RotateCcw, ShieldCheck } from "lucide-react";
 import { usePremium } from "@/components/plan/premium";
 import { loadSampleData } from "@/lib/sync";
 import { cn, DATA_MODE, TODAY } from "@/lib/utils";
@@ -23,6 +23,8 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const clientCount = useStore((s) => s.clients.length);
   const [loadingSample, setLoadingSample] = React.useState(false);
   const premium = usePremium();
+  const isAdmin = useStore((s) => !!s.session.user?.admin);
+  const secondary = isAdmin ? [...APP_NAV_SECONDARY, { href: "/app/admin", label: "Admin", icon: ShieldCheck }] : APP_NAV_SECONDARY;
 
   const isActive = (href: string, exact?: boolean) => (exact ? path === href : path === href || path.startsWith(href + "/"));
   const badge = (href: string) => (href === "/app/tasks" ? overdue : href === "/app/delivery" ? pending : href === "/app/notifications" ? unread : 0);
@@ -62,7 +64,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         </ul>
         <div className="mx-2 my-4 h-px bg-white/[0.07]" />
         <ul className="space-y-0.5">
-          {APP_NAV_SECONDARY.map((n) => {
+          {secondary.map((n) => {
             const active = isActive(n.href);
             const b = badge(n.href);
             return (

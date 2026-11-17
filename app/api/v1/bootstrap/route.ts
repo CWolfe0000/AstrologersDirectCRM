@@ -16,7 +16,7 @@ export const GET = handler(async (req) => {
   const user = await requireUser();
   const url = new URL(req.url);
   const view = url.searchParams.get("view") ?? "app";
-  const me = { id: user.id, name: user.name, email: user.email, role: user.role, emailVerified: user.emailVerified, twoFactor: user.twoFactor, hasPassword: user.hasPassword };
+  const me = { id: user.id, name: user.name, email: user.email, role: user.role, emailVerified: user.emailVerified, twoFactor: user.twoFactor, hasPassword: user.hasPassword, admin: user.admin };
 
   if (view === "portal") {
     // Owners preview one client's portal; a client sees every astrologer they've been invited by, together.

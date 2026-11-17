@@ -27,7 +27,7 @@ export type SessionState = {
   /** demo: seeded browser data; loading/ready/error: server-backed data. */
   status: "demo" | "idle" | "loading" | "ready" | "error";
   view?: "app" | "portal";
-  user?: { id: string; name: string; email: string; role: "owner" | "client"; emailVerified: boolean; twoFactor?: boolean; hasPassword?: boolean };
+  user?: { id: string; name: string; email: string; role: "owner" | "client"; emailVerified: boolean; twoFactor?: boolean; hasPassword?: boolean; admin?: boolean };
   practice?: { id: string; name: string };
   /** Practitioner previewing a client's portal. */
   preview?: boolean;

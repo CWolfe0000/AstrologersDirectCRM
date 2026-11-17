@@ -67,6 +67,7 @@ This is `APP_ENCRYPTION_KEY`. **If it is lost or changed, encrypted client data 
 | `NEXT_PUBLIC_DATA_MODE` | `server` |
 | `RESEND_API_KEY` | from step 4 |
 | `EMAIL_FROM` | `AstrologersDirect <no-reply@mail.astrologersdirect.com>` |
+| `ADMIN_EMAILS` | your practitioner sign-in email (comma-separate several). Opens Admin in the sidebar; two-step verification required |
 | `CONTACT_EMAIL` | `hello@astrologersdirect.com` (website contact and advisory forms; Reply-To is the sender) |
 | `STORAGE_DRIVER` | `s3` |
 | `S3_BUCKET` | `astrologersdirect-files` |
