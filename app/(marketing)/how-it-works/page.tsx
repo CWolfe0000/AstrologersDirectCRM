@@ -8,80 +8,91 @@ export const metadata: Metadata = { title: "How It Works" };
 
 const STEPS = [
   {
-    title: "Create or import a client",
-    body: "Add a client with their contact details and birth data — date, time, place and how reliable the time is. Partners and family members can be added as associated people with their own birth data. Existing client lists can be imported.",
+    title: "Every client has a place.",
+    body: [
+      "Start with a client’s birth information, contact details and the people in their life.",
+      "Their charts, consultations, observations and readings belong to one record that grows with your work together.",
+    ],
+    close: "Enter it once. Build on it for years.",
     shot: "/screenshots/client-profile.png",
-    link: { href: "/app/clients/new", label: "Try adding a client" },
-    detail: ["Birth-time accuracy recorded alongside the data", "Natal chart generated automatically", "Portal invitation when you’re ready"],
+    link: { href: "/app/clients/c1", label: "Explore Client Records" },
   },
   {
-    title: "Generate and analyse charts",
-    body: "Open the chart workspace from the client profile. Review placements, aspects, houses and rulers, switch house systems, adjust orbs, or create synastry, composite and timing charts — all filed under the same client.",
+    title: "Work with the charts you need.",
+    body: [
+      "Open a client’s chart and begin. Explore placements, aspects, houses, relationships and timing with your own settings.",
+      "Create more charts without losing the connection to the person you’re studying.",
+    ],
+    close: "The chart workspace is part of the client record, not a separate destination.",
     shot: "/screenshots/chart-workspace.png",
-    link: { href: "/app/charts/ch1", label: "Open Amelia Hart’s natal chart" },
-    detail: ["Natal, relationship and timing techniques", "Calculated facts kept separate from interpretations", "Saved configurations for repeat work"],
+    link: { href: "/app/charts/ch1", label: "Explore Chart Analysis" },
   },
   {
-    title: "Save observations and consultation records",
-    body: "Write observations directly against the chart. They autosave, keep their revision history and are tagged by planet, aspect and house. Before and after each consultation, prep notes, session notes and follow-up tasks live on the appointment.",
+    title: "Turn observations into lasting knowledge.",
+    body: [
+      "Write down what you notice as you work. Attach it to the chart it describes, tag it by configuration, and come back to it whenever you need it.",
+      "Prepare for consultations with what you’ve already learned.",
+    ],
+    close: "Your experience accumulates, instead of starting over with every appointment.",
     shot: "/screenshots/observations.png",
-    link: { href: "/app/observations", label: "Browse observations" },
-    detail: ["Autosave and revision history", "Follow-up tasks created from the session", "Prep notes that surface what you wrote last time"],
+    link: { href: "/app/observations", label: "Explore Observations" },
   },
   {
-    title: "Deliver readings and recordings",
-    body: "Upload a finished PDF, audio or video reading — or record one in the Recording Studio while navigating the chart. Add a personal message, decide whether downloads are allowed, preview, and send to the client portal.",
+    title: "Deliver work you’re proud of.",
+    body: [
+      "Upload a written report, or record a walkthrough of the chart in the studio.",
+      "Send it to the client’s private portal with a personal message and the access you choose. They’re notified by email.",
+    ],
+    close: "A professional delivery, without a collection of disconnected services.",
     shot: "/screenshots/delivery.png",
-    link: { href: "/app/delivery", label: "Open Reading Delivery" },
-    detail: ["Upload, record or share a link", "Client notified automatically", "Opened status tracked"],
+    link: { href: "/app/delivery", label: "Explore Reading Delivery" },
   },
   {
-    title: "Build on the client’s history over time",
-    body: "When a client returns, everything is waiting: earlier charts, the observations you made about them, past consultations and every reading delivered. Clients have their own private portal with their materials.",
+    title: "Pick up where you left off.",
+    body: [
+      "Six months later, your client returns.",
+      "Their charts are there. Their previous readings are there. Your observations and consultation history are there.",
+    ],
+    close: "You spend your time exploring what’s changed, not searching for what happened.",
     shot: "/screenshots/portal.png",
-    link: { href: "/portal", label: "See the client portal" },
-    detail: ["Complete consultation history", "Searchable knowledge across clients", "A calm, branded client experience"],
+    link: { href: "/portal", label: "Explore the Client Portal" },
   },
 ];
 
 export default function HowItWorksPage() {
   return (
     <>
-      <PageIntro
-        eyebrow="How it works"
-        title="A typical astrologer’s workflow, connected end to end."
-        body="Follow a client from first enquiry to a delivered reading — and into the next consultation. Every screen below is from the working prototype."
-      />
+      <PageIntro eyebrow="How it works" title="Less time managing your practice. More time practising astrology.">
+        <div className="mt-5 max-w-2xl space-y-3 text-[17px] leading-relaxed text-muted">
+          <p>The best workflow is the one you don’t have to think about.</p>
+          <p>From the first consultation to the tenth, AstrologersDirect keeps your work organised, connected and ready when you need it. Here’s what that looks like.</p>
+        </div>
+      </PageIntro>
       <div className="container py-16 md:py-24">
         <ol className="relative space-y-20 md:space-y-28">
           {STEPS.map((s, i) => (
             <li key={s.title} className="grid items-center gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
               <div className={i % 2 === 1 ? "lg:order-2" : undefined}>
-                <div className="flex items-center gap-4">
-                  <span className="flex size-12 items-center justify-center rounded-full border border-accent-100 bg-accent-50 font-serif text-[22px] text-accent">{i + 1}</span>
-                  <span className="eyebrow">Step {i + 1} of {STEPS.length}</span>
-                </div>
-                <h2 className="mt-5 font-serif text-[30px] leading-tight text-ink md:text-[38px]">{s.title}</h2>
-                <p className="mt-4 text-[15.5px] leading-relaxed text-muted">{s.body}</p>
-                <ul className="mt-6 space-y-2 border-l-2 border-line pl-4">
-                  {s.detail.map((d) => (
-                    <li key={d} className="text-[14px] text-ink-3">
-                      {d}
-                    </li>
+                <span className="font-serif text-[22px] text-accent">{String(i + 1).padStart(2, "0")}</span>
+                <h2 className="mt-3 font-serif text-[30px] leading-tight text-ink md:text-[38px]">{s.title}</h2>
+                <div className="mt-4 space-y-3 text-[15.5px] leading-relaxed text-muted">
+                  {s.body.map((p) => (
+                    <p key={p}>{p}</p>
                   ))}
-                </ul>
+                </div>
+                <p className="mt-5 border-l-2 border-accent-200 pl-4 text-[15px] font-medium text-ink">{s.close}</p>
                 <Link href={s.link.href} className="mt-7 inline-flex items-center gap-1.5 text-[14px] font-medium text-accent hover:text-accent-hover">
                   {s.link.label} <ArrowRight className="size-4" />
                 </Link>
               </div>
               <div className={i % 2 === 1 ? "lg:order-1" : undefined}>
-                <ProductShot src={s.shot} alt={`${s.title} — screenshot`} url={s.shot.includes("portal") ? "portal.morrowastrology.com" : undefined} />
+                <ProductShot src={s.shot} alt={`${s.title} Screenshot`} url={s.shot.includes("portal") ? "app.astrologersdirect.com/portal" : undefined} />
               </div>
             </li>
           ))}
         </ol>
       </div>
-      <FinalCta title="See the workflow for yourself." body="The prototype is fully navigable with realistic demonstration data. Start with the dashboard or follow a guided workflow." />
+      <FinalCta title="See the difference for yourself." body="Explore the prototype, built around realistic client scenarios. Follow a consultation from beginning to end, and see how the pieces fit together." />
     </>
   );
 }

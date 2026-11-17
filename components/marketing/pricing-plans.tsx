@@ -13,20 +13,23 @@ const PLANS = [
   {
     id: "solo",
     name: "Solo",
-    for: "For astrologers beginning to see clients professionally.",
-    highlights: ["Client records", "Natal & synastry charts", "Notes & observations", "Reading delivery", "Client portal"],
+    tagline: "Build your foundation.",
+    for: "For independent astrologers establishing their practice. Bring your clients, charts, observations and reading delivery together from the start.",
+    highlights: ["Client management", "Natal & synastry charts", "Notes & observations", "Reading delivery", "Private client portal"],
   },
   {
     id: "professional",
     name: "Professional",
-    for: "For established practices with regular consultations.",
+    tagline: "Build on everything you’ve learned.",
+    for: "For established astrologers who want deeper analytical tools and a more connected workflow.",
     highlights: ["Everything in Solo", "Transits, progressions, solar arcs & returns", "Convergence timeline", "Recording Studio", "Intelligent assistance", "Practice insights"],
     featured: true,
   },
   {
     id: "practice",
     name: "Practice",
-    for: "For practices with assistants or several astrologers.",
+    tagline: "Grow together without losing what makes your work yours.",
+    for: "For practices with several astrologers or support staff. Shared resources and coordinated workflows, with the right access and privacy for each person.",
     highlights: ["Everything in Professional", "Multiple practitioners", "Shared knowledge collections", "Priority support"],
   },
 ];
@@ -96,7 +99,8 @@ export function PricingPlans() {
               <h3 className="font-serif text-[28px] text-ink">{p.name}</h3>
               {p.featured && <Badge tone="accent">Most practices</Badge>}
             </div>
-            <p className="mt-1.5 min-h-[42px] text-[14px] text-muted">{p.for}</p>
+            <p className="mt-1 font-serif text-[18px] italic text-accent">{p.tagline}</p>
+            <p className="mt-2 min-h-[63px] text-[14px] text-muted">{p.for}</p>
             <div className="mt-6 rounded-lg border border-dashed border-line-strong bg-canvas px-4 py-4">
               <p className="font-serif text-[22px] text-ink">Pricing to be announced</p>
               <p className="mt-0.5 text-[12.5px] text-muted">{cycle === "annual" ? "per year, billed annually" : "per month"} · placeholder</p>
@@ -109,7 +113,7 @@ export function PricingPlans() {
               ))}
             </ul>
             <ButtonLink href={`/auth/signup?plan=${p.id}`} variant={p.featured ? "primary" : "secondary"} className="mt-8 w-full">
-              Join the early access list
+              Join Early Access
             </ButtonLink>
           </div>
         ))}

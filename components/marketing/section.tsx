@@ -38,8 +38,8 @@ export function PageIntro({ eyebrow, title, body, children }: { eyebrow: string;
 }
 
 export function FinalCta({
-  title = "Bring your practice together.",
-  body = "Explore the prototype, or create an account to join the early practitioner group shaping AstrologersDirect.",
+  title = "Help build the future of professional astrology.",
+  body = "We’re creating the workspace we believe astrologers should have had years ago. Explore it, and join the early practitioner community shaping what comes next.",
 }: {
   title?: string;
   body?: string;
@@ -51,13 +51,14 @@ export function FinalCta({
         <h2 className="mx-auto max-w-2xl font-serif text-[34px] leading-[1.1] text-white md:text-[48px]">{title}</h2>
         <p className="mx-auto mt-4 max-w-xl text-[15.5px] text-[#CFCAD0]">{body}</p>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          <ButtonLink href="/app" size="lg">
-            Explore the Platform
+          <ButtonLink href="/prototype" size="lg">
+            Explore the Prototype
           </ButtonLink>
           <ButtonLink href="/auth/signup" size="lg" variant="secondary" className="border-white/15 bg-white/5 text-white hover:bg-white/10 hover:border-white/25">
-            Create an account
+            Join Early Access
           </ButtonLink>
         </div>
+        <p className="mx-auto mt-8 max-w-xl text-[12.5px] text-[#9C969E]">AstrologersDirect is in private beta. Some features, including the AI assistant, are still in development.</p>
       </div>
     </section>
   );
