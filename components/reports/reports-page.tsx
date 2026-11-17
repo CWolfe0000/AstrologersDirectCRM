@@ -1,25 +1,22 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import {
   Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Area, AreaChart, Legend,
 } from "recharts";
-import { Users, UserPlus, Repeat, CalendarDays, Send, ListTodo, FlaskConical, Wallet, Download } from "lucide-react";
+import { Users, UserPlus, Repeat, CalendarDays, Send, ListTodo, Sprout, Download } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { Card, CardHeader, CardBody } from "@/components/ui/card";
 import { PageHeader, StatCard } from "@/components/ui/misc";
 import { Segmented } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { BASE_CLIENTS, CONSULT_TYPES, demoSeries } from "./demo-series";
+import { computeReport, monthsCsv, type Range } from "./report-data";
 import { TODAY, daysFromToday } from "@/lib/utils";
 
-type Range = "30d" | "90d" | "12m" | "all";
-const RANGE_MONTHS: Record<Range, number> = { "30d": 1, "90d": 3, "12m": 12, all: 24 };
-const RANGE_LABEL: Record<Range, string> = { "30d": "last 30 days", "90d": "last 90 days", "12m": "last 12 months", all: "last 24 months" };
+const RANGE_LABEL: Record<Range, string> = { "30d": "last 30 days", "90d": "last 90 days", "12m": "last 12 months", all: "all time" };
 
 const C = { accent: "#824B59", sage: "#83978B", ink: "#29272B", stone: "#D6CFC6", gold: "#B07A2A", muted: "#68645F", line: "#E7E2DC" };
+const KIND_COLOR: Record<string, string> = { PDF: C.accent, Document: "#9C6B78", Audio: C.sage, Video: C.gold, Link: C.stone };
 
 const tooltipStyle = {
   contentStyle: { borderRadius: 10, border: `1px solid ${C.line}`, boxShadow: "0 8px 30px rgba(41,39,43,0.10)", fontSize: 12.5, padding: "8px 12px" },
@@ -27,33 +24,24 @@ const tooltipStyle = {
   cursor: { fill: "rgba(41,39,43,0.04)" },
 };
 
-function pct(cur: number, prev: number) {
-  if (!prev) return undefined;
+function pct(cur: number, prev: number, range: Range) {
+  if (!prev || range === "all") return undefined;
   const p = Math.round(((cur - prev) / prev) * 100);
   return { value: `${p >= 0 ? "+" : ""}${p}%`, positive: p >= 0 };
 }
 
 export function ReportsPage() {
   const [range, setRange] = React.useState<Range>("90d");
-  const series = React.useMemo(demoSeries, []);
   const tasks = useStore((s) => s.tasks);
   const readings = useStore((s) => s.readings);
   const consultations = useStore((s) => s.consultations);
+  const clients = useStore((s) => s.clients);
+  const clientWork = useStore((s) => s.clientWork);
+  const workResponses = useStore((s) => s.workResponses);
+  const r = React.useMemo(() => computeReport({ clients, consultations, readings, clientWork, workResponses }, range, TODAY), [clients, consultations, readings, clientWork, workResponses, range]);
+  const { totals: t, months: chartMonths, highlighted: inRange, types: typeRows, between } = r;
+  const vs = range === "all" ? undefined : "vs previous period";
 
-  const n = RANGE_MONTHS[range];
-  const cur = series.slice(-n);
-  const prev = series.slice(-2 * n, -n);
-  const sum = (arr: typeof series, f: (m: (typeof series)[number]) => number) => arr.reduce((a, m) => a + f(m), 0);
-  const del = (m: (typeof series)[number]) => m.deliveries.pdf + m.deliveries.audio + m.deliveries.video + m.deliveries.link;
-
-  const totalClients = BASE_CLIENTS + sum(series, (m) => m.newClients);
-  const newC = sum(cur, (m) => m.newClients);
-  const retC = Math.round(sum(cur, (m) => m.returningClients) * (n === 1 ? 0.9 : 0.55));
-  const retPrev = Math.round(sum(prev, (m) => m.returningClients) * (n === 1 ? 0.9 : 0.55));
-  const cons = sum(cur, (m) => m.consultations);
-  const dels = sum(cur, del);
-
-  // live outstanding work from the prototype store
   const open = tasks.filter((t) => t.status !== "done");
   const overdue = open.filter((t) => t.due < TODAY);
   const upcoming7 = consultations.filter((k) => k.status === "scheduled" && k.start >= TODAY && k.start < daysFromToday(7));
@@ -67,16 +55,18 @@ export function ReportsPage() {
   ];
   const outstandingTotal = overdue.length + (open.length - overdue.length) + readings.filter((r) => ["draft", "ready", "failed"].includes(r.status)).length;
 
-  const chartMonths = series.slice(-Math.max(6, n));
-  const inRange = new Set(cur.map((m) => m.key));
-  const delTypes = [
-    { name: "PDF", value: sum(cur, (m) => m.deliveries.pdf), color: C.accent },
-    { name: "Audio", value: sum(cur, (m) => m.deliveries.audio), color: C.sage },
-    { name: "Video", value: sum(cur, (m) => m.deliveries.video), color: C.gold },
-    { name: "Link", value: sum(cur, (m) => m.deliveries.link), color: C.stone },
-  ];
-  const typeRows = CONSULT_TYPES.map((t) => ({ ...t, count: sum(cur, (m) => m.types[t.name] ?? 0) })).sort((a, b) => b.count - a.count);
-  const typeMax = Math.max(...typeRows.map((t) => t.count), 1);
+  const delTypes = r.deliveryTypes.map((d) => ({ ...d, color: KIND_COLOR[d.name] ?? C.stone }));
+  const dels = t.deliveries;
+  const cons = t.consultations;
+  const typeMax = Math.max(...typeRows.map((x) => x.count), 1);
+  const exportCsv = () => {
+    const blob = new Blob([monthsCsv(chartMonths)], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `practice-report-${TODAY}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
 
   return (
     <div>
@@ -96,36 +86,34 @@ export function ReportsPage() {
                 { value: "all", label: "All" },
               ]}
             />
-            <Button variant="secondary" size="sm" className="hidden md:inline-flex" onClick={() => useStore.getState().toast("Export queued", "CSV export is simulated in the prototype.")}><Download /> Export</Button>
+            <Button variant="secondary" size="sm" className="hidden md:inline-flex" onClick={exportCsv}><Download /> Export CSV</Button>
           </>
         }
       />
 
-      <div className="mb-6 flex items-start gap-3 rounded-xl border-2 border-dashed border-warn/50 bg-warn-50/80 px-4 py-3.5">
-        <FlaskConical className="mt-0.5 size-5 shrink-0 text-warn" />
-        <div className="text-[13px] text-[#7C5A22]">
-          <p className="text-[14px] font-semibold">Demonstration data</p>
-          <p>Trend figures are generated sample history for a practice of about {totalClients} clients — not your records. The <strong>Outstanding work</strong> panel reflects the live prototype data (tasks, deliveries and sessions you can edit).</p>
-        </div>
-      </div>
+      {clients.length === 0 && (
+        <p className="mb-6 rounded-xl border border-dashed border-line bg-surface px-4 py-3.5 text-[13.5px] text-muted">
+          Reports fill in as you work: add clients, hold consultations and deliver readings, and the figures here update on their own.
+        </p>
+      )}
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-        <StatCard label="Total clients" value={totalClients} sub={`+${newC} in ${RANGE_LABEL[range]}`} icon={<Users />} />
-        <StatCard label="New clients" value={newC} trend={pct(newC, sum(prev, (m) => m.newClients))} sub="vs previous period" icon={<UserPlus />} />
-        <StatCard label="Returning clients" value={retC} trend={pct(retC, retPrev)} sub="Booked again" icon={<Repeat />} />
-        <StatCard label="Consultations" value={cons} trend={pct(cons, sum(prev, (m) => m.consultations))} sub="vs previous period" icon={<CalendarDays />} />
-        <StatCard label="Reading deliveries" value={dels} trend={pct(dels, sum(prev, del))} sub="PDF, audio, video & links" icon={<Send />} />
-        <StatCard label="Outstanding work" value={outstandingTotal} sub={<span className="text-accent">{overdue.length} overdue · live</span>} icon={<ListTodo />} href="/app/tasks" />
+        <StatCard label="Active clients" value={t.clients} sub={`+${t.newClients} in ${RANGE_LABEL[range]}`} icon={<Users />} />
+        <StatCard label="New clients" value={t.newClients} trend={pct(t.newClients, t.newClientsPrev, range)} sub={vs ?? RANGE_LABEL[range]} icon={<UserPlus />} />
+        <StatCard label="Returning clients" value={t.returning} trend={pct(t.returning, t.returningPrev, range)} sub="Seen again after an earlier session" icon={<Repeat />} />
+        <StatCard label="Consultations" value={cons} trend={pct(cons, t.consultationsPrev, range)} sub={vs ?? "Held, all time"} icon={<CalendarDays />} />
+        <StatCard label="Reading deliveries" value={dels} trend={pct(dels, t.deliveriesPrev, range)} sub={vs ?? "Delivered, all time"} icon={<Send />} />
+        <StatCard label="Outstanding work" value={outstandingTotal} sub={<span className="text-accent">{overdue.length} overdue</span>} icon={<ListTodo />} href="/app/tasks" />
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <Card>
-          <CardHeader title="Consultation volume" description={n < 6 ? `Monthly · highlighted: ${RANGE_LABEL[range]} (November in progress)` : "Monthly · November in progress"} />
+          <CardHeader title="Consultation volume" description={`Sessions held per month · highlighted: ${RANGE_LABEL[range]} · this month so far`} />
           <CardBody className="h-[340px] pl-1">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartMonths} margin={{ top: 6, right: 8, left: -12, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke={C.line} />
-                <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fontSize: 11.5, fill: C.muted }} interval={n > 12 ? 1 : 0} />
+                <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fontSize: 11.5, fill: C.muted }} interval={chartMonths.length > 12 ? 1 : 0} />
                 <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11.5, fill: C.muted }} allowDecimals={false} />
                 <Tooltip {...tooltipStyle} formatter={(v) => [v as number, "Consultations"]} />
                 <Bar dataKey="consultations" radius={[4, 4, 0, 0]} maxBarSize={36}>
@@ -142,8 +130,8 @@ export function ReportsPage() {
             <div className="relative h-[200px] w-[200px] shrink-0">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={delTypes} dataKey="value" isAnimationActive={false} innerRadius={62} outerRadius={92} paddingAngle={2} stroke="none">
-                    {delTypes.map((d) => <Cell key={d.name} fill={d.color} />)}
+                  <Pie data={delTypes.length ? delTypes : [{ name: "None", value: 1, color: C.line }]} dataKey="value" isAnimationActive={false} innerRadius={62} outerRadius={92} paddingAngle={2} stroke="none">
+                    {(delTypes.length ? delTypes : [{ name: "None", value: 1, color: C.line }]).map((d) => <Cell key={d.name} fill={d.color} />)}
                   </Pie>
                   <Tooltip {...tooltipStyle} />
                 </PieChart>
@@ -154,6 +142,7 @@ export function ReportsPage() {
               </div>
             </div>
             <ul className="w-full space-y-2">
+              {delTypes.length === 0 && <li className="text-[13px] text-muted">No readings delivered in this period.</li>}
               {delTypes.map((d) => (
                 <li key={d.name} className="flex items-center gap-2.5 text-[13px]">
                   <span className="size-2.5 rounded-sm" style={{ background: d.color }} />
@@ -169,7 +158,7 @@ export function ReportsPage() {
 
       <div className="mt-6 grid gap-6 xl:grid-cols-2">
         <Card>
-          <CardHeader title="New vs returning clients" description="Clients seen per month" />
+          <CardHeader title="New vs returning clients" description="New clients added, and clients seen again, per month" />
           <CardBody className="h-[280px] pl-1">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartMonths} margin={{ top: 6, right: 8, left: -12, bottom: 0 }}>
@@ -184,7 +173,7 @@ export function ReportsPage() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid vertical={false} stroke={C.line} />
-                <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fontSize: 11.5, fill: C.muted }} interval={n > 12 ? 1 : 0} />
+                <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fontSize: 11.5, fill: C.muted }} interval={chartMonths.length > 12 ? 1 : 0} />
                 <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11.5, fill: C.muted }} allowDecimals={false} />
                 <Tooltip {...tooltipStyle} />
                 <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, color: C.muted }} />
@@ -196,7 +185,7 @@ export function ReportsPage() {
         </Card>
 
         <Card>
-          <CardHeader title="Outstanding work" description="Live from your tasks, deliveries and calendar" action={<Badge tone="sage" dot>Live</Badge>} />
+          <CardHeader title="Outstanding work" description="Right now, from your tasks, deliveries and calendar" />
           <CardBody className="h-[280px] pl-1">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={outstanding} layout="vertical" margin={{ top: 0, right: 24, left: 8, bottom: 0 }}>
@@ -227,6 +216,11 @@ export function ReportsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
+                {typeRows.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="px-5 py-6 text-center text-muted">No consultations held in this period.</td>
+                  </tr>
+                )}
                 {typeRows.map((t) => (
                   <tr key={t.name}>
                     <td className="px-5 py-2.5 font-medium">{t.name}</td>
@@ -247,19 +241,27 @@ export function ReportsPage() {
           </div>
         </Card>
 
-        <Card className="border-dashed bg-canvas/40">
-          <CardBody className="flex h-full flex-col">
-            <span className="flex size-10 items-center justify-center rounded-lg bg-canvas-2 text-muted"><Wallet className="size-5" /></span>
-            <p className="mt-4 font-serif text-[22px] leading-tight">Revenue & financial reporting</p>
-            <p className="mt-2 text-[13px] text-muted">
-              Income by month, outstanding invoices and revenue per consultation type will appear here once payment integrations are connected.
-            </p>
-            <div className="mt-5 space-y-2 opacity-60">
-              {[70, 45, 85].map((w, i) => <div key={i} className="h-2 rounded-full bg-canvas-3" style={{ width: `${w}%` }} />)}
-            </div>
-            <p className="mt-auto pt-6 text-[12px] text-muted">
-              Planned · see <Link href="/pricing" className="underline">pricing</Link> for upcoming plan features.
-            </p>
+        <Card>
+          <CardHeader title="Between Sessions" description={`Work shared · ${RANGE_LABEL[range]}`} action={<Sprout className="size-4 text-accent" />} />
+          <CardBody>
+            {between.shared === 0 ? (
+              <p className="text-[13px] text-muted">Nothing shared in this period. Share an assignment, prompt, goal or activity from a client’s Between Sessions tab.</p>
+            ) : (
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-5">
+                {[
+                  ["Shared", between.shared, `with ${between.clients} ${between.clients === 1 ? "client" : "clients"}`],
+                  ["Responded to", between.responded, `${Math.round((between.responded / between.shared) * 100)}% of shared work`],
+                  ["Done", between.done, `${Math.round((between.done / between.shared) * 100)}% completed`],
+                  ["Client entries", between.entries, "Responses and journal entries"],
+                ].map(([label, value, sub]) => (
+                  <div key={label as string}>
+                    <dt className="text-[12px] text-muted">{label}</dt>
+                    <dd className="font-serif text-[28px] leading-tight text-ink">{value}</dd>
+                    <dd className="text-[12px] text-muted">{sub}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
           </CardBody>
         </Card>
       </div>
