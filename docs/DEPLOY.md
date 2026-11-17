@@ -67,6 +67,7 @@ This is `APP_ENCRYPTION_KEY`. **If it is lost or changed, encrypted client data 
 | `NEXT_PUBLIC_DATA_MODE` | `server` |
 | `RESEND_API_KEY` | from step 4 |
 | `EMAIL_FROM` | `AstrologersDirect <no-reply@mail.astrologersdirect.com>` |
+| `CONTACT_EMAIL` | `hello@astrologersdirect.com` (website contact and advisory forms; Reply-To is the sender) |
 | `STORAGE_DRIVER` | `s3` |
 | `S3_BUCKET` | `astrologersdirect-files` |
 | `S3_REGION` | `auto` |
@@ -108,7 +109,7 @@ This is `APP_ENCRYPTION_KEY`. **If it is lost or changed, encrypted client data 
 | Address | **https://app.astrologersdirect.com** (canonical). `astrologersdirect.com`, `www.astrologersdirect.com` and `astrologers-direct-crm.vercel.app` redirect to it (308). DNS at GoDaddy. |
 | Database | Neon organization **0xCassie** → project **astrologersdirect** (`aws-us-west-2`, Postgres 16). Migrations run automatically on production deploys (`scripts/vercel-build.sh`, direct connection). |
 | Email | Resend domain **mail.astrologersdirect.com** (verified; DKIM, SPF, return path in GoDaddy). The app uses a send-only key limited to that domain; sender `AstrologersDirect <no-reply@mail.astrologersdirect.com>`. |
-| Environment variables (production) | `DATABASE_URL` (pooled), `DATABASE_URL_UNPOOLED` (migrations), `APP_ENCRYPTION_KEY`, `APP_URL`, `NEXT_PUBLIC_DATA_MODE=server`, `CRON_SECRET`, `SWISS_EPHEMERIS_LICENSE=confirmed`, `DEFAULT_PLAN=premium` (beta), `RESEND_API_KEY`, `EMAIL_FROM`, `GEONAMES_USERNAME`, storage vars below |
+| Environment variables (production) | `DATABASE_URL` (pooled), `DATABASE_URL_UNPOOLED` (migrations), `APP_ENCRYPTION_KEY`, `APP_URL`, `NEXT_PUBLIC_DATA_MODE=server`, `CRON_SECRET`, `SWISS_EPHEMERIS_LICENSE=confirmed`, `DEFAULT_PLAN=premium` (beta), `RESEND_API_KEY`, `EMAIL_FROM`, `CONTACT_EMAIL`, `GEONAMES_USERNAME`, storage vars below |
 | File storage | Cloudflare R2 bucket **astrologersdirect-files** (private, western North America). Browsers upload directly with signed URLs; CORS allows `https://app.astrologersdirect.com` only. The app's keys are an R2 token limited to that bucket (Object Read & Write). Vars: `STORAGE_DRIVER=s3`, `S3_BUCKET`, `S3_REGION=auto`, `S3_ENDPOINT`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`. |
 
 **Keep a copy of `APP_ENCRYPTION_KEY`** (Vercel → project → Settings → Environment Variables) in a password manager. Without it, encrypted client data cannot be read.

@@ -28,6 +28,10 @@ export const env = {
   get emailFrom() {
     return process.env.EMAIL_FROM || "AstrologersDirect <no-reply@astrologersdirect.local>";
   },
+  /** Where website contact-form messages go (e.g. hello@astrologersdirect.com). */
+  get contactEmail() {
+    return process.env.CONTACT_EMAIL || "";
+  },
   get isProduction() {
     return process.env.NODE_ENV === "production";
   },

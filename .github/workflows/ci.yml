@@ -23,6 +23,7 @@ jobs:
       APP_URL: http://localhost:3000
       NEXT_PUBLIC_DATA_MODE: server
       CRON_SECRET: ci-only-cron-secret
+      CONTACT_EMAIL: hello@example.com
       # Many test accounts are created from one address; never set this in production.
       RATE_LIMIT_MULTIPLIER: "20"
       # Swiss Ephemeris in non-commercial test mode; data files downloaded below.
@@ -64,6 +65,7 @@ jobs:
           node tests/e2e/client-work.mjs
           node tests/e2e/email-signin.mjs
           node tests/e2e/multi-practice.mjs
+          node tests/e2e/contact.mjs
           node tests/e2e/pwa.mjs
           node tests/e2e/a11y.mjs
           node tests/e2e/a11y.mjs --mobile

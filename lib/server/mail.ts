@@ -8,7 +8,7 @@ import { newId } from "./crypto";
  * Without it (development), the message is stored in the `outbox` table and
  * printed to the server log so links can be followed locally.
  */
-export async function sendMail(to: string, subject: string, body: string) {
+export async function sendMail(to: string, subject: string, body: string, opts: { replyTo?: string } = {}) {
   let provider = "outbox";
   let status = "logged";
   if (env.resendApiKey) {
@@ -17,7 +17,7 @@ export async function sendMail(to: string, subject: string, body: string) {
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: `Bearer ${env.resendApiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ from: env.emailFrom, to, subject, text: body }),
+        body: JSON.stringify({ from: env.emailFrom, to, subject, text: body, ...(opts.replyTo ? { reply_to: opts.replyTo } : {}) }),
       });
       status = res.ok ? "sent" : `failed:${res.status}`;
     } catch (e) {

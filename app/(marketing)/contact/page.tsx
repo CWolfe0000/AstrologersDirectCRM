@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Mail, LifeBuoy, BookOpen, PlayCircle, Compass, ShieldCheck, ArrowRight, Search } from "lucide-react";
+import { Mail, BookOpen, PlayCircle, Compass, ShieldCheck, ArrowRight, Search } from "lucide-react";
 import { PageIntro } from "@/components/marketing/section";
 import { ContactForm } from "@/components/marketing/forms";
 
@@ -21,8 +21,7 @@ export default function ContactPage() {
         <ContactForm />
         <div className="space-y-4">
           {[
-            { icon: Mail, title: "General inquiries", body: "hello@astrologersdirect.example", sub: "Partnerships, press and early access." },
-            { icon: LifeBuoy, title: "Product support", body: "support@astrologersdirect.example", sub: "For practitioners using AstrologersDirect." },
+            { icon: Mail, title: "Email us", body: "hello@astrologersdirect.com", sub: "Questions, product support, early access, partnerships and press." },
           ].map((c) => (
             <div key={c.title} className="flex gap-4 rounded-xl border border-line bg-surface p-5">
               <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent-50 text-accent">
@@ -30,12 +29,11 @@ export default function ContactPage() {
               </span>
               <div className="min-w-0">
                 <p className="text-[14.5px] font-semibold text-ink">{c.title}</p>
-                <p className="break-all text-[14px] text-accent">{c.body}</p>
+                <a href={`mailto:${c.body}`} className="break-all text-[14px] text-accent hover:underline">{c.body}</a>
                 <p className="mt-1 text-[13px] text-muted">{c.sub}</p>
               </div>
             </div>
           ))}
-          <p className="px-1 text-[12.5px] text-muted">Placeholder addresses — the prototype does not send email.</p>
         </div>
       </section>
 
