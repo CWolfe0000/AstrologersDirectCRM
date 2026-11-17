@@ -63,7 +63,7 @@ function ChartDirectory() {
           <>
             <EngineNotice compact />
             <ButtonLink href="/app/charts/new">
-              <Plus /> Create chart
+              <Plus /> Create Chart
             </ButtonLink>
           </>
         }
@@ -134,7 +134,7 @@ function ChartDirectory() {
 
       {filtered.length === 0 ? (
         <div className="rounded-xl border border-line bg-surface">
-          <EmptyState icon={<CircleDot />} title="No charts match these filters" body="Try a different search, or create a new chart for a client." action={<ButtonLink href="/app/charts/new" size="sm"><Plus /> Create chart</ButtonLink>} />
+          <EmptyState icon={<CircleDot />} title="No Charts Match These Filters" body="Try a different search, or create a new chart for a client." action={<ButtonLink href="/app/charts/new" size="sm"><Plus /> Create Chart</ButtonLink>} />
         </div>
       ) : view === "grid" ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">

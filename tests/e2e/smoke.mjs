@@ -86,7 +86,7 @@ await page.locator("button", { hasText: "London" }).first().click();
 await page.getByRole("button", { name: /Generate natal chart/ }).click();
 const cont = page.getByRole("button", { name: /^Continue/ });
 if (await cont.count()) await cont.click();
-await page.getByRole("button", { name: /Save client & chart/ }).click();
+await page.getByRole("button", { name: /Save Client & Chart/ }).click();
 await page.waitForURL(/\/app\/clients\/(?!new)[^/?]+/);
 await page.getByText("All changes saved").waitFor({ timeout: 10000 });
 const withIris = await page.evaluate(() => fetch("/api/v1/bootstrap?view=app").then((r) => r.json()));

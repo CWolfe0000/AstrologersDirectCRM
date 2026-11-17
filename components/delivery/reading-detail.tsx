@@ -66,20 +66,20 @@ export function ReadingDetail({ id, onClose }: { id: string; onClose: () => void
           <p className="flex items-center gap-2 font-medium"><AlertTriangle className="size-4" /> Delivery failed</p>
           <p className="mt-1 text-danger">{r.failureReason ?? "The upload did not complete."}</p>
           <Button size="sm" variant="danger" className="mt-3" onClick={retry} disabled={retrying}>
-            {retrying ? <Loader2 className="animate-spin" /> : <RotateCcw />} {retrying ? "Retrying…" : "Retry delivery"}
+            {retrying ? <Loader2 className="animate-spin" /> : <RotateCcw />} {retrying ? "Retrying…" : "Retry Delivery"}
           </Button>
         </div>
       )}
 
       <div className="flex flex-wrap gap-2">
         {(r.status === "draft" || r.status === "ready") && (
-          <Button onClick={send} disabled={!r.fileName && !r.url}><Send /> Send to client portal</Button>
+          <Button onClick={send} disabled={!r.fileName && !r.url}><Send /> Send to Client Portal</Button>
         )}
         {r.status === "draft" && (
-          <Button variant="secondary" onClick={() => { update(r.id, { status: "ready" }); toast("Marked ready to send", r.title); }} disabled={!r.fileName && !r.url}>Mark ready</Button>
+          <Button variant="secondary" onClick={() => { update(r.id, { status: "ready" }); toast("Marked ready to send", r.title); }} disabled={!r.fileName && !r.url}>Mark Ready</Button>
         )}
         {r.status === "delivered" && r.clientId === "c1" && (
-          <ButtonLink variant="secondary" href={`/portal/readings/${r.id}`}><ExternalLink /> View in client portal</ButtonLink>
+          <ButtonLink variant="secondary" href={`/portal/readings/${r.id}`}><ExternalLink /> View in Client Portal</ButtonLink>
         )}
       </div>
       {r.status === "draft" && !r.fileName && !r.url && (

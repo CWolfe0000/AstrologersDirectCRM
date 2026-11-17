@@ -50,8 +50,8 @@ for (let i = 0; i < 4 && !(await d.getByPlaceholder("e.g. Solar Return 2027 — 
 await d.locator('input[type="file"]').setInputFiles(pdfPath);
 await d.getByText("Uploaded").waitFor({ timeout: 15000 });
 await d.getByPlaceholder("e.g. Solar Return 2027 — Relocated to Lisbon").fill(`Uploaded reading ${stamp}`);
-for (let i = 0; i < 4 && !(await d.getByRole("button", { name: /Send to client portal/ }).count()); i++) await d.getByRole("button", { name: /Continue/ }).click();
-await d.getByRole("button", { name: /Send to client portal/ }).click();
+for (let i = 0; i < 4 && !(await d.getByRole("button", { name: /Send to Client Portal/ }).count()); i++) await d.getByRole("button", { name: /Continue/ }).click();
+await d.getByRole("button", { name: /Send to Client Portal/ }).click();
 await page.getByText("All changes saved").waitFor({ timeout: 10000 });
 let s = await state(page);
 const reading = s.readings.find((r) => r.title === `Uploaded reading ${stamp}`);

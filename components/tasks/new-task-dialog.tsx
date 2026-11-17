@@ -83,7 +83,7 @@ export function NewTaskDialog({
         footer={
           <>
             <Button variant="secondary" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button onClick={submit} disabled={!name.trim()}>Create task</Button>
+            <Button onClick={submit} disabled={!name.trim()}>Create Task</Button>
           </>
         }
       >

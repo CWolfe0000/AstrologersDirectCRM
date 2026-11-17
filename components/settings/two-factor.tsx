@@ -67,7 +67,7 @@ export function TwoFactorCard({ hint = "Recommended for practices holding client
 
   return (
     <Card>
-      <CardHeader title="Two-factor authentication" description="Ask for a code from an authenticator app when signing in." action={enabled ? <Badge tone="sage">On</Badge> : <Badge tone="neutral">Off</Badge>} />
+      <CardHeader title="Two-Factor Authentication" description="Ask for a code from an authenticator app when signing in." action={enabled ? <Badge tone="sage">On</Badge> : <Badge tone="neutral">Off</Badge>} />
       <CardBody className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <ShieldCheck className={cn("size-8", enabled ? "text-sage-dark" : "text-muted")} />
@@ -76,22 +76,22 @@ export function TwoFactorCard({ hint = "Recommended for practices holding client
           </p>
         </div>
         {enabled ? (
-          <Button variant="secondary" size="sm" onClick={() => { setError(null); setOff(true); }}>Turn off</Button>
+          <Button variant="secondary" size="sm" onClick={() => { setError(null); setOff(true); }}>Turn Off</Button>
         ) : (
-          <Button size="sm" onClick={start}>Set up</Button>
+          <Button size="sm" onClick={start}>Set Up</Button>
         )}
       </CardBody>
 
       <Dialog open={!!setup && !codes} onOpenChange={(o) => { if (!o) { setSetup(null); setCode(""); setError(null); } }}>
         {setup && (
           <DialogContent
-            title="Set up two-factor authentication"
+            title="Set Up Two-Factor Authentication"
             description="Scan the QR code with your authenticator app, then enter the 6-digit code it shows."
             size="sm"
             footer={
               <>
                 <Button variant="secondary" onClick={() => setSetup(null)}>Cancel</Button>
-                <Button onClick={confirm} disabled={busy || code.replace(/\s/g, "").length !== 6}>Turn on</Button>
+                <Button onClick={confirm} disabled={busy || code.replace(/\s/g, "").length !== 6}>Turn On</Button>
               </>
             }
           >
@@ -113,10 +113,10 @@ export function TwoFactorCard({ hint = "Recommended for practices holding client
       <Dialog open={!!codes} onOpenChange={(o) => { if (!o) { setCodes(null); setSetup(null); toast("Two-factor authentication is on", undefined, "success"); } }}>
         {codes && (
           <DialogContent
-            title="Save your recovery codes"
+            title="Save Your Recovery Codes"
             description="If you lose your phone, each code lets you sign in once. Store them somewhere safe — they won’t be shown again."
             size="sm"
-            footer={<Button onClick={() => { setCodes(null); setSetup(null); toast("Two-factor authentication is on", undefined, "success"); }}>I’ve saved them</Button>}
+            footer={<Button onClick={() => { setCodes(null); setSetup(null); toast("Two-factor authentication is on", undefined, "success"); }}>I’ve Saved Them</Button>}
           >
             <div className="grid grid-cols-2 gap-2 rounded-lg border border-line bg-canvas p-4 font-mono text-[14px]">
               {codes.map((c) => <span key={c}>{c}</span>)}
@@ -127,7 +127,7 @@ export function TwoFactorCard({ hint = "Recommended for practices holding client
               className="mt-3"
               onClick={() => navigator.clipboard?.writeText(codes.join("\n")).then(() => toast("Copied"), () => toast("Couldn’t copy", "Select the codes and copy them manually.", "error"))}
             >
-              <Copy /> Copy codes
+              <Copy /> Copy Codes
             </Button>
           </DialogContent>
         )}
@@ -135,13 +135,13 @@ export function TwoFactorCard({ hint = "Recommended for practices holding client
 
       <Dialog open={off} onOpenChange={setOff}>
         <DialogContent
-          title="Turn off two-factor authentication?"
+          title="Turn Off Two-Factor Authentication?"
           description={user?.hasPassword === false ? "Enter a current code (or a recovery code)." : "Enter your password and a current code (or a recovery code)."}
           size="sm"
           footer={
             <>
               <Button variant="secondary" onClick={() => setOff(false)}>Cancel</Button>
-              <Button variant="danger" onClick={disable} disabled={busy || (user?.hasPassword !== false && !password) || !code}>Turn off</Button>
+              <Button variant="danger" onClick={disable} disabled={busy || (user?.hasPassword !== false && !password) || !code}>Turn Off</Button>
             </>
           }
         >

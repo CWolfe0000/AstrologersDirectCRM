@@ -195,7 +195,7 @@ export function TaskDetail({ id, onDeleted }: { id: string; onDeleted?: () => vo
             onDeleted?.();
           }}
         >
-          <Trash2 /> Delete task
+          <Trash2 /> Delete Task
         </Button>
       </div>
     </div>

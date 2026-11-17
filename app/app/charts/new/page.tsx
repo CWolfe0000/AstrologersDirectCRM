@@ -112,7 +112,7 @@ function NewChart() {
   return (
     <div>
       <PageHeader
-        title="Create chart"
+        title="Create Chart"
         description="Charts are always created for a person on file and saved to a client record."
         breadcrumbs={[{ label: "Charts", href: "/app/charts" }, { label: "Create chart" }]}
       />
@@ -155,7 +155,7 @@ function NewChart() {
                   ))}
                 </Select>
               </Field>
-              <Field label={meta.people === 2 ? "Person A (inner wheel)" : "Subject"}>
+              <Field label={meta.people === 2 ? "Person A (Inner Wheel)" : "Subject"}>
                 <Select value={personA} onChange={(e) => (e.target.value === NEW ? setAdding("A") : setPersonA(e.target.value))}>
                   {pool.map((p) => (
                     <option key={p.id} value={p.id}>
@@ -233,7 +233,7 @@ function NewChart() {
               <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                 <ButtonLink href="/app/charts" variant="secondary" className="sm:flex-1">Cancel</ButtonLink>
                 <Button onClick={save} disabled={!valid || locked} className="sm:flex-[2]">
-                  Save & open workspace <ArrowRight />
+                  Save & Open Workspace <ArrowRight />
                 </Button>
               </div>
             </CardBody>

@@ -49,7 +49,7 @@ export default function NotificationsPage() {
         breadcrumbs={[{ label: "Dashboard", href: "/app" }, { label: "Notifications" }]}
         actions={
           <Button variant="secondary" size="sm" onClick={() => { s.markAllNotifications(); s.toast("All notifications marked as read"); }} disabled={unread === 0}>
-            <CheckCheck /> Mark all as read
+            <CheckCheck /> Mark All as Read
           </Button>
         }
       />
@@ -64,7 +64,7 @@ export default function NotificationsPage() {
           </div>
           <Card>
             {list.length === 0 ? (
-              <EmptyState icon={<Bell />} title={view === "unread" ? "You're all caught up" : "No notifications"} body="New activity will appear here." />
+              <EmptyState icon={<Bell />} title={view === "unread" ? "You're All Caught Up" : "No Notifications"} body="New activity will appear here." />
             ) : (
               <ul className="divide-y divide-line">
                 {list.map((n) => (
@@ -93,7 +93,7 @@ export default function NotificationsPage() {
         </div>
 
         <Card className="h-fit">
-          <CardHeader title="Notification preferences" description="Choose how you hear about each kind of activity." icon={<Settings2 />} />
+          <CardHeader title="Notification Preferences" description="Choose how you hear about each kind of activity." icon={<Settings2 />} />
           <div className="grid grid-cols-[1fr_auto_auto] items-center gap-x-4 border-b border-line bg-canvas/60 px-5 py-2 text-[11px] font-semibold uppercase tracking-wider text-muted">
             <span>Type</span>
             <span>In-app</span>

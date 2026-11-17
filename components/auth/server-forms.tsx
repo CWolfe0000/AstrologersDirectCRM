@@ -73,7 +73,7 @@ function TwoFactorStep({ ticket, next, onCancel }: { ticket: string; next: strin
         <Field label="Code" htmlFor="code">
           <Input id="code" inputMode="numeric" autoComplete="one-time-code" autoFocus value={code} onChange={(e) => setCode(e.target.value)} placeholder="123 456" required />
         </Field>
-        <Button type="submit" size="lg" className="w-full" disabled={loading}>{loading && <Loader2 className="animate-spin" />} Verify and sign in</Button>
+        <Button type="submit" size="lg" className="w-full" disabled={loading}>{loading && <Loader2 className="animate-spin" />} Verify and Sign In</Button>
       </form>
       <button className="mt-6 text-[13.5px] text-muted hover:text-ink" onClick={onCancel}>Use a different account</button>
     </>
@@ -120,7 +120,7 @@ function Login() {
           <Field label="Code from the email" htmlFor="ecode">
             <Input id="ecode" inputMode="numeric" autoComplete="one-time-code" autoFocus value={code} onChange={(e) => setCode(e.target.value)} placeholder="123 456" required />
           </Field>
-          <Button type="submit" size="lg" className="w-full" disabled={loading}>{loading && <Loader2 className="animate-spin" />} Sign in</Button>
+          <Button type="submit" size="lg" className="w-full" disabled={loading}>{loading && <Loader2 className="animate-spin" />} Sign In</Button>
         </form>
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-[13.5px]">
           <button
@@ -163,7 +163,7 @@ function Login() {
             <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
           </Field>
           <Button type="submit" size="lg" className="w-full" disabled={loading}>
-            {loading && <Loader2 className="animate-spin" />} Sign in
+            {loading && <Loader2 className="animate-spin" />} Sign In
           </Button>
         </form>
         <button className="mt-5 text-[13.5px] text-accent hover:underline" onClick={() => { setMode("email"); setError(null); }}>Email me a sign-in link instead</button>
@@ -188,7 +188,7 @@ function Login() {
           <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" autoFocus required />
         </Field>
         <Button type="submit" size="lg" className="w-full" disabled={loading}>
-          {loading ? <Loader2 className="animate-spin" /> : <Send />} Email me a sign-in link
+          {loading ? <Loader2 className="animate-spin" /> : <Send />} Email Me a Sign-In Link
         </Button>
       </form>
       <button className="mt-5 text-[13.5px] text-muted hover:text-ink" onClick={() => { setMode("password"); setError(null); }}>Sign in with a password instead</button>
@@ -226,7 +226,7 @@ function LinkSignIn() {
           })
         }
       >
-        {loading && <Loader2 className="animate-spin" />} Sign in
+        {loading && <Loader2 className="animate-spin" />} Sign In
       </Button>
       {error && (
         <Link href="/auth/login" className="mt-5 inline-block text-[13.5px] text-accent hover:underline">
@@ -268,7 +268,7 @@ function Signup() {
         </Field>
         <Checkbox required label={<span className="text-[13px] text-muted">I agree to the <Link href="/legal/terms" className="text-accent underline">Terms</Link> and <Link href="/legal/privacy" className="text-accent underline">Privacy Policy</Link>.</span>} />
         <Button type="submit" size="lg" className="w-full" disabled={loading}>
-          {loading && <Loader2 className="animate-spin" />} Create account
+          {loading && <Loader2 className="animate-spin" />} Create Account
         </Button>
       </form>
       <p className="mt-6 text-center text-[13.5px] text-muted">
@@ -351,7 +351,7 @@ function Reset() {
           <ErrorNote message={error} />
           <Field label="New password" htmlFor="np"><Input id="np" type="password" required minLength={MIN_PW} autoComplete="new-password" value={pw.a} onChange={(e) => setPw((x) => ({ ...x, a: e.target.value }))} /></Field>
           <Field label="Confirm new password" htmlFor="cp"><Input id="cp" type="password" required minLength={MIN_PW} autoComplete="new-password" value={pw.b} onChange={(e) => setPw((x) => ({ ...x, b: e.target.value }))} /></Field>
-          <Button type="submit" size="lg" className="w-full" disabled={loading}>{loading && <Loader2 className="animate-spin" />} Update password</Button>
+          <Button type="submit" size="lg" className="w-full" disabled={loading}>{loading && <Loader2 className="animate-spin" />} Update Password</Button>
         </form>
       </>
     );
@@ -379,7 +379,7 @@ function Reset() {
       >
         <ErrorNote message={error} />
         <Field label="Email" htmlFor="email"><Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" /></Field>
-        <Button type="submit" size="lg" className="w-full" disabled={loading}>{loading && <Loader2 className="animate-spin" />} Send reset link</Button>
+        <Button type="submit" size="lg" className="w-full" disabled={loading}>{loading && <Loader2 className="animate-spin" />} Send Reset Link</Button>
       </form>
     </>
   );
@@ -438,7 +438,7 @@ function Invite() {
             <Input id="pw" type="password" minLength={MIN_PW} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
           </Field>
         )}
-        <Button type="submit" size="lg" className="w-full" disabled={loading}>{loading && <Loader2 className="animate-spin" />} Open my portal</Button>
+        <Button type="submit" size="lg" className="w-full" disabled={loading}>{loading && <Loader2 className="animate-spin" />} Open My Portal</Button>
       </form>
       <p className="mt-6 text-center text-[12px] text-muted">Your astrologer’s private notes are never visible in the portal.</p>
     </>

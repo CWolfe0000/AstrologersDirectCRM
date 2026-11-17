@@ -64,9 +64,9 @@ function Profile() {
   if (!client || !person) {
     return (
       <div>
-        <PageHeader title="Client not found" breadcrumbs={[{ label: "Clients", href: "/app/clients" }, { label: "Not found" }]} />
+        <PageHeader title="Client Not Found" breadcrumbs={[{ label: "Clients", href: "/app/clients" }, { label: "Not found" }]} />
         <Card>
-          <EmptyState title="This client doesn't exist" body="It may have been created in a different browser, or the demo data was reset." action={<ButtonLink href="/app/clients" variant="secondary" size="sm">Back to clients</ButtonLink>} />
+          <EmptyState title="This Client Doesn't Exist" body="It may have been created in a different browser, or the demo data was reset." action={<ButtonLink href="/app/clients" variant="secondary" size="sm">Back to Clients</ButtonLink>} />
         </Card>
       </div>
     );
@@ -116,10 +116,10 @@ function Profile() {
             </div>
           </div>
           <div className="flex flex-wrap gap-2 lg:max-w-[340px] lg:justify-end">
-            <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}><Pencil /> Edit profile</Button>
-            <ButtonLink href={`/app/consultations?new=1&client=${id}`} size="sm"><CalendarPlus /> Schedule consultation</ButtonLink>
-            <ButtonLink href={`/app/charts/new?client=${id}`} variant="secondary" size="sm"><CircleDot /> Create chart</ButtonLink>
-            <ButtonLink href={`/app/observations?new=1&client=${id}`} variant="secondary" size="sm"><NotebookPen /> Add observation</ButtonLink>
+            <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}><Pencil /> Edit Profile</Button>
+            <ButtonLink href={`/app/consultations?new=1&client=${id}`} size="sm"><CalendarPlus /> Schedule Consultation</ButtonLink>
+            <ButtonLink href={`/app/charts/new?client=${id}`} variant="secondary" size="sm"><CircleDot /> Create Chart</ButtonLink>
+            <ButtonLink href={`/app/observations?new=1&client=${id}`} variant="secondary" size="sm"><NotebookPen /> Add Observation</ButtonLink>
             <ButtonLink href={`/app/timeline?client=${id}`} variant="secondary" size="sm"><Waves /> Timeline</ButtonLink>
             <Dropdown>
               <DropdownTrigger asChild>

@@ -51,7 +51,7 @@ export default function AdminPage() {
   }, []);
   React.useEffect(load, [load]);
 
-  if (user && !user.admin) return <PageHeader title="Not found" description="This page doesn’t exist." />;
+  if (user && !user.admin) return <PageHeader title="Not Found" description="This page doesn’t exist." />;
   if (error)
     return (
       <div>
@@ -109,8 +109,8 @@ export default function AdminPage() {
       <PageHeader title="Admin" description="Every practice on AstrologersDirect. Counts only: client records stay private to each practice." />
       <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Practices" value={data.practices.length} />
-        <StatCard label="New in the last 30 days" value={newMonth} />
-        <StatCard label="Signed in this week" value={activeWeek} />
+        <StatCard label="New in the Last 30 Days" value={newMonth} />
+        <StatCard label="Signed in This Week" value={activeWeek} />
         <StatCard label="On Premium" value={premium} />
       </div>
 
@@ -179,7 +179,7 @@ export default function AdminPage() {
 
       {data.events.length > 0 && (
         <section className="mt-8">
-          <h2 className="mb-3 font-serif text-[22px] text-ink">Admin activity</h2>
+          <h2 className="mb-3 font-serif text-[22px] text-ink">Admin Activity</h2>
           <ul className="divide-y divide-line rounded-xl border border-line bg-surface text-[13px]">
             {data.events.map((e) => (
               <li key={e.id} className="flex flex-wrap gap-x-3 px-4 py-2.5">
@@ -197,13 +197,13 @@ export default function AdminPage() {
         {deleting && (
           <DialogContent
             size="sm"
-            title={`Delete ${deleting.name || "this practice"}?`}
+            title={`Delete ${deleting.name || "This Practice"}?`}
             description="Permanently removes the practice, every record and file, and its client portal logins. This can’t be undone."
             footer={
               <>
                 <Button variant="secondary" onClick={() => setDeleting(null)}>Cancel</Button>
                 <Button variant="danger" disabled={busy === deleting.id || confirm.trim().toLowerCase() !== (deleting.ownerEmail ?? deleting.id).toLowerCase()} onClick={remove}>
-                  {busy === deleting.id && <Loader2 className="animate-spin" />} Delete permanently
+                  {busy === deleting.id && <Loader2 className="animate-spin" />} Delete Permanently
                 </Button>
               </>
             }

@@ -22,7 +22,7 @@ export function RemindersCard() {
   };
   return (
     <Card>
-      <CardHeader title="Consultation reminders" description="An email to the client before each scheduled consultation." action={r.clients ? <Badge tone="sage">On</Badge> : <Badge tone="neutral">Off</Badge>} />
+      <CardHeader title="Consultation Reminders" description="An email to the client before each scheduled consultation." action={r.clients ? <Badge tone="sage">On</Badge> : <Badge tone="neutral">Off</Badge>} />
       <CardBody className="space-y-4">
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -71,7 +71,7 @@ export function CalendarFeedCard() {
   const copy = (text: string) => navigator.clipboard?.writeText(text).then(() => toast("Link copied"), () => toast("Couldn’t copy", "Select the link and copy it.", "error"));
   return (
     <Card>
-      <CardHeader title="Calendar subscription" description="See your consultations in Google Calendar, Apple Calendar or Outlook." icon={<CalendarDays />} />
+      <CardHeader title="Calendar Subscription" description="See your consultations in Google Calendar, Apple Calendar or Outlook." icon={<CalendarDays />} />
       <CardBody className="space-y-3">
         {link ? (
           <>
@@ -89,7 +89,7 @@ export function CalendarFeedCard() {
         )}
         <div className="flex flex-wrap gap-2">
           <Button size="sm" onClick={create}>{active ? <><RefreshCw /> Create a new link</> : <><Link2 /> Create calendar link</>}</Button>
-          {active && <Button size="sm" variant="ghost" onClick={remove}><Trash2 /> Turn off</Button>}
+          {active && <Button size="sm" variant="ghost" onClick={remove}><Trash2 /> Turn Off</Button>}
         </div>
       </CardBody>
     </Card>

@@ -50,7 +50,7 @@ await page.getByRole("button", { name: /Import/ }).click();
 await page.getByRole("dialog").locator('input[type="file"]').setInputFiles(csv);
 await page.getByText("Check which column holds each detail").waitFor();
 await page.getByRole("tab", { name: "3 April (international)" }).click();
-await page.getByRole("button", { name: "Review rows" }).click();
+await page.getByRole("button", { name: "Review Rows" }).click();
 const dlg = page.getByRole("dialog");
 await dlg.getByText("need a birthplace").waitFor();
 await dlg.getByText("Already a client (same email)").waitFor();

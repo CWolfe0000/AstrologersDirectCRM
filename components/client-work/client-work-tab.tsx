@@ -56,11 +56,11 @@ export function ClientWorkTab({ client }: { client: Client }) {
         <Card>
           <EmptyState
             icon={<MessageSquareText />}
-            title="Nothing shared yet"
+            title="Nothing Shared Yet"
             body="Keep the work going between sessions: a question to journal on, something to prepare, a goal, or a practice to try."
             action={
               <Button size="sm" onClick={() => setEditing("new")}>
-                <Plus /> Create the first one
+                <Plus /> Create the First One
               </Button>
             }
           />
@@ -186,7 +186,7 @@ function WorkItem({ w, first, onEdit, defaultOpen }: { w: ClientWork; first: str
             </Button>
             {w.status === "shared" && (
               <Button size="sm" variant="secondary" onClick={() => update(w.id, { status: "completed" })}>
-                <Check /> Mark done
+                <Check /> Mark Done
               </Button>
             )}
             {w.status === "completed" && (
@@ -208,7 +208,7 @@ function WorkItem({ w, first, onEdit, defaultOpen }: { w: ClientWork; first: str
                   toast("Draft deleted", undefined, "success");
                 }}
               >
-                <Trash2 /> Delete draft
+                <Trash2 /> Delete Draft
               </Button>
             )}
           </div>
@@ -286,14 +286,14 @@ function WorkEditor({ client, first, editing, onClose, defaultConsultation }: { 
           footer={
             <>
               <Button variant="ghost" className="sm:mr-auto" disabled={!valid} onClick={saveTemplate}>
-                Save as template
+                Save as Template
               </Button>
               <Button variant="ghost" onClick={onClose}>
                 Cancel
               </Button>
               {(isNew || existing?.status === "draft") && (
                 <Button variant="secondary" disabled={!valid} onClick={() => save(false)}>
-                  Save draft
+                  Save Draft
                 </Button>
               )}
               <Button disabled={!valid} onClick={() => save(isNew || existing?.status === "draft")}>
@@ -329,7 +329,7 @@ function WorkEditor({ client, first, editing, onClose, defaultConsultation }: { 
                   </Select>
                   {mine.some((t) => t.id === template) && (
                     <Button variant="ghost" size="sm" onClick={() => removeTemplate(template)}>
-                      <Trash2 /> Remove template
+                      <Trash2 /> Remove Template
                     </Button>
                   )}
                 </div>

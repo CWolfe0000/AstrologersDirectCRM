@@ -107,7 +107,7 @@ export function WorkspaceObservations({
 
       {mine.length === 0 ? (
         <div className="rounded-lg border border-line">
-          <EmptyState icon={<NotebookPen />} title="No observations on this chart yet" body="Observations autosave as you write and stay with this chart between sessions." />
+          <EmptyState icon={<NotebookPen />} title="No Observations on This Chart Yet" body="Observations autosave as you write and stay with this chart between sessions." />
         </div>
       ) : (
         <div className="space-y-2">

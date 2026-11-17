@@ -154,7 +154,7 @@ export function OverlaysTable({ view, labels, timeKnown }: { view: ChartView; la
         return (
           <section key={s.from}>
             <h3 className="mb-1 flex flex-wrap items-center gap-1.5 text-[13px] font-semibold text-ink">
-              <RingTag label={s.from} outer={s.outer} /> planets in <RingTag label={s.into} outer={!s.outer} /> houses
+              <RingTag label={s.from} outer={s.outer} /> Planets in <RingTag label={s.into} outer={!s.outer} /> Houses
             </h3>
             {!s.ok ? (
               <p className="rounded-lg border border-line bg-canvas-2 px-3 py-2 text-[12.5px] text-muted">{s.into}’s birth time is unknown, so their houses (and these overlays) can’t be placed reliably.</p>

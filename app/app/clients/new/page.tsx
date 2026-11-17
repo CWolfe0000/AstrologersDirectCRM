@@ -88,7 +88,7 @@ export default function NewClientPage() {
   return (
     <div className="mx-auto max-w-5xl">
       <PageHeader
-        title="Add a new client"
+        title="Add a New Client"
         description="Create the client record, enter birth data and generate their natal chart in one pass."
         breadcrumbs={[{ label: "Dashboard", href: "/app" }, { label: "Clients", href: "/app/clients" }, { label: "New client" }]}
       />
@@ -139,7 +139,7 @@ export default function NewClientPage() {
                 setBirth({ date: "1991-07-08", time: "06:25", timeAccuracy: "exact" });
                 setPlace({ place: "Paris, France", lat: 48.86, lon: 2.35, tz: "Europe/Paris" });
               }}>
-                <Sparkles /> Fill with sample client
+                <Sparkles /> Fill with Sample Client
               </Button>
             </div>
           )}
@@ -240,7 +240,7 @@ export default function NewClientPage() {
             </Button>
           ) : (
             <Button onClick={save} disabled={saving}>
-              <Check /> Save client & chart
+              <Check /> Save Client & Chart
             </Button>
           )}
         </div>

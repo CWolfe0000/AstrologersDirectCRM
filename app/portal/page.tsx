@@ -40,7 +40,7 @@ export default function PortalHome() {
       {/* Welcome */}
       <section className="animate-fade-in">
         <p className="eyebrow">{fmtLong(PORTAL_NOW)}</p>
-        <h1 className="mt-2 font-serif text-[36px] leading-[1.1] text-ink md:text-[44px]">Good morning, {me?.firstName ?? "there"}.</h1>
+        <h1 className="mt-2 font-serif text-[36px] leading-[1.1] text-ink md:text-[44px]">Good Morning, {me?.firstName ?? "there"}.</h1>
         <p className="mt-2 max-w-xl text-[15px] text-muted">
           Everything {joinNames(practices.map((p) => p.firstName)) || "your astrologer"} {practices.length > 1 ? "have" : "has"} shared with you lives here: your readings, recordings, sessions, and the work you’re doing between them.
         </p>
@@ -51,7 +51,7 @@ export default function PortalHome() {
           {/* Upcoming */}
           <section>
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="font-serif text-[24px] text-ink">Upcoming sessions</h2>
+              <h2 className="font-serif text-[24px] text-ink">Upcoming Sessions</h2>
               <Link href="/portal/consultations" className="text-[13px] font-medium text-accent hover:underline">All sessions</Link>
             </div>
             {upcoming.length === 0 ? (
@@ -96,7 +96,7 @@ export default function PortalHome() {
           {openWork.length > 0 && (
             <section>
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="font-serif text-[24px] text-ink">Between sessions</h2>
+                <h2 className="font-serif text-[24px] text-ink">Between Sessions</h2>
                 <Link href="/portal/work" className="text-[13px] font-medium text-accent hover:underline">View all</Link>
               </div>
               <div className="space-y-3">
@@ -110,7 +110,7 @@ export default function PortalHome() {
           {/* Recent readings */}
           <section>
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="font-serif text-[24px] text-ink">Recent readings</h2>
+              <h2 className="font-serif text-[24px] text-ink">Recent Readings</h2>
               <Link href="/portal/readings" className="inline-flex items-center gap-1 text-[13px] font-medium text-accent hover:underline">
                 Reading library <ArrowRight className="size-3.5" />
               </Link>
@@ -124,7 +124,7 @@ export default function PortalHome() {
 
           {/* Quick access */}
           <section>
-            <h2 className="mb-4 font-serif text-[24px] text-ink">Quick access</h2>
+            <h2 className="mb-4 font-serif text-[24px] text-ink">Quick Access</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="rounded-2xl border border-line bg-surface p-5">
                 <p className="flex items-center gap-2 text-[13px] font-semibold text-ink"><Headphones className="size-4 text-sage-dark" /> Recordings</p>

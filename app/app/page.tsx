@@ -98,21 +98,21 @@ export default function DashboardPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           <ButtonLink href="/app/consultations" variant="secondary" size="sm">
-            <CalendarDays /> Open calendar
+            <CalendarDays /> Open Calendar
           </ButtonLink>
           <ButtonLink href="/app/clients/new" size="sm">
-            <UserPlus /> Add client
+            <UserPlus /> Add Client
           </ButtonLink>
         </div>
       </div>
 
       {/* Summary */}
       <div className="grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
-        <StatCard label="Total clients" value={activeClients.length} sub={`${newClients} new this month`} icon={<Users />} href="/app/clients" />
-        <StatCard label="Upcoming consultations" value={upcoming.length} sub={`${thisWeek} in the next 7 days`} icon={<CalendarDays />} href="/app/consultations" />
-        <StatCard label="Active charts" value={activeCharts.length} sub={`${recentlyOpened} opened this week`} icon={<CircleDot />} href="/app/charts" />
+        <StatCard label="Total Clients" value={activeClients.length} sub={`${newClients} new this month`} icon={<Users />} href="/app/clients" />
+        <StatCard label="Upcoming Consultations" value={upcoming.length} sub={`${thisWeek} in the next 7 days`} icon={<CalendarDays />} href="/app/consultations" />
+        <StatCard label="Active Charts" value={activeCharts.length} sub={`${recentlyOpened} opened this week`} icon={<CircleDot />} href="/app/charts" />
         <StatCard
-          label="Pending deliveries"
+          label="Pending Deliveries"
           value={pending.length}
           sub={failed ? <span className="text-danger">{failed} failed — needs attention</span> : "All on track"}
           icon={<Send />}
@@ -125,7 +125,7 @@ export default function DashboardPage() {
           {/* Today */}
           <Card>
             <CardHeader
-              title="Today's schedule"
+              title="Today's Schedule"
               description={fmtDay(DEMO_TODAY)}
               icon={<Clock />}
               action={
@@ -135,7 +135,7 @@ export default function DashboardPage() {
               }
             />
             {today.length === 0 ? (
-              <EmptyState icon={<CalendarDays />} title="No consultations today" />
+              <EmptyState icon={<CalendarDays />} title="No Consultations Today" />
             ) : (
               <ul className="divide-y divide-line">
                 {today.map((k) => (
@@ -166,7 +166,7 @@ export default function DashboardPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Recent clients */}
             <Card>
-              <CardHeader title="Recent clients" icon={<Users />} action={<Link href="/app/clients" className="text-[12.5px] font-medium text-accent hover:underline">View all</Link>} />
+              <CardHeader title="Recent Clients" icon={<Users />} action={<Link href="/app/clients" className="text-[12.5px] font-medium text-accent hover:underline">View all</Link>} />
               {recentClients.length === 0 && (
                 <p className="px-5 py-6 text-[13px] text-muted">
                   No clients yet. <Link href="/app/clients/new" className="font-medium text-accent hover:underline">Add your first client</Link>.
@@ -198,7 +198,7 @@ export default function DashboardPage() {
 
             {/* Activity */}
             <Card>
-              <CardHeader title="Recent activity" icon={<ActivityIcon />} />
+              <CardHeader title="Recent Activity" icon={<ActivityIcon />} />
               {s.activity.length === 0 && <p className="px-5 py-6 text-[13px] text-muted">Changes to clients, charts, observations and readings will appear here.</p>}
               <ul className="px-5 py-3">
                 {s.activity.slice(0, 7).map((a, i, arr) => {
@@ -233,7 +233,7 @@ export default function DashboardPage() {
         {/* Right rail */}
         <div className="space-y-6">
           <Card>
-            <CardHeader title="Quick actions" />
+            <CardHeader title="Quick Actions" />
             <div className="grid grid-cols-2 gap-2 p-4 sm:grid-cols-3 xl:grid-cols-2">
               {ACTIONS.map((a) => (
                 <button

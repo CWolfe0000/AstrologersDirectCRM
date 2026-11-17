@@ -78,7 +78,7 @@ export function ConsultationDetail({ id }: { id: string }) {
         <div className="mt-4 flex flex-wrap gap-2">
           {k.status === "scheduled" && (
             <>
-              <Button size="sm" variant="sage" onClick={() => setStatus("completed")}><CheckCircle2 /> Mark completed</Button>
+              <Button size="sm" variant="sage" onClick={() => setStatus("completed")}><CheckCircle2 /> Mark Completed</Button>
               <Button size="sm" variant="secondary" onClick={() => setStatus("cancelled")}><XCircle /> Cancel</Button>
             </>
           )}
@@ -86,8 +86,8 @@ export function ConsultationDetail({ id }: { id: string }) {
             <Button size="sm" variant="secondary" onClick={() => setStatus("scheduled")}><RotateCcw /> Reopen</Button>
           )}
           <ButtonLink size="sm" variant="secondary" href={`/app/studio?client=${k.clientId}${firstChart ? `&chart=${firstChart}` : ""}`}><Mic /> Record</ButtonLink>
-          <ButtonLink size="sm" variant="secondary" href={`/app/delivery?new=1&client=${k.clientId}${firstChart ? `&chart=${firstChart}` : ""}`}><Send /> Deliver reading</ButtonLink>
-          <ButtonLink size="sm" variant="secondary" href={`/app/clients/${k.clientId}?tab=work&newWork=1&consultation=${k.id}`}><Sprout /> Share work for between sessions</ButtonLink>
+          <ButtonLink size="sm" variant="secondary" href={`/app/delivery?new=1&client=${k.clientId}${firstChart ? `&chart=${firstChart}` : ""}`}><Send /> Deliver Reading</ButtonLink>
+          <ButtonLink size="sm" variant="secondary" href={`/app/clients/${k.clientId}?tab=work&newWork=1&consultation=${k.id}`}><Sprout /> Share Work for Between Sessions</ButtonLink>
         </div>
       </div>
 
@@ -141,7 +141,7 @@ export function ConsultationDetail({ id }: { id: string }) {
 
       {/* follow ups */}
       <div>
-        <SectionTitle action={<Button size="xs" variant="secondary" onClick={() => setTaskOpen(true)}><ListPlus /> Create follow-up task</Button>}>Follow-up tasks</SectionTitle>
+        <SectionTitle action={<Button size="xs" variant="secondary" onClick={() => setTaskOpen(true)}><ListPlus /> Create Follow-Up Task</Button>}>Follow-up tasks</SectionTitle>
         {followUps.length === 0 ? (
           <p className="text-[13px] text-muted">No follow-ups yet.</p>
         ) : (
@@ -163,7 +163,7 @@ export function ConsultationDetail({ id }: { id: string }) {
       <div>
         <div className="mb-3 flex items-center gap-2">
           <History className="size-4 text-muted" />
-          <h3 className="text-[13px] font-semibold">Client history</h3>
+          <h3 className="text-[13px] font-semibold">Client History</h3>
         </div>
         <p className="eyebrow mb-2">Existing observations · {clientObs.length}</p>
         {clientObs.length === 0 && <p className="text-[13px] text-muted">No observations recorded for {person?.firstName}.</p>}

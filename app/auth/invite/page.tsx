@@ -48,7 +48,7 @@ function DemoInvitePage() {
         </Field>
         <Checkbox required defaultChecked label={<span className="text-[13px] text-muted">Email me when a new reading is shared</span>} />
         <Button type="submit" size="lg" className="w-full" disabled={loading}>
-          {loading && <Loader2 className="animate-spin" />} Accept and open my portal
+          {loading && <Loader2 className="animate-spin" />} Accept and Open My Portal
         </Button>
       </form>
       <p className="mt-6 text-center text-[12px] text-muted">Your astrologer’s private notes are never visible in the portal.</p>

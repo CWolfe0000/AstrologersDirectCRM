@@ -45,7 +45,7 @@ function DemoLoginPage() {
         </Field>
         <Checkbox label="Keep me signed in on this device" defaultChecked />
         <Button type="submit" size="lg" className="w-full" disabled={loading}>
-          {loading ? <Loader2 className="animate-spin" /> : null} Sign in
+          {loading ? <Loader2 className="animate-spin" /> : null} Sign In
         </Button>
       </form>
       <p className="mt-6 text-center text-[13.5px] text-muted">

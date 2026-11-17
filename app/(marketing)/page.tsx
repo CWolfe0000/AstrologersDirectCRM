@@ -22,7 +22,7 @@ export default function HomePage() {
           <div className="mx-auto max-w-3xl text-center">
             <p className="eyebrow mb-5 text-accent">For professional astrologers</p>
             <h1 className="font-serif text-[46px] leading-[1.04] tracking-[-0.01em] text-ink sm:text-[60px] md:text-[76px]">
-              Better tools. <span className="italic text-accent">Stronger client relationships.</span>
+              Better Tools. <span className="italic text-accent">Stronger Client Relationships.</span>
             </h1>
             <div className="mx-auto mt-7 max-w-2xl space-y-4 text-[17px] leading-relaxed text-muted md:text-[18px]">
               <p className="text-ink-3">A meaningful consultation doesn’t end when the session is over.</p>

@@ -61,12 +61,12 @@ export function SessionActions({ k, today, who, className }: { k: Session; today
         {open && (
           <DialogContent
             size="sm"
-            title="Request a new time"
+            title="Request a New Time"
             description={`${who} will get your message by email and reply to arrange another time. Your session stays booked until they change it.`}
             footer={
               <>
                 <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-                <Button onClick={send} disabled={busy}>{busy && <Loader2 className="animate-spin" />} Send request</Button>
+                <Button onClick={send} disabled={busy}>{busy && <Loader2 className="animate-spin" />} Send Request</Button>
               </>
             }
           >
@@ -120,7 +120,7 @@ export function AddToCalendar({ k, who, zone, className }: { k: Session & { star
         URL.revokeObjectURL(a.href);
       }}
     >
-      <CalendarDays /> Add to calendar
+      <CalendarDays /> Add to Calendar
     </Button>
   );
 }

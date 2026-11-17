@@ -34,12 +34,12 @@ export default function BetweenSessions() {
         </div>
       )}
       {work.length === 0 ? (
-        <EmptyState className="mt-6 rounded-2xl border border-dashed border-line bg-surface" icon={<Sprout />} title="Nothing here yet" body={`When ${from ? practices.find((p) => p.id === from)?.firstName || "your astrologer" : names} shares something to work on between sessions, it will appear here.`} />
+        <EmptyState className="mt-6 rounded-2xl border border-dashed border-line bg-surface" icon={<Sprout />} title="Nothing Here Yet" body={`When ${from ? practices.find((p) => p.id === from)?.firstName || "your astrologer" : names} shares something to work on between sessions, it will appear here.`} />
       ) : (
         <div className="mt-6 space-y-8">
           {open.length > 0 && (
             <section>
-              <h2 className="mb-3 font-serif text-[22px] text-ink">To work on</h2>
+              <h2 className="mb-3 font-serif text-[22px] text-ink">To Work On</h2>
               <div className="space-y-3">
                 {open.map((w) => (
                   <WorkCard key={w.id} w={w} />

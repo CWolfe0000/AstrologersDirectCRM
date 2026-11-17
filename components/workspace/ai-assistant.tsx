@@ -257,7 +257,7 @@ export function AiAssistant({ chart, view, onSaved }: { chart: ChartRecord; view
                   ))}
                 </div>
                 <Button variant="secondary" size="xs" className="mt-2.5" onClick={() => saveDraft(m.reply)}>
-                  <NotebookPen /> Save as observation
+                  <NotebookPen /> Save as Observation
                 </Button>
               </div>
             </div>

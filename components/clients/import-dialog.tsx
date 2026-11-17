@@ -151,15 +151,15 @@ export function ImportClientsDialog({ open, onOpenChange }: { open: boolean; onO
     <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) reset(); }}>
       <DialogContent
         size="xl"
-        title="Import clients"
+        title="Import Clients"
         description="From a spreadsheet saved as CSV. Each imported client gets a natal chart."
         footer={
           step === "file" ? (
             <Button variant="secondary" onClick={() => onOpenChange(false)}>Cancel</Button>
           ) : step === "map" ? (
             <>
-              <Button variant="ghost" onClick={reset} className="mr-auto">Choose another file</Button>
-              <Button onClick={() => setStep("review")} disabled={mapping.birthDate === undefined || (mapping.firstName === undefined && mapping.fullName === undefined)}>Review rows</Button>
+              <Button variant="ghost" onClick={reset} className="mr-auto">Choose Another File</Button>
+              <Button onClick={() => setStep("review")} disabled={mapping.birthDate === undefined || (mapping.firstName === undefined && mapping.fullName === undefined)}>Review Rows</Button>
             </>
           ) : (
             <>

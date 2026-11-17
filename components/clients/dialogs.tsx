@@ -40,12 +40,12 @@ export function EditClientDialog({ open, onOpenChange, client, person }: { open:
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        title="Edit profile"
+        title="Edit Profile"
         size="lg"
         footer={
           <>
             <Button variant="secondary" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button onClick={save}>Save changes</Button>
+            <Button onClick={save}>Save Changes</Button>
           </>
         }
       >

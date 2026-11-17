@@ -127,7 +127,7 @@ function Workspace() {
     if (!hydrated || chart) return <div className="h-[70vh] animate-pulse rounded-xl bg-canvas-2" />;
     return (
       <div className="rounded-xl border border-line bg-surface">
-        <EmptyState icon={<CircleDot />} title="Chart not found" body="It may have been removed, or demo data was reset." action={<ButtonLink href="/app/charts" size="sm">Back to charts</ButtonLink>} />
+        <EmptyState icon={<CircleDot />} title="Chart Not Found" body="It may have been removed, or demo data was reset." action={<ButtonLink href="/app/charts" size="sm">Back to Charts</ButtonLink>} />
       </div>
     );
   }
@@ -208,7 +208,7 @@ function Workspace() {
             <Star className={cn(chart.favorite && "fill-accent text-accent")} />
           </Button>
           <ButtonLink href={`/app/clients/${chart.clientId}`} variant="secondary" aria-label="Client profile">
-            <UserRound /> <span className="hidden sm:inline xl:hidden 2xl:inline">Client profile</span>
+            <UserRound /> <span className="hidden sm:inline xl:hidden 2xl:inline">Client Profile</span>
           </ButtonLink>
           {chart.personIds.length === 1 && chart.personIds[0] === chart.clientId && (
             <ButtonLink href={`/app/timeline?client=${chart.personIds[0]}`} variant="secondary" aria-label="Timeline">
@@ -216,7 +216,7 @@ function Workspace() {
             </ButtonLink>
           )}
           <ButtonLink href={`/app/studio?client=${chart.clientId}&chart=${chart.id}`} variant="secondary" aria-label="Record reading">
-            <Mic /> <span className="hidden sm:inline">Record reading</span>
+            <Mic /> <span className="hidden sm:inline">Record Reading</span>
           </ButtonLink>
           <ButtonLink href={`/app/delivery?new=1&client=${chart.clientId}&chart=${chart.id}`}>
             <Send /> Deliver
@@ -227,11 +227,11 @@ function Workspace() {
 
       <div className={cn("ws-noprint mb-4 flex items-center gap-2", docked && "min-[1400px]:hidden")}>
         <Button variant="secondary" size="sm" onClick={() => setControlsOpen(true)} className={cn(!docked && "min-[1400px]:hidden")}>
-          <SlidersHorizontal /> Chart controls
+          <SlidersHorizontal /> Chart Controls
         </Button>
         {!docked && (
           <Button variant="secondary" size="sm" onClick={() => setDocked(true)} className="hidden min-[1400px]:inline-flex">
-            <PanelLeftOpen /> Show controls
+            <PanelLeftOpen /> Show Controls
           </Button>
         )}
         {dirty && <span className="text-[12px] text-warn">Unsaved display changes</span>}

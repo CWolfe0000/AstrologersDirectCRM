@@ -119,7 +119,7 @@ export default function ClientsPage() {
               <Download /> Export
             </Button>
             <ButtonLink href="/app/clients/new" size="sm">
-              <UserPlus /> Add client
+              <UserPlus /> Add Client
             </ButtonLink>
           </>
         }
@@ -173,11 +173,11 @@ export default function ClientsPage() {
         <Card>
           <EmptyState
             icon={<User />}
-            title="No clients match"
+            title="No Clients Match"
             body="Try a different search or filter."
             action={
               <Button variant="secondary" size="sm" onClick={() => { setQ(""); setTag("all"); setStatus("current"); }}>
-                Clear filters
+                Clear Filters
               </Button>
             }
           />

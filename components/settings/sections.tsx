@@ -59,7 +59,7 @@ export function ProfileSection() {
         <div className="flex items-center gap-4">
           <Avatar name={f.name} size="xl" />
           <div>
-            <Button variant="secondary" size="sm" onClick={() => saved("Photo upload is simulated in the prototype.")}><Camera /> Upload photo</Button>
+            <Button variant="secondary" size="sm" onClick={() => saved("Photo upload is simulated in the prototype.")}><Camera /> Upload Photo</Button>
             <p className="mt-1.5 text-[12px] text-muted">Square image, at least 400 × 400px.</p>
           </div>
         </div>
@@ -73,7 +73,7 @@ export function ProfileSection() {
       </CardBody>
       <CardFooter>
         <Button variant="ghost" onClick={() => setF(p)}>Cancel</Button>
-        <Button onClick={() => { update(f); saved("Your profile has been updated."); }}>Save profile</Button>
+        <Button onClick={() => { update(f); saved("Your profile has been updated."); }}>Save Profile</Button>
       </CardFooter>
     </Card>
   );
@@ -131,7 +131,7 @@ export function PracticeSection() {
         </div>
       </CardBody>
       <CardFooter>
-        <Button onClick={() => { update(f); saved("Practice details updated."); }}>Save practice</Button>
+        <Button onClick={() => { update(f); saved("Practice details updated."); }}>Save Practice</Button>
       </CardFooter>
     </Card>
   );
@@ -154,7 +154,7 @@ export function AstrologySection() {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader title="Astrology defaults" description="Defaults for new charts across your practice. Each chart can override them in the workspace." />
+        <CardHeader title="Astrology Defaults" description="Defaults for new charts across your practice. Each chart can override them in the workspace." />
         <CardBody className="divide-y divide-line py-1">
           <Row title="House system" desc="Whole sign is always used automatically when a birth time is unknown.">
             <Select value={d.houseSystem} onChange={(e) => set({ houseSystem: e.target.value as HouseSystem })} className="w-56">
@@ -173,7 +173,7 @@ export function AstrologySection() {
       </Card>
 
       <Card>
-        <CardHeader title="Aspects & orbs" description="Which aspects are calculated and the maximum orb for each." />
+        <CardHeader title="Aspects & Orbs" description="Which aspects are calculated and the maximum orb for each." />
         <div className="divide-y divide-line">
           {CORE_ASPECTS.map((a) => {
             const on = d.aspects.includes(a);
@@ -198,7 +198,7 @@ export function AstrologySection() {
       </Card>
 
       <Card>
-        <CardHeader title="Planet & point visibility" description="Bodies shown on new charts and included in aspect calculations." />
+        <CardHeader title="Planet & Point Visibility" description="Bodies shown on new charts and included in aspect calculations." />
         <CardBody className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {PLANET_IDS.map((b) => (
             <label key={b} className={cn("flex cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-[13px] transition-colors", d.bodies.includes(b) ? "border-accent-200 bg-accent-50/50" : "border-line")}>
@@ -211,7 +211,7 @@ export function AstrologySection() {
         <CardFooter className="justify-between">
           {DATA_MODE === "demo" ? <SimulatedNote className="py-1.5">Calculations use the prototype&apos;s demonstration engine.</SimulatedNote> : <span className="text-[12px] text-muted">Calculated with Swiss Ephemeris on the server.</span>}
           <Button variant="ghost" size="sm" onClick={() => set({ bodies: [...PLANET_IDS], aspects: ["conjunction", "opposition", "trine", "square", "sextile", "quincunx"], orbs: { conjunction: 8, opposition: 8, trine: 7, square: 7, sextile: 5, quincunx: 3, semisextile: 2, semisquare: 2, sesquiquadrate: 2 } }, "Defaults restored")}>
-            <RotateCcw /> Restore defaults
+            <RotateCcw /> Restore Defaults
           </Button>
         </CardFooter>
       </Card>
@@ -231,14 +231,14 @@ function TimelineDefaultsCard() {
   };
   return (
     <Card>
-      <CardHeader title="Timeline defaults" description="Orbs, transiting planets and aspects the convergence timeline starts with." />
+      <CardHeader title="Timeline Defaults" description="Orbs, transiting planets and aspects the convergence timeline starts with." />
       <CardBody>
         <TimelineOptionsEditor value={t} onChange={(v) => set(v)} />
       </CardBody>
       <CardFooter className="justify-between">
         <span className="text-[12px] text-muted">Built-in defaults: 1° transits and directions, 3° lunations, 5° eclipses; Mars outward.</span>
         <Button variant="ghost" size="sm" disabled={sameTimeline(t, DEFAULT_TIMELINE)} onClick={() => set(DEFAULT_TIMELINE, "Timeline defaults restored")}>
-          <RotateCcw /> Restore defaults
+          <RotateCcw /> Restore Defaults
         </Button>
       </CardFooter>
     </Card>
@@ -267,7 +267,7 @@ function DemoNotifications() {
   const t = (k: keyof typeof v) => (c: boolean) => { setV({ ...v, [k]: c }); saved("Notification setting updated."); };
   return (
     <Card>
-      <CardHeader title={DATA_MODE === "demo" ? "Notifications" : "Your notifications"} description={DATA_MODE === "demo" ? "Email, in-app notifications and automatic reminders." : "Emails and reminders for you (coming soon)."} action={<SimulatedBadge />} />
+      <CardHeader title={DATA_MODE === "demo" ? "Notifications" : "Your Notifications"} description={DATA_MODE === "demo" ? "Email, in-app notifications and automatic reminders." : "Emails and reminders for you (coming soon)."} action={<SimulatedBadge />} />
       <CardBody className="divide-y divide-line py-1">
         <p className="eyebrow pb-1 pt-3">Email</p>
         <Row title="Daily digest" desc="Today's consultations, overdue tasks and pending deliveries."><Switch checked={v.emailDigest} onCheckedChange={t("emailDigest")} /></Row>
@@ -311,7 +311,7 @@ export function PasswordCard() {
   return (
     <Card>
       <CardHeader
-        title={hasPassword ? "Password" : "Password (optional)"}
+        title={hasPassword ? "Password" : "Password (Optional)"}
         description={hasPassword ? "You can sign in with your password or with an emailed link." : "You sign in with emailed links. Add a password if you’d also like to sign in with one."}
       />
       <CardBody className={cn("grid gap-4", hasPassword ? "sm:grid-cols-3" : "sm:grid-cols-2")}>
@@ -334,7 +334,7 @@ export function PasswordCard() {
             }
           }}
         >
-          {hasPassword ? "Update password" : "Add password"}
+          {hasPassword ? "Update Password" : "Add Password"}
         </Button>
       </CardFooter>
     </Card>
@@ -383,7 +383,7 @@ export function SessionsCard() {
   };
   return (
     <Card>
-      <CardHeader title="Active sessions" action={sessions.length > 1 ? <Button variant="secondary" size="xs" onClick={() => void endSession({ others: true })}>Sign out all others</Button> : undefined} />
+      <CardHeader title="Active Sessions" action={sessions.length > 1 ? <Button variant="secondary" size="xs" onClick={() => void endSession({ others: true })}>Sign Out All Others</Button> : undefined} />
       <ul className="divide-y divide-line">
         {sessions.map((x) => (
           <li key={x.id} className="flex items-center gap-3 px-5 py-3">
@@ -392,7 +392,7 @@ export function SessionsCard() {
               <p className="text-[13.5px] font-medium">{x.name} {x.current && <Badge tone="sage" className="ml-1">This device</Badge>}</p>
               <p className="text-[12px] text-muted">{x.where} · {x.when}</p>
             </div>
-            {!x.current && <Button variant="ghost" size="xs" onClick={() => void endSession({ id: x.id })}>Sign out</Button>}
+            {!x.current && <Button variant="ghost" size="xs" onClick={() => void endSession({ id: x.id })}>Sign Out</Button>}
           </li>
         ))}
       </ul>
@@ -408,7 +408,7 @@ export function SecuritySection() {
       <PasswordCard />
       {DATA_MODE === "demo" ? (
         <Card>
-          <CardHeader title="Two-factor authentication" description="Protect client records with an authenticator app." action={<SimulatedBadge />} />
+          <CardHeader title="Two-Factor Authentication" description="Protect client records with an authenticator app." action={<SimulatedBadge />} />
           <CardBody className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <ShieldCheck className={cn("size-8", twofa ? "text-sage-dark" : "text-muted")} />
@@ -425,7 +425,7 @@ export function SecuritySection() {
       )}
       <SessionsCard />
       <Card>
-        <CardHeader title="Data access" description="Who can see your practice data." />
+        <CardHeader title="Data Access" description="Who can see your practice data." />
         <CardBody className="divide-y divide-line py-1">
           <Row title="Client portal" desc="Clients see only readings, files and consultation summaries you share. Private observations are never shown."><Badge tone="sage">Enforced</Badge></Row>
           {DATA_MODE === "demo" && <Row title="AI assistance" desc="Chart questions are answered from your own records; data is not used to train models."><Badge tone="info">Practice-only</Badge></Row>}
@@ -442,7 +442,7 @@ function PlanCard() {
   const premium = plan === "premium";
   return (
     <Card>
-      <CardHeader title="Current plan" action={premium ? <PremiumBadge /> : undefined} />
+      <CardHeader title="Current Plan" action={premium ? <PremiumBadge /> : undefined} />
       <CardBody className="grid gap-5 md:grid-cols-2">
         <div>
           <p className="font-serif text-[26px]">{premium ? "Premium" : "Standard"}</p>
@@ -481,15 +481,15 @@ export function SubscriptionSection() {
       {DATA_MODE === "server" && <PlanCard />}
       {DATA_MODE === "demo" && (
       <Card>
-        <CardHeader title="Current plan" action={<SimulatedBadge label="Placeholder plan" />} />
+        <CardHeader title="Current Plan" action={<SimulatedBadge label="Placeholder Plan" />} />
         <CardBody className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="font-serif text-[26px]">Professional</p>
             <p className="text-[13px] text-muted">Pricing and plan limits are not yet finalised. Figures shown are placeholders.</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="secondary" size="sm" onClick={() => router.push("/pricing")}>Compare plans</Button>
-            <Button size="sm" disabled>Change plan</Button>
+            <Button variant="secondary" size="sm" onClick={() => router.push("/pricing")}>Compare Plans</Button>
+            <Button size="sm" disabled>Change Plan</Button>
           </div>
         </CardBody>
       </Card>
@@ -552,13 +552,13 @@ export function DataSection() {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader title="Import & export" />
+        <CardHeader title="Import & Export" />
         <CardBody className="divide-y divide-line py-1">
           <Row title="Export all practice data" desc="Clients, people, charts, observations, consultations, tasks and delivery records (JSON).">
             <Button variant="secondary" size="sm" onClick={exportAll}><Download /> Export</Button>
           </Row>
           <Row title="Import clients" desc="CSV or exports from other astrology software.">
-            <Button variant="secondary" size="sm" onClick={() => router.push("/app/clients")}><Upload /> Go to import</Button>
+            <Button variant="secondary" size="sm" onClick={() => router.push("/app/clients")}><Upload /> Go to Import</Button>
           </Row>
         </CardBody>
       </Card>
@@ -581,28 +581,28 @@ export function DataSection() {
       )}
       {DATA_MODE === "demo" ? (
         <Card>
-          <CardHeader title="Prototype data" description="Restore the original demonstration dataset." />
+          <CardHeader title="Prototype Data" description="Restore the original demonstration dataset." />
           <CardBody className="flex items-center justify-between gap-4">
             <p className="text-[13px] text-muted">Removes clients, charts, observations and deliveries you created while exploring.</p>
-            <Button variant="secondary" size="sm" onClick={s.resetDemo}><RotateCcw /> Reset demo data</Button>
+            <Button variant="secondary" size="sm" onClick={s.resetDemo}><RotateCcw /> Reset Demo Data</Button>
           </CardBody>
         </Card>
       ) : (
         <Card>
-          <CardHeader title="Sample data" description="Explore with example clients, or start again with an empty practice." />
+          <CardHeader title="Sample Data" description="Explore with example clients, or start again with an empty practice." />
           <CardBody className="divide-y divide-line py-1">
             <Row title="Add sample data" desc="12 example clients with charts, consultations, observations and readings, dated around today.">
-              <Button variant="secondary" size="sm" onClick={async () => { try { await loadSampleData(); s.toast("Sample data added", undefined, "success"); } catch (e) { s.toast("Couldn’t add sample data", (e as Error).message, "error"); } }}><Database /> Add sample data</Button>
+              <Button variant="secondary" size="sm" onClick={async () => { try { await loadSampleData(); s.toast("Sample data added", undefined, "success"); } catch (e) { s.toast("Couldn’t add sample data", (e as Error).message, "error"); } }}><Database /> Add Sample Data</Button>
             </Row>
             <Row title="Delete all client records" desc="Removes every client, chart, observation, consultation, task and delivery, and all client portal logins. Your account stays.">
-              <Button variant="secondary" size="sm" onClick={() => setClear(true)}><Trash2 /> Delete records</Button>
+              <Button variant="secondary" size="sm" onClick={() => setClear(true)}><Trash2 /> Delete Records</Button>
             </Row>
           </CardBody>
         </Card>
       )}
       <Dialog open={clear} onOpenChange={(o) => { setClear(o); setConfirm(""); }}>
         <DialogContent
-          title="Delete all client records?"
+          title="Delete All Client Records?"
           description="This permanently removes every client record in your practice. Your account and settings stay."
           size="sm"
           footer={
@@ -623,7 +623,7 @@ export function DataSection() {
                   }
                 }}
               >
-                Delete permanently
+                Delete Permanently
               </Button>
             </>
           }
@@ -635,12 +635,12 @@ export function DataSection() {
         <CardHeader title={<span className="text-danger">Delete account</span>} description="Permanently delete your practice and all client records." />
         <CardBody className="flex items-center justify-between gap-4">
           <p className="text-[13px] text-muted">We recommend exporting your data first. This cannot be undone.</p>
-          <Button variant="danger" size="sm" onClick={() => setDel(true)}><Trash2 /> Delete account</Button>
+          <Button variant="danger" size="sm" onClick={() => setDel(true)}><Trash2 /> Delete Account</Button>
         </CardBody>
       </Card>
       <Dialog open={del} onOpenChange={(o) => { setDel(o); setConfirm(""); }}>
         <DialogContent
-          title="Delete your account?"
+          title="Delete Your Account?"
           description="All clients, charts, observations, recordings and delivered readings will be permanently removed."
           size="sm"
           footer={
@@ -659,7 +659,7 @@ export function DataSection() {
                   }
                 }}
               >
-                Delete permanently
+                Delete Permanently
               </Button>
             </>
           }

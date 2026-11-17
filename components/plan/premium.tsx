@@ -31,14 +31,14 @@ export function PremiumGate({ feature, description, className }: { feature: stri
       <div className="grid gap-6 p-6 md:grid-cols-[1fr_260px] md:p-8">
         <div>
           <PremiumBadge locked />
-          <h2 className="mt-3 font-serif text-[26px] leading-tight text-ink">{feature} is part of Premium</h2>
+          <h2 className="mt-3 font-serif text-[26px] leading-tight text-ink">{feature} Is Part of Premium</h2>
           <p className="mt-2 max-w-xl text-[14px] text-muted">
             {description ?? "Your plan includes natal and synastry charts with their aspects and grids, and every practice tool. Premium adds the timing techniques and the convergence timeline."}
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
-            <ButtonLink href="/app/settings?section=subscription">See your plan</ButtonLink>
+            <ButtonLink href="/app/settings?section=subscription">See Your Plan</ButtonLink>
             <ButtonLink href="/contact" variant="secondary">
-              Ask about Premium
+              Ask About Premium
             </ButtonLink>
           </div>
           <p className="mt-3 text-[12px] text-muted">Online upgrades arrive with billing. During the beta, we can switch Premium on for you.</p>

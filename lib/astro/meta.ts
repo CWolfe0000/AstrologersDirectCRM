@@ -44,8 +44,8 @@ export const ASPECTS: Record<AspectId, { name: string; glyph: string; angle: num
   square: { name: "Square", glyph: "□", angle: 90, nature: "hard", defaultOrb: 7 },
   sextile: { name: "Sextile", glyph: "⚹", angle: 60, nature: "soft", defaultOrb: 5 },
   quincunx: { name: "Quincunx", glyph: "⚻", angle: 150, nature: "minor", defaultOrb: 3 },
-  semisextile: { name: "Semi-sextile", glyph: "⚺", angle: 30, nature: "minor", defaultOrb: 2 },
-  semisquare: { name: "Semi-square", glyph: "∠", angle: 45, nature: "minor", defaultOrb: 2 },
+  semisextile: { name: "Semi-Sextile", glyph: "⚺", angle: 30, nature: "minor", defaultOrb: 2 },
+  semisquare: { name: "Semi-Square", glyph: "∠", angle: 45, nature: "minor", defaultOrb: 2 },
   sesquiquadrate: { name: "Sesquiquadrate", glyph: "⚼", angle: 135, nature: "minor", defaultOrb: 2 },
 };
 

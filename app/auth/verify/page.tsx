@@ -55,7 +55,7 @@ function Verify() {
         ))}
       </div>
       <Button size="lg" className="mt-6 w-full" onClick={verify} disabled={loading}>
-        {loading && <Loader2 className="animate-spin" />} Verify and open my workspace
+        {loading && <Loader2 className="animate-spin" />} Verify and Open My Workspace
       </Button>
       <p className="mt-3 text-center text-[12px] text-muted">Prototype: any code (or none) is accepted.</p>
       <p className="mt-8 text-center text-[13.5px] text-muted">

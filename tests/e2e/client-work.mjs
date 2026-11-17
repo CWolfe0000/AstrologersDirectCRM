@@ -104,8 +104,8 @@ await cpage.waitForURL(/\/portal\/work\//);
 await cpage.getByLabel("Add a journal entry").fill("My grandmother's kitchen in Porto.");
 await cpage.getByRole("button", { name: "Add a journal entry" }).click();
 await cpage.getByText("My grandmother's kitchen in Porto.").waitFor();
-await cpage.getByRole("button", { name: "Mark as done" }).click();
-await cpage.getByRole("button", { name: "Not done yet" }).waitFor({ timeout: 10000 }).catch(async (e) => { await cpage.screenshot({ path: "/tmp/claude-0/-home-user/b88cb96c-5176-5059-96be-13468fee106f/scratchpad/work-fail.png", fullPage: true }); throw e; });
+await cpage.getByRole("button", { name: "Mark as Done" }).click();
+await cpage.getByRole("button", { name: "Not Done Yet" }).waitFor({ timeout: 10000 }).catch(async (e) => { await cpage.screenshot({ path: "/tmp/claude-0/-home-user/b88cb96c-5176-5059-96be-13468fee106f/scratchpad/work-fail.png", fullPage: true }); throw e; });
 await cpage.waitForTimeout(2500);
 
 step("practitioner sees the response, the done mark and a notification");

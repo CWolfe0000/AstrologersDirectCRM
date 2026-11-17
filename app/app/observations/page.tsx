@@ -236,9 +236,9 @@ function Observations() {
     selected === "new" && !newInitial ? (
       <EmptyState
         icon={<NotebookPen />}
-        title="Add a client first"
+        title="Add a Client First"
         body="Every observation belongs to a chart. Add a client and their natal chart, then write your first observation."
-        action={<Button size="sm" onClick={() => router.push("/app/clients/new")}><Plus /> Add client</Button>}
+        action={<Button size="sm" onClick={() => router.push("/app/clients/new")}><Plus /> Add Client</Button>}
       />
     ) : selected === "new" && newInitial ? (
       <ObservationEditor key={`new-${newKey}`} initial={newInitial} onCreated={(id) => {
@@ -248,7 +248,7 @@ function Observations() {
     ) : selected && observations.some((o) => o.id === selected) ? (
       <ObservationEditor key={selected} observationId={selected} onDeleted={() => { setSelected(null); setMobileDetail(false); }} />
     ) : (
-      <EmptyState icon={<NotebookPen />} title={hydrated || !selected ? "Select an observation" : "Loading…"} body="Choose an observation from the list, or start a new one." action={<Button size="sm" onClick={startNew}><Plus /> New observation</Button>} />
+      <EmptyState icon={<NotebookPen />} title={hydrated || !selected ? "Select an Observation" : "Loading…"} body="Choose an observation from the list, or start a new one." action={<Button size="sm" onClick={startNew}><Plus /> New Observation</Button>} />
     );
 
   return (
@@ -259,7 +259,7 @@ function Observations() {
         breadcrumbs={[{ label: "Dashboard", href: "/app" }, { label: "Notes & Observations" }]}
         actions={
           <Button onClick={startNew}>
-            <Plus /> New observation
+            <Plus /> New Observation
           </Button>
         }
         className={cn(mobileDetail && "max-lg:hidden")}
@@ -307,7 +307,7 @@ function Observations() {
           <div className="space-y-2">
             {results.length === 0 && (
               <div className="rounded-xl border border-line bg-surface">
-                <EmptyState icon={<NotebookPen />} title="No observations found" body="Adjust the filters or search terms." />
+                <EmptyState icon={<NotebookPen />} title="No Observations Found" body="Adjust the filters or search terms." />
               </div>
             )}
             {results.map((o) => {

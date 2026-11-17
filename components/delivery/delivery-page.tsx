@@ -73,14 +73,14 @@ export function DeliveryPage() {
         breadcrumbs={[{ label: "Dashboard", href: "/app" }, { label: "Reading Delivery" }]}
         title="Reading Delivery"
         description="Deliver finished readings, recordings and links securely to each client's private portal."
-        actions={<Button onClick={() => setNewOpen(true)}><Send /> New delivery</Button>}
+        actions={<Button onClick={() => setNewOpen(true)}><Send /> New Delivery</Button>}
       />
 
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Ready to send" value={readings.filter((r) => r.status === "ready").length} sub="Prepared and waiting" icon={<Inbox />} />
+        <StatCard label="Ready to Send" value={readings.filter((r) => r.status === "ready").length} sub="Prepared and waiting" icon={<Inbox />} />
         <StatCard label="Drafts" value={readings.filter((r) => r.status === "draft").length} sub="Need a file or a final check" icon={<FileClock />} />
-        <StatCard label="Delivered · 30 days" value={delivered30} sub={`${readings.filter((r) => r.status === "delivered").length} all time`} icon={<CheckCircle2 />} />
-        <StatCard label="Opened by clients" value={`${openRate}%`} sub="Of delivered readings" icon={<Eye />} />
+        <StatCard label="Delivered · 30 Days" value={delivered30} sub={`${readings.filter((r) => r.status === "delivered").length} all time`} icon={<CheckCircle2 />} />
+        <StatCard label="Opened by Clients" value={`${openRate}%`} sub="Of delivered readings" icon={<Eye />} />
       </div>
 
       <Card className="overflow-hidden">
@@ -104,7 +104,7 @@ export function DeliveryPage() {
           <div className="pb-3 md:w-64"><SearchInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search readings or clients…" /></div>
         </div>
         {list.length === 0 ? (
-          <EmptyState icon={<current.icon />} title={`No ${current.label.toLowerCase()}`} body="Deliveries move through these queues as you prepare and send them." action={<Button size="sm" variant="secondary" onClick={() => setNewOpen(true)}>New delivery</Button>} />
+          <EmptyState icon={<current.icon />} title={`No ${current.label.toLowerCase()}`} body="Deliveries move through these queues as you prepare and send them." action={<Button size="sm" variant="secondary" onClick={() => setNewOpen(true)}>New Delivery</Button>} />
         ) : (
           <ul className="divide-y divide-line">
             {list.map((r) => {
@@ -142,7 +142,7 @@ export function DeliveryPage() {
       </SimulatedNote>
 
       <Card className="mt-6 overflow-hidden">
-        <CardHeader title="Delivery history" description="Every reading shared with clients, with access and notification status." />
+        <CardHeader title="Delivery History" description="Every reading shared with clients, with access and notification status." />
         {/* desktop table */}
         <div className="hidden overflow-x-auto md:block">
           <table className="w-full text-left text-[13px]">

@@ -26,7 +26,7 @@ function SignupForm() {
         </p>
       )}
       <Button variant="secondary" className="w-full" onClick={() => router.push("/auth/verify")}>
-        <GoogleMark /> Sign up with Google
+        <GoogleMark /> Sign Up with Google
       </Button>
       <OrDivider />
       <form
@@ -64,7 +64,7 @@ function SignupForm() {
         </Field>
         <Checkbox required label={<span className="text-[13px] text-muted">I agree to the <Link href="/legal/terms" className="text-accent underline">Terms</Link> and <Link href="/legal/privacy" className="text-accent underline">Privacy Policy</Link>.</span>} />
         <Button type="submit" size="lg" className="w-full" disabled={loading}>
-          {loading && <Loader2 className="animate-spin" />} Create account
+          {loading && <Loader2 className="animate-spin" />} Create Account
         </Button>
       </form>
       <p className="mt-6 text-center text-[13.5px] text-muted">

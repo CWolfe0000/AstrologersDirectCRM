@@ -38,7 +38,7 @@ export default function ReadingDetail() {
       <EmptyState
         className="rounded-2xl border border-line bg-surface"
         icon={<Lock />}
-        title="This reading isn't available"
+        title="This Reading Isn't Available"
         body="It may not have been shared with you yet, or the link has expired."
         action={<Link href="/portal/readings" className="text-sm font-medium text-accent hover:underline">Back to My Readings</Link>}
       />
@@ -167,7 +167,7 @@ export default function ReadingDetail() {
 
       {consultation && (
         <section className="mt-8">
-          <h2 className="mb-3 text-[13px] font-semibold text-ink">Related consultation</h2>
+          <h2 className="mb-3 text-[13px] font-semibold text-ink">Related Consultation</h2>
           <Link href={`/portal/consultations#${consultation.id}`} className="flex items-center gap-4 rounded-2xl border border-line bg-surface p-4 hover:border-line-strong">
             <span className="flex size-11 items-center justify-center rounded-xl bg-canvas-2 text-ink-3"><CalendarDays className="size-5" /></span>
             <div className="min-w-0">

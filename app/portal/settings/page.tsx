@@ -90,7 +90,7 @@ export default function PortalSettings() {
       </div>
 
       <Card>
-        <CardHeader title="Your details" description={`Shared with ${names}.`} />
+        <CardHeader title="Your Details" description={`Shared with ${names}.`} />
         <CardBody>
           <form onSubmit={saveProfile} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
@@ -99,7 +99,7 @@ export default function PortalSettings() {
             </div>
             <Field label="Email" htmlFor="pe" hint={DATA_MODE === "demo" ? "Used to sign in and to receive notifications." : `Used to sign in. To change it, ask ${one ? firsts : "one of your astrologers"}.`}><Input id="pe" type="email" value={email} readOnly={DATA_MODE !== "demo"} onChange={(e) => setEmail(e.target.value)} className={DATA_MODE === "demo" ? "h-11 sm:h-9" : "h-11 bg-canvas-2 text-muted sm:h-9"} /></Field>
             <p className="text-[12.5px] text-muted">Birth details are managed by your astrologer. To correct them, send {one ? firsts : "your astrologer"} a message.</p>
-            <div className="flex justify-end"><Button type="submit">Save changes</Button></div>
+            <div className="flex justify-end"><Button type="submit">Save Changes</Button></div>
           </form>
         </CardBody>
       </Card>
@@ -107,7 +107,7 @@ export default function PortalSettings() {
       {(DATA_MODE === "demo" || !preview) && <PasswordCard />}
 
       <Card>
-        <CardHeader title="Emails we send you" />
+        <CardHeader title="Emails We Send You" />
         <CardBody className="space-y-2 text-[13.5px] leading-relaxed text-ink-3">
           <p>We email you when {one ? firsts : "an astrologer"} shares a reading, recording or something to work on between sessions, and for any session reminders or gentle reminders they’ve set up for you.</p>
           <p className="text-muted">These go to {client?.email || "your email address"}. They only ever come from your astrologer’s activity: there’s no newsletter or marketing.</p>
@@ -150,19 +150,19 @@ export default function PortalSettings() {
           </p>
           <p>Your materials are never shared with other clients. You can download a copy of everything in your portal, or close your account, at any time.</p>
           <div className="flex flex-wrap gap-2 pt-1">
-            <Button variant="secondary" onClick={downloadData}><Download /> Download my data</Button>
-            {!preview && <Button variant="ghost" className="text-danger hover:bg-danger-50" onClick={() => setClosing(true)}><Trash2 /> Close my portal account</Button>}
+            <Button variant="secondary" onClick={downloadData}><Download /> Download My Data</Button>
+            {!preview && <Button variant="ghost" className="text-danger hover:bg-danger-50" onClick={() => setClosing(true)}><Trash2 /> Close My Portal Account</Button>}
           </div>
           <Dialog open={closing} onOpenChange={setClosing}>
             {closing && (
               <DialogContent
                 size="sm"
-                title="Close your portal account?"
+                title="Close Your Portal Account?"
                 description={`You’ll be signed out and your portal login deleted. ${one ? firsts : "Each of your astrologers"} will be told by email.`}
                 footer={
                   <>
                     <Button variant="ghost" onClick={() => setClosing(false)}>Cancel</Button>
-                    <Button variant="danger" disabled={confirmText !== "CLOSE" || closingBusy} onClick={closeAccount}>Close my account</Button>
+                    <Button variant="danger" disabled={confirmText !== "CLOSE" || closingBusy} onClick={closeAccount}>Close My Account</Button>
                   </>
                 }
               >

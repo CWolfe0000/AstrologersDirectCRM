@@ -28,7 +28,7 @@ export default function WorkDetail() {
       <EmptyState
         className="rounded-2xl border border-line bg-surface"
         icon={<Lock />}
-        title="This isn’t available"
+        title="This Isn’t Available"
         body="It may not have been shared with you, or it has been archived."
         action={<Link href="/portal/work" className="text-sm font-medium text-accent hover:underline">Back to Between Sessions</Link>}
       />
@@ -68,7 +68,7 @@ export default function WorkDetail() {
               </span>
               {st.doneBy === "client" && (
                 <Button variant="ghost" size="sm" onClick={() => respond(work.id, "undone")}>
-                  <RotateCcw /> Not done yet
+                  <RotateCcw /> Not Done Yet
                 </Button>
               )}
             </>
@@ -80,7 +80,7 @@ export default function WorkDetail() {
                 toast("Marked as done", `${who} will see that you’ve finished.`, "success");
               }}
             >
-              <Check /> Mark as done
+              <Check /> Mark as Done
             </Button>
           )}
         </div>

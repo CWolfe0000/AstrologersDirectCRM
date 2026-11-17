@@ -364,7 +364,7 @@ export function StudioPage() {
         <div className="min-w-0 space-y-6">
           {/* Setup */}
           <Card>
-            <CardHeader title="Recording setup" description={locked ? `${personName(person)} · ${chart?.title ?? "No chart"} · ${m.label}` : "Choose who and what you're recording."} />
+            <CardHeader title="Recording Setup" description={locked ? `${personName(person)} · ${chart?.title ?? "No chart"} · ${m.label}` : "Choose who and what you're recording."} />
             {!locked && (
               <CardBody className="space-y-5">
                 <div className="grid gap-4 md:grid-cols-3">
@@ -414,7 +414,7 @@ export function StudioPage() {
               <div className="flex flex-col gap-4 border-t border-line px-4 py-4 2xl:flex-row 2xl:items-center">
                 <div className="flex items-center gap-3">
                   {phase === "setup" && (
-                    <Button size="lg" onClick={start} className="bg-danger hover:bg-danger/90"><Circle className="fill-current" /> Start recording</Button>
+                    <Button size="lg" onClick={start} className="bg-danger hover:bg-danger/90"><Circle className="fill-current" /> Start Recording</Button>
                   )}
                   {phase === "recording" && <Button size="lg" variant="secondary" onClick={pause}><Pause /> Pause</Button>}
                   {phase === "paused" && <Button size="lg" variant="secondary" onClick={resume}><Play /> Resume</Button>}
@@ -466,7 +466,7 @@ export function StudioPage() {
           {/* Review */}
           {phase === "review" && (
             <Card>
-              <CardHeader title="Review recording" description={`${fmtDuration(elapsed)} · ${m.label} · ${personName(person)}`} action={blob ? <Badge tone="sage">Recorded in browser</Badge> : <SimulatedBadge />} />
+              <CardHeader title="Review Recording" description={`${fmtDuration(elapsed)} · ${m.label} · ${personName(person)}`} action={blob ? <Badge tone="sage">Recorded in browser</Badge> : <SimulatedBadge />} />
               <CardBody className="space-y-5">
                 {blob ? (
                   blob.type.startsWith("video") ? (
@@ -499,7 +499,7 @@ export function StudioPage() {
                   <Button variant="ghost" className="text-danger hover:bg-danger-50" onClick={discard}><Trash2 /> Discard</Button>
                   <div className="flex flex-col gap-2 sm:ml-auto sm:flex-row">
                     <Button variant="secondary" disabled={uploadPct !== null} onClick={() => void save()}><Save /> {uploadPct !== null ? `Uploading ${Math.round(uploadPct)}%` : savedId ? "Save changes" : "Save to client record"}</Button>
-                    <Button disabled={uploadPct !== null} onClick={() => void deliver()}><Send /> Deliver to client portal</Button>
+                    <Button disabled={uploadPct !== null} onClick={() => void deliver()}><Send /> Deliver to Client Portal</Button>
                   </div>
                 </div>
               </CardBody>
@@ -513,9 +513,9 @@ export function StudioPage() {
                 <h2 className="mt-4 font-serif text-[26px]">Delivered to {person?.firstName}</h2>
                 <p className="mt-1 max-w-md text-[13.5px] text-muted">“{title}” was saved to {personName(person)}'s record and shared in their client portal.</p>
                 <div className="mt-5 flex flex-wrap justify-center gap-2">
-                  {deliveredReadingId && <ButtonLink variant="secondary" href={`/app/delivery?id=${deliveredReadingId}`}>View delivery</ButtonLink>}
-                  {clientId === "c1" && deliveredReadingId && <ButtonLink href={`/portal/readings/${deliveredReadingId}`}><ExternalLink /> Open in client portal</ButtonLink>}
-                  <Button variant="ghost" onClick={reset}><RotateCcw /> Record another</Button>
+                  {deliveredReadingId && <ButtonLink variant="secondary" href={`/app/delivery?id=${deliveredReadingId}`}>View Delivery</ButtonLink>}
+                  {clientId === "c1" && deliveredReadingId && <ButtonLink href={`/portal/readings/${deliveredReadingId}`}><ExternalLink /> Open in Client Portal</ButtonLink>}
+                  <Button variant="ghost" onClick={reset}><RotateCcw /> Record Another</Button>
                 </div>
                 {clientId !== "c1" && <SimulatedNote className="mt-5 max-w-md text-left">The portal preview is signed in as Amelia Hart — record for her to follow the reading through to the client side.</SimulatedNote>}
               </CardBody>
@@ -526,10 +526,10 @@ export function StudioPage() {
         {/* Chart navigation panel */}
         <div className="min-w-0 space-y-6">
           <Card className="xl:sticky xl:top-24">
-            <CardHeader title="Client chart" description={live ? "Navigate freely — your recording continues." : "Navigate the chart while you record."} action={<EngineNotice compact />} />
+            <CardHeader title="Client Chart" description={live ? "Navigate freely — your recording continues." : "Navigate the chart while you record."} action={<EngineNotice compact />} />
             <CardBody className="space-y-4">
               {clientCharts.length === 0 ? (
-                <EmptyState title="No charts for this client" body="Create a chart to walk through it while recording." action={<ButtonLink size="sm" variant="secondary" href={`/app/charts/new?client=${clientId}`}>Create chart</ButtonLink>} className="py-6" />
+                <EmptyState title="No Charts for This Client" body="Create a chart to walk through it while recording." action={<ButtonLink size="sm" variant="secondary" href={`/app/charts/new?client=${clientId}`}>Create Chart</ButtonLink>} className="py-6" />
               ) : (
                 <>
                   <div className="no-scrollbar -mx-1 flex gap-1.5 overflow-x-auto px-1">
@@ -602,7 +602,7 @@ export function StudioPage() {
                 </div>
                 <StatusBadge status={r.status} />
                 {r.status === "delivered" && r.readingId ? (
-                  <ButtonLink size="xs" variant="secondary" href={`/app/delivery?id=${r.readingId}`}>View delivery</ButtonLink>
+                  <ButtonLink size="xs" variant="secondary" href={`/app/delivery?id=${r.readingId}`}>View Delivery</ButtonLink>
                 ) : (
                   <Button
                     size="xs"

@@ -36,7 +36,7 @@ await page.evaluate(() => fetch("/api/v1/sample-data", { method: "POST", headers
 
 step("schedule a consultation");
 await page.goto(BASE + "/app/consultations?new=1&client=c1");
-await page.getByRole("button", { name: "Schedule consultation" }).click();
+await page.getByRole("button", { name: "Schedule Consultation" }).click();
 await saved();
 assert.ok((await state()).consultations.length > 26, "consultation saved");
 
@@ -45,7 +45,7 @@ await page.goto(BASE + "/app/tasks?new=1&client=c2");
 const dlg = page.getByRole("dialog");
 await dlg.locator("input").first().fill(`Follow-up ${stamp}`);
 await dlg.locator("textarea").last().fill("First item\nSecond item");
-await page.getByRole("button", { name: "Create task" }).click();
+await page.getByRole("button", { name: "Create Task" }).click();
 await saved();
 assert.ok((await state()).tasks.some((t) => t.title === `Follow-up ${stamp}` && t.checklist.length === 2), "task saved");
 
@@ -73,8 +73,8 @@ for (let i = 0; i < 4; i++) {
 await d.getByPlaceholder("e.g. Solar Return 2027 — Relocated to Lisbon").fill(`Link reading ${stamp}`);
 await d.getByRole("tab", { name: /External link/ }).click().catch(async () => d.getByText("External link").click());
 await d.getByPlaceholder("https://").fill("https://example.com/reading");
-for (let i = 0; i < 4 && !(await d.getByRole("button", { name: /Send to client portal/ }).count()); i++) await d.getByRole("button", { name: /Continue/ }).click();
-await d.getByRole("button", { name: /Send to client portal/ }).click();
+for (let i = 0; i < 4 && !(await d.getByRole("button", { name: /Send to Client Portal/ }).count()); i++) await d.getByRole("button", { name: /Continue/ }).click();
+await d.getByRole("button", { name: /Send to Client Portal/ }).click();
 await saved();
 const s = await state();
 const r = s.readings.find((x) => x.title === `Link reading ${stamp}`);

@@ -206,7 +206,7 @@ export function ChartControls({
         ) : (
           <div className="flex gap-2">
             <Button size="sm" className="flex-1" onClick={() => setNaming(true)}>
-              <Bookmark /> Save as configuration
+              <Bookmark /> Save as Configuration
             </Button>
             <Button variant="secondary" size="icon-sm" onClick={onReset} disabled={!dirty} title="Reset to saved settings" aria-label="Reset to saved settings">
               <RotateCcw />

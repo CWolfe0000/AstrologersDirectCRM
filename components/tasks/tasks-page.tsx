@@ -101,7 +101,7 @@ export function TasksPage() {
         breadcrumbs={[{ label: "Dashboard", href: "/app" }, { label: "Tasks & Follow-Ups" }]}
         title="Tasks & Follow-Ups"
         description="Preparation, follow-ups and practice admin — linked to the clients and consultations they belong to."
-        actions={<Button onClick={() => setNewOpen(true)}><ListPlus /> New task</Button>}
+        actions={<Button onClick={() => setNewOpen(true)}><ListPlus /> New Task</Button>}
       />
 
       <div className="grid gap-6 lg:grid-cols-[210px_minmax(0,1fr)] min-[1180px]:grid-cols-[210px_minmax(0,1fr)_400px]">
@@ -122,7 +122,7 @@ export function TasksPage() {
               <p className="text-[12px] text-muted">{list.length} {list.length === 1 ? "task" : "tasks"}</p>
             </div>
             {list.length === 0 ? (
-              <EmptyState icon={<ListChecks />} title="Nothing here" body={view === "overdue" ? "You're all caught up." : "No tasks match these filters."} />
+              <EmptyState icon={<ListChecks />} title="Nothing Here" body={view === "overdue" ? "You're all caught up." : "No tasks match these filters."} />
             ) : (
               <ul className="divide-y divide-line">
                 {list.map((t) => {
@@ -171,7 +171,7 @@ export function TasksPage() {
                   </div>
                 </>
               ) : (
-                <EmptyState icon={<ListChecks />} title="Select a task" body="Open a task to edit details, work through its checklist and see its history." />
+                <EmptyState icon={<ListChecks />} title="Select a Task" body="Open a task to edit details, work through its checklist and see its history." />
               )}
             </Card>
           </div>

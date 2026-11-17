@@ -55,7 +55,7 @@ export default function MyReadings() {
         ))}
       </div>
       {list.length === 0 && (
-        <EmptyState className="mt-4 rounded-2xl border border-dashed border-line bg-surface" icon={<BookOpen />} title="No readings match" body="Try a different search or filter." />
+        <EmptyState className="mt-4 rounded-2xl border border-dashed border-line bg-surface" icon={<BookOpen />} title="No Readings Match" body="Try a different search or filter." />
       )}
     </div>
   );

@@ -91,13 +91,13 @@ export function NewConsultationDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        title="New consultation"
+        title="New Consultation"
         description="Schedule a session and link the charts you'll work from."
         size="lg"
         footer={
           <>
             <Button variant="secondary" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button onClick={submit} disabled={!clientId || !urlOk}>Schedule consultation</Button>
+            <Button onClick={submit} disabled={!clientId || !urlOk}>Schedule Consultation</Button>
           </>
         }
       >

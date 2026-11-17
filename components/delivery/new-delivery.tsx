@@ -199,13 +199,13 @@ export function NewDeliveryDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        title={done ? (done.status === "delivered" ? "Reading delivered" : "Draft saved") : "New delivery"}
+        title={done ? (done.status === "delivered" ? "Reading Delivered" : "Draft Saved") : "New Delivery"}
         description={done ? undefined : "Upload a finished reading or recording, or share a link. Nothing is written here — deliver what you've already prepared."}
         size="xl"
         footer={
           done ? (
             <>
-              <Button variant="secondary" onClick={() => { onOpenChange(false); onDone?.(done); }}>View delivery</Button>
+              <Button variant="secondary" onClick={() => { onOpenChange(false); onDone?.(done); }}>View Delivery</Button>
               {done.status === "delivered" && (DATA_MODE === "demo" ? done.clientId === "c1" : true) && (
                 <ButtonLink href={DATA_MODE === "demo" ? `/portal/readings/${done.id}` : `/portal/readings/${done.id}?as=${done.clientId}`}><ExternalLink /> {DATA_MODE === "demo" ? "Open in client portal" : "Preview in their portal"}</ButtonLink>
               )}
@@ -217,8 +217,8 @@ export function NewDeliveryDialog({
                 <Button onClick={() => setStep((s) => s + 1)} disabled={!canNext}>Continue <ArrowRight /></Button>
               ) : (
                 <>
-                  <Button variant="secondary" onClick={() => finish(false)}><Save /> Save as draft</Button>
-                  <Button onClick={() => finish(true)}><Send /> Send to client portal</Button>
+                  <Button variant="secondary" onClick={() => finish(false)}><Save /> Save as Draft</Button>
+                  <Button onClick={() => finish(true)}><Send /> Send to Client Portal</Button>
                 </>
               )}
             </>
@@ -354,8 +354,8 @@ export function NewDeliveryDialog({
                       <p className="mt-3 text-[14px] font-medium">Drop a PDF, audio, video or document here</p>
                       <p className="mt-1 text-[12.5px] text-muted">PDF, DOCX, M4A, MP3, MP4, MOV · up to 1.5 GB per file</p>
                       <div className="mt-4 flex flex-wrap justify-center gap-2">
-                        <Button variant="secondary" size="sm" onClick={() => inputRef.current?.click()}>Choose file</Button>
-                        {DATA_MODE === "demo" && <Button variant="ghost" size="sm" onClick={useSample}><Sparkles /> Use a sample PDF</Button>}
+                        <Button variant="secondary" size="sm" onClick={() => inputRef.current?.click()}>Choose File</Button>
+                        {DATA_MODE === "demo" && <Button variant="ghost" size="sm" onClick={useSample}><Sparkles /> Use a Sample PDF</Button>}
                       </div>
                       <input ref={inputRef} type="file" className="hidden" accept=".pdf,.doc,.docx,audio/*,video/*" onChange={(e) => onFile(e.target.files?.[0])} />
                     </div>

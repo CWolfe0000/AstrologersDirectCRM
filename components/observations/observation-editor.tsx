@@ -314,7 +314,7 @@ export function ObservationEditor({ observationId, initial, lockChart, onCreated
                   <p className="mb-1 text-[11px] font-medium uppercase tracking-wider text-muted">Text before this change</p>
                   <p className="line-clamp-4 text-[12.5px] text-ink-3">{stripHtml(r.body)}</p>
                   <Button variant="secondary" size="xs" className="mt-2" onClick={() => restore(r.body!, r.at)}>
-                    <RotateCcw /> Restore this text
+                    <RotateCcw /> Restore This Text
                   </Button>
                 </div>
               )}
@@ -349,7 +349,7 @@ function ServerVersions({ observationId, onRestore }: { observationId: string; o
             <p className="text-[12px] text-muted">{fmtDate(v.at)} · {fmtTime(v.at)}</p>
             <p className="mt-1 line-clamp-3 text-[12.5px] text-ink-3">{stripHtml(v.body) || "(empty)"}</p>
             <Button variant="secondary" size="xs" className="mt-2" onClick={() => onRestore(v.body, v.at)}>
-              <RotateCcw /> Restore this version
+              <RotateCcw /> Restore This Version
             </Button>
           </li>
         ))}

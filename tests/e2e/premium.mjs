@@ -50,13 +50,13 @@ await page.goto(BASE + "/app/charts/ch3");
 await page.locator("svg").filter({ hasText: "MC" }).first().waitFor({ timeout: 20000 });
 for (const id of ["ch2", "ch4"]) {
   await page.goto(BASE + "/app/charts/" + id);
-  await page.getByRole("heading", { name: /is part of Premium/ }).waitFor({ timeout: 20000 });
+  await page.getByRole("heading", { name: /Is Part of Premium/ }).waitFor({ timeout: 20000 });
 }
 await page.goto(BASE + "/app/timeline?client=c1");
-await page.getByRole("heading", { name: /The convergence timeline is part of Premium/ }).waitFor();
+await page.getByRole("heading", { name: /The convergence timeline Is Part of Premium/ }).waitFor();
 await page.goto(BASE + "/app/charts/new?type=transits&client=c1");
 await page.getByText(/Transits charts are part of Premium/).waitFor();
-assert.equal(await page.getByRole("button", { name: /Save & open workspace/ }).isDisabled(), true);
+assert.equal(await page.getByRole("button", { name: /Save & Open Workspace/ }).isDisabled(), true);
 await page.goto(BASE + "/app/settings?section=subscription");
 await page.getByText("Standard", { exact: true }).waitFor();
 
@@ -64,7 +64,7 @@ step("Premium unlocks them");
 assert.match(setPlan(email, "premium"), /now on Premium/);
 assert.equal(await post("/api/v1/astro/progressed", { birth: amelia.birth, target: "2026-11-15", settings: s }), 200);
 await page.goto(BASE + "/app/timeline?client=c1");
-await page.getByRole("heading", { name: "Busiest periods" }).waitFor({ timeout: 30000 });
+await page.getByRole("heading", { name: "Busiest Periods" }).waitFor({ timeout: 30000 });
 await page.goto(BASE + "/app/charts/ch2");
 await page.locator("svg").filter({ hasText: "MC" }).first().waitFor({ timeout: 20000 });
 

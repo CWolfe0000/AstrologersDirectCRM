@@ -71,7 +71,7 @@ export function OverviewTab({ client, person, onTab }: { client: Client; person:
     <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
       <div className="space-y-6">
         <Card>
-          <CardHeader title="Basic information" icon={<Info />} />
+          <CardHeader title="Basic Information" icon={<Info />} />
           <CardBody>
             {client.summary && <p className="mb-5 text-[14px] leading-relaxed text-ink-3">{client.summary}</p>}
             <KeyValue
@@ -93,9 +93,9 @@ export function OverviewTab({ client, person, onTab }: { client: Client; person:
         </Card>
 
         <Card>
-          <CardHeader title="Recent notes" icon={<NotebookPen />} action={<button onClick={() => onTab("observations")} className="text-[12.5px] font-medium text-accent hover:underline">All observations</button>} />
+          <CardHeader title="Recent Notes" icon={<NotebookPen />} action={<button onClick={() => onTab("observations")} className="text-[12.5px] font-medium text-accent hover:underline">All observations</button>} />
           {d.observations.length === 0 ? (
-            <EmptyState icon={<NotebookPen />} title="No observations yet" body="Observations you save in the chart workspace appear here." />
+            <EmptyState icon={<NotebookPen />} title="No Observations Yet" body="Observations you save in the chart workspace appear here." />
           ) : (
             <ul className="divide-y divide-line">
               {d.observations.slice(0, 3).map((o) => (
@@ -106,7 +106,7 @@ export function OverviewTab({ client, person, onTab }: { client: Client; person:
         </Card>
 
         <Card>
-          <CardHeader title="Recent activity" icon={<Clock />} />
+          <CardHeader title="Recent Activity" icon={<Clock />} />
           <ul className="px-5 py-2">
             {d.activity.length === 0 && <li className="py-4 text-[13px] text-muted">No recent activity.</li>}
             {d.activity.slice(0, 6).map((a) => (
@@ -121,7 +121,7 @@ export function OverviewTab({ client, person, onTab }: { client: Client; person:
 
       <div className="space-y-6">
         <Card>
-          <CardHeader title="Upcoming consultation" icon={<CalendarDays />} />
+          <CardHeader title="Upcoming Consultation" icon={<CalendarDays />} />
           <CardBody>
             {next ? (
               <>
@@ -146,7 +146,7 @@ export function OverviewTab({ client, person, onTab }: { client: Client; person:
 
         {natal && (
           <Card>
-            <CardHeader title="Natal chart" icon={<CircleDot />} action={<EngineNotice compact />} />
+            <CardHeader title="Natal Chart" icon={<CircleDot />} action={<EngineNotice compact />} />
             <Link href={`/app/charts/${natal.id}`} className="block p-5 hover:bg-canvas/50">
               <ChartThumb chart={natal} className="mx-auto max-w-[240px]" />
               <p className="mt-3 text-center text-[12.5px] font-medium text-accent">Open in chart workspace →</p>
@@ -155,7 +155,7 @@ export function OverviewTab({ client, person, onTab }: { client: Client; person:
         )}
 
         <Card>
-          <CardHeader title="Outstanding tasks" icon={<ListChecks />} action={<Link href={`/app/tasks?new=1&client=${client.id}`} className="text-[12.5px] font-medium text-accent hover:underline">Add</Link>} />
+          <CardHeader title="Outstanding Tasks" icon={<ListChecks />} action={<Link href={`/app/tasks?new=1&client=${client.id}`} className="text-[12.5px] font-medium text-accent hover:underline">Add</Link>} />
           <ul className="p-2">
             {openTasks.length === 0 && <li className="px-3 py-4 text-[13px] text-muted">No open tasks.</li>}
             {openTasks.map((t) => (
@@ -196,7 +196,7 @@ export function ChartsTab({ client }: { client: Client }) {
         <p className="text-[13px] text-muted">Every chart is linked to the people it describes and filed under this client.</p>
         <div className="flex items-center gap-2">
           <EngineNotice compact />
-          <ButtonLink href={`/app/charts/new?client=${client.id}`} size="sm"><Plus /> Create chart</ButtonLink>
+          <ButtonLink href={`/app/charts/new?client=${client.id}`} size="sm"><Plus /> Create Chart</ButtonLink>
         </div>
       </div>
       {groups.map((g) =>
@@ -253,11 +253,11 @@ export function PeopleTab({ client }: { client: Client }) {
         <p className="max-w-xl text-[13px] text-muted">
           People relevant to {d.name(client.id).split(" ")[0]}&apos;s consultations. Each has their own birth data and natal chart; their natal observations stay with them.
         </p>
-        <Button size="sm" onClick={() => setOpen(true)}><Plus /> Add person</Button>
+        <Button size="sm" onClick={() => setOpen(true)}><Plus /> Add Person</Button>
       </div>
       {d.associated.length === 0 ? (
         <Card>
-          <EmptyState icon={<Users />} title="No associated people" body="Add a partner, family member or business partner to create synastry and composite charts." action={<Button size="sm" variant="secondary" onClick={() => setOpen(true)}><Plus /> Add person</Button>} />
+          <EmptyState icon={<Users />} title="No Associated People" body="Add a partner, family member or business partner to create synastry and composite charts." action={<Button size="sm" variant="secondary" onClick={() => setOpen(true)}><Plus /> Add Person</Button>} />
         </Card>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
@@ -292,8 +292,8 @@ export function PeopleTab({ client }: { client: Client }) {
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2 border-t border-line bg-canvas/50 px-5 py-3">
-                  <ButtonLink href={`/app/charts/new?client=${client.id}&type=synastry&with=${p.id}`} variant="secondary" size="xs"><Heart /> Create synastry</ButtonLink>
-                  <ButtonLink href={`/app/charts/new?client=${client.id}&type=composite&with=${p.id}`} variant="secondary" size="xs"><CircleDot /> Create composite</ButtonLink>
+                  <ButtonLink href={`/app/charts/new?client=${client.id}&type=synastry&with=${p.id}`} variant="secondary" size="xs"><Heart /> Create Synastry</ButtonLink>
+                  <ButtonLink href={`/app/charts/new?client=${client.id}&type=composite&with=${p.id}`} variant="secondary" size="xs"><CircleDot /> Create Composite</ButtonLink>
                 </div>
               </Card>
             );
@@ -316,10 +316,10 @@ export function ConsultationsTab({ client }: { client: Client }) {
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <Segmented value={view} onChange={setView} size="sm" options={[{ value: "all", label: "All", count: d.consultations.length }, { value: "upcoming", label: "Upcoming", count: upcoming.length }, { value: "past", label: "Past", count: past.length }]} />
-        <ButtonLink href={`/app/consultations?new=1&client=${client.id}`} size="sm"><Plus /> Schedule consultation</ButtonLink>
+        <ButtonLink href={`/app/consultations?new=1&client=${client.id}`} size="sm"><Plus /> Schedule Consultation</ButtonLink>
       </div>
       {list.length === 0 ? (
-        <Card><EmptyState icon={<CalendarDays />} title="No consultations" /></Card>
+        <Card><EmptyState icon={<CalendarDays />} title="No Consultations" /></Card>
       ) : (
         <div className="space-y-3">
           {list.map((k) => {
@@ -436,10 +436,10 @@ export function ObservationsTab({ client }: { client: Client }) {
       <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center">
         <SearchInput placeholder="Search observations…" value={q} onChange={(e) => setQ(e.target.value)} className="md:w-72" />
         <Segmented size="sm" value={scope} onChange={setScope} options={[{ value: "all", label: "All" }, { value: "natal", label: "Natal" }, { value: "relationship", label: "Relationship" }, { value: "timing", label: "Timing" }]} />
-        <ButtonLink href={`/app/observations?new=1&client=${client.id}`} size="sm" className="md:ml-auto"><Plus /> Add observation</ButtonLink>
+        <ButtonLink href={`/app/observations?new=1&client=${client.id}`} size="sm" className="md:ml-auto"><Plus /> Add Observation</ButtonLink>
       </div>
       {sorted.length === 0 ? (
-        <Card><EmptyState icon={<NotebookPen />} title="No observations found" /></Card>
+        <Card><EmptyState icon={<NotebookPen />} title="No Observations Found" /></Card>
       ) : (
         <div className="space-y-5">
           {sorted.map((g) => (
@@ -471,12 +471,12 @@ export function ReadingsTab({ client }: { client: Client }) {
         <p className="text-[13px] text-muted">Documents, audio and video shared with {d.name(client.id).split(" ")[0]} through the client portal.</p>
         <div className="flex gap-2">
           <ButtonLink href={`/app/studio?client=${client.id}`} variant="secondary" size="sm"><Mic /> Record</ButtonLink>
-          <ButtonLink href={`/app/delivery?new=1&client=${client.id}`} size="sm"><Send /> Deliver reading</ButtonLink>
+          <ButtonLink href={`/app/delivery?new=1&client=${client.id}`} size="sm"><Send /> Deliver Reading</ButtonLink>
         </div>
       </div>
       <Card>
         {d.readings.length === 0 ? (
-          <EmptyState icon={<Send />} title="No readings yet" />
+          <EmptyState icon={<Send />} title="No Readings Yet" />
         ) : (
           <ul className="divide-y divide-line">
             {d.readings.map((r) => (
@@ -507,7 +507,7 @@ export function ReadingsTab({ client }: { client: Client }) {
       </Card>
       {recs.length > 0 && (
         <Card>
-          <CardHeader title="Saved recordings not yet delivered" icon={<Mic />} />
+          <CardHeader title="Saved Recordings Not Yet Delivered" icon={<Mic />} />
           <ul className="divide-y divide-line">
             {recs.map((r) => (
               <li key={r.id} className="flex items-center gap-3 px-5 py-3">
@@ -568,7 +568,7 @@ export function FilesTab({ client }: { client: Client }) {
       </div>
       <Card>
         {d.files.length === 0 ? (
-          <EmptyState icon={<Upload />} title="No files yet" body="Upload intake forms, birth certificates or resources." />
+          <EmptyState icon={<Upload />} title="No Files Yet" body="Upload intake forms, birth certificates or resources." />
         ) : (
           <ul className="divide-y divide-line">
             {d.files.map((f) => (

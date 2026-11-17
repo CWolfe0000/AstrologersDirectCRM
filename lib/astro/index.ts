@@ -25,11 +25,11 @@ export function registerEngine(engine: AstrologyEngine, makeActive = false) {
 export const CHART_TYPES: { id: ChartType; name: string; short: string; people: 1 | 2; timing: boolean; description: string }[] = [
   { id: "natal", name: "Natal", short: "Natal", people: 1, timing: false, description: "Birth chart for one person." },
   { id: "synastry", name: "Synastry", short: "Synastry", people: 2, timing: false, description: "Bi-wheel comparing two natal charts." },
-  { id: "composite", name: "Midpoint composite", short: "Composite", people: 2, timing: false, description: "Single chart of midpoints between two natal charts." },
+  { id: "composite", name: "Midpoint Composite", short: "Composite", people: 2, timing: false, description: "Single chart of midpoints between two natal charts." },
   { id: "transits", name: "Transits", short: "Transits", people: 1, timing: true, description: "Current or future planetary positions against the natal chart." },
-  { id: "progressions", name: "Secondary progressions", short: "Progressions", people: 1, timing: true, description: "Day-for-a-year progressed positions." },
-  { id: "solar-arc", name: "Solar arc directions", short: "Solar arcs", people: 1, timing: true, description: "Natal chart directed by the solar arc." },
-  { id: "solar-return", name: "Solar return", short: "Solar return", people: 1, timing: true, description: "Chart for the Sun's return to its natal position." },
+  { id: "progressions", name: "Secondary Progressions", short: "Progressions", people: 1, timing: true, description: "Day-for-a-year progressed positions." },
+  { id: "solar-arc", name: "Solar Arc Directions", short: "Solar Arcs", people: 1, timing: true, description: "Natal chart directed by the solar arc." },
+  { id: "solar-return", name: "Solar Return", short: "Solar Return", people: 1, timing: true, description: "Chart for the Sun's return to its natal position." },
 ];
 
 export function chartTypeMeta(t: ChartType) {

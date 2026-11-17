@@ -170,7 +170,7 @@ function Timeline() {
   if (hydrated && !premium) {
     return (
       <div>
-        <PageHeader title="Convergence timeline" description="Transits, progressions, solar arcs and lunations to the natal chart over a period, and the stretches where they pile up." />
+        <PageHeader title="Convergence Timeline" description="Transits, progressions, solar arcs and lunations to the natal chart over a period, and the stretches where they pile up." />
         <PremiumGate feature="The convergence timeline" />
       </div>
     );
@@ -179,9 +179,9 @@ function Timeline() {
   if (hydrated && sortedClients.length === 0) {
     return (
       <div>
-        <PageHeader title="Convergence timeline" />
+        <PageHeader title="Convergence Timeline" />
         <Card>
-          <EmptyState icon={<Waves />} title="No clients with birth data yet" body="Add a client with a birth date, time and place to see their timeline." action={<Link href="/app/clients" className="text-accent hover:underline">Go to clients</Link>} />
+          <EmptyState icon={<Waves />} title="No Clients with Birth Data Yet" body="Add a client with a birth date, time and place to see their timeline." action={<Link href="/app/clients" className="text-accent hover:underline">Go to clients</Link>} />
         </Card>
       </div>
     );
@@ -192,7 +192,7 @@ function Timeline() {
   return (
     <div>
       <PageHeader
-        title="Convergence timeline"
+        title="Convergence Timeline"
         description="Transits, progressions, solar arcs and lunations to the natal chart over a period, and the stretches where they pile up."
         actions={<EngineNotice />}
       />
@@ -252,8 +252,8 @@ function Timeline() {
             <legend className="sr-only">Techniques</legend>
             <TechToggle label="Transits" color={TECH.transit.color} checked={opts.transits} onChange={(v) => setTech("transits", v)} />
             <TechToggle label="Progressions" color={TECH.progressed.color} checked={opts.progressions} onChange={(v) => setTech("progressions", v)} />
-            <TechToggle label="Solar arcs" color={TECH["solar-arc"].color} checked={opts.solarArcs} onChange={(v) => setTech("solarArcs", v)} />
-            <TechToggle label="Lunations & eclipses" color={TECH.lunation.color} checked={opts.lunations} onChange={(v) => setTech("lunations", v)} />
+            <TechToggle label="Solar Arcs" color={TECH["solar-arc"].color} checked={opts.solarArcs} onChange={(v) => setTech("solarArcs", v)} />
+            <TechToggle label="Lunations & Eclipses" color={TECH.lunation.color} checked={opts.lunations} onChange={(v) => setTech("lunations", v)} />
             <span className="text-[12px] text-muted">
               {fmtRange(start, end)} · {defaults.zodiac === "tropical" ? "Tropical" : "Sidereal"}
             </span>
@@ -309,7 +309,7 @@ function OptionsPopover({ opts, setOpts, saved, onSave, onRevert }: { opts: Time
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="secondary" size="sm">
-          <SlidersHorizontal /> Bodies, aspects & orbs
+          <SlidersHorizontal /> Bodies, Aspects & Orbs
         </Button>
       </PopoverTrigger>
       <PopoverContent className="max-h-[min(80vh,640px)] w-[min(92vw,460px)] overflow-y-auto p-4">
@@ -319,11 +319,11 @@ function OptionsPopover({ opts, setOpts, saved, onSave, onRevert }: { opts: Time
           <span className="flex gap-2">
             {!saved && (
               <Button size="sm" variant="ghost" onClick={onRevert}>
-                <RotateCcw /> Use my defaults
+                <RotateCcw /> Use My Defaults
               </Button>
             )}
             <Button size="sm" variant="secondary" disabled={saved} onClick={onSave}>
-              <Save /> Save as my defaults
+              <Save /> Save as My Defaults
             </Button>
           </span>
         </div>
@@ -452,14 +452,14 @@ function Convergences({ tl, focus, onFocus, onOpen }: { tl: NonNullable<Timeline
   if (tl.convergences.length === 0) {
     return (
       <Card>
-        <EmptyState icon={<Layers />} title="No standout periods" body="Contacts are spread fairly evenly across this range. Try a longer period, or include more bodies or techniques." />
+        <EmptyState icon={<Layers />} title="No Standout Periods" body="Contacts are spread fairly evenly across this range. Try a longer period, or include more bodies or techniques." />
       </Card>
     );
   }
   return (
     <section aria-labelledby="tl-conv">
       <h2 id="tl-conv" className="mb-2.5 text-[15px] font-semibold text-ink">
-        Busiest periods
+        Busiest Periods
       </h2>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {tl.convergences.map((w) => {
@@ -572,7 +572,7 @@ function ContactGrid({
         icon={<CircleDot />}
         title="Contacts"
         description={focus ? `Showing the ${focus.contacts.length} contacts in orb ${fmtRange(focus.start, focus.end)}.` : `${tl.contacts.length} contacts in orb during the period. Bars show time in orb; diamonds mark exact hits.`}
-        action={focus ? <Button size="sm" variant="ghost" onClick={() => onFocus(null)}>Show all</Button> : undefined}
+        action={focus ? <Button size="sm" variant="ghost" onClick={() => onFocus(null)}>Show All</Button> : undefined}
       />
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-3">
         <div className="flex flex-wrap items-center gap-2 text-[12.5px] text-muted">
@@ -595,7 +595,7 @@ function ContactGrid({
       </div>
       <Legend />
       {visible.length === 0 ? (
-        <EmptyState icon={<CircleDot />} title="No contacts match" body="Widen the orbs, include more bodies, or turn off the exact-only filter." />
+        <EmptyState icon={<CircleDot />} title="No Contacts Match" body="Widen the orbs, include more bodies, or turn off the exact-only filter." />
       ) : (
         <div className="pb-2">
           {/* Axis header */}
@@ -761,10 +761,10 @@ function ContactSheet({ contact: c, clientId, personId, clientName, tl, onClose 
       footer={
         <div className="flex w-full flex-wrap justify-end gap-2">
           <Button variant="secondary" onClick={addNote}>
-            <NotebookPen /> Add observation
+            <NotebookPen /> Add Observation
           </Button>
           <Button onClick={() => openChart(keyDate)}>
-            <CircleDot /> Open chart at {fmtShort(keyDate)}
+            <CircleDot /> Open Chart at {fmtShort(keyDate)}
           </Button>
         </div>
       }
@@ -808,7 +808,7 @@ function ContactSheet({ contact: c, clientId, personId, clientName, tl, onClose 
           </section>
         ) : (
           <section>
-            <h3 className="mb-2 text-[13px] font-semibold text-ink">Time in orb</h3>
+            <h3 className="mb-2 text-[13px] font-semibold text-ink">Time in Orb</h3>
             <ul className="space-y-3">
               {c.windows.map((w, i) => (
                 <li key={i} className="rounded-lg border border-line p-3 text-[12.5px]">

@@ -98,17 +98,17 @@ export function ReportsPage() {
       )}
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-        <StatCard label="Active clients" value={t.clients} sub={`+${t.newClients} in ${RANGE_LABEL[range]}`} icon={<Users />} />
-        <StatCard label="New clients" value={t.newClients} trend={pct(t.newClients, t.newClientsPrev, range)} sub={vs ?? RANGE_LABEL[range]} icon={<UserPlus />} />
-        <StatCard label="Returning clients" value={t.returning} trend={pct(t.returning, t.returningPrev, range)} sub="Seen again after an earlier session" icon={<Repeat />} />
+        <StatCard label="Active Clients" value={t.clients} sub={`+${t.newClients} in ${RANGE_LABEL[range]}`} icon={<Users />} />
+        <StatCard label="New Clients" value={t.newClients} trend={pct(t.newClients, t.newClientsPrev, range)} sub={vs ?? RANGE_LABEL[range]} icon={<UserPlus />} />
+        <StatCard label="Returning Clients" value={t.returning} trend={pct(t.returning, t.returningPrev, range)} sub="Seen again after an earlier session" icon={<Repeat />} />
         <StatCard label="Consultations" value={cons} trend={pct(cons, t.consultationsPrev, range)} sub={vs ?? "Held, all time"} icon={<CalendarDays />} />
-        <StatCard label="Reading deliveries" value={dels} trend={pct(dels, t.deliveriesPrev, range)} sub={vs ?? "Delivered, all time"} icon={<Send />} />
-        <StatCard label="Outstanding work" value={outstandingTotal} sub={<span className="text-accent">{overdue.length} overdue</span>} icon={<ListTodo />} href="/app/tasks" />
+        <StatCard label="Reading Deliveries" value={dels} trend={pct(dels, t.deliveriesPrev, range)} sub={vs ?? "Delivered, all time"} icon={<Send />} />
+        <StatCard label="Outstanding Work" value={outstandingTotal} sub={<span className="text-accent">{overdue.length} overdue</span>} icon={<ListTodo />} href="/app/tasks" />
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <Card>
-          <CardHeader title="Consultation volume" description={`Sessions held per month · highlighted: ${RANGE_LABEL[range]} · this month so far`} />
+          <CardHeader title="Consultation Volume" description={`Sessions held per month · highlighted: ${RANGE_LABEL[range]} · this month so far`} />
           <CardBody className="h-[340px] pl-1">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartMonths} margin={{ top: 6, right: 8, left: -12, bottom: 0 }}>
@@ -125,7 +125,7 @@ export function ReportsPage() {
         </Card>
 
         <Card>
-          <CardHeader title="Deliveries by type" description={`${dels} readings · ${RANGE_LABEL[range]}`} />
+          <CardHeader title="Deliveries by Type" description={`${dels} readings · ${RANGE_LABEL[range]}`} />
           <CardBody className="flex flex-col items-center gap-4 sm:flex-row xl:flex-col 2xl:flex-row">
             <div className="relative h-[200px] w-[200px] shrink-0">
               <ResponsiveContainer width="100%" height="100%">
@@ -158,7 +158,7 @@ export function ReportsPage() {
 
       <div className="mt-6 grid gap-6 xl:grid-cols-2">
         <Card>
-          <CardHeader title="New vs returning clients" description="New clients added, and clients seen again, per month" />
+          <CardHeader title="New vs Returning Clients" description="New clients added, and clients seen again, per month" />
           <CardBody className="h-[280px] pl-1">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartMonths} margin={{ top: 6, right: 8, left: -12, bottom: 0 }}>
@@ -185,7 +185,7 @@ export function ReportsPage() {
         </Card>
 
         <Card>
-          <CardHeader title="Outstanding work" description="Right now, from your tasks, deliveries and calendar" />
+          <CardHeader title="Outstanding Work" description="Right now, from your tasks, deliveries and calendar" />
           <CardBody className="h-[280px] pl-1">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={outstanding} layout="vertical" margin={{ top: 0, right: 24, left: 8, bottom: 0 }}>
@@ -204,7 +204,7 @@ export function ReportsPage() {
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <Card className="overflow-hidden">
-          <CardHeader title="Top consultation types" description={RANGE_LABEL[range]} />
+          <CardHeader title="Top Consultation Types" description={RANGE_LABEL[range]} />
           <div className="overflow-x-auto">
             <table className="w-full text-left text-[13px]">
               <thead className="bg-canvas/60 text-[11.5px] uppercase tracking-wider text-muted">

@@ -132,7 +132,7 @@ export function ConsultationsPage() {
         description={`${todayCount} consultations today · ${weekCount} this week. Select a session to prepare, take notes and create follow-ups.`}
         actions={
           <Button onClick={() => openCreate()}>
-            <CalendarPlus /> New consultation
+            <CalendarPlus /> New Consultation
           </Button>
         }
       />
@@ -179,7 +179,7 @@ export function ConsultationsPage() {
             <option value="cancelled">Cancelled</option>
             <option value="no-show">No-show</option>
           </Select>
-          <Button variant="ghost" size="md" onClick={() => { setType(""); setStatus(""); setClient(""); }}>Clear filters</Button>
+          <Button variant="ghost" size="md" onClick={() => { setType(""); setStatus(""); setClient(""); }}>Clear Filters</Button>
         </div>
       )}
 

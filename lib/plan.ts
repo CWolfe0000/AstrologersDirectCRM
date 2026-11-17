@@ -13,10 +13,10 @@ export const isPremiumChart = (t: ChartType) => PREMIUM_CHART_TYPES.includes(t);
 
 /** Shown wherever a premium feature is locked. */
 export const PREMIUM_FEATURES = [
-  "Convergence timeline",
+  "Convergence Timeline",
   "Transits",
-  "Secondary progressions",
-  "Solar arc directions",
-  "Solar returns",
-  "Midpoint composite charts",
+  "Secondary Progressions",
+  "Solar Arc Directions",
+  "Solar Returns",
+  "Midpoint Composite Charts",
 ];

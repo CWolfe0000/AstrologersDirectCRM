@@ -22,7 +22,7 @@ function DemoResetPage() {
         </span>
         <AuthHeading title="Check your inbox" body={<>If an account exists for <span className="font-medium text-ink">{email}</span>, you’ll receive a link to reset your password within a few minutes.</>} />
         <Button variant="secondary" className="w-full" onClick={() => setStage("new")}>
-          Open reset link (demo)
+          Open Reset Link (Demo)
         </Button>
         <p className="mt-6 text-center text-[13.5px] text-muted">
           <button className="text-accent hover:underline" onClick={() => setStage("form")}>
@@ -55,7 +55,7 @@ function DemoResetPage() {
               <Input id="cp" type="password" required minLength={12} autoComplete="new-password" />
             </Field>
             <Button type="submit" size="lg" className="w-full">
-              Update password
+              Update Password
             </Button>
           </form>
         )}
@@ -80,7 +80,7 @@ function DemoResetPage() {
           <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
         </Field>
         <Button type="submit" size="lg" className="w-full" disabled={stage === "loading"}>
-          {stage === "loading" && <Loader2 className="animate-spin" />} Send reset link
+          {stage === "loading" && <Loader2 className="animate-spin" />} Send Reset Link
         </Button>
       </form>
     </>

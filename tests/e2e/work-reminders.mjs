@@ -65,7 +65,7 @@ step("save your own template and find it next time");
 await page.getByRole("button", { name: "New", exact: true }).click();
 await dialog.getByRole("textbox", { name: "Title" }).fill(`My ritual ${stamp}`);
 await dialog.getByRole("textbox", { name: "Instructions" }).fill("Light a candle and write for ten minutes.");
-await dialog.getByRole("button", { name: "Save as template" }).click();
+await dialog.getByRole("button", { name: "Save as Template" }).click();
 await page.getByText("Saved as a template").waitFor();
 await dialog.getByRole("button", { name: "Cancel" }).click();
 await page.getByText("All changes saved").waitFor({ timeout: 15000 });

@@ -75,7 +75,7 @@ assert.equal((await db.query("select plan from practices where id=$1", [targetId
 step("delete a practice (typing the owner's email)");
 await row.getByRole("button", { name: /Delete/ }).click();
 const dialog = admin.getByRole("dialog");
-const del = dialog.getByRole("button", { name: "Delete permanently" });
+const del = dialog.getByRole("button", { name: "Delete Permanently" });
 assert.ok(await del.isDisabled(), "disabled until confirmed");
 await dialog.getByLabel(/to confirm/).fill(otherEmail);
 await del.click();
