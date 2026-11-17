@@ -64,6 +64,7 @@ jobs:
           node tests/e2e/timeline.mjs
           node tests/e2e/premium.mjs
           node tests/e2e/client-work.mjs
+          node tests/e2e/work-reminders.mjs
           node tests/e2e/email-signin.mjs
           node tests/e2e/multi-practice.mjs
           node tests/e2e/contact.mjs

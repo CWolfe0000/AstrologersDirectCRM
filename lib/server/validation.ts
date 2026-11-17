@@ -261,6 +261,11 @@ export const practitionerSchema = z
     bio: str(5000),
     plan: str(80),
     reminders: opt(z.object({ clients: z.boolean(), hoursBefore: z.number().int().min(1).max(168) }).strict()),
+    workTemplates: opt(
+      z
+        .array(z.object({ id, kind: z.enum(["assignment", "journal", "goal", "activity"]), title: str(200).min(1), instructions: str(10_000) }).strict())
+        .max(50),
+    ),
   })
   .strict();
 
@@ -272,6 +277,7 @@ const clientWork = z
     title: str(200).min(1),
     instructions: str(10_000),
     dueDate: opt(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)),
+    remind: opt(z.boolean()),
     consultationId: opt(id),
     status: z.enum(["draft", "shared", "completed", "archived"]),
     sharedAt: opt(iso),

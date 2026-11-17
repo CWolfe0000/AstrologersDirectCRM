@@ -5,17 +5,17 @@ import { useSearchParams } from "next/navigation";
 import { Archive, ArchiveRestore, CalendarDays, Check, ChevronDown, Lock, MessageSquareText, Pencil, Plus, RotateCcw, Send, Trash2 } from "lucide-react";
 import { useStore, personName } from "@/lib/store";
 import type { Client, ClientWork, WorkKind } from "@/lib/data/types";
-import { cn, fmtDate, fmtShort, relTime, TODAY } from "@/lib/utils";
+import { cn, fmtDate, fmtShort, relTime, TODAY, uid } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/misc";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Field, Input, Select, Textarea } from "@/components/ui/input";
-import { WORK_KINDS, isOverdue, kindMeta, workState } from "./work-meta";
+import { Checkbox, Field, Input, Select, Textarea } from "@/components/ui/input";
+import { STARTER_TEMPLATES, WORK_KINDS, isOverdue, kindMeta, workState } from "./work-meta";
 
-type Draft = { kind: WorkKind; title: string; instructions: string; dueDate: string; consultationId: string };
-const EMPTY: Draft = { kind: "assignment", title: "", instructions: "", dueDate: "", consultationId: "" };
+type Draft = { kind: WorkKind; title: string; instructions: string; dueDate: string; consultationId: string; remind: boolean };
+const EMPTY: Draft = { kind: "assignment", title: "", instructions: "", dueDate: "", consultationId: "", remind: true };
 
 export function ClientWorkTab({ client }: { client: Client }) {
   const params = useSearchParams();
@@ -127,7 +127,7 @@ function WorkItem({ w, first, onEdit, defaultOpen }: { w: ClientWork; first: str
           <span className="block truncate text-[14px] font-medium text-ink">{w.title}</span>
           <span className="block truncate text-[12px] text-muted">
             {meta.label}
-            {w.dueDate && ` · by ${fmtShort(w.dueDate)}`}
+            {w.dueDate && ` · by ${fmtShort(w.dueDate)}${w.remind && w.status === "shared" ? " · reminder on" : ""}`}
             {w.status === "draft" ? " · Draft" : w.sharedAt ? ` · Shared ${relTime(w.sharedAt)}` : ""}
             {st.entries.length > 0 && ` · ${st.entries.length} ${st.entries.length === 1 ? "response" : "responses"}`}
           </span>
@@ -225,9 +225,33 @@ function WorkEditor({ client, first, editing, onClose, defaultConsultation }: { 
   const toast = useStore((s) => s.toast);
   const consultations = useStore((s) => s.consultations).filter((k) => k.clientId === client.id).sort((a, b) => b.start.localeCompare(a.start));
   const [d, setD] = React.useState<Draft>(EMPTY);
+  const [template, setTemplate] = React.useState("");
+  const mine = useStore((s) => s.practitioner.workTemplates) ?? [];
+  const updatePractitioner = useStore((s) => s.updatePractitioner);
+  const portalActive = client.portalAccess === "active";
+  const pickTemplate = (id: string) => {
+    setTemplate(id);
+    const t = [...mine, ...STARTER_TEMPLATES].find((x) => x.id === id);
+    if (t) setD((x) => ({ ...x, kind: t.kind, title: t.title, instructions: t.instructions }));
+  };
+  const saveTemplate = () => {
+    const title = d.title.trim();
+    const others = mine.filter((t) => t.title.trim().toLowerCase() !== title.toLowerCase());
+    if (others.length >= 50) return toast("You have 50 templates", "Remove one before saving another.", "error");
+    const t = { id: uid("tpl"), kind: d.kind, title, instructions: d.instructions.trim() };
+    updatePractitioner({ workTemplates: [t, ...others] });
+    setTemplate(t.id);
+    toast(others.length < mine.length ? "Template updated" : "Saved as a template", "Start from it next time, for any client.", "success");
+  };
+  const removeTemplate = (id: string) => {
+    updatePractitioner({ workTemplates: mine.filter((t) => t.id !== id) });
+    setTemplate("");
+    toast("Template removed", undefined, "success");
+  };
   React.useEffect(() => {
+    setTemplate("");
     if (editing === "new") setD({ ...EMPTY, consultationId: defaultConsultation });
-    else if (editing) setD({ kind: editing.kind, title: editing.title, instructions: editing.instructions, dueDate: editing.dueDate ?? "", consultationId: editing.consultationId ?? "" });
+    else if (editing) setD({ kind: editing.kind, title: editing.title, instructions: editing.instructions, dueDate: editing.dueDate ?? "", consultationId: editing.consultationId ?? "", remind: !!editing.remind });
   }, [editing, defaultConsultation]);
   const valid = d.title.trim().length > 0;
   const isNew = editing === "new";
@@ -239,6 +263,7 @@ function WorkEditor({ client, first, editing, onClose, defaultConsultation }: { 
       title: d.title.trim(),
       instructions: d.instructions.trim(),
       dueDate: d.dueDate || undefined,
+      remind: d.dueDate ? d.remind : undefined,
       consultationId: d.consultationId || undefined,
     };
     if (existing) {
@@ -260,6 +285,9 @@ function WorkEditor({ client, first, editing, onClose, defaultConsultation }: { 
           description={existing && existing.status !== "draft" ? `${first} already sees this. Changes appear in their portal straight away.` : "Save it as a draft, or share it now."}
           footer={
             <>
+              <Button variant="ghost" className="sm:mr-auto" disabled={!valid} onClick={saveTemplate}>
+                Save as template
+              </Button>
               <Button variant="ghost" onClick={onClose}>
                 Cancel
               </Button>
@@ -281,6 +309,32 @@ function WorkEditor({ client, first, editing, onClose, defaultConsultation }: { 
           }
         >
           <div className="space-y-4">
+            {isNew && (
+              <Field label="Start from a template (optional)" htmlFor="w-tpl">
+                <div className="flex items-center gap-2">
+                  <Select id="w-tpl" value={template} onChange={(e) => pickTemplate(e.target.value)}>
+                    <option value="">Blank</option>
+                    {mine.length > 0 && (
+                      <optgroup label="Your templates">
+                        {mine.map((t) => (
+                          <option key={t.id} value={t.id}>{t.title}</option>
+                        ))}
+                      </optgroup>
+                    )}
+                    <optgroup label="Starter templates">
+                      {STARTER_TEMPLATES.map((t) => (
+                        <option key={t.id} value={t.id}>{t.title}</option>
+                      ))}
+                    </optgroup>
+                  </Select>
+                  {mine.some((t) => t.id === template) && (
+                    <Button variant="ghost" size="sm" onClick={() => removeTemplate(template)}>
+                      <Trash2 /> Remove template
+                    </Button>
+                  )}
+                </div>
+              </Field>
+            )}
             <fieldset>
               <legend className="mb-2 text-[13px] font-medium text-ink">Type</legend>
               <div className="grid gap-2 sm:grid-cols-2">
@@ -306,6 +360,17 @@ function WorkEditor({ client, first, editing, onClose, defaultConsultation }: { 
               <Field label="Suggested date (optional)" htmlFor="w-due">
                 <Input id="w-due" type="date" value={d.dueDate} onChange={(e) => setD({ ...d, dueDate: e.target.value })} />
               </Field>
+              {d.dueDate && (
+                <label className="flex items-start gap-2.5 text-[13px] text-ink-3 sm:col-span-2">
+                  <Checkbox className="mt-0.5" checked={d.remind} onChange={(e) => setD({ ...d, remind: e.target.checked })} />
+                  <span>
+                    Email {first} a gentle reminder the day before
+                    <span className="block text-[12px] text-muted">
+                      {portalActive ? "Sent once, and not if they’ve already marked it done." : `Reminders go to clients with portal access. ${first} hasn’t joined the portal yet.`}
+                    </span>
+                  </span>
+                </label>
+              )}
               <Field label="From consultation (optional)" htmlFor="w-k">
                 <Select id="w-k" value={d.consultationId} onChange={(e) => setD({ ...d, consultationId: e.target.value })}>
                   <option value="">None</option>

@@ -215,6 +215,16 @@ export interface Practitioner {
   plan: string;
   /** Automatic consultation reminder emails to clients. */
   reminders?: { clients: boolean; hoursBefore: number };
+  /** Reusable Between Sessions items. */
+  workTemplates?: WorkTemplate[];
+}
+
+/** A saved starting point for between-session work. */
+export interface WorkTemplate {
+  id: string;
+  kind: WorkKind;
+  title: string;
+  instructions: string;
 }
 
 export interface PortalNotification {
@@ -244,6 +254,8 @@ export interface ClientWork {
   /** Instructions or prompt shown to the client (plain text). */
   instructions: string;
   dueDate?: string; // YYYY-MM-DD
+  /** Email the client a reminder the day before the suggested date (portal clients only). */
+  remind?: boolean;
   consultationId?: string;
   status: WorkStatus;
   sharedAt?: string;

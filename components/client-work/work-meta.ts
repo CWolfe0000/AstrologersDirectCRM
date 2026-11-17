@@ -29,3 +29,37 @@ export function workState(w: ClientWork, responses: WorkResponse[]) {
 export function isOverdue(w: ClientWork, done: boolean, today: string) {
   return !done && !!w.dueDate && w.dueDate < today;
 }
+
+/** Starting points every practice gets; a practitioner's own templates appear alongside. */
+export const STARTER_TEMPLATES: { id: string; kind: WorkKind; title: string; instructions: string }[] = [
+  {
+    id: "starter-saturn",
+    kind: "journal",
+    title: "What is Saturn asking of you?",
+    instructions: "Over the next few weeks, notice where you feel pressure, responsibility or delay. Each time, write a few lines: what happened, how you responded, and what it seems to be asking you to build, or to let go of.",
+  },
+  {
+    id: "starter-moon",
+    kind: "journal",
+    title: "A week of Moon notes",
+    instructions: "Each day this week, write one or two words for your mood, and anything that stood out. At the end of the week, read them back and notice any patterns. We’ll look at them together alongside the Moon’s movement through your chart.",
+  },
+  {
+    id: "starter-moments",
+    kind: "assignment",
+    title: "Three moments",
+    instructions: "Before our next session, write down three moments when you felt most like yourself, and three when you didn’t. Include roughly when they happened. We’ll look at them alongside your chart.",
+  },
+  {
+    id: "starter-step",
+    kind: "goal",
+    title: "One small step",
+    instructions: "Choose one small, concrete step toward what we talked about, and take it before we meet again. Add a line here when you’ve done it: what you did, and how it felt.",
+  },
+  {
+    id: "starter-new-moon",
+    kind: "activity",
+    title: "New Moon intentions",
+    instructions: "At the next New Moon, set aside fifteen quiet minutes. Write up to three intentions for the month ahead, as specific as you can make them. Come back to them at the Full Moon and add a note on how they’re unfolding.",
+  },
+];
