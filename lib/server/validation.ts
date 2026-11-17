@@ -133,6 +133,7 @@ const consultation = z
     durationMin: z.number().int().min(5).max(24 * 60),
     status: z.enum(["scheduled", "completed", "cancelled", "no-show"]),
     location: z.enum(["Video call", "Phone", "In person"]),
+    meetingUrl: opt(z.string().max(500).regex(/^https:\/\/[^\s]+$/, "Use a full https:// link")),
     chartIds: z.array(id).max(30),
     prepNotes: opt(str(50_000)),
     sessionNotes: opt(str(50_000)),
@@ -261,6 +262,7 @@ export const practitionerSchema = z
     bio: str(5000),
     plan: str(80),
     reminders: opt(z.object({ clients: z.boolean(), hoursBefore: z.number().int().min(1).max(168) }).strict()),
+    portalAccent: opt(z.enum(["#824B59", "#5E7266", "#4D5A70", "#7A6145", "#29272B"])),
     workTemplates: opt(
       z
         .array(z.object({ id, kind: z.enum(["assignment", "journal", "goal", "activity"]), title: str(200).min(1), instructions: str(10_000) }).strict())

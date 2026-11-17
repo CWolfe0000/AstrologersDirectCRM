@@ -73,6 +73,7 @@ export function ConsultationDetail({ id }: { id: string }) {
           <p className="flex items-center gap-2"><CalendarDays className="size-4 text-muted" /> {fmtLong(k.start)}</p>
           <p className="flex items-center gap-2"><Clock className="size-4 text-muted" /> {fmtTime(k.start)} – {fmtTime(end)} <span className="text-muted">({relDay(k.start)})</span></p>
           <p className="flex items-center gap-2"><LocIcon className="size-4 text-muted" /> {k.location}</p>
+          {k.location === "Video call" && k.status === "scheduled" && <MeetingLink url={k.meetingUrl} onSave={(meetingUrl) => { update(k.id, { meetingUrl }); toast(meetingUrl ? "Video link saved" : "Video link removed", meetingUrl ? "Your client can join from their portal." : undefined, "success"); }} />}
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {k.status === "scheduled" && (
@@ -241,5 +242,38 @@ export function ConsultationDetail({ id }: { id: string }) {
         description={`Linked to ${k.type} with ${name}.`}
       />
     </div>
+  );
+}
+
+/** The video call link for a session: shown, added or changed inline. */
+function MeetingLink({ url, onSave }: { url?: string; onSave: (url: string | undefined) => void }) {
+  const [editing, setEditing] = React.useState(false);
+  const [v, setV] = React.useState(url ?? "");
+  React.useEffect(() => setV(url ?? ""), [url]);
+  const ok = !v.trim() || /^https:\/\/\S+$/.test(v.trim());
+  if (!editing)
+    return url ? (
+      <p className="flex items-center gap-2 pl-6">
+        <a href={url} target="_blank" rel="noreferrer" className="max-w-[260px] truncate text-accent hover:underline">{url}</a>
+        <button type="button" className="text-[12.5px] text-muted hover:text-ink" onClick={() => setEditing(true)}>Change</button>
+      </p>
+    ) : (
+      <button type="button" className="pl-6 text-[13px] font-medium text-accent hover:underline" onClick={() => setEditing(true)}>+ Add video call link</button>
+    );
+  return (
+    <form
+      className="flex flex-wrap items-center gap-2 pl-6"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!ok) return;
+        onSave(v.trim() || undefined);
+        setEditing(false);
+      }}
+    >
+      <input aria-label="Video call link" type="url" inputMode="url" autoFocus placeholder="https://" value={v} onChange={(e) => setV(e.target.value)} className="h-8 min-w-0 flex-1 rounded-md border border-line bg-surface px-2.5 text-[13px] focus:border-accent focus:outline-none" />
+      <Button size="xs" type="submit" disabled={!ok}>Save</Button>
+      <Button size="xs" variant="ghost" type="button" onClick={() => { setV(url ?? ""); setEditing(false); }}>Cancel</Button>
+      {!ok && <span className="w-full text-[12px] text-danger">Use the full link, starting with https://</span>}
+    </form>
   );
 }

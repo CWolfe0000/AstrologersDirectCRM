@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db, schema } from "@/lib/server/db";
 import { handler, HttpError, json, rateLimit, readJson, requireUser } from "@/lib/server/http";
 import { getRecord, getSettings, upsertRecord } from "@/lib/server/records";

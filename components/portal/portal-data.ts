@@ -26,8 +26,8 @@ export function useMyConsultations() {
     () =>
       consultations
         .filter((k) => k.clientId === PORTAL_CLIENT_ID)
-        .map(({ id, type, start, durationMin, status, location, sharedSummary, readingIds, chartIds }) => ({
-          id, type, start, durationMin, status, location, sharedSummary, readingIds, chartIds,
+        .map(({ id, type, start, durationMin, status, location, meetingUrl, sharedSummary, readingIds, chartIds }) => ({
+          id, type, start, durationMin, status, location, meetingUrl, sharedSummary, readingIds, chartIds,
         }))
         .sort((a, b) => a.start.localeCompare(b.start)),
     [consultations, PORTAL_CLIENT_ID],

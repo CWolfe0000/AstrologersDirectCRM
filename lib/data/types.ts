@@ -90,6 +90,8 @@ export interface Consultation {
   durationMin: number;
   status: ConsultationStatus;
   location: "Video call" | "Phone" | "In person";
+  /** Video call link (Zoom, Meet…) the client joins from their portal and reminder email. */
+  meetingUrl?: string;
   chartIds: string[];
   prepNotes?: string;
   sessionNotes?: string;
@@ -215,6 +217,8 @@ export interface Practitioner {
   plan: string;
   /** Automatic consultation reminder emails to clients. */
   reminders?: { clients: boolean; hoursBefore: number };
+  /** Accent colour for this practice's client portal (one of PORTAL_ACCENTS). */
+  portalAccent?: string;
   /** Reusable Between Sessions items. */
   workTemplates?: WorkTemplate[];
 }

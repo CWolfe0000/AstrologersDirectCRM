@@ -52,11 +52,12 @@ export async function sendDueReminders(now = new Date()) {
         .onConflictDoNothing()
         .returning({ id: schema.remindersSent.consultationId });
       if (!claimed.length) continue;
+      const join = k.location === "Video call" && typeof k.meetingUrl === "string" ? `\n\nJoin the video call:\n${k.meetingUrl}` : "";
       const portal = client.portalAccess === "active" ? `\n\nYour readings and session details are in your client portal:\n${link("/portal")}` : "";
       await sendMail(
         email,
         `Reminder: your ${k.type} with ${p.name ?? "your astrologer"}`,
-        `Hi ${person.firstName},\n\nThis is a reminder of your ${k.type} on ${when(String(k.start), zone)} (${k.durationMin} minutes, ${String(k.location).toLowerCase()}).${portal}\n\nIf you need to reschedule, reply to ${p.name ?? "your astrologer"} directly.\n\n— ${p.practice ?? "AstrologersDirect"}`,
+        `Hi ${person.firstName},\n\nThis is a reminder of your ${k.type} on ${when(String(k.start), zone)} (${k.durationMin} minutes, ${String(k.location).toLowerCase()}).${join}${portal}\n\nIf you need to reschedule, reply to ${p.name ?? "your astrologer"} directly.\n\n— ${p.practice ?? "AstrologersDirect"}`,
       );
       if (client.portalAccess === "active") {
         await upsertRecord(practiceId, "portalNotifications", {

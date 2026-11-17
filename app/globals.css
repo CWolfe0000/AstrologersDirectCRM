@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @layer base {
+  :root { --accent: 130 75 89; --accent-hover: 105 58 71; --accent-50: 246 238 240; --accent-100: 237 220 225; --accent-200: 217 185 194; }
   html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
   body { @apply bg-canvas text-ink font-sans text-[14px] leading-relaxed; }
   h1, h2, h3, .font-display { font-feature-settings: "liga" 1; }

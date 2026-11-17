@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, CalendarDays, Video, Phone, MapPin, Mail, Globe, FileText, Headphones, Film, Bell, Check, FolderOpen } from "lucide-react";
+import { ArrowRight, Video, Phone, MapPin, Mail, Globe, FileText, Headphones, Film, Bell, Check, FolderOpen } from "lucide-react";
 import { useStore, personName } from "@/lib/store";
 import { cn, fmtDay, fmtDate, fmtLong, fmtTime, relTime, sameDay, fmtDuration } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
@@ -11,10 +11,11 @@ import { SimulatedBadge } from "@/components/ui/misc";
 import { mediaUrl } from "@/lib/upload";
 import { DATA_MODE } from "@/lib/utils";
 import { usePortalClientId } from "@/components/portal/portal-shell";
-import { joinNames, useMyConsultations, useMyReadings, useMyWork, usePortalPractices, useSharedFiles, PORTAL_NOW } from "@/components/portal/portal-data";
+import { joinNames, practiceOf, useMyConsultations, useMyReadings, useMyWork, usePortalPractices, useSharedFiles, PORTAL_NOW } from "@/components/portal/portal-data";
 import { WorkCard } from "@/components/portal/work-card";
 import { workState } from "@/components/client-work/work-meta";
 import { ReadingCard } from "@/components/portal/reading-card";
+import { AddToCalendar } from "@/components/portal/session-actions";
 
 const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin } as const;
 
@@ -22,6 +23,7 @@ export default function PortalHome() {
   const PORTAL_CLIENT_ID = usePortalClientId();
   const me = useStore((s) => s.people.find((p) => p.id === PORTAL_CLIENT_ID));
   const practices = usePortalPractices();
+  const sessionWho = (k: unknown) => practices.find((p) => p.id === practiceOf(k)) ?? practices[0]!;
   const notes = useStore((s) => s.portalNotifications);
   const markRead = useStore((s) => s.markPortalNotification);
   const toast = useStore((s) => s.toast);
@@ -76,14 +78,12 @@ export default function PortalHome() {
                           <span className="inline-flex items-center gap-1"><Icon className="size-3.5" />{k.location}</span>
                         </p>
                       </div>
-                      {today && k.location === "Video call" ? (
-                        <Button size="lg" className="w-full sm:w-auto" onClick={() => toast("Opening video call…", "Video calls are simulated in the prototype.")}>
-                          <Video /> Join video call
-                        </Button>
-                      ) : i === 0 ? (
-                        <Button variant="secondary" className="w-full sm:w-auto" onClick={() => toast("Added to your calendar", "Calendar file download is simulated.", "success")}>
-                          <CalendarDays /> Add to calendar
-                        </Button>
+                      {today && k.location === "Video call" && k.meetingUrl ? (
+                        <a href={k.meetingUrl} target="_blank" rel="noreferrer" className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-accent px-5 text-[15px] font-medium text-white hover:bg-accent-hover sm:w-auto">
+                          <Video className="size-[18px]" /> Join video call
+                        </a>
+                      ) : i === 0 || today ? (
+                        <AddToCalendar k={k} who={sessionWho(k).name} zone={sessionWho(k).timezone} className="w-full sm:w-auto" />
                       ) : null}
                     </div>
                   );

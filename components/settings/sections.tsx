@@ -9,6 +9,7 @@ import { useStore } from "@/lib/store";
 import { ASPECTS, BODIES, DEFAULT_TIMELINE, HOUSE_SYSTEMS, PLANET_IDS, ZODIACS, type AspectId, type BodyId, type HouseSystem, type TimelineDefaults, type ZodiacType } from "@/lib/astro";
 import { sameTimeline, TimelineOptionsEditor } from "@/components/timeline/timeline-options";
 import { cn, DATA_MODE, fmtDate } from "@/lib/utils";
+import { PORTAL_ACCENTS } from "@/lib/brand";
 import { api } from "@/lib/api";
 import { TwoFactorCard } from "./two-factor";
 import { LabelledByContext } from "@/components/ui/label-context";
@@ -79,14 +80,15 @@ export function ProfileSection() {
 }
 
 // ——— Practice ————————————————————————————————————————————————————————
-const BRAND = ["#824B59", "#5E7266", "#4D5A70", "#7A6145", "#29272B"];
+const BRAND = PORTAL_ACCENTS;
 export function PracticeSection() {
   const p = useStore((s) => s.practitioner);
   const update = useStore((s) => s.updatePractitioner);
   const saved = useSaved();
   const [f, setF] = React.useState(p);
-  const [color, setColor] = React.useState(BRAND[0]);
   React.useEffect(() => setF(p), [p]);
+  const color = f.portalAccent ?? BRAND[0];
+  const setColor = (c: string) => setF({ ...f, portalAccent: c === BRAND[0] ? undefined : c });
   return (
     <Card>
       <CardHeader title="Practice" description="Your practice identity, used in the client portal and notifications." />
@@ -105,18 +107,17 @@ export function PracticeSection() {
           </Field>
         </div>
         <div>
-          <div className="mb-2 flex items-center gap-2"><Palette className="size-4 text-muted" /><p className="text-[13.5px] font-medium">Portal branding</p><SimulatedBadge /></div>
+          <div className="mb-2 flex items-center gap-2"><Palette className="size-4 text-muted" /><p className="text-[13.5px] font-medium">Client portal colour</p></div>
           <div className="grid gap-4 sm:grid-cols-[1fr_260px]">
             <div className="space-y-3">
-              <p className="text-[12.5px] text-muted">Accent colour</p>
+              <p className="text-[12.5px] text-muted">Buttons, links and highlights in your clients’ portal use this colour. Clients who see more than one astrologer get the standard colour.</p>
               <div className="flex gap-2">
                 {BRAND.map((c) => (
-                  <button key={c} onClick={() => setColor(c)} className={cn("flex size-8 items-center justify-center rounded-full ring-offset-2", color === c && "ring-2 ring-ink/30")} style={{ background: c }} aria-label={`Accent ${c}`}>
+                  <button key={c} onClick={() => setColor(c)} className={cn("flex size-8 items-center justify-center rounded-full ring-offset-2", color === c && "ring-2 ring-ink/30")} style={{ background: c }} aria-label={`Portal colour ${["plum (standard)", "sage", "slate blue", "bronze", "charcoal"][BRAND.indexOf(c)]}`} aria-pressed={color === c}>
                     {color === c && <Check className="size-4 text-white" />}
                   </button>
                 ))}
               </div>
-              <Button variant="secondary" size="sm" onClick={() => saved("Logo upload is simulated.")}><Upload /> Upload logo</Button>
             </div>
             <div className="rounded-lg border border-line bg-canvas p-3">
               <p className="eyebrow mb-2">Preview</p>
@@ -301,10 +302,48 @@ function describeAgent(ua: string | null) {
 }
 
 // ——— Security ————————————————————————————————————————————————————————
-export function SecuritySection() {
+/** Change (or, for email-link accounts, add) a password. Used by practitioners and clients. */
+export function PasswordCard() {
   const toast = useStore((s) => s.toast);
-  const [twofa, setTwofa] = React.useState(false);
   const [pw, setPw] = React.useState({ cur: "", next: "", confirm: "" });
+  const hasPassword = useStore((s) => s.session.user?.hasPassword) ?? true;
+  const ok = (pw.cur || !hasPassword) && pw.next.length >= 10 && pw.next === pw.confirm;
+  return (
+    <Card>
+      <CardHeader
+        title={hasPassword ? "Password" : "Password (optional)"}
+        description={hasPassword ? "You can sign in with your password or with an emailed link." : "You sign in with emailed links. Add a password if you’d also like to sign in with one."}
+      />
+      <CardBody className={cn("grid gap-4", hasPassword ? "sm:grid-cols-3" : "sm:grid-cols-2")}>
+        {hasPassword && <Field label="Current password"><Input type="password" autoComplete="current-password" value={pw.cur} onChange={(e) => setPw({ ...pw, cur: e.target.value })} /></Field>}
+        <Field label="New password" hint="At least 10 characters."><Input type="password" autoComplete="new-password" value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} /></Field>
+        <Field label="Confirm new password"><Input type="password" autoComplete="new-password" value={pw.confirm} onChange={(e) => setPw({ ...pw, confirm: e.target.value })} /></Field>
+      </CardBody>
+      <CardFooter>
+        <Button
+          disabled={!ok}
+          onClick={async () => {
+            if (DATA_MODE === "demo") { setPw({ cur: "", next: "", confirm: "" }); toast("Password updated (simulated)", undefined, "success"); return; }
+            try {
+              await api("/api/auth/change-password", { body: { current: pw.cur, next: pw.next } });
+              setPw({ cur: "", next: "", confirm: "" });
+              if (!hasPassword) useStore.setState((st) => (st.session.user ? { session: { ...st.session, user: { ...st.session.user, hasPassword: true } } } : {}));
+              toast(hasPassword ? "Password updated" : "Password added", "You’ve been signed out on your other devices.", "success");
+            } catch (e) {
+              toast("Password not changed", (e as Error).message, "error");
+            }
+          }}
+        >
+          {hasPassword ? "Update password" : "Add password"}
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
+/** Where you're signed in, with remote sign-out. Used by practitioners and clients. */
+export function SessionsCard() {
+  const toast = useStore((s) => s.toast);
   const [sessions, setSessions] = React.useState<{ id: string; icon: typeof Monitor; name: string; where: string; when: string; current: boolean }[]>(
     DATA_MODE === "demo"
       ? [
@@ -342,41 +381,33 @@ export function SecuritySection() {
       toast("Couldn’t sign out that session", (e as Error).message, "error");
     }
   };
-  const hasPassword = useStore((s) => s.session.user?.hasPassword) ?? true;
-  const ok = (pw.cur || !hasPassword) && pw.next.length >= 10 && pw.next === pw.confirm;
+  return (
+    <Card>
+      <CardHeader title="Active sessions" action={sessions.length > 1 ? <Button variant="secondary" size="xs" onClick={() => void endSession({ others: true })}>Sign out all others</Button> : undefined} />
+      <ul className="divide-y divide-line">
+        {sessions.map((x) => (
+          <li key={x.id} className="flex items-center gap-3 px-5 py-3">
+            <x.icon className="size-5 text-muted" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[13.5px] font-medium">{x.name} {x.current && <Badge tone="sage" className="ml-1">This device</Badge>}</p>
+              <p className="text-[12px] text-muted">{x.where} · {x.when}</p>
+            </div>
+            {!x.current && <Button variant="ghost" size="xs" onClick={() => void endSession({ id: x.id })}>Sign out</Button>}
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
+export function SecuritySection() {
+  const toast = useStore((s) => s.toast);
+  const [twofa, setTwofa] = React.useState(false);
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader
-          title={hasPassword ? "Password" : "Password (optional)"}
-          description={hasPassword ? "You can sign in with your password or with an emailed link." : "You sign in with emailed links. Add a password if you’d also like to sign in with one."}
-        />
-        <CardBody className={cn("grid gap-4", hasPassword ? "sm:grid-cols-3" : "sm:grid-cols-2")}>
-          {hasPassword && <Field label="Current password"><Input type="password" value={pw.cur} onChange={(e) => setPw({ ...pw, cur: e.target.value })} /></Field>}
-          <Field label="New password" hint="At least 10 characters."><Input type="password" value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} /></Field>
-          <Field label="Confirm new password"><Input type="password" value={pw.confirm} onChange={(e) => setPw({ ...pw, confirm: e.target.value })} /></Field>
-        </CardBody>
-        <CardFooter>
-          <Button
-            disabled={!ok}
-            onClick={async () => {
-              if (DATA_MODE === "demo") { setPw({ cur: "", next: "", confirm: "" }); toast("Password updated (simulated)", undefined, "success"); return; }
-              try {
-                await api("/api/auth/change-password", { body: { current: pw.cur, next: pw.next } });
-                setPw({ cur: "", next: "", confirm: "" });
-                if (!hasPassword) useStore.setState((st) => (st.session.user ? { session: { ...st.session, user: { ...st.session.user, hasPassword: true } } } : {}));
-                toast(hasPassword ? "Password updated" : "Password added", "You’ve been signed out on your other devices.", "success");
-              } catch (e) {
-                toast("Password not changed", (e as Error).message, "error");
-              }
-            }}
-          >
-            {hasPassword ? "Update password" : "Add password"}
-          </Button>
-        </CardFooter>
-      </Card>
+      <PasswordCard />
       {DATA_MODE === "demo" ? (
-      <Card>
+        <Card>
           <CardHeader title="Two-factor authentication" description="Protect client records with an authenticator app." action={<SimulatedBadge />} />
           <CardBody className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -392,26 +423,12 @@ export function SecuritySection() {
       ) : (
         <TwoFactorCard />
       )}
+      <SessionsCard />
       <Card>
-        <CardHeader title="Active sessions" action={<Button variant="secondary" size="xs" onClick={() => void endSession({ others: true })}>Sign out all others</Button>} />
-        <ul className="divide-y divide-line">
-          {sessions.map((x) => (
-            <li key={x.id} className="flex items-center gap-3 px-5 py-3">
-              <x.icon className="size-5 text-muted" />
-              <div className="min-w-0 flex-1">
-                <p className="text-[13.5px] font-medium">{x.name} {x.current && <Badge tone="sage" className="ml-1">This device</Badge>}</p>
-                <p className="text-[12px] text-muted">{x.where} · {x.when}</p>
-              </div>
-              {!x.current && <Button variant="ghost" size="xs" onClick={() => void endSession({ id: x.id })}>Sign out</Button>}
-            </li>
-          ))}
-        </ul>
-      </Card>
-      <Card>
-        <CardHeader title="Data access" description="Who and what can access your practice data." />
+        <CardHeader title="Data access" description="Who can see your practice data." />
         <CardBody className="divide-y divide-line py-1">
           <Row title="Client portal" desc="Clients see only readings, files and consultation summaries you share. Private observations are never shown."><Badge tone="sage">Enforced</Badge></Row>
-          <Row title="AI assistance" desc="Chart questions are answered from your own records; data is not used to train models."><Badge tone="info">Practice-only</Badge></Row>
+          {DATA_MODE === "demo" && <Row title="AI assistance" desc="Chart questions are answered from your own records; data is not used to train models."><Badge tone="info">Practice-only</Badge></Row>}
           <Row title="Connected integrations"><span className="text-[12.5px] text-muted">None connected</span></Row>
         </CardBody>
       </Card>
@@ -477,6 +494,7 @@ export function SubscriptionSection() {
         </CardBody>
       </Card>
       )}
+      {DATA_MODE === "demo" && (
       <Card>
         <CardHeader title="Usage" description="Demonstration allowances." />
         <CardBody className="space-y-4">
@@ -493,10 +511,15 @@ export function SubscriptionSection() {
           ))}
         </CardBody>
       </Card>
+      )}
       <Card>
-        <CardHeader title="Billing information" />
+        <CardHeader title="Billing" />
         <CardBody>
-          <SimulatedNote>No payment integration exists in the prototype. Billing details, invoices and payment methods will appear here once a payment provider is connected.</SimulatedNote>
+          {DATA_MODE === "demo" ? (
+            <SimulatedNote>No payment integration exists in the prototype. Billing details, invoices and payment methods will appear here once a payment provider is connected.</SimulatedNote>
+          ) : (
+            <p className="text-[13.5px] text-ink-3">There’s nothing to pay during the private beta. Payment details, invoices and receipts will appear here when paid plans begin, and we’ll tell you well before anything changes.</p>
+          )}
         </CardBody>
       </Card>
     </div>
@@ -539,6 +562,7 @@ export function DataSection() {
           </Row>
         </CardBody>
       </Card>
+      {DATA_MODE === "demo" && (
       <Card>
         <CardHeader title="Privacy" />
         <CardBody className="divide-y divide-line py-1">
@@ -554,6 +578,7 @@ export function DataSection() {
           </Row>
         </CardBody>
       </Card>
+      )}
       {DATA_MODE === "demo" ? (
         <Card>
           <CardHeader title="Prototype data" description="Restore the original demonstration dataset." />

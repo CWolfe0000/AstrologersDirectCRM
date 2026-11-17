@@ -1,31 +1,20 @@
 "use client";
 
 import * as React from "react";
-import { ShieldCheck, Laptop, Smartphone, Download, Trash2 } from "lucide-react";
+import { ShieldCheck, Download, Trash2 } from "lucide-react";
 import { useStore, personName } from "@/lib/store";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
-import { Field, Input } from "@/components/ui/input";
+import { Checkbox, Field, Input } from "@/components/ui/input";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { PasswordCard, SessionsCard } from "@/components/settings/sections";
+import { TwoFactorCard } from "@/components/settings/two-factor";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import { SimulatedBadge } from "@/components/ui/misc";
 import { usePortalClientId } from "@/components/portal/portal-shell";
 import { joinNames, usePortalPractices } from "@/components/portal/portal-data";
 import { DATA_MODE } from "@/lib/utils";
 import { api } from "@/lib/api";
-
-function Toggle({ label, desc, defaultChecked }: { label: string; desc: string; defaultChecked?: boolean }) {
-  const [on, setOn] = React.useState(!!defaultChecked);
-  return (
-    <div className="flex items-start justify-between gap-4 py-3.5">
-      <div>
-        <p className="text-[14px] text-ink">{label}</p>
-        <p className="text-[12.5px] text-muted">{desc}</p>
-      </div>
-      <Switch checked={on} onCheckedChange={setOn} aria-label={label} />
-    </div>
-  );
-}
 
 export default function PortalSettings() {
   const PORTAL_CLIENT_ID = usePortalClientId();
@@ -40,6 +29,45 @@ export default function PortalSettings() {
   const [last, setLast] = React.useState(me?.lastName ?? "");
   const [email, setEmail] = React.useState(client?.email ?? "");
   const [twoFA, setTwoFA] = React.useState(false);
+  const preview = useStore((s) => !!s.session.preview);
+  const [closing, setClosing] = React.useState(false);
+  const [closingBusy, setClosingBusy] = React.useState(false);
+  const [confirmText, setConfirmText] = React.useState("");
+  const [deleteRecords, setDeleteRecords] = React.useState(false);
+
+  const downloadData = () => {
+    const st = useStore.getState();
+    const mine = <T extends { clientId?: string }>(xs: T[]) => xs.filter((x) => !x.clientId || x.clientId === PORTAL_CLIENT_ID);
+    const data = {
+      exportedAt: new Date().toISOString(),
+      astrologers: practices.map(({ name, practice, email, website }) => ({ name, practice, email, website })),
+      profile: { ...me, email: client?.email },
+      readings: mine(st.readings).filter((r) => r.status === "delivered").map(({ fileKey, ...r }) => (void fileKey, r)),
+      consultations: mine(st.consultations).map(({ id, type, start, durationMin, status, location, sharedSummary }) => ({ id, type, start, durationMin, status, location, sharedSummary })),
+      files: mine(st.files).filter((f) => !f.private).map(({ fileKey, ...f }) => (void fileKey, f)),
+      betweenSessions: mine(st.clientWork).map((w) => ({ ...w, responses: st.workResponses.filter((r) => r.workId === w.id) })),
+      notifications: mine(st.portalNotifications),
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "my-astrologersdirect-portal.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast("Download ready", "A copy of everything in your portal. Readings and files themselves can be downloaded from each one, where your astrologer allows it.", "success");
+  };
+
+  const closeAccount = async () => {
+    if (DATA_MODE === "demo") { setClosing(false); toast("Account closed", "Simulated in the demo.", "success"); return; }
+    setClosingBusy(true);
+    try {
+      await api("/api/v1/portal/account", { method: "DELETE", body: { confirm: "CLOSE", deleteRecords } });
+      window.location.href = "/?closed=1";
+    } catch (e) {
+      toast("Couldn’t close your account", (e as Error).message, "error");
+      setClosingBusy(false);
+    }
+  };
   React.useEffect(() => {
     if (me) { setFirst(me.firstName); setLast(me.lastName); }
     if (client) setEmail(client.email);
@@ -76,79 +104,40 @@ export default function PortalSettings() {
         </CardBody>
       </Card>
 
+      {(DATA_MODE === "demo" || !preview) && <PasswordCard />}
+
       <Card>
-        <CardHeader title="Password" />
-        <CardBody>
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const form = e.target as HTMLFormElement;
-              if (DATA_MODE === "demo") { form.reset(); toast("Password updated", "Simulated — no real credentials are stored.", "success"); return; }
-              const fd = new FormData(form);
-              if (fd.get("np") !== fd.get("np2")) { toast("Passwords don’t match", "Type the new password the same way twice.", "error"); return; }
-              try {
-                await api("/api/auth/change-password", { body: { current: fd.get("cp"), next: fd.get("np") } });
-                form.reset();
-                toast("Password updated", "You’ve been signed out on your other devices.", "success");
-              } catch (err) {
-                toast("Password not changed", (err as Error).message, "error");
-              }
-            }}
-            className="space-y-4"
-          >
-            <Field label="Current password" htmlFor="cp"><Input id="cp" name="cp" type="password" required className="h-11 sm:h-9" autoComplete="current-password" /></Field>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="New password" htmlFor="np" hint="At least 10 characters."><Input id="np" name="np" type="password" minLength={10} required className="h-11 sm:h-9" autoComplete="new-password" /></Field>
-              <Field label="Confirm new password" htmlFor="np2"><Input id="np2" name="np2" type="password" minLength={10} required className="h-11 sm:h-9" autoComplete="new-password" /></Field>
-            </div>
-            <div className="flex justify-end"><Button type="submit" variant="secondary">Update password</Button></div>
-          </form>
+        <CardHeader title="Emails we send you" />
+        <CardBody className="space-y-2 text-[13.5px] leading-relaxed text-ink-3">
+          <p>We email you when {one ? firsts : "an astrologer"} shares a reading, recording or something to work on between sessions, and for any session reminders or gentle reminders they’ve set up for you.</p>
+          <p className="text-muted">These go to {client?.email || "your email address"}. They only ever come from your astrologer’s activity: there’s no newsletter or marketing.</p>
         </CardBody>
       </Card>
 
-      <Card>
-        <CardHeader title="Notifications" description="How we let you know about new materials and sessions." />
-        <CardBody className="divide-y divide-line py-1">
-          <Toggle label="New reading shared" desc="Email me when a reading or recording is shared with me." defaultChecked />
-          <Toggle label="Session reminders" desc="Email a reminder 24 hours and 1 hour before a consultation." defaultChecked />
-          <Toggle label="Schedule changes" desc="Email me if a session is moved or cancelled." defaultChecked />
-          <Toggle label="Text message reminders" desc="SMS reminder 1 hour before a session." />
-        </CardBody>
-      </Card>
-
-      <Card>
-        <CardHeader title="Security" action={<SimulatedBadge />} />
-        <CardBody className="space-y-5">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex gap-3">
-              <ShieldCheck className="mt-0.5 size-5 text-sage-dark" />
-              <div>
-                <p className="text-[14px] text-ink">Two-factor authentication</p>
-                <p className="text-[12.5px] text-muted">Require a code from an authenticator app when signing in.</p>
+      {DATA_MODE === "demo" ? (
+        <Card>
+          <CardHeader title="Security" action={<SimulatedBadge />} />
+          <CardBody>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex gap-3">
+                <ShieldCheck className="mt-0.5 size-5 text-sage-dark" />
+                <div>
+                  <p className="text-[14px] text-ink">Two-factor authentication</p>
+                  <p className="text-[12.5px] text-muted">Require a code from an authenticator app when signing in.</p>
+                </div>
               </div>
+              <Switch checked={twoFA} onCheckedChange={(v) => { setTwoFA(v); toast(v ? "Two-factor authentication enabled" : "Two-factor authentication disabled", "Simulated in the prototype.", "success"); }} aria-label="Two-factor authentication" />
             </div>
-            <Switch checked={twoFA} onCheckedChange={(v) => { setTwoFA(v); toast(v ? "Two-factor authentication enabled" : "Two-factor authentication disabled", "Simulated in the prototype.", "success"); }} aria-label="Two-factor authentication" />
-          </div>
-          <div>
-            <p className="mb-2 text-[13px] font-semibold text-ink">Active sessions</p>
-            <ul className="divide-y divide-line rounded-xl border border-line">
-              {[
-                { icon: Laptop, name: "Safari on macOS", where: "Portland, OR · Current session", current: true },
-                { icon: Smartphone, name: "iPhone app (web)", where: "Portland, OR · 2 days ago" },
-              ].map((d) => (
-                <li key={d.name} className="flex items-center gap-3 px-4 py-3">
-                  <d.icon className="size-5 text-muted" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[13.5px] text-ink">{d.name}</p>
-                    <p className="text-[12px] text-muted">{d.where}</p>
-                  </div>
-                  {d.current ? <Badge tone="sage">This device</Badge> : <Button variant="ghost" size="sm" onClick={() => toast("Signed out of device", undefined, "success")}>Sign out</Button>}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </CardBody>
-      </Card>
+          </CardBody>
+        </Card>
+      ) : (
+        !preview && (
+          <>
+            <TwoFactorCard hint="Optional: an extra step that keeps your readings private even if someone gets into your email." />
+            <SessionsCard />
+          </>
+        )
+      )}
 
       <Card>
         <CardHeader title="Privacy" />
@@ -159,11 +148,34 @@ export default function PortalSettings() {
           <p>
             <span className="font-medium text-ink">What stays private to {one ? firsts : "each astrologer"}:</span> their working notes and chart observations. These are professional records and aren&apos;t shown in your portal.
           </p>
-          <p>Your materials are never shared with other clients. You can request a copy of your data or ask for your account to be deleted at any time.</p>
+          <p>Your materials are never shared with other clients. You can download a copy of everything in your portal, or close your account, at any time.</p>
           <div className="flex flex-wrap gap-2 pt-1">
-            <Button variant="secondary" onClick={() => toast("Data export requested", "We'll email a download link. (Simulated)", "success")}><Download /> Request my data</Button>
-            <Button variant="ghost" className="text-danger hover:bg-danger-50" onClick={() => toast("Deletion request sent", `${one ? firsts : "Your astrologers"} will confirm before anything is deleted. (Simulated)`)}><Trash2 /> Request account deletion</Button>
+            <Button variant="secondary" onClick={downloadData}><Download /> Download my data</Button>
+            {!preview && <Button variant="ghost" className="text-danger hover:bg-danger-50" onClick={() => setClosing(true)}><Trash2 /> Close my portal account</Button>}
           </div>
+          <Dialog open={closing} onOpenChange={setClosing}>
+            {closing && (
+              <DialogContent
+                size="sm"
+                title="Close your portal account?"
+                description={`You’ll be signed out and your portal login deleted. ${one ? firsts : "Each of your astrologers"} will be told by email.`}
+                footer={
+                  <>
+                    <Button variant="ghost" onClick={() => setClosing(false)}>Cancel</Button>
+                    <Button variant="danger" disabled={confirmText !== "CLOSE" || closingBusy} onClick={closeAccount}>Close my account</Button>
+                  </>
+                }
+              >
+                <div className="space-y-4 text-[13.5px] text-ink-3">
+                  <p>{one ? firsts : "Your astrologers"} keep{one ? "s" : ""} their professional records (your details, sessions and notes). If you’d like those deleted too, tick the box and we’ll pass that on.</p>
+                  <Checkbox label={`Ask ${one ? firsts : "them"} to delete my records too`} checked={deleteRecords} onChange={(e) => setDeleteRecords(e.target.checked)} />
+                  <Field label="Type CLOSE to confirm" htmlFor="close-confirm">
+                    <Input id="close-confirm" autoComplete="off" value={confirmText} onChange={(e) => setConfirmText(e.target.value.toUpperCase())} />
+                  </Field>
+                </div>
+              </DialogContent>
+            )}
+          </Dialog>
         </CardBody>
       </Card>
       <p className="pb-4 text-center text-[12px] text-muted">Signed in as {personName(me)}</p>

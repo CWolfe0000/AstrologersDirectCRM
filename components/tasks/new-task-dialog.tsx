@@ -6,7 +6,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select, Textarea } from "@/components/ui/input";
 import type { Task, TaskPriority } from "@/lib/data/types";
-import { fmtDate, uid } from "@/lib/utils";
+import { daysFromToday, fmtDate, uid } from "@/lib/utils";
 
 export function NewTaskDialog({
   open,
@@ -35,7 +35,7 @@ export function NewTaskDialog({
 
   const [name, setName] = React.useState("");
   const [desc, setDesc] = React.useState("");
-  const [due, setDue] = React.useState("2026-11-21");
+  const [due, setDue] = React.useState(daysFromToday(4));
   const [priority, setPriority] = React.useState<TaskPriority>("medium");
   const [clientId, setClientId] = React.useState("");
   const [consultationId, setConsultationId] = React.useState("");

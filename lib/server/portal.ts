@@ -33,14 +33,14 @@ export async function portalView(practiceId: string, clientId: string) {
   const client = clients.find((c) => c.id === clientId);
   const p = (settings?.practitioner ?? {}) as Rec;
   return {
-    practitioner: { name: p.name, firstName: p.firstName, title: p.title, email: p.email, phone: p.phone, practice: p.practice, website: p.website, bio: p.bio, timezone: p.timezone, plan: "" },
+    practitioner: { name: p.name, firstName: p.firstName, title: p.title, email: p.email, phone: p.phone, practice: p.practice, website: p.website, bio: p.bio, timezone: p.timezone, portalAccent: p.portalAccent, plan: "" },
     people: me ? [{ id: me.id, firstName: me.firstName, lastName: me.lastName, birth: me.birth }] : [],
     clients: client ? [{ id: client.id, email: client.email, status: client.status, createdAt: client.createdAt, tags: [], portalAccess: client.portalAccess }] : [],
     readings: readings.filter((r) => r.clientId === clientId && r.status === "delivered" && !isExpired(r.expiresAt)),
     consultations: consultations
       .filter((k) => k.clientId === clientId)
       .map((k) => ({
-        id: k.id, clientId: k.clientId, type: k.type, start: k.start, durationMin: k.durationMin, status: k.status, location: k.location,
+        id: k.id, clientId: k.clientId, type: k.type, start: k.start, durationMin: k.durationMin, status: k.status, location: k.location, meetingUrl: k.status === "scheduled" ? k.meetingUrl : undefined,
         sharedSummary: k.sharedSummary, readingIds: k.readingIds, recordingIds: [], chartIds: [],
       })),
     files: files.filter((f) => f.clientId === clientId && !f.private).map(({ note, ...f }) => (void note, f)),

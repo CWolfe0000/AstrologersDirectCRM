@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Select, Textarea, Checkbox } from "@/components/ui/input";
 import { ChartTypeBadge } from "@/components/chart/chart-helpers";
 import type { Consultation } from "@/lib/data/types";
+import { daysFromToday } from "@/lib/utils";
 
 export const CONSULTATION_TYPES = [
   "Natal Reading",
@@ -42,12 +43,14 @@ export function NewConsultationDialog({
 
   const [clientId, setClientId] = React.useState(defaultClientId ?? "");
   const [type, setType] = React.useState(CONSULTATION_TYPES[3]!);
-  const [date, setDate] = React.useState(defaultDate ?? "2026-11-20");
+  const [date, setDate] = React.useState(defaultDate ?? daysFromToday(1));
   const [time, setTime] = React.useState("10:00");
   const [duration, setDuration] = React.useState(60);
   const [location, setLocation] = React.useState<Consultation["location"]>("Video call");
   const [chartIds, setChartIds] = React.useState<string[]>([]);
   const [prep, setPrep] = React.useState("");
+  const [meetingUrl, setMeetingUrl] = React.useState("");
+  const urlOk = !meetingUrl.trim() || /^https:\/\/\S+$/.test(meetingUrl.trim());
 
   React.useEffect(() => {
     if (open) {
@@ -55,6 +58,7 @@ export function NewConsultationDialog({
       if (defaultDate) setDate(defaultDate);
       setChartIds([]);
       setPrep("");
+      setMeetingUrl("");
     }
   }, [open, defaultClientId, defaultDate]);
 
@@ -73,6 +77,7 @@ export function NewConsultationDialog({
       durationMin: duration,
       status: "scheduled",
       location,
+      meetingUrl: location === "Video call" && meetingUrl.trim() ? meetingUrl.trim() : undefined,
       chartIds,
       prepNotes: prep || undefined,
       readingIds: [],
@@ -92,7 +97,7 @@ export function NewConsultationDialog({
         footer={
           <>
             <Button variant="secondary" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button onClick={submit} disabled={!clientId}>Schedule consultation</Button>
+            <Button onClick={submit} disabled={!clientId || !urlOk}>Schedule consultation</Button>
           </>
         }
       >
@@ -117,6 +122,11 @@ export function NewConsultationDialog({
               <option>In person</option>
             </Select>
           </Field>
+          {location === "Video call" && (
+            <Field label="Video call link (optional)" className="sm:col-span-2" hint={urlOk ? "Zoom, Google Meet or similar. Your client joins from their portal and reminder email." : "Use the full link, starting with https://"}>
+              <Input type="url" inputMode="url" placeholder="https://" value={meetingUrl} onChange={(e) => setMeetingUrl(e.target.value)} />
+            </Field>
+          )}
           <Field label="Date"><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Start time"><Input type="time" value={time} onChange={(e) => setTime(e.target.value)} /></Field>

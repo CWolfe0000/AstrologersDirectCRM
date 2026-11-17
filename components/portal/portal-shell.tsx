@@ -10,6 +10,7 @@ import { useStore, personName } from "@/lib/store";
 import { Avatar } from "@/components/ui/avatar";
 import { Toaster } from "@/components/ui/misc";
 import { joinNames, usePortalPractices } from "./portal-data";
+import { accentVars } from "@/lib/brand";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 /** The client whose portal is shown (the signed-in client, or the demo client "c1"). */
@@ -40,7 +41,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
   const active = (href: string, exact?: boolean) => (exact ? path === href : path.startsWith(href));
 
   return (
-    <div className="min-h-screen bg-canvas pb-20 md:pb-0">
+    <div className="min-h-screen bg-canvas pb-20 md:pb-0" style={practices.length === 1 ? (accentVars(practices[0]!.portalAccent) as React.CSSProperties) : undefined}>
       <a href="#main" className="sr-only z-[100] rounded-lg bg-ink px-4 py-2 text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Skip to content</a>
       {showBanner && <div className="bg-ink text-[12px] text-[#CFCAD0]">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-1.5 md:px-6">

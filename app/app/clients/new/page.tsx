@@ -7,7 +7,7 @@ import { useStore } from "@/lib/store";
 import { useChartView } from "@/components/chart/chart-helpers";
 import { BODIES, fmtDeg, signOf, HOUSE_SYSTEMS, type BirthData, type HouseSystem } from "@/lib/astro";
 import type { ChartRecord, Person } from "@/lib/data/types";
-import { cn, fmtDate, fmtClock } from "@/lib/utils";
+import { cn, fmtDate, fmtClock, TODAY } from "@/lib/utils";
 import { PageHeader } from "@/components/ui/misc";
 import { Card, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -148,7 +148,7 @@ export default function NewClientPage() {
             <div className="space-y-5">
               <StepTitle title="Birth data" body={`Used to calculate ${contact.firstName || "the client"}'s natal chart. You can refine this later.`} />
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Date of birth" htmlFor="bd"><Input id="bd" type="date" value={birth.date} onChange={(e) => setBirth((b) => ({ ...b, date: e.target.value }))} max="2026-11-14" /></Field>
+                <Field label="Date of birth" htmlFor="bd"><Input id="bd" type="date" value={birth.date} onChange={(e) => setBirth((b) => ({ ...b, date: e.target.value }))} max={TODAY} /></Field>
                 <Field label="Time of birth" htmlFor="bt" hint={birth.timeAccuracy === "unknown" ? "A noon chart with whole-sign houses will be used." : "Local time at the place of birth."}>
                   <Input id="bt" type="time" value={birth.time} disabled={birth.timeAccuracy === "unknown"} onChange={(e) => setBirth((b) => ({ ...b, time: e.target.value }))} />
                 </Field>

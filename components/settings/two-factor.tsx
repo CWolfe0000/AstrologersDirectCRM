@@ -12,7 +12,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 
 /** Real two-factor setup (server mode): QR code → confirm code → recovery codes; turning off needs password + code. */
-export function TwoFactorCard() {
+export function TwoFactorCard({ hint = "Recommended for practices holding client birth data." }: { hint?: string } = {}) {
   const toast = useStore((s) => s.toast);
   const user = useStore((s) => s.session.user);
   const [enabled, setEnabled] = React.useState(!!user?.twoFactor);
@@ -72,7 +72,7 @@ export function TwoFactorCard() {
         <div className="flex items-center gap-3">
           <ShieldCheck className={cn("size-8", enabled ? "text-sage-dark" : "text-muted")} />
           <p className="text-[12.5px] text-muted">
-            {enabled ? "You’ll be asked for a code each time you sign in." : "Recommended for practices holding client birth data. Works with 1Password, Google Authenticator, Authy and similar apps."}
+            {enabled ? "You’ll be asked for a code each time you sign in." : `${hint} Works with 1Password, Google Authenticator, Authy and similar apps.`}
           </p>
         </div>
         {enabled ? (

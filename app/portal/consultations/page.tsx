@@ -9,7 +9,8 @@ import { cn, fmtDate, fmtTime, monthName, sameDay } from "@/lib/utils";
 import { StatusBadge } from "@/components/ui/badge";
 import { Segmented } from "@/components/ui/tabs";
 import { FileKindIcon } from "@/components/ui/misc";
-import { useMyConsultations, useMyReadings, useSharedFiles, PORTAL_NOW } from "@/components/portal/portal-data";
+import { practiceOf, useMyConsultations, useMyReadings, usePortalPractices, useSharedFiles, PORTAL_NOW } from "@/components/portal/portal-data";
+import { AddToCalendar, SessionActions } from "@/components/portal/session-actions";
 
 const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin } as const;
 
@@ -18,6 +19,8 @@ export default function PortalConsultations() {
   const readings = useMyReadings();
   const files = useSharedFiles();
   const toast = useStore((s) => s.toast);
+  const practices = usePortalPractices();
+  const who = (k: unknown) => practices.find((p) => p.id === practiceOf(k)) ?? practices[0]!;
   const [view, setView] = React.useState<"upcoming" | "past">("upcoming");
   const upcoming = all.filter((k) => k.status === "scheduled" && k.start.slice(0, 10) >= PORTAL_NOW.slice(0, 10));
   const past = all.filter((k) => !upcoming.includes(k)).reverse();
@@ -106,14 +109,8 @@ export default function PortalConsultations() {
 
               {view === "upcoming" && (
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {today && k.location === "Video call" && (
-                    <button onClick={() => toast("Opening video call…", "Video calls are simulated in the prototype.")} className="inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-[13.5px] font-medium text-white hover:bg-accent-hover">
-                      <Video className="size-4" /> Join video call
-                    </button>
-                  )}
-                  <button onClick={() => toast("Request sent", "Your astrologer will confirm a new time. (Simulated)", "success")} className="inline-flex h-10 items-center rounded-lg border border-line px-4 text-[13.5px] font-medium text-ink hover:bg-canvas-2">
-                    Request to reschedule
-                  </button>
+                  <SessionActions k={k} today={today} who={who(k).firstName || who(k).name || "Your astrologer"} />
+                  <AddToCalendar k={k} who={who(k).name || "your astrologer"} zone={who(k).timezone} className="h-10" />
                 </div>
               )}
             </li>

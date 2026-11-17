@@ -9,7 +9,14 @@ const config: Config = {
         ink: { DEFAULT: "#29272B", 2: "#3A373D", 3: "#4A464E" },
         canvas: { DEFAULT: "#F7F5F1", 2: "#F0EDE7", 3: "#E9E5DE" },
         surface: "#FFFFFF",
-        accent: { DEFAULT: "#824B59", hover: "#693A47", 50: "#F6EEF0", 100: "#EDDCE1", 200: "#D9B9C2" },
+        // Variables so a practice's client portal can use its own accent colour (see lib/brand.ts).
+        accent: {
+          DEFAULT: "rgb(var(--accent) / <alpha-value>)",
+          hover: "rgb(var(--accent-hover) / <alpha-value>)",
+          50: "rgb(var(--accent-50) / <alpha-value>)",
+          100: "rgb(var(--accent-100) / <alpha-value>)",
+          200: "rgb(var(--accent-200) / <alpha-value>)",
+        },
         sage: { DEFAULT: "#83978B", dark: "#5E7266", 50: "#EFF3F0", 100: "#DEE6E0" },
         muted: "#68645F",
         line: { DEFAULT: "#E7E2DC", strong: "#D6CFC6" },
