@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { SimulatedBadge } from "@/components/ui/misc";
 import { usePortalClientId } from "@/components/portal/portal-shell";
+import { joinNames, usePortalPractices } from "@/components/portal/portal-data";
 import { DATA_MODE } from "@/lib/utils";
 import { api } from "@/lib/api";
 
@@ -30,7 +31,10 @@ export default function PortalSettings() {
   const PORTAL_CLIENT_ID = usePortalClientId();
   const me = useStore((s) => s.people.find((p) => p.id === PORTAL_CLIENT_ID));
   const client = useStore((s) => s.clients.find((c) => c.id === PORTAL_CLIENT_ID));
-  const pr = useStore((s) => s.practitioner);
+  const practices = usePortalPractices();
+  const names = joinNames(practices.map((p) => p.name)) || "your astrologer";
+  const firsts = joinNames(practices.map((p) => p.firstName)) || "your astrologer";
+  const one = practices.length <= 1;
   const toast = useStore((s) => s.toast);
   const [first, setFirst] = React.useState(me?.firstName ?? "");
   const [last, setLast] = React.useState(me?.lastName ?? "");
@@ -58,15 +62,15 @@ export default function PortalSettings() {
       </div>
 
       <Card>
-        <CardHeader title="Your details" description={`Shared with ${pr.name}.`} />
+        <CardHeader title="Your details" description={`Shared with ${names}.`} />
         <CardBody>
           <form onSubmit={saveProfile} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="First name" htmlFor="pf"><Input id="pf" value={first} onChange={(e) => setFirst(e.target.value)} className="h-11 sm:h-9" /></Field>
               <Field label="Last name" htmlFor="pl"><Input id="pl" value={last} onChange={(e) => setLast(e.target.value)} className="h-11 sm:h-9" /></Field>
             </div>
-            <Field label="Email" htmlFor="pe" hint={DATA_MODE === "demo" ? "Used to sign in and to receive notifications." : `Used to sign in. To change it, ask ${pr.firstName || "your astrologer"}.`}><Input id="pe" type="email" value={email} readOnly={DATA_MODE !== "demo"} onChange={(e) => setEmail(e.target.value)} className={DATA_MODE === "demo" ? "h-11 sm:h-9" : "h-11 bg-canvas-2 text-muted sm:h-9"} /></Field>
-            <p className="text-[12.5px] text-muted">Birth details are managed by your astrologer. To correct them, send {pr.firstName} a message.</p>
+            <Field label="Email" htmlFor="pe" hint={DATA_MODE === "demo" ? "Used to sign in and to receive notifications." : `Used to sign in. To change it, ask ${one ? firsts : "one of your astrologers"}.`}><Input id="pe" type="email" value={email} readOnly={DATA_MODE !== "demo"} onChange={(e) => setEmail(e.target.value)} className={DATA_MODE === "demo" ? "h-11 sm:h-9" : "h-11 bg-canvas-2 text-muted sm:h-9"} /></Field>
+            <p className="text-[12.5px] text-muted">Birth details are managed by your astrologer. To correct them, send {one ? firsts : "your astrologer"} a message.</p>
             <div className="flex justify-end"><Button type="submit">Save changes</Button></div>
           </form>
         </CardBody>
@@ -150,15 +154,15 @@ export default function PortalSettings() {
         <CardHeader title="Privacy" />
         <CardBody className="space-y-4 text-[13.5px] leading-relaxed text-ink-3">
           <p>
-            <span className="font-medium text-ink">What {pr.firstName} can see:</span> your contact details, birth information, the readings shared with you and whether you&apos;ve opened them, your consultation history, and what you write in Between Sessions.
+            <span className="font-medium text-ink">What {one ? firsts : "each astrologer"} can see:</span> your contact details, birth information, the readings {one ? "" : "they’ve "}shared with you and whether you&apos;ve opened them, your consultation history{one ? "" : " with them"}, and what you write in Between Sessions{one ? "" : " for them"}.{!one && " Your astrologers can’t see each other’s records."}
           </p>
           <p>
-            <span className="font-medium text-ink">What stays private to {pr.firstName}:</span> their working notes and chart observations. These are professional records and aren&apos;t shown in your portal.
+            <span className="font-medium text-ink">What stays private to {one ? firsts : "each astrologer"}:</span> their working notes and chart observations. These are professional records and aren&apos;t shown in your portal.
           </p>
           <p>Your materials are never shared with other clients. You can request a copy of your data or ask for your account to be deleted at any time.</p>
           <div className="flex flex-wrap gap-2 pt-1">
             <Button variant="secondary" onClick={() => toast("Data export requested", "We'll email a download link. (Simulated)", "success")}><Download /> Request my data</Button>
-            <Button variant="ghost" className="text-danger hover:bg-danger-50" onClick={() => toast("Deletion request sent", `${pr.firstName} will confirm before anything is deleted. (Simulated)`)}><Trash2 /> Request account deletion</Button>
+            <Button variant="ghost" className="text-danger hover:bg-danger-50" onClick={() => toast("Deletion request sent", `${one ? firsts : "Your astrologers"} will confirm before anything is deleted. (Simulated)`)}><Trash2 /> Request account deletion</Button>
           </div>
         </CardBody>
       </Card>

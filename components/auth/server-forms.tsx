@@ -389,14 +389,16 @@ function Invite() {
   const router = useRouter();
   const token = useSearchParams().get("token") ?? "";
   const { loading, error, run } = useSubmit();
-  const [info, setInfo] = React.useState<{ email: string; name: string; practitioner: string; practice: string } | null>(null);
+  const [info, setInfo] = React.useState<{ email: string; name: string; practitioner: string; practice: string; hasPassword?: boolean; others?: number } | null>(null);
+  const [ticket, setTicket] = React.useState<string | null>(null);
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [password, setPassword] = React.useState("");
   React.useEffect(() => {
-    api<{ email: string; name: string; practitioner: string; practice: string }>(`/api/auth/invite?token=${encodeURIComponent(token)}`)
+    api<{ email: string; name: string; practitioner: string; practice: string; hasPassword?: boolean; others?: number }>(`/api/auth/invite?token=${encodeURIComponent(token)}`)
       .then(setInfo)
       .catch((e: ApiError) => setLoadError(e.message));
   }, [token]);
+  if (ticket) return <TwoFactorStep ticket={ticket} next="/portal" onCancel={() => router.replace("/auth/login")} />;
   if (loadError) return <AuthHeading title="This invitation can’t be used" body={loadError} />;
   if (!info) return <AuthHeading title="Opening your invitation…" />;
   return (
@@ -420,16 +422,22 @@ function Invite() {
         onSubmit={(e) => {
           e.preventDefault();
           run(async () => {
-            const r = await api<{ redirect: string }>("/api/auth/invite/accept", { body: { token, password: password || undefined } });
-            router.replace(r.redirect);
+            const r = await api<SignInResult>("/api/auth/invite/accept", { body: { token, password: password || undefined } });
+            if (r.twoFactor && r.ticket) return setTicket(r.ticket);
+            router.replace(r.redirect ?? "/portal");
           });
         }}
       >
         <ErrorNote message={error} />
         <Field label="Email" htmlFor="em"><Input id="em" type="email" value={info.email} readOnly className="bg-canvas-2 text-muted" /></Field>
-        <Field label="Create a password" htmlFor="pw" optional hint="No password needed: next time, we’ll email you a sign-in link. Add one if you’d rather.">
-          <Input id="pw" type="password" minLength={MIN_PW} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        </Field>
+        {info.others ? (
+          <p className="rounded-lg border border-line bg-canvas-2 px-3 py-2 text-[13px] text-muted">You already have a portal with another astrologer. {info.practitioner || "This astrologer"} will appear in the same portal, alongside them.</p>
+        ) : null}
+        {!info.hasPassword && (
+          <Field label="Create a password" htmlFor="pw" optional hint="No password needed: next time, we’ll email you a sign-in link. Add one if you’d rather.">
+            <Input id="pw" type="password" minLength={MIN_PW} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          </Field>
+        )}
         <Button type="submit" size="lg" className="w-full" disabled={loading}>{loading && <Loader2 className="animate-spin" />} Open my portal</Button>
       </form>
       <p className="mt-6 text-center text-[12px] text-muted">Your astrologer’s private notes are never visible in the portal.</p>

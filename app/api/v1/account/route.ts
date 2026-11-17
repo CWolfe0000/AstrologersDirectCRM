@@ -1,3 +1,4 @@
+import { releasePracticeClients } from "@/lib/server/clientaccess";
 import { eq } from "drizzle-orm";
 import { destroySession, verifyPassword } from "@/lib/server/auth";
 import { db, schema } from "@/lib/server/db";
@@ -17,6 +18,8 @@ export const DELETE = handler(async (req) => {
   // Accounts with a password confirm with it; passwordless accounts confirm by typing DELETE in a signed-in session.
   if (row?.passwordHash && !(await verifyPassword(String(body.password ?? ""), row.passwordHash))) throw new HttpError(400, "Your password isn’t right.");
   await destroySession();
+  // Clients who also see other astrologers keep their portal login.
+  await releasePracticeClients(user.practiceId);
   await db().delete(schema.practices).where(eq(schema.practices.id, user.practiceId));
   // The account is gone either way; stored files that fail to delete are logged for a retry, not shown as an error.
   await removePracticeObjects(user.practiceId).catch((e) => console.error(`[account] stored files for ${user.practiceId} not removed:`, e));

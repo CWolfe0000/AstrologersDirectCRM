@@ -50,3 +50,34 @@ export async function portalView(practiceId: string, clientId: string) {
     workResponses: workResponses.filter((r) => r.clientId === clientId),
   };
 }
+
+type View = Awaited<ReturnType<typeof portalView>>;
+const SEP = "~";
+const sc = (practiceId: string, id: unknown) => (typeof id === "string" && id ? `${practiceId}${SEP}${id}` : id);
+const scHref = (practiceId: string, href: unknown) =>
+  typeof href === "string" ? href.replace(/^\/portal\/(readings|work)\/([^/?#]+)/, (_m, kind: string, id: string) => `/portal/${kind}/${practiceId}${SEP}${id}`) : href;
+
+/**
+ * A client's portal across every astrologer they see: each practice's view,
+ * with ids scoped by practice and the client shown as "me". Each record keeps
+ * a `practiceId` so the portal can show (and filter by) who shared it.
+ */
+export function mergePortalViews(views: { practiceId: string; view: View }[]) {
+  const all = <K extends keyof View>(k: K, map: (r: Rec, practiceId: string) => Rec) =>
+    views.flatMap(({ practiceId, view }) => (view[k] as Rec[]).map((r) => ({ ...map(r, practiceId), practiceId })));
+  const first = views[0]?.view;
+  const me = first?.people[0] as Rec | undefined;
+  const client = first?.clients[0] as Rec | undefined;
+  return {
+    practitioner: first?.practitioner ?? {},
+    practices: views.map(({ practiceId, view }) => ({ id: practiceId, ...view.practitioner })),
+    people: me ? [{ ...me, id: "me" }] : [],
+    clients: client ? [{ ...client, id: "me" }] : [],
+    readings: all("readings", (r, p) => ({ ...r, id: sc(p, r.id), clientId: "me", consultationId: sc(p, r.consultationId), recordingId: sc(p, r.recordingId) })),
+    consultations: all("consultations", (k, p) => ({ ...k, id: sc(p, k.id), clientId: "me", readingIds: ((k.readingIds as string[]) ?? []).map((x) => sc(p, x)) })),
+    files: all("files", (f, p) => ({ ...f, id: sc(p, f.id), clientId: "me" })),
+    portalNotifications: all("portalNotifications", (n, p) => ({ ...n, id: sc(p, n.id), clientId: "me", href: scHref(p, n.href) })),
+    clientWork: all("clientWork", (w, p) => ({ ...w, id: sc(p, w.id), clientId: "me", consultationId: sc(p, w.consultationId) })),
+    workResponses: all("workResponses", (r, p) => ({ ...r, id: sc(p, r.id), clientId: "me", workId: sc(p, r.workId) })),
+  };
+}

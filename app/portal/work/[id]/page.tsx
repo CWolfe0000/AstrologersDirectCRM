@@ -9,15 +9,15 @@ import { cn, fmtDate, fmtLong, relTime } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/misc";
-import { useMyWork, PORTAL_NOW } from "@/components/portal/portal-data";
+import { sameId, useMyWork, usePractitionerFor, PORTAL_NOW } from "@/components/portal/portal-data";
 import { isOverdue, kindMeta, workState } from "@/components/client-work/work-meta";
 
 export default function WorkDetail() {
   const { id } = useParams<{ id: string }>();
-  const work = useMyWork().find((w) => w.id === id);
+  const work = useMyWork().find((w) => sameId(w.id, id));
   const responses = useStore((s) => s.workResponses);
   const consultation = useStore((s) => s.consultations.find((k) => k.id === work?.consultationId));
-  const pr = useStore((s) => s.practitioner);
+  const pr = usePractitionerFor(work);
   const respond = useStore((s) => s.respondToWork);
   const toast = useStore((s) => s.toast);
   const [text, setText] = React.useState("");

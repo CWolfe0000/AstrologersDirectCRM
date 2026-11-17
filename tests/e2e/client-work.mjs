@@ -80,13 +80,16 @@ await cpage.fill("#pw", "amelia-password-123");
 await cpage.click('button[type="submit"]');
 await cpage.waitForURL(/\/portal/);
 const pv = await cpage.evaluate(() => fetch("/api/v1/bootstrap?view=portal").then((r) => r.json()));
-assert.deepEqual(pv.clientWork.map((w) => w.id).sort(), ["w1", "w2", "w3", mine.id].sort(), "only shared work");
+const bare = (id) => id.slice(id.lastIndexOf("~") + 1);
+assert.deepEqual(pv.clientWork.map((w) => bare(w.id)).sort(), ["w1", "w2", "w3", mine.id].sort(), "only shared work");
+const pfx = pv.clientWork[0].id.slice(0, pv.clientWork[0].id.lastIndexOf("~") + 1);
+assert.ok(pfx && pv.clientWork.every((w) => w.id.startsWith(pfx) && w.clientId === "me"), "portal ids are scoped by practice");
 assert.ok(!JSON.stringify(pv).includes("Track your energy around the full moon"), "draft never reaches the portal");
 
 step("server refuses responses to a draft, and practitioner edits to client responses");
-const draftStatus = await cpage.evaluate(() =>
-  fetch("/api/v1/portal/work/w4/responses", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: "wr_x", type: "entry", text: "hi", createdAt: "2026-01-01" }) }).then((r) => r.status),
-);
+const draftStatus = await cpage.evaluate((pfx) =>
+  fetch(`/api/v1/portal/work/${encodeURIComponent(pfx + "w4")}/responses`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: "wr_x", type: "entry", text: "hi", createdAt: "2026-01-01" }) }).then((r) => r.status),
+pfx);
 assert.equal(draftStatus, 404);
 const forge = await page.evaluate(() =>
   fetch("/api/v1/records/workResponses/wr1", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: "wr1", workId: "w1", clientId: "c1", type: "entry", text: "edited", createdAt: "2026-01-01" }) }).then((r) => r.status),
@@ -120,7 +123,7 @@ await page.getByRole("button", { name: "Archive" }).first().click();
 await page.waitForTimeout(1500);
 await page.waitForFunction(() => document.body.innerText.includes("All changes saved"), null, { timeout: 15000 });
 const pv2 = await cpage.evaluate(() => fetch("/api/v1/bootstrap?view=portal").then((r) => r.json()));
-assert.ok(!pv2.clientWork.some((w) => w.id === mine.id), "archived work hidden from the client");
+assert.ok(!pv2.clientWork.some((w) => bare(w.id) === mine.id), "archived work hidden from the client");
 
 assert.deepEqual(errors, []);
 await browser.close();

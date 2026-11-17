@@ -33,8 +33,8 @@ export async function sendSignInEmail(email: string) {
   );
 }
 
-/** After the email step: two-factor if it's on, otherwise a session. */
-async function finish(user: UserRow) {
+/** After the email step (or an accepted invitation): two-factor if it's on, otherwise a session. */
+export async function finish(user: UserRow) {
   // Using an emailed link or code proves the address.
   if (!user.emailVerifiedAt) await db().update(schema.users).set({ emailVerifiedAt: new Date() }).where(eq(schema.users.id, user.id));
   if (user.totpEnabledAt) {

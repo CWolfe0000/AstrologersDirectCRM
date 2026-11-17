@@ -6,6 +6,7 @@ import { issueToken } from "@/lib/server/auth";
 import { newId } from "@/lib/server/crypto";
 import { link, sendMail } from "@/lib/server/mail";
 import { normEmail } from "@/lib/server/accounts";
+import { clientUserFor, linksFor, removeClientAccess } from "@/lib/server/clientaccess";
 
 /** Invite a client to their portal: creates (or reuses) their login and emails a set-password link. */
 export const POST = handler(async (req) => {
@@ -22,16 +23,22 @@ export const POST = handler(async (req) => {
   const [existing] = await db().select().from(schema.users).where(eq(schema.users.email, email));
   let userId: string;
   if (existing) {
-    // Deliberately generic: don't reveal whether the address is used elsewhere on the platform.
-    if (existing.practiceId !== owner.practiceId || existing.clientId !== clientId)
-      throw new HttpError(409, "We can’t send a portal invitation to this email address. Ask the client for another address.");
-    if (existing.passwordHash) throw new HttpError(409, `${person.firstName} already has portal access. They can sign in, or use “Forgot password” on the sign-in page.`);
+    // Deliberately generic: don't reveal whether the address belongs to a practitioner elsewhere.
+    if (existing.role !== "client") throw new HttpError(409, "We can’t send a portal invitation to this email address. Ask the client for another address.");
+    const links = await linksFor(existing.id);
+    const here = links.find((l) => l.practiceId === owner.practiceId);
+    if (here && here.clientId !== clientId) throw new HttpError(409, "Another client in your practice already uses this email address.");
+    if (here && client.portalAccess === "active") throw new HttpError(409, `${person.firstName} already has portal access. They can sign in with their email address on the sign-in page.`);
     userId = existing.id;
+    // One login per person: a client who already has a portal with another astrologer gets this practice added to it.
+    if (!here) await db().insert(schema.clientAccess).values({ userId, practiceId: owner.practiceId, clientId: clientId! });
   } else {
-    // One login per client: an older login under a previous email address is removed.
-    await db().delete(schema.users).where(and(eq(schema.users.practiceId, owner.practiceId), eq(schema.users.clientId, clientId!), eq(schema.users.role, "client")));
+    // A previous login for this client under an older email address is replaced.
+    const old = await clientUserFor(owner.practiceId, clientId!);
+    if (old) await removeClientAccess(owner.practiceId, clientId!);
     userId = newId("usr");
     await db().insert(schema.users).values({ id: userId, practiceId: owner.practiceId, email, name, role: "client", clientId });
+    await db().insert(schema.clientAccess).values({ userId, practiceId: owner.practiceId, clientId: clientId! });
   }
   const token = await issueToken(userId, "invite", 24 * 7);
   const s = await getSettings(owner.practiceId);

@@ -51,3 +51,36 @@ export function useMyWork() {
     [work, PORTAL_CLIENT_ID],
   );
 }
+
+type Practice = ReturnType<typeof useStore.getState>["portalPractices"][number];
+
+/** Which practice a portal record came from (server mode scopes every record by practice). */
+export function practiceOf(r: unknown): string | undefined {
+  return (r as { practiceId?: string } | undefined)?.practiceId;
+}
+
+/** Every astrologer this client works with. Demo and single-practice previews fall back to the one practitioner. */
+export function usePortalPractices(): Practice[] {
+  const list = useStore((s) => s.portalPractices);
+  const pr = useStore((s) => s.practitioner);
+  return useMemo(() => (list.length ? list : [{ ...pr, id: "" }]), [list, pr]);
+}
+
+/** The astrologer who shared a given record. */
+export function usePractitionerFor(r: unknown): Practice {
+  const all = usePortalPractices();
+  const id = practiceOf(r);
+  return all.find((p) => p.id === id) ?? all[0];
+}
+
+/** "Maya", "Maya and Leo", "Maya, Leo and Ana". */
+export function joinNames(names: string[]) {
+  const n = names.filter(Boolean);
+  return n.length <= 1 ? (n[0] ?? "") : `${n.slice(0, -1).join(", ")} and ${n[n.length - 1]}`;
+}
+
+/** Match a route id to a portal record; older links carry the bare (unscoped) id. */
+export function sameId(recordId: string, routeId: string) {
+  const id = decodeURIComponent(routeId);
+  return recordId === id || (!id.includes("~") && recordId.endsWith(`~${id}`));
+}

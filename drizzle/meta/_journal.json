@@ -57,6 +57,13 @@
       "when": 1794904707154,
       "tag": "0007_email_signin",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794905431199,
+      "tag": "0008_client_access",
+      "breakpoints": true
     }
   ]
 }

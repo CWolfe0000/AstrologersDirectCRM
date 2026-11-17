@@ -10,6 +10,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { EmptyState, FileKindIcon, KIND_LABEL, SimulatedBadge } from "@/components/ui/misc";
 import { usePortalClientId } from "@/components/portal/portal-shell";
+import { sameId, usePractitionerFor } from "@/components/portal/portal-data";
 import { readingMeta, useSimulatedDownload } from "@/components/portal/reading-card";
 import { mediaUrl } from "@/lib/upload";
 import { AudioPlayer, DocumentViewer, VideoPlayer } from "@/components/portal/media";
@@ -17,9 +18,9 @@ import { AudioPlayer, DocumentViewer, VideoPlayer } from "@/components/portal/me
 export default function ReadingDetail() {
   const PORTAL_CLIENT_ID = usePortalClientId();
   const { id } = useParams<{ id: string }>();
-  const reading = useStore((s) => s.readings.find((r) => r.id === id));
+  const reading = useStore((s) => s.readings.find((r) => sameId(r.id, id)));
   const consultation = useStore((s) => s.consultations.find((k) => k.id === reading?.consultationId));
-  const pr = useStore((s) => s.practitioner);
+  const pr = usePractitionerFor(reading);
   const download = useSimulatedDownload();
   const toast = useStore((s) => s.toast);
 

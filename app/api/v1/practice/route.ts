@@ -1,8 +1,7 @@
 import { removePracticeObjects } from "@/lib/server/storage";
 import { handler, HttpError, json, readJson, requireUser } from "@/lib/server/http";
 import { deleteAllRecords } from "@/lib/server/records";
-import { and, eq } from "drizzle-orm";
-import { db, schema } from "@/lib/server/db";
+import { releasePracticeClients } from "@/lib/server/clientaccess";
 
 /**
  * Deletes every client record in the practice (clients, charts, observations…)
@@ -15,6 +14,7 @@ export const DELETE = handler(async (req) => {
   if (body.confirm !== "DELETE") throw new HttpError(400, "Type DELETE to confirm.");
   await deleteAllRecords(user.practiceId);
   await removePracticeObjects(user.practiceId);
-  await db().delete(schema.users).where(and(eq(schema.users.practiceId, user.practiceId), eq(schema.users.role, "client")));
+  // Clients lose this practice from their portal; logins with no other astrologer are removed.
+  await releasePracticeClients(user.practiceId);
   return json({ ok: true });
 });

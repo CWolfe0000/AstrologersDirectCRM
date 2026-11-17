@@ -2,7 +2,8 @@ import { eq } from "drizzle-orm";
 import { db, schema } from "@/lib/server/db";
 import { handler, HttpError, json, requireUser } from "@/lib/server/http";
 import { COLLECTIONS, getSettings, listCollection, listWithVersions, serverNow } from "@/lib/server/records";
-import { portalView } from "@/lib/server/portal";
+import { mergePortalViews, portalView } from "@/lib/server/portal";
+import { linksFor } from "@/lib/server/clientaccess";
 import { DEFAULT_SETTINGS } from "@/lib/astro/meta";
 
 /**
@@ -18,16 +19,20 @@ export const GET = handler(async (req) => {
   const me = { id: user.id, name: user.name, email: user.email, role: user.role, emailVerified: user.emailVerified, twoFactor: user.twoFactor, hasPassword: user.hasPassword };
 
   if (view === "portal") {
-    let clientId = user.clientId;
+    // Owners preview one client's portal; a client sees every astrologer they've been invited by, together.
+    let views: { practiceId: string; clientId: string }[];
     if (user.role === "owner") {
       const as = url.searchParams.get("as");
       const clients = await listCollection(user.practiceId, "clients");
       const pick = (as && clients.find((c) => c.id === as)) || clients.find((c) => c.status !== "archived") || null;
       if (!pick) throw new HttpError(404, "Add a client first, then preview their portal.");
-      clientId = pick.id as string;
+      views = [{ practiceId: user.practiceId, clientId: pick.id as string }];
+    } else {
+      views = (await linksFor(user.id)).map((l) => ({ practiceId: l.practiceId, clientId: l.clientId }));
+      if (views.length === 0) throw new HttpError(403, "This account isn't linked to a client record.");
     }
-    if (!clientId) throw new HttpError(403, "This account isn't linked to a client record.");
-    return json({ view: "portal", user: me, portalClientId: clientId, preview: user.role === "owner", ...(await portalView(user.practiceId, clientId)) });
+    const merged = mergePortalViews(await Promise.all(views.map(async (v) => ({ practiceId: v.practiceId, view: await portalView(v.practiceId, v.clientId) }))));
+    return json({ view: "portal", user: me, portalClientId: "me", preview: user.role === "owner", ...merged });
   }
 
   if (user.role !== "owner") throw new HttpError(403, "This area is for practitioners.", { redirect: "/portal" });

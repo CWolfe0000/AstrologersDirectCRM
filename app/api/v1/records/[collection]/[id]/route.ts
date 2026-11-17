@@ -3,6 +3,7 @@ import { db, schema } from "@/lib/server/db";
 import { handler, HttpError, json, readJson, requireUser } from "@/lib/server/http";
 import { deleteRecord, getRecord, isCollection, isFileReferenced, snapshotObservation, upsertRecord } from "@/lib/server/records";
 import { notifyDelivered, notifyWorkShared } from "@/lib/server/notify";
+import { removeClientAccess } from "@/lib/server/clientaccess";
 import { keyBelongs, removeObject } from "@/lib/server/storage";
 
 type Ctx = { params: Promise<{ collection: string; id: string }> };
@@ -41,7 +42,7 @@ export const PUT = handler(async (req: Request, ctx: Ctx) => {
   }
   // Portal access turned off (or client archived): remove their login, which ends their sessions.
   if (collection === "clients" && (saved.portalAccess === "none" || saved.status === "archived") && before && (before.portalAccess !== saved.portalAccess || before.status !== saved.status)) {
-    await db().delete(schema.users).where(and(eq(schema.users.practiceId, user.practiceId), eq(schema.users.clientId, id), eq(schema.users.role, "client")));
+    await removeClientAccess(user.practiceId, id);
   }
   // Replaced file: remove the old object.
   if (before?.fileKey && before.fileKey !== saved.fileKey && keyBelongs(before.fileKey, user.practiceId) && !(await isFileReferenced(user.practiceId, before.fileKey as string)))
@@ -58,8 +59,8 @@ export const DELETE = handler(async (_req: Request, ctx: Ctx) => {
   if (existing?.fileKey && keyBelongs(existing.fileKey, user.practiceId) && !(await isFileReferenced(user.practiceId, existing.fileKey as string)))
     await removeObject(existing.fileKey as string);
   if (collection === "clients") {
-    // Deleting a client removes their portal login as well.
-    await db().delete(schema.users).where(and(eq(schema.users.practiceId, user.practiceId), eq(schema.users.clientId, id)));
+    // Deleting a client removes this practice from their portal (and the login, if no other astrologer uses it).
+    await removeClientAccess(user.practiceId, id);
   }
   return json({ ok: true });
 });

@@ -41,6 +41,8 @@ export interface DemoState {
   /** Background saving state (server mode). */
   sync: { pending: number; error: string | null; savedAt?: string };
   practitioner: Practitioner;
+  /** Client portal: every astrologer this client works with (server mode). Records carry a matching `practiceId`. */
+  portalPractices: (Practitioner & { id: string })[];
   /** Subscription plan (server mode: from the server; demo: Premium so every feature can be explored). */
   plan: Plan;
   defaults: ChartSettings;
@@ -170,6 +172,7 @@ export const useStore = create<DemoState>()(
       ...(DATA_MODE === "demo" ? seedState() : emptyState()),
       session: { status: DATA_MODE === "demo" ? "demo" : "idle" },
       portalClientId: "c1",
+      portalPractices: [],
       sync: { pending: 0, error: null },
       toasts: [],
 
@@ -280,7 +283,9 @@ export const useStore = create<DemoState>()(
       respondToWork: (workId, type, text) => {
         const work = get().clientWork.find((w) => w.id === workId);
         if (!work) return;
-        const r: WorkResponse = { id: uid("wr"), workId, clientId: work.clientId, type, ...(type === "entry" ? { text } : {}), createdAt: NOW() };
+        // Portal ids are scoped by practice ("<practice>~<id>"); new responses follow the same shape.
+        const prefix = workId.includes("~") ? workId.slice(0, workId.lastIndexOf("~") + 1) : "";
+        const r: WorkResponse = { id: prefix + uid("wr"), workId, clientId: work.clientId, type, ...(type === "entry" ? { text } : {}), createdAt: NOW() };
         set((s) => ({
           workResponses: [...s.workResponses, r],
           // Demo: the practitioner's notification (the server creates it in server mode).
@@ -362,7 +367,8 @@ export const useStore = create<DemoState>()(
       // Only the demo keeps data in the browser. Real practice data is never written to localStorage.
       storage: createJSONStorage(() => (DATA_MODE === "demo" ? localStorage : noStorage)),
       skipHydration: true,
-      partialize: ({ toasts, session, sync, portalClientId, ...rest }) => {
+      partialize: ({ toasts, session, sync, portalClientId, portalPractices, ...rest }) => {
+        void portalPractices;
         void toasts;
         void session;
         void sync;

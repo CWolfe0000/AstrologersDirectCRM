@@ -139,6 +139,22 @@ export const portalNotifications = recordTable("portal_notifications");
 export const clientWork = recordTable("client_work");
 export const workResponses = recordTable("work_responses");
 
+/**
+ * Which practices a client login can see: one row per astrologer who has
+ * invited them (one portal per client, across every astrologer they see).
+ * users.practiceId/clientId keep the first ("home") link for compatibility.
+ */
+export const clientAccess = pgTable(
+  "client_access",
+  {
+    userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    practiceId: text("practice_id").notNull().references(() => practices.id, { onDelete: "cascade" }),
+    clientId: text("client_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.practiceId] }), index("client_access_client_idx").on(t.practiceId, t.clientId)],
+);
+
 /** Deleted records, so other open devices can remove them too. */
 export const tombstones = pgTable(
   "tombstones",

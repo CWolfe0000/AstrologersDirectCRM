@@ -63,6 +63,7 @@ jobs:
           node tests/e2e/premium.mjs
           node tests/e2e/client-work.mjs
           node tests/e2e/email-signin.mjs
+          node tests/e2e/multi-practice.mjs
           node tests/e2e/pwa.mjs
           node tests/e2e/a11y.mjs
           node tests/e2e/a11y.mjs --mobile

@@ -11,7 +11,7 @@ import { SimulatedBadge } from "@/components/ui/misc";
 import { mediaUrl } from "@/lib/upload";
 import { DATA_MODE } from "@/lib/utils";
 import { usePortalClientId } from "@/components/portal/portal-shell";
-import { useMyConsultations, useMyReadings, useMyWork, useSharedFiles, PORTAL_NOW } from "@/components/portal/portal-data";
+import { joinNames, useMyConsultations, useMyReadings, useMyWork, usePortalPractices, useSharedFiles, PORTAL_NOW } from "@/components/portal/portal-data";
 import { WorkCard } from "@/components/portal/work-card";
 import { workState } from "@/components/client-work/work-meta";
 import { ReadingCard } from "@/components/portal/reading-card";
@@ -21,7 +21,7 @@ const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin } as c
 export default function PortalHome() {
   const PORTAL_CLIENT_ID = usePortalClientId();
   const me = useStore((s) => s.people.find((p) => p.id === PORTAL_CLIENT_ID));
-  const pr = useStore((s) => s.practitioner);
+  const practices = usePortalPractices();
   const notes = useStore((s) => s.portalNotifications);
   const markRead = useStore((s) => s.markPortalNotification);
   const toast = useStore((s) => s.toast);
@@ -40,7 +40,7 @@ export default function PortalHome() {
         <p className="eyebrow">{fmtLong(PORTAL_NOW)}</p>
         <h1 className="mt-2 font-serif text-[36px] leading-[1.1] text-ink md:text-[44px]">Good morning, {me?.firstName ?? "there"}.</h1>
         <p className="mt-2 max-w-xl text-[15px] text-muted">
-          Everything {pr.firstName} has shared with you lives here: your readings, recordings, sessions, and the work you’re doing between them.
+          Everything {joinNames(practices.map((p) => p.firstName)) || "your astrologer"} {practices.length > 1 ? "have" : "has"} shared with you lives here: your readings, recordings, sessions, and the work you’re doing between them.
         </p>
       </section>
 
@@ -170,7 +170,8 @@ export default function PortalHome() {
 
         {/* Side column */}
         <aside className="space-y-6">
-          <div className="rounded-2xl border border-line bg-surface p-5">
+          {practices.map((pr) => (
+          <div key={pr.id || "practitioner"} className="rounded-2xl border border-line bg-surface p-5">
             <p className="eyebrow">Your astrologer</p>
             <div className="mt-3 flex items-center gap-3">
               <Avatar name={pr.name} size="lg" />
@@ -180,16 +181,23 @@ export default function PortalHome() {
               </div>
             </div>
             <p className="mt-3 text-[13px] font-medium text-ink-3">{pr.practice}</p>
-            <p className="mt-2 text-[13px] leading-relaxed text-muted">{pr.bio}</p>
+            {pr.bio && <p className="mt-2 text-[13px] leading-relaxed text-muted">{pr.bio}</p>}
             <div className="mt-4 space-y-2 border-t border-line pt-4 text-[13px]">
-              <a href={`mailto:${pr.email}`} className="flex items-center gap-2 text-ink-3 hover:text-accent"><Mail className="size-4 text-muted" />{pr.email}</a>
+              {pr.email && <a href={`mailto:${pr.email}`} className="flex items-center gap-2 text-ink-3 hover:text-accent"><Mail className="size-4 text-muted" />{pr.email}</a>}
               {pr.phone && <p className="flex items-center gap-2 text-ink-3"><Phone className="size-4 text-muted" />{pr.phone}</p>}
               {pr.website && <p className="flex items-center gap-2 text-ink-3"><Globe className="size-4 text-muted" />{pr.website}</p>}
             </div>
-            <Button variant="secondary" className="mt-4 w-full" onClick={() => toast("Message sent", `${pr.firstName} will reply by email. (Simulated)`, "success")}>
-              <Mail /> Message {pr.firstName}
-            </Button>
+            {DATA_MODE === "demo" ? (
+              <Button variant="secondary" className="mt-4 w-full" onClick={() => toast("Message sent", `${pr.firstName} will reply by email. (Simulated)`, "success")}>
+                <Mail /> Message {pr.firstName}
+              </Button>
+            ) : pr.email ? (
+              <a href={`mailto:${pr.email}`} className="mt-4 inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-line bg-surface text-[13.5px] font-medium text-ink hover:border-line-strong">
+                <Mail className="size-4" /> Email {pr.firstName || "your astrologer"}
+              </a>
+            ) : null}
           </div>
+          ))}
 
           <div className="rounded-2xl border border-line bg-surface">
             <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
@@ -215,7 +223,7 @@ export default function PortalHome() {
             </ul>
           </div>
           <p className="px-1 text-[12px] leading-relaxed text-muted">
-            Signed in as {personName(me)}. Your materials are private to you and {pr.name}.
+            Signed in as {personName(me)}. Your materials are private to you and {joinNames(practices.map((p) => p.name)) || "your astrologer"}.
           </p>
         </aside>
       </div>

@@ -251,6 +251,7 @@ type BootstrapResponse = Partial<DemoState> & {
   user: NonNullable<DemoState["session"]["user"]>;
   practice?: { id: string; name: string };
   portalClientId?: string;
+  practices?: DemoState["portalPractices"];
   preview?: boolean;
 };
 
@@ -275,6 +276,7 @@ export async function bootstrap(view: "app" | "portal", opts: { as?: string | nu
     useStore.setState({
       ...patch,
       portalClientId: data.portalClientId ?? st.portalClientId,
+      portalPractices: data.view === "portal" ? (data.practices ?? []) : [],
       session: { status: "ready", view: data.view, user: data.user, practice: data.practice, preview: data.preview },
       sync: { pending: 0, error: null },
     });

@@ -1,5 +1,7 @@
 "use client";
 
+import { usePortalPractices, usePractitionerFor } from "./portal-data";
+
 import Link from "next/link";
 import { Download, Play, ExternalLink, FileText, ChevronRight } from "lucide-react";
 import type { Reading } from "@/lib/data/types";
@@ -32,6 +34,8 @@ export function useSimulatedDownload() {
 export function ReadingCard({ r, className }: { r: Reading; className?: string }) {
   const download = useSimulatedDownload();
   const isNew = !r.openedAt;
+  const many = usePortalPractices().length > 1;
+  const from = usePractitionerFor(r);
   const primary =
     r.kind === "audio" || r.kind === "video" ? { label: r.kind === "audio" ? "Listen" : "Watch", icon: Play } : r.kind === "link" ? { label: "Open link", icon: ExternalLink } : { label: "Read", icon: FileText };
   return (
@@ -44,7 +48,7 @@ export function ReadingCard({ r, className }: { r: Reading; className?: string }
             {isNew && <Badge tone="accent">New</Badge>}
           </div>
           <p className="mt-1 text-[12.5px] text-muted">
-            Shared {fmtDate(r.deliveredAt ?? r.createdAt)} · {readingMeta(r)}
+            Shared {many && from.name ? `by ${from.name} ` : ""}{fmtDate(r.deliveredAt ?? r.createdAt)} · {readingMeta(r)}
           </p>
         </div>
         <ChevronRight className="mt-1 hidden size-4 text-muted sm:block" />

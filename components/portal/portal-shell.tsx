@@ -9,6 +9,7 @@ import { signOut } from "@/lib/sync";
 import { useStore, personName } from "@/lib/store";
 import { Avatar } from "@/components/ui/avatar";
 import { Toaster } from "@/components/ui/misc";
+import { joinNames, usePortalPractices } from "./portal-data";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 /** The client whose portal is shown (the signed-in client, or the demo client "c1"). */
@@ -27,7 +28,7 @@ const NAV = [
 export function PortalShell({ children }: { children: React.ReactNode }) {
   const PORTAL_CLIENT_ID = usePortalClientId();
   const path = usePathname();
-  const pr = useStore((s) => s.practitioner);
+  const practices = usePortalPractices();
   const me = useStore((s) => s.people.find((p) => p.id === PORTAL_CLIENT_ID));
   const allNotes = useStore((s) => s.portalNotifications);
   const notes = React.useMemo(() => allNotes.filter((n) => !n.clientId || n.clientId === PORTAL_CLIENT_ID), [allNotes, PORTAL_CLIENT_ID]);
@@ -52,7 +53,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-5xl items-center gap-6 px-4 md:px-6">
           <Link href="/portal" className="min-w-0">
-            <p className="truncate font-serif text-[19px] leading-tight text-ink">{pr.practice}</p>
+            <p className="truncate font-serif text-[19px] leading-tight text-ink">{practices.length > 1 ? "Your client portal" : practices[0]?.practice}</p>
             <p className="text-[11px] text-muted">Client portal · powered by AstrologersDirect</p>
           </Link>
           <nav className="ml-auto hidden items-center gap-1 md:flex">
@@ -106,7 +107,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
       </header>
       <main id="main" className="mx-auto max-w-5xl px-4 py-6 md:px-6 md:py-10">{children}</main>
       <footer className="mx-auto hidden max-w-5xl px-6 pb-10 text-[12px] text-muted md:block">
-        Your readings and consultation records are private to you and {pr.name}. <Link href="/legal/privacy" className="underline">Privacy</Link>
+        Your readings and consultation records are private to you and {joinNames(practices.map((p) => p.name)) || "your astrologer"}. <Link href="/legal/privacy" className="underline">Privacy</Link>
       </footer>
       {/* mobile tab bar */}
       <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">

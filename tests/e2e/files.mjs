@@ -80,7 +80,8 @@ await cp.fill("#pw", "amelia-files-pass");
 await cp.click('button[type="submit"]');
 await cp.waitForURL(/\/portal/);
 await cp.goto(BASE + `/portal/readings/${reading.id}`);
-await cp.locator(`iframe[src="/api/v1/media/readings/${reading.id}"]`).waitFor();
+// The portal scopes ids by practice ("<practice>~<id>"); unscoped ids still work for a client of one practice.
+await cp.locator(`iframe[src^="/api/v1/media/readings/"][src$="${reading.id}"]`).waitFor();
 assert.equal((await call(cp, `/api/v1/media/readings/${reading.id}`)).status, 200, "client can view");
 assert.equal((await call(cp, `/api/v1/media/readings/${reading.id}?download=1`)).status, 200, "client can download when allowed");
 const ranged = await call(cp, `/api/v1/media/readings/${reading.id}`, { headers: { Range: "bytes=0-3" } });
