@@ -156,7 +156,7 @@ function Workspace() {
       onSaveConfig={(cfg) => {
         updateChart(chart.id, { settings: { ...chart.settings, ...overrides }, savedConfig: cfg, refDate });
         setOverrides({});
-        toast("Configuration saved", `“${cfg}” will open with this chart next time.`, "success");
+        toast("Configuration Saved", `“${cfg}” will open with this chart next time.`, "success");
       }}
     />
   );
@@ -253,7 +253,7 @@ function Workspace() {
         )}
         {dirty && <span className="text-[12px] text-warn">Unsaved display changes</span>}
       </div>
-      <Sheet open={controlsOpen} onOpenChange={setControlsOpen} title="Chart controls" description={chart.title} side="left" width="max-w-sm">
+      <Sheet open={controlsOpen} onOpenChange={setControlsOpen} title="Chart Controls" description={chart.title} side="left" width="max-w-sm">
         {controls}
       </Sheet>
 

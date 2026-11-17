@@ -33,10 +33,10 @@ step("synastry: add a new Person B with a relationship");
 await page.goto(BASE + "/app/charts/new?type=synastry&client=c1");
 const personB = page.getByLabel(/Person B/);
 await personB.waitFor();
-await personB.selectOption({ label: "+ Add a new person…" });
+await personB.selectOption({ label: "+ Add a New Person…" });
 const dialog = page.getByRole("dialog");
-await dialog.getByLabel("First name").fill("Rosa");
-await dialog.getByLabel("Last name").fill(`Hart${stamp}`);
+await dialog.getByLabel("First Name").fill("Rosa");
+await dialog.getByLabel("Last Name").fill(`Hart${stamp}`);
 await dialog.getByLabel("Relationship").selectOption("Sibling");
 await dialog.getByLabel("Date", { exact: true }).fill("1991-04-02");
 await dialog.getByLabel("Time", { exact: true }).fill("08:30");
@@ -65,9 +65,9 @@ assert.ok(s.charts.some((c) => c.type === "synastry" && c.personIds.includes(ros
 
 step("adding without a natal chart");
 await page.goto(BASE + "/app/charts/new?type=composite&client=c1");
-await page.getByLabel(/Person B/).selectOption({ label: "+ Add a new person…" });
-await dialog.getByLabel("First name").fill("Theo");
-await dialog.getByLabel("Last name").fill(`Lane${stamp}`);
+await page.getByLabel(/Person B/).selectOption({ label: "+ Add a New Person…" });
+await dialog.getByLabel("First Name").fill("Theo");
+await dialog.getByLabel("Last Name").fill(`Lane${stamp}`);
 await dialog.getByLabel("Date", { exact: true }).fill("1988-12-12");
 await dialog.getByPlaceholder("Start typing a town or city…").fill("Par");
 await dialog.locator("button", { hasText: "Paris, France" }).first().click();

@@ -81,7 +81,7 @@ export default function NewClientPage() {
       settings: { houseSystem: effectiveHouse },
     });
     void chart;
-    s.toast("Client created", `${fullName}'s record and natal chart have been saved.${invite ? " Portal invitation queued (simulated)." : ""}`, "success");
+    s.toast("Client Created", `${fullName}'s record and natal chart have been saved.${invite ? " Portal invitation queued (simulated)." : ""}`, "success");
     router.push(`/app/clients/${client.id}`);
   };
 
@@ -90,7 +90,7 @@ export default function NewClientPage() {
       <PageHeader
         title="Add a New Client"
         description="Create the client record, enter birth data and generate their natal chart in one pass."
-        breadcrumbs={[{ label: "Dashboard", href: "/app" }, { label: "Clients", href: "/app/clients" }, { label: "New client" }]}
+        breadcrumbs={[{ label: "Dashboard", href: "/app" }, { label: "Clients", href: "/app/clients" }, { label: "New Client" }]}
       />
 
       {/* Stepper */}
@@ -125,14 +125,14 @@ export default function NewClientPage() {
             <div className="space-y-5">
               <StepTitle title="Contact details" body="How you'll reach this client. Only name and email are required." />
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="First name" htmlFor="fn"><Input id="fn" value={contact.firstName} onChange={c("firstName")} autoFocus /></Field>
-                <Field label="Last name" htmlFor="ln"><Input id="ln" value={contact.lastName} onChange={c("lastName")} /></Field>
+                <Field label="First Name" htmlFor="fn"><Input id="fn" value={contact.firstName} onChange={c("firstName")} autoFocus /></Field>
+                <Field label="Last Name" htmlFor="ln"><Input id="ln" value={contact.lastName} onChange={c("lastName")} /></Field>
                 <Field label="Email" htmlFor="em"><Input id="em" type="email" value={contact.email} onChange={c("email")} placeholder="name@example.com" /></Field>
                 <Field label="Phone" htmlFor="ph" optional><Input id="ph" value={contact.phone} onChange={c("phone")} /></Field>
                 <Field label="Pronouns" htmlFor="pr" optional><Input id="pr" value={contact.pronouns} onChange={c("pronouns")} placeholder="e.g. she/her" /></Field>
-                <Field label="How did they find you?" htmlFor="src" optional><Input id="src" value={contact.source} onChange={c("source")} placeholder="Referral, website, podcast…" /></Field>
+                <Field label="How Did They Find You?" htmlFor="src" optional><Input id="src" value={contact.source} onChange={c("source")} placeholder="Referral, website, podcast…" /></Field>
                 <Field label="Tags" htmlFor="tg" optional hint="Comma-separated, e.g. Career, Relationship" className="sm:col-span-2"><Input id="tg" value={contact.tags} onChange={c("tags")} /></Field>
-                <Field label="Intake notes" htmlFor="nt" optional className="sm:col-span-2"><Textarea id="nt" value={contact.notes} onChange={c("notes")} placeholder="What are they hoping to explore?" /></Field>
+                <Field label="Intake Notes" htmlFor="nt" optional className="sm:col-span-2"><Textarea id="nt" value={contact.notes} onChange={c("notes")} placeholder="What are they hoping to explore?" /></Field>
               </div>
               <Button variant="link" size="sm" onClick={() => {
                 setContact({ firstName: "Lena", lastName: "Fischer", email: "lena.fischer@example.com", phone: "", pronouns: "she/her", source: "Website", tags: "First reading, Career", notes: "Wants to understand a career change in 2027." });
@@ -148,8 +148,8 @@ export default function NewClientPage() {
             <div className="space-y-5">
               <StepTitle title="Birth data" body={`Used to calculate ${contact.firstName || "the client"}'s natal chart. You can refine this later.`} />
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Date of birth" htmlFor="bd"><Input id="bd" type="date" value={birth.date} onChange={(e) => setBirth((b) => ({ ...b, date: e.target.value }))} max={TODAY} /></Field>
-                <Field label="Time of birth" htmlFor="bt" hint={birth.timeAccuracy === "unknown" ? "A noon chart with whole-sign houses will be used." : "Local time at the place of birth."}>
+                <Field label="Date of Birth" htmlFor="bd"><Input id="bd" type="date" value={birth.date} onChange={(e) => setBirth((b) => ({ ...b, date: e.target.value }))} max={TODAY} /></Field>
+                <Field label="Time of Birth" htmlFor="bt" hint={birth.timeAccuracy === "unknown" ? "A noon chart with whole-sign houses will be used." : "Local time at the place of birth."}>
                   <Input id="bt" type="time" value={birth.time} disabled={birth.timeAccuracy === "unknown"} onChange={(e) => setBirth((b) => ({ ...b, time: e.target.value }))} />
                 </Field>
                 <div className="sm:col-span-2">
@@ -158,7 +158,7 @@ export default function NewClientPage() {
                     value={birth.timeAccuracy}
                     onChange={(v) => setBirth((b) => ({ ...b, timeAccuracy: v }))}
                     options={[
-                      { value: "exact", label: "Exact (recorded)" },
+                      { value: "exact", label: "Exact (Recorded)" },
                       { value: "approximate", label: "Approximate" },
                       { value: "unknown", label: "Unknown" },
                     ]}
@@ -170,7 +170,7 @@ export default function NewClientPage() {
                     </p>
                   )}
                 </div>
-                <Field label="Place of birth" htmlFor="bp" className="sm:col-span-2"><PlaceLookup id="bp" value={place} onChange={setPlace} /></Field>
+                <Field label="Place of Birth" htmlFor="bp" className="sm:col-span-2"><PlaceLookup id="bp" value={place} onChange={setPlace} /></Field>
               </div>
             </div>
           )}
@@ -187,7 +187,7 @@ export default function NewClientPage() {
                 </div>
               </div>
               <div className="space-y-4">
-                <Field label="House system" htmlFor="hs" hint={birth.timeAccuracy === "unknown" ? "Whole sign is used when the birth time is unknown." : undefined}>
+                <Field label="House System" htmlFor="hs" hint={birth.timeAccuracy === "unknown" ? "Whole sign is used when the birth time is unknown." : undefined}>
                   <Select id="hs" value={effectiveHouse} disabled={birth.timeAccuracy === "unknown"} onChange={(e) => setHouseSystem(e.target.value as HouseSystem)}>
                     {HOUSE_SYSTEMS.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
                   </Select>

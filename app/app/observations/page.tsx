@@ -134,7 +134,7 @@ function Observations() {
       <label className="block">
         <span className="mb-1 block text-[12px] text-muted">Client</span>
         <Select value={f.client} onChange={(e) => setF({ ...f, client: e.target.value })}>
-          <option value="all">All clients</option>
+          <option value="all">All Clients</option>
           {clients.map((c) => (
             <option key={c.id} value={c.id}>{name(c.id)}</option>
           ))}
@@ -157,7 +157,7 @@ function Observations() {
       <label className="block">
         <span className="mb-1 block text-[12px] text-muted">Chart type</span>
         <Select value={f.chartType} onChange={(e) => setF({ ...f, chartType: e.target.value as ChartType | "all" })}>
-          <option value="all">All chart types</option>
+          <option value="all">All Chart Types</option>
           {CHART_TYPES.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
         </Select>
       </label>
@@ -265,7 +265,7 @@ function Observations() {
         className={cn(mobileDetail && "max-lg:hidden")}
       />
 
-      <Sheet open={filtersOpen} onOpenChange={setFiltersOpen} title="Filter observations" side="left" width="max-w-sm">
+      <Sheet open={filtersOpen} onOpenChange={setFiltersOpen} title="Filter Observations" side="left" width="max-w-sm">
         <div className="space-y-5 p-5">
           {filterPanel}
           {futureCard}

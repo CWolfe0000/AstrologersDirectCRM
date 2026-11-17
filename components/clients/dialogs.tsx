@@ -33,7 +33,7 @@ export function EditClientDialog({ open, onOpenChange, client, person }: { open:
       summary: f.summary,
     });
     const birthChanged = JSON.stringify(birth) !== JSON.stringify(person.birth) || place.place !== person.birth.place;
-    s.toast("Profile updated", birthChanged ? "Birth data changed — linked charts now use the new data." : undefined, "success");
+    s.toast("Profile Updated", birthChanged ? "Birth data changed — linked charts now use the new data." : undefined, "success");
     onOpenChange(false);
   };
 
@@ -50,8 +50,8 @@ export function EditClientDialog({ open, onOpenChange, client, person }: { open:
         }
       >
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="First name"><Input value={f.firstName} onChange={(e) => setF({ ...f, firstName: e.target.value })} /></Field>
-          <Field label="Last name"><Input value={f.lastName} onChange={(e) => setF({ ...f, lastName: e.target.value })} /></Field>
+          <Field label="First Name"><Input value={f.firstName} onChange={(e) => setF({ ...f, firstName: e.target.value })} /></Field>
+          <Field label="Last Name"><Input value={f.lastName} onChange={(e) => setF({ ...f, lastName: e.target.value })} /></Field>
           <Field label="Email"><Input value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} /></Field>
           <Field label="Phone"><Input value={f.phone ?? ""} onChange={(e) => setF({ ...f, phone: e.target.value })} /></Field>
           <Field label="Pronouns"><Input value={f.pronouns ?? ""} onChange={(e) => setF({ ...f, pronouns: e.target.value })} /></Field>
@@ -78,7 +78,7 @@ function BirthFields({ birth, setBirth, place, setPlace }: { birth: BirthData; s
     <div className="grid gap-4 sm:grid-cols-3">
       <Field label="Date"><Input type="date" value={birth.date} onChange={(e) => setBirth({ ...birth, date: e.target.value })} /></Field>
       <Field label="Time"><Input type="time" value={birth.time} onChange={(e) => setBirth({ ...birth, time: e.target.value })} /></Field>
-      <Field label="Time accuracy">
+      <Field label="Time Accuracy">
         <Select value={birth.timeAccuracy} onChange={(e) => setBirth({ ...birth, timeAccuracy: e.target.value as BirthData["timeAccuracy"] })}>
           <option value="exact">Exact</option>
           <option value="approximate">Approximate</option>
@@ -128,7 +128,7 @@ export function AddPersonDialog({
     if (!place) return;
     const p = s.addPerson({ firstName: f.firstName, lastName: f.lastName, relationship: f.relationship, notes: f.notes || undefined, clientId, birth: { ...birth, ...place } });
     if (saveChart) s.addChart({ title: `${p.firstName} ${p.lastName} — Natal`, type: "natal", personIds: [p.id], clientId });
-    s.toast("Person added", saveChart ? `${p.firstName}'s natal chart was saved to ${clientFirst}'s record.` : `${p.firstName} was added to ${clientFirst}'s record.`, "success");
+    s.toast("Person Added", saveChart ? `${p.firstName}'s natal chart was saved to ${clientFirst}'s record.` : `${p.firstName} was added to ${clientFirst}'s record.`, "success");
     onOpenChange(false);
     onAdded?.(p);
   };
@@ -147,8 +147,8 @@ export function AddPersonDialog({
         }
       >
         <div className="grid gap-4 sm:grid-cols-3">
-          <Field label="First name"><Input value={f.firstName} onChange={(e) => setF({ ...f, firstName: e.target.value })} /></Field>
-          <Field label="Last name"><Input value={f.lastName} onChange={(e) => setF({ ...f, lastName: e.target.value })} /></Field>
+          <Field label="First Name"><Input value={f.firstName} onChange={(e) => setF({ ...f, firstName: e.target.value })} /></Field>
+          <Field label="Last Name"><Input value={f.lastName} onChange={(e) => setF({ ...f, lastName: e.target.value })} /></Field>
           <Field label="Relationship">
             <Select value={f.relationship} onChange={(e) => setF({ ...f, relationship: e.target.value })}>
               {RELATIONSHIPS.map((r) => <option key={r}>{r}</option>)}

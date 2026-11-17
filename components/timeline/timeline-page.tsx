@@ -28,7 +28,7 @@ import { PremiumGate, usePremium } from "@/components/plan/premium";
 const TECH: Record<TimelineTechnique, { label: string; short: string; color: string; soft: string; chart: ChartRecord["type"] }> = {
   transit: { label: "Transit", short: "Tr", color: "#824B59", soft: "#F3E6E9", chart: "transits" },
   progressed: { label: "Progression", short: "Pr", color: "#4D5A70", soft: "#E6EAF1", chart: "progressions" },
-  "solar-arc": { label: "Solar arc", short: "SA", color: "#6E4F6E", soft: "#EFE6EF", chart: "solar-arc" },
+  "solar-arc": { label: "Solar Arc", short: "SA", color: "#6E4F6E", soft: "#EFE6EF", chart: "solar-arc" },
   lunation: { label: "Lunation", short: "Lu", color: "#9A6A1F", soft: "#F6EDDC", chart: "transits" },
   eclipse: { label: "Eclipse", short: "Ec", color: "#29272B", soft: "#E9E6E4", chart: "transits" },
 };
@@ -244,7 +244,7 @@ function Timeline() {
               onRevert={() => setOpts(savedOpts)}
               onSave={() => {
                 updateDefaults({ timeline: opts });
-                toast("Timeline defaults saved", "Used for every client’s timeline. Change them any time in Settings → Astrology.", "success");
+                toast("Timeline Defaults Saved", "Used for every client’s timeline. Change them any time in Settings → Astrology.", "success");
               }}
             />
           </div>
@@ -582,7 +582,7 @@ function ContactGrid({
             value={groupBy}
             onChange={setGroupBy}
             options={[
-              { value: "point", label: "Natal point" },
+              { value: "point", label: "Natal Point" },
               { value: "house", label: "House" },
               { value: "technique", label: "Technique" },
               { value: "date", label: "Date" },

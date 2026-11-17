@@ -29,7 +29,7 @@ export function ReadingDetail({ id, onClose }: { id: string; onClose: () => void
 
   const send = () => {
     deliver(r.id);
-    toast("Reading delivered", `${person?.firstName} has been notified in their portal.`, "success");
+    toast("Reading Delivered", `${person?.firstName} has been notified in their portal.`, "success");
   };
   const retry = () => {
     setRetrying(true);
@@ -37,15 +37,15 @@ export function ReadingDetail({ id, onClose }: { id: string; onClose: () => void
       update(r.id, { sizeMB: r.sizeMB && r.sizeMB > 1500 ? 980 : r.sizeMB, fileName: r.fileName?.replace(/(\.\w+)$/, "_compressed$1") });
       deliver(r.id);
       setRetrying(false);
-      toast("Retry succeeded", "Re-encoded at a lower bitrate and delivered (simulated).", "success");
+      toast("Retry Succeeded", "Re-encoded at a lower bitrate and delivered (simulated).", "success");
     }, 1600);
   };
 
   const steps = [
     { label: "Prepared", at: r.createdAt, done: true },
-    { label: "Delivered to portal", at: r.deliveredAt, done: r.status === "delivered" },
+    { label: "Delivered to Portal", at: r.deliveredAt, done: r.status === "delivered" },
     { label: r.notification === "failed" ? "Notification failed" : "Client notified", at: r.deliveredAt, done: r.notification === "sent" || r.notification === "opened", failed: r.notification === "failed" },
-    { label: "Opened by client", at: r.openedAt, done: r.notification === "opened" },
+    { label: "Opened by Client", at: r.openedAt, done: r.notification === "opened" },
   ];
 
   return (
@@ -76,7 +76,7 @@ export function ReadingDetail({ id, onClose }: { id: string; onClose: () => void
           <Button onClick={send} disabled={!r.fileName && !r.url}><Send /> Send to Client Portal</Button>
         )}
         {r.status === "draft" && (
-          <Button variant="secondary" onClick={() => { update(r.id, { status: "ready" }); toast("Marked ready to send", r.title); }} disabled={!r.fileName && !r.url}>Mark Ready</Button>
+          <Button variant="secondary" onClick={() => { update(r.id, { status: "ready" }); toast("Marked Ready to Send", r.title); }} disabled={!r.fileName && !r.url}>Mark Ready</Button>
         )}
         {r.status === "delivered" && r.clientId === "c1" && (
           <ButtonLink variant="secondary" href={`/portal/readings/${r.id}`}><ExternalLink /> View in Client Portal</ButtonLink>
@@ -90,7 +90,7 @@ export function ReadingDetail({ id, onClose }: { id: string; onClose: () => void
         items={[
           { label: "Type", value: KIND_LABEL[r.kind] },
           { label: r.kind === "link" ? "Link" : "File", value: <span className="break-all">{r.url ?? r.fileName ?? "—"}</span> },
-          { label: "Size / length", value: [r.sizeMB ? `${r.sizeMB} MB` : null, r.pages ? `${r.pages} pages` : null, r.durationSec ? fmtDuration(r.durationSec) : null].filter(Boolean).join(" · ") || "—" },
+          { label: "Size / Length", value: [r.sizeMB ? `${r.sizeMB} MB` : null, r.pages ? `${r.pages} pages` : null, r.durationSec ? fmtDuration(r.durationSec) : null].filter(Boolean).join(" · ") || "—" },
           { label: "Prepared", value: fmtDate(r.createdAt) },
           { label: "Chart", value: chart ? <Link href={`/app/charts/${chart.id}`} className="inline-flex items-center gap-1.5 hover:text-accent">{chart.title} <ChartTypeBadge type={chart.type} /></Link> : "—" },
           { label: "Consultation", value: consultation ? <Link href={`/app/consultations?id=${consultation.id}`} className="hover:text-accent">{consultation.type} · {fmtDate(consultation.start)}</Link> : "—" },
@@ -136,7 +136,7 @@ export function ReadingDetail({ id, onClose }: { id: string; onClose: () => void
             className="text-danger hover:bg-danger-50"
             onClick={() => {
               useStore.setState((s) => ({ readings: s.readings.filter((x) => x.id !== r.id) }));
-              toast("Delivery removed", r.title);
+              toast("Delivery Removed", r.title);
               onClose();
             }}
           >

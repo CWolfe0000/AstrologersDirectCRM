@@ -80,9 +80,9 @@ export function ReportsPage() {
               value={range}
               onChange={setRange}
               options={[
-                { value: "30d", label: "30 days" },
-                { value: "90d", label: "90 days" },
-                { value: "12m", label: "12 months" },
+                { value: "30d", label: "30 Days" },
+                { value: "90d", label: "90 Days" },
+                { value: "12m", label: "12 Months" },
                 { value: "all", label: "All" },
               ]}
             />

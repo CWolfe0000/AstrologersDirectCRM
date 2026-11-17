@@ -77,7 +77,7 @@ export default function WorkDetail() {
               variant="secondary"
               onClick={() => {
                 respond(work.id, "done");
-                toast("Marked as done", `${who} will see that you’ve finished.`, "success");
+                toast("Marked as Done", `${who} will see that you’ve finished.`, "success");
               }}
             >
               <Check /> Mark as Done

@@ -11,7 +11,7 @@ import { ProfileSection, PracticeSection, AstrologySection, NotificationsSection
 const SECTIONS = [
   { id: "profile", label: "Profile", icon: User, C: ProfileSection },
   { id: "practice", label: "Practice", icon: Building2, C: PracticeSection },
-  { id: "astrology", label: "Astrology defaults", icon: CircleDot, C: AstrologySection },
+  { id: "astrology", label: "Astrology Defaults", icon: CircleDot, C: AstrologySection },
   { id: "notifications", label: "Notifications", icon: Bell, C: NotificationsSection },
   { id: "security", label: "Security", icon: Shield, C: SecuritySection },
   { id: "subscription", label: "Subscription", icon: CreditCard, C: SubscriptionSection },

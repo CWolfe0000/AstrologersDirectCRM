@@ -265,7 +265,7 @@ export default function DashboardPage() {
                 options={[
                   { value: "overdue", label: "Overdue", count: overdue.length },
                   { value: "upcoming", label: "Upcoming", count: upcomingTasks.length },
-                  { value: "follow", label: "Follow-ups", count: followUps.length },
+                  { value: "follow", label: "Follow-Ups", count: followUps.length },
                 ]}
               />
             </div>
@@ -280,7 +280,7 @@ export default function DashboardPage() {
                       checked={false}
                       onChange={() => {
                         s.updateTask(t.id, { status: "done" }, "Completed from dashboard");
-                        s.toast("Task completed", t.title, "success");
+                        s.toast("Task Completed", t.title, "success");
                       }}
                       aria-label={`Complete ${t.title}`}
                     />

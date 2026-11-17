@@ -38,17 +38,17 @@ function SignupForm() {
         }}
       >
         <div className="grid grid-cols-2 gap-3">
-          <Field label="First name" htmlFor="fn">
+          <Field label="First Name" htmlFor="fn">
             <Input id="fn" required autoComplete="given-name" />
           </Field>
-          <Field label="Last name" htmlFor="ln">
+          <Field label="Last Name" htmlFor="ln">
             <Input id="ln" required autoComplete="family-name" />
           </Field>
         </div>
-        <Field label="Work email" htmlFor="em">
+        <Field label="Work Email" htmlFor="em">
           <Input id="em" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </Field>
-        <Field label="Practice name" htmlFor="pn" optional>
+        <Field label="Practice Name" htmlFor="pn" optional>
           <Input id="pn" placeholder="e.g. Morrow Astrological Consulting" />
         </Field>
         <Field label="How many clients do you see each month?" htmlFor="vol">

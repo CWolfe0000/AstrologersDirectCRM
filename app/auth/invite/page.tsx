@@ -43,7 +43,7 @@ function DemoInvitePage() {
         <Field label="Email" htmlFor="em">
           <Input id="em" type="email" value="amelia.hart@example.com" readOnly className="bg-canvas-2 text-muted" />
         </Field>
-        <Field label="Create a password" htmlFor="pw" hint="At least 12 characters.">
+        <Field label="Create a Password" htmlFor="pw" hint="At least 12 characters.">
           <Input id="pw" type="password" required minLength={12} autoComplete="new-password" defaultValue="demo-password-1" />
         </Field>
         <Checkbox required defaultChecked label={<span className="text-[13px] text-muted">Email me when a new reading is shared</span>} />

@@ -78,15 +78,15 @@ export function OverviewTab({ client, person, onTab }: { client: Client; person:
               cols={3}
               className="grid-cols-2"
               items={[
-                { label: "Client since", value: fmtDate(client.createdAt) },
+                { label: "Client Since", value: fmtDate(client.createdAt) },
                 { label: "Source", value: client.source ?? "—" },
                 { label: "Consultations", value: `${completed} completed` },
                 { label: "Charts", value: d.charts.length },
                 { label: "Observations", value: d.observations.length },
-                { label: "Readings delivered", value: d.readings.filter((r) => r.status === "delivered").length },
-                { label: "Birth coordinates", value: fmtCoord(person.birth.lat, person.birth.lon) },
-                { label: "Time zone", value: person.birth.tz },
-                { label: "Portal access", value: <StatusBadge status={client.portalAccess} label={client.portalAccess === "active" ? "Active" : undefined} /> },
+                { label: "Readings Delivered", value: d.readings.filter((r) => r.status === "delivered").length },
+                { label: "Birth Coordinates", value: fmtCoord(person.birth.lat, person.birth.lon) },
+                { label: "Time Zone", value: person.birth.tz },
+                { label: "Portal Access", value: <StatusBadge status={client.portalAccess} label={client.portalAccess === "active" ? "Active" : undefined} /> },
               ]}
             />
           </CardBody>
@@ -539,18 +539,18 @@ export function FilesTab({ client }: { client: Client }) {
     const sizeKB = Math.max(1, Math.round(f.size / 1024));
     if (DATA_MODE === "demo") {
       d.s.addFile({ clientId: client.id, name: f.name, kind, sizeKB, private: true });
-      d.s.toast("File added", `${f.name} was added as a private practitioner file (stored in this browser only).`, "success");
+      d.s.toast("File Added", `${f.name} was added as a private practitioner file (stored in this browser only).`, "success");
       return;
     }
     setUploading({ name: f.name, pct: 0 });
     uploadFile(f, (pct) => setUploading({ name: f.name, pct })).then(
       (r) => {
         d.s.addFile({ clientId: client.id, name: f.name, kind, sizeKB, private: true, fileKey: r.key, contentType: r.contentType });
-        d.s.toast("File uploaded", `${f.name} is private until you share it with the client.`, "success");
+        d.s.toast("File Uploaded", `${f.name} is private until you share it with the client.`, "success");
         setUploading(null);
       },
       (e: Error) => {
-        d.s.toast("Upload failed", e.message, "error");
+        d.s.toast("Upload Failed", e.message, "error");
         setUploading(null);
       },
     );
@@ -592,7 +592,7 @@ export function FilesTab({ client }: { client: Client }) {
                 {f.fileKey ? (
                   <a href={mediaUrl("files", f.id, true)} aria-label={`Download ${f.name}`} className="inline-flex size-8 items-center justify-center rounded-lg hover:bg-canvas-2"><Download className="size-4" /></a>
                 ) : (
-                  <Button variant="ghost" size="icon-sm" aria-label="Download" onClick={() => d.s.toast("Download simulated", f.name)}><Download /></Button>
+                  <Button variant="ghost" size="icon-sm" aria-label="Download" onClick={() => d.s.toast("Download Simulated", f.name)}><Download /></Button>
                 )}
               </li>
             ))}

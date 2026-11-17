@@ -156,7 +156,7 @@ export default function ReadingDetail() {
                   <p className="truncate text-[13.5px] text-ink">{a.name}</p>
                   <p className="text-[12px] text-muted">{KIND_LABEL[a.kind]}{a.sizeMB ? ` · ${a.sizeMB} MB` : ""}</p>
                 </div>
-                <Button variant="ghost" size="icon-sm" aria-label={`Download ${a.name}`} onClick={() => toast("Download started", `${a.name} (simulated)`, "success")}>
+                <Button variant="ghost" size="icon-sm" aria-label={`Download ${a.name}`} onClick={() => toast("Download Started", `${a.name} (simulated)`, "success")}>
                   <Download />
                 </Button>
               </li>

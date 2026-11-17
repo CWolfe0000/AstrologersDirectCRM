@@ -20,7 +20,7 @@ type View = "all" | "today" | "upcoming" | "overdue" | "completed";
 
 
 const VIEWS: { id: View; label: string; icon: React.ElementType; test: (t: Task) => boolean }[] = [
-  { id: "all", label: "All tasks", icon: Inbox, test: (t) => t.status !== "done" },
+  { id: "all", label: "All Tasks", icon: Inbox, test: (t) => t.status !== "done" },
   { id: "today", label: "Today", icon: CalendarDays, test: (t) => t.status !== "done" && t.due === TODAY },
   { id: "upcoming", label: "Upcoming", icon: CalendarClock, test: (t) => t.status !== "done" && t.due > TODAY },
   { id: "overdue", label: "Overdue", icon: AlertCircle, test: (t) => isOverdue(t) },
@@ -66,7 +66,7 @@ export function TasksPage() {
 
   const complete = (t: Task, done: boolean) => {
     update(t.id, { status: done ? "done" : "todo" }, done ? "Completed" : "Reopened");
-    if (done) toast("Task completed", t.title, "success");
+    if (done) toast("Task Completed", t.title, "success");
   };
 
   const sideNav = (
@@ -110,10 +110,10 @@ export function TasksPage() {
           <div className="mb-3 flex flex-col gap-2 sm:flex-row">
             <SearchInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search tasks or clients…" className="flex-1" />
             <Select value={priority} onChange={(e) => setPriority(e.target.value)} className="sm:w-44" aria-label="Filter by priority">
-              <option value="">All priorities</option>
-              <option value="high">High priority</option>
-              <option value="medium">Medium priority</option>
-              <option value="low">Low priority</option>
+              <option value="">All Priorities</option>
+              <option value="high">High Priority</option>
+              <option value="medium">Medium Priority</option>
+              <option value="low">Low Priority</option>
             </Select>
           </div>
           <Card className="overflow-hidden">

@@ -96,7 +96,7 @@ function ChartDirectory() {
         <SearchInput placeholder="Search by title, person, client or configuration…" value={q} onChange={(e) => setQ(e.target.value)} className="lg:max-w-sm lg:flex-1" />
         <div className="flex flex-wrap items-center gap-2">
           <Select value={client} onChange={(e) => setClient(e.target.value)} className="w-[190px]" aria-label="Filter by client">
-            <option value="all">All clients</option>
+            <option value="all">All Clients</option>
             {clients.map((c) => (
               <option key={c.id} value={c.id}>
                 {name(c.id)}

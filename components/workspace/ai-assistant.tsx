@@ -173,7 +173,7 @@ export function AiAssistant({ chart, view, onSaved }: { chart: ChartRecord; view
       body: `<p><em>AI-generated draft — review and edit before relying on it.</em></p>${r.generated.map((g) => `<p>${g}</p>`).join("")}`,
       tags: ["ai-draft"],
     });
-    toast("Saved as draft observation", "Marked #ai-draft. Edit it to make it your own.", "success");
+    toast("Saved as Draft Observation", "Marked #ai-draft. Edit it to make it your own.", "success");
     onSaved(o.id);
   };
 

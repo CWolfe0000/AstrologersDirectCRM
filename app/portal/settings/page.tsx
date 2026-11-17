@@ -54,17 +54,17 @@ export default function PortalSettings() {
     a.download = "my-astrologersdirect-portal.json";
     a.click();
     URL.revokeObjectURL(a.href);
-    toast("Download ready", "A copy of everything in your portal. Readings and files themselves can be downloaded from each one, where your astrologer allows it.", "success");
+    toast("Download Ready", "A copy of everything in your portal. Readings and files themselves can be downloaded from each one, where your astrologer allows it.", "success");
   };
 
   const closeAccount = async () => {
-    if (DATA_MODE === "demo") { setClosing(false); toast("Account closed", "Simulated in the demo.", "success"); return; }
+    if (DATA_MODE === "demo") { setClosing(false); toast("Account Closed", "Simulated in the demo.", "success"); return; }
     setClosingBusy(true);
     try {
       await api("/api/v1/portal/account", { method: "DELETE", body: { confirm: "CLOSE", deleteRecords } });
       window.location.href = "/?closed=1";
     } catch (e) {
-      toast("Couldn’t close your account", (e as Error).message, "error");
+      toast("Couldn’t Close Your Account", (e as Error).message, "error");
       setClosingBusy(false);
     }
   };
@@ -79,7 +79,7 @@ export default function PortalSettings() {
       people: s.people.map((p) => (p.id === PORTAL_CLIENT_ID ? { ...p, firstName: first, lastName: last } : p)),
       clients: s.clients.map((c) => (c.id === PORTAL_CLIENT_ID ? { ...c, email } : c)),
     }));
-    toast("Profile saved", undefined, "success");
+    toast("Profile Saved", undefined, "success");
   };
 
   return (
@@ -94,8 +94,8 @@ export default function PortalSettings() {
         <CardBody>
           <form onSubmit={saveProfile} className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="First name" htmlFor="pf"><Input id="pf" value={first} onChange={(e) => setFirst(e.target.value)} className="h-11 sm:h-9" /></Field>
-              <Field label="Last name" htmlFor="pl"><Input id="pl" value={last} onChange={(e) => setLast(e.target.value)} className="h-11 sm:h-9" /></Field>
+              <Field label="First Name" htmlFor="pf"><Input id="pf" value={first} onChange={(e) => setFirst(e.target.value)} className="h-11 sm:h-9" /></Field>
+              <Field label="Last Name" htmlFor="pl"><Input id="pl" value={last} onChange={(e) => setLast(e.target.value)} className="h-11 sm:h-9" /></Field>
             </div>
             <Field label="Email" htmlFor="pe" hint={DATA_MODE === "demo" ? "Used to sign in and to receive notifications." : `Used to sign in. To change it, ask ${one ? firsts : "one of your astrologers"}.`}><Input id="pe" type="email" value={email} readOnly={DATA_MODE !== "demo"} onChange={(e) => setEmail(e.target.value)} className={DATA_MODE === "demo" ? "h-11 sm:h-9" : "h-11 bg-canvas-2 text-muted sm:h-9"} /></Field>
             <p className="text-[12.5px] text-muted">Birth details are managed by your astrologer. To correct them, send {one ? firsts : "your astrologer"} a message.</p>
@@ -169,7 +169,7 @@ export default function PortalSettings() {
                 <div className="space-y-4 text-[13.5px] text-ink-3">
                   <p>{one ? firsts : "Your astrologers"} keep{one ? "s" : ""} their professional records (your details, sessions and notes). If you’d like those deleted too, tick the box and we’ll pass that on.</p>
                   <Checkbox label={`Ask ${one ? firsts : "them"} to delete my records too`} checked={deleteRecords} onChange={(e) => setDeleteRecords(e.target.checked)} />
-                  <Field label="Type CLOSE to confirm" htmlFor="close-confirm">
+                  <Field label="Type CLOSE to Confirm" htmlFor="close-confirm">
                     <Input id="close-confirm" autoComplete="off" value={confirmText} onChange={(e) => setConfirmText(e.target.value.toUpperCase())} />
                   </Field>
                 </div>

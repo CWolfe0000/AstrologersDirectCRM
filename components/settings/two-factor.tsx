@@ -29,7 +29,7 @@ export function TwoFactorCard({ hint = "Recommended for practices holding client
     try {
       setSetup(await api<{ secret: string; qr: string }>("/api/auth/2fa/setup", { body: {} }));
     } catch (e) {
-      toast("Couldn’t start setup", (e as Error).message, "error");
+      toast("Couldn’t Start Setup", (e as Error).message, "error");
     }
   };
   const confirm = async () => {
@@ -57,7 +57,7 @@ export function TwoFactorCard({ hint = "Recommended for practices holding client
       setPassword("");
       setCode("");
       useStore.setState((s) => (s.session.user ? { session: { ...s.session, user: { ...s.session.user, twoFactor: false } } } : {}));
-      toast("Two-factor authentication turned off", undefined, "success");
+      toast("Two-Factor Authentication Turned Off", undefined, "success");
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -102,7 +102,7 @@ export function TwoFactorCard({ hint = "Recommended for practices holding client
                 Can’t scan? Enter this key: <span className="break-all font-mono text-[12px] text-ink">{setup.secret}</span>
               </p>
             </div>
-            <Field label="Code from the app" htmlFor="tfa" className="mt-4">
+            <Field label="Code from the App" htmlFor="tfa" className="mt-4">
               <Input id="tfa" inputMode="numeric" autoComplete="one-time-code" value={code} onChange={(e) => setCode(e.target.value)} placeholder="123 456" />
             </Field>
             {error && <p className="mt-2 text-[13px] text-danger">{error}</p>}
@@ -110,13 +110,13 @@ export function TwoFactorCard({ hint = "Recommended for practices holding client
         )}
       </Dialog>
 
-      <Dialog open={!!codes} onOpenChange={(o) => { if (!o) { setCodes(null); setSetup(null); toast("Two-factor authentication is on", undefined, "success"); } }}>
+      <Dialog open={!!codes} onOpenChange={(o) => { if (!o) { setCodes(null); setSetup(null); toast("Two-Factor Authentication Is On", undefined, "success"); } }}>
         {codes && (
           <DialogContent
             title="Save Your Recovery Codes"
             description="If you lose your phone, each code lets you sign in once. Store them somewhere safe — they won’t be shown again."
             size="sm"
-            footer={<Button onClick={() => { setCodes(null); setSetup(null); toast("Two-factor authentication is on", undefined, "success"); }}>I’ve Saved Them</Button>}
+            footer={<Button onClick={() => { setCodes(null); setSetup(null); toast("Two-Factor Authentication Is On", undefined, "success"); }}>I’ve Saved Them</Button>}
           >
             <div className="grid grid-cols-2 gap-2 rounded-lg border border-line bg-canvas p-4 font-mono text-[14px]">
               {codes.map((c) => <span key={c}>{c}</span>)}
@@ -125,7 +125,7 @@ export function TwoFactorCard({ hint = "Recommended for practices holding client
               variant="ghost"
               size="sm"
               className="mt-3"
-              onClick={() => navigator.clipboard?.writeText(codes.join("\n")).then(() => toast("Copied"), () => toast("Couldn’t copy", "Select the codes and copy them manually.", "error"))}
+              onClick={() => navigator.clipboard?.writeText(codes.join("\n")).then(() => toast("Copied"), () => toast("Couldn’t Copy", "Select the codes and copy them manually.", "error"))}
             >
               <Copy /> Copy Codes
             </Button>

@@ -82,7 +82,7 @@ export default function ClientsPage() {
     a.download = "astrologersdirect-clients.csv";
     a.click();
     URL.revokeObjectURL(a.href);
-    s.toast("Export ready", `${rows.length} clients exported to CSV.`, "success");
+    s.toast("Export Ready", `${rows.length} clients exported to CSV.`, "success");
   };
 
   const RowMenu = ({ id, archived }: { id: string; archived: boolean }) => (
@@ -93,12 +93,12 @@ export default function ClientsPage() {
         </Button>
       </DropdownTrigger>
       <DropdownContent onClick={(e) => e.stopPropagation()}>
-        <DropdownItem onSelect={() => router.push(`/app/clients/${id}`)}><User /> Open profile</DropdownItem>
-        <DropdownItem onSelect={() => router.push(`/app/consultations?new=1&client=${id}`)}><CalendarPlus /> Schedule consultation</DropdownItem>
-        <DropdownItem onSelect={() => router.push(`/app/charts/new?client=${id}`)}><CircleDot /> Create chart</DropdownItem>
+        <DropdownItem onSelect={() => router.push(`/app/clients/${id}`)}><User /> Open Profile</DropdownItem>
+        <DropdownItem onSelect={() => router.push(`/app/consultations?new=1&client=${id}`)}><CalendarPlus /> Schedule Consultation</DropdownItem>
+        <DropdownItem onSelect={() => router.push(`/app/charts/new?client=${id}`)}><CircleDot /> Create Chart</DropdownItem>
         <DropdownSeparator />
         <DropdownItem onSelect={() => toggleArchive(id, archived)}>
-          {archived ? <ArchiveRestore /> : <Archive />} {archived ? "Restore client" : "Archive client"}
+          {archived ? <ArchiveRestore /> : <Archive />} {archived ? "Restore Client" : "Archive Client"}
         </DropdownItem>
       </DropdownContent>
     </Dropdown>
@@ -134,7 +134,7 @@ export default function ClientsPage() {
             value={status}
             onChange={setStatus}
             options={[
-              { value: "current", label: "All current", count: counts.current },
+              { value: "current", label: "All Current", count: counts.current },
               { value: "active", label: "Active", count: counts.active },
               { value: "new", label: "New", count: counts.new },
               { value: "inactive", label: "Inactive", count: counts.inactive },
@@ -145,16 +145,16 @@ export default function ClientsPage() {
         </div>
         <div className="flex items-center gap-2 lg:justify-end 2xl:ml-auto">
           <Select value={tag} onChange={(e) => setTag(e.target.value)} className="min-w-0 flex-1 sm:w-40 sm:flex-none" aria-label="Filter by tag">
-            <option value="all">All tags</option>
+            <option value="all">All Tags</option>
             {allTags.map((t) => (
               <option key={t}>{t}</option>
             ))}
           </Select>
           <Select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className="min-w-0 flex-1 sm:w-48 sm:flex-none" aria-label="Sort">
-            <option value="name">Sort: Last name</option>
-            <option value="last">Sort: Last consultation</option>
-            <option value="next">Sort: Next appointment</option>
-            <option value="created">Sort: Newest client</option>
+            <option value="name">Sort: Last Name</option>
+            <option value="last">Sort: Last Consultation</option>
+            <option value="next">Sort: Next Appointment</option>
+            <option value="created">Sort: Newest Client</option>
           </Select>
           <Segmented
             size="sm"
@@ -191,9 +191,9 @@ export default function ClientsPage() {
                   <th className="px-5 py-2.5 font-medium">
                     <button className="inline-flex items-center gap-1 hover:text-ink" onClick={() => setSort("name")}>Client <ArrowUpDown className="size-3" /></button>
                   </th>
-                  <th className="hidden px-3 py-2.5 font-medium 2xl:table-cell">Birth data</th>
+                  <th className="hidden px-3 py-2.5 font-medium 2xl:table-cell">Birth Data</th>
                   <th className="whitespace-nowrap px-3 py-2.5 font-medium">
-                    <button className="inline-flex items-center gap-1 hover:text-ink" onClick={() => setSort("last")}>Last consultation <ArrowUpDown className="size-3" /></button>
+                    <button className="inline-flex items-center gap-1 hover:text-ink" onClick={() => setSort("last")}>Last Consultation <ArrowUpDown className="size-3" /></button>
                   </th>
                   <th className="px-3 py-2.5 font-medium">
                     <button className="inline-flex items-center gap-1 hover:text-ink" onClick={() => setSort("next")}>Upcoming <ArrowUpDown className="size-3" /></button>

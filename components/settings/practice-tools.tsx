@@ -34,9 +34,9 @@ export function RemindersCard() {
         <div className="flex items-center justify-between gap-4">
           <p className="text-[13.5px]">Send it</p>
           <Select value={String(r.hoursBefore)} onChange={(e) => set({ hoursBefore: Number(e.target.value) }, "Reminder timing updated")} className="w-48" aria-label="When to send reminders">
-            <option value="3">3 hours before</option>
-            <option value="24">24 hours before</option>
-            <option value="48">48 hours before</option>
+            <option value="3">3 Hours Before</option>
+            <option value="24">24 Hours Before</option>
+            <option value="48">48 Hours Before</option>
           </Select>
         </div>
         <p className="text-[12px] text-muted">Clients with an active portal also see the reminder there. Reminders are sent by an hourly scheduled job once the app is deployed.</p>
@@ -59,16 +59,16 @@ export function CalendarFeedCard() {
       setLink(r);
       setActive(true);
     } catch (e) {
-      toast("Couldn’t create the link", (e as Error).message, "error");
+      toast("Couldn’t Create the Link", (e as Error).message, "error");
     }
   };
   const remove = async () => {
     await api("/api/v1/calendar-feed", { method: "DELETE" }).catch(() => {});
     setLink(null);
     setActive(false);
-    toast("Calendar link turned off", "Calendars subscribed to it will stop updating.", "success");
+    toast("Calendar Link Turned Off", "Calendars subscribed to it will stop updating.", "success");
   };
-  const copy = (text: string) => navigator.clipboard?.writeText(text).then(() => toast("Link copied"), () => toast("Couldn’t copy", "Select the link and copy it.", "error"));
+  const copy = (text: string) => navigator.clipboard?.writeText(text).then(() => toast("Link Copied"), () => toast("Couldn’t Copy", "Select the link and copy it.", "error"));
   return (
     <Card>
       <CardHeader title="Calendar Subscription" description="See your consultations in Google Calendar, Apple Calendar or Outlook." icon={<CalendarDays />} />

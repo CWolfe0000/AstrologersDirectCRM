@@ -42,7 +42,7 @@ function Row({ title, desc, children }: { title: string; desc?: string; children
 
 function useSaved() {
   const toast = useStore((s) => s.toast);
-  return (what: string) => toast("Changes saved", what, "success");
+  return (what: string) => toast("Changes Saved", what, "success");
 }
 
 // ——— Profile ——————————————————————————————————————————————————————————
@@ -64,11 +64,11 @@ export function ProfileSection() {
           </div>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Full name"><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value, firstName: e.target.value.split(" ")[0] ?? "" })} /></Field>
-          <Field label="Professional title"><Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} /></Field>
+          <Field label="Full Name"><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value, firstName: e.target.value.split(" ")[0] ?? "" })} /></Field>
+          <Field label="Professional Title"><Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} /></Field>
           <Field label="Email"><Input type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} /></Field>
           <Field label="Phone"><Input value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} /></Field>
-          <Field label="Professional biography" hint="Shown on your client portal." className="sm:col-span-2"><Textarea rows={4} value={f.bio} onChange={(e) => setF({ ...f, bio: e.target.value })} /></Field>
+          <Field label="Professional Biography" hint="Shown on your client portal." className="sm:col-span-2"><Textarea rows={4} value={f.bio} onChange={(e) => setF({ ...f, bio: e.target.value })} /></Field>
         </div>
       </CardBody>
       <CardFooter>
@@ -94,10 +94,10 @@ export function PracticeSection() {
       <CardHeader title="Practice" description="Your practice identity, used in the client portal and notifications." />
       <CardBody className="space-y-6">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Practice name" className="sm:col-span-2"><Input value={f.practice} onChange={(e) => setF({ ...f, practice: e.target.value })} /></Field>
+          <Field label="Practice Name" className="sm:col-span-2"><Input value={f.practice} onChange={(e) => setF({ ...f, practice: e.target.value })} /></Field>
           <Field label="Website"><Input value={f.website} onChange={(e) => setF({ ...f, website: e.target.value })} /></Field>
-          <Field label="Public contact email"><Input value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} /></Field>
-          <Field label="Time zone" className="sm:col-span-2">
+          <Field label="Public Contact Email"><Input value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} /></Field>
+          <Field label="Time Zone" className="sm:col-span-2">
             <Select value={f.timezone} onChange={(e) => setF({ ...f, timezone: e.target.value })}>
               {(DATA_MODE === "demo"
                 ? ["America/Los_Angeles (Pacific Time)", "America/Denver (Mountain Time)", "America/Chicago (Central Time)", "America/New_York (Eastern Time)", "Europe/London (UK)", "Europe/Lisbon", "Europe/Madrid (Central European)", "Australia/Sydney"]
@@ -156,7 +156,7 @@ export function AstrologySection() {
       <Card>
         <CardHeader title="Astrology Defaults" description="Defaults for new charts across your practice. Each chart can override them in the workspace." />
         <CardBody className="divide-y divide-line py-1">
-          <Row title="House system" desc="Whole sign is always used automatically when a birth time is unknown.">
+          <Row title="House System" desc="Whole sign is always used automatically when a birth time is unknown.">
             <Select value={d.houseSystem} onChange={(e) => set({ houseSystem: e.target.value as HouseSystem })} className="w-56">
               {HOUSE_SYSTEMS.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
             </Select>
@@ -166,9 +166,9 @@ export function AstrologySection() {
               {ZODIACS.map((z) => <option key={z.id} value={z.id}>{z.name}</option>)}
             </Select>
           </Row>
-          <Row title="Show aspect lines"><Switch checked={d.showAspectLines} onCheckedChange={(v) => set({ showAspectLines: v })} /></Row>
-          <Row title="Show house cusps"><Switch checked={d.showHouseCusps} onCheckedChange={(v) => set({ showHouseCusps: v })} /></Row>
-          <Row title="Show degrees on the wheel"><Switch checked={d.showDegrees} onCheckedChange={(v) => set({ showDegrees: v })} /></Row>
+          <Row title="Show Aspect Lines"><Switch checked={d.showAspectLines} onCheckedChange={(v) => set({ showAspectLines: v })} /></Row>
+          <Row title="Show House Cusps"><Switch checked={d.showHouseCusps} onCheckedChange={(v) => set({ showHouseCusps: v })} /></Row>
+          <Row title="Show Degrees on the Wheel"><Switch checked={d.showDegrees} onCheckedChange={(v) => set({ showDegrees: v })} /></Row>
         </CardBody>
       </Card>
 
@@ -270,22 +270,22 @@ function DemoNotifications() {
       <CardHeader title={DATA_MODE === "demo" ? "Notifications" : "Your Notifications"} description={DATA_MODE === "demo" ? "Email, in-app notifications and automatic reminders." : "Emails and reminders for you (coming soon)."} action={<SimulatedBadge />} />
       <CardBody className="divide-y divide-line py-1">
         <p className="eyebrow pb-1 pt-3">Email</p>
-        <Row title="Daily digest" desc="Today's consultations, overdue tasks and pending deliveries."><Switch checked={v.emailDigest} onCheckedChange={t("emailDigest")} /></Row>
-        <Row title="Consultation changes" desc="Bookings, reschedules and cancellations."><Switch checked={v.emailConsult} onCheckedChange={t("emailConsult")} /></Row>
-        <Row title="Reading opened by client"><Switch checked={v.emailDelivery} onCheckedChange={t("emailDelivery")} /></Row>
+        <Row title="Daily Digest" desc="Today's consultations, overdue tasks and pending deliveries."><Switch checked={v.emailDigest} onCheckedChange={t("emailDigest")} /></Row>
+        <Row title="Consultation Changes" desc="Bookings, reschedules and cancellations."><Switch checked={v.emailConsult} onCheckedChange={t("emailConsult")} /></Row>
+        <Row title="Reading Opened by Client"><Switch checked={v.emailDelivery} onCheckedChange={t("emailDelivery")} /></Row>
         <p className="eyebrow pb-1 pt-5">In-app</p>
-        <Row title="Show in-app notifications"><Switch checked={v.inApp} onCheckedChange={t("inApp")} /></Row>
-        <Row title="Digest time">
+        <Row title="Show In-App Notifications"><Switch checked={v.inApp} onCheckedChange={t("inApp")} /></Row>
+        <Row title="Digest Time">
           <Input type="time" value={v.digestTime} onChange={(e) => setV({ ...v, digestTime: e.target.value })} className="w-32" />
         </Row>
         <p className="eyebrow pb-1 pt-5">Reminders</p>
-        {DATA_MODE === "demo" && <Row title="Send clients consultation reminders" desc="Email reminder with joining details."><Switch checked={v.clientReminders} onCheckedChange={t("clientReminders")} /></Row>}
-        <Row title="Remind me before consultations">
+        {DATA_MODE === "demo" && <Row title="Send Clients Consultation Reminders" desc="Email reminder with joining details."><Switch checked={v.clientReminders} onCheckedChange={t("clientReminders")} /></Row>}
+        <Row title="Remind Me Before Consultations">
           <Select value={v.reminderHours} onChange={(e) => { setV({ ...v, reminderHours: e.target.value }); saved("Reminder timing updated."); }} className="w-44">
-            <option value="1">1 hour before</option>
-            <option value="3">3 hours before</option>
-            <option value="24">24 hours before</option>
-            <option value="48">48 hours before</option>
+            <option value="1">1 Hour Before</option>
+            <option value="3">3 Hours Before</option>
+            <option value="24">24 Hours Before</option>
+            <option value="48">48 Hours Before</option>
           </Select>
         </Row>
       </CardBody>
@@ -315,22 +315,22 @@ export function PasswordCard() {
         description={hasPassword ? "You can sign in with your password or with an emailed link." : "You sign in with emailed links. Add a password if you’d also like to sign in with one."}
       />
       <CardBody className={cn("grid gap-4", hasPassword ? "sm:grid-cols-3" : "sm:grid-cols-2")}>
-        {hasPassword && <Field label="Current password"><Input type="password" autoComplete="current-password" value={pw.cur} onChange={(e) => setPw({ ...pw, cur: e.target.value })} /></Field>}
-        <Field label="New password" hint="At least 10 characters."><Input type="password" autoComplete="new-password" value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} /></Field>
-        <Field label="Confirm new password"><Input type="password" autoComplete="new-password" value={pw.confirm} onChange={(e) => setPw({ ...pw, confirm: e.target.value })} /></Field>
+        {hasPassword && <Field label="Current Password"><Input type="password" autoComplete="current-password" value={pw.cur} onChange={(e) => setPw({ ...pw, cur: e.target.value })} /></Field>}
+        <Field label="New Password" hint="At least 10 characters."><Input type="password" autoComplete="new-password" value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} /></Field>
+        <Field label="Confirm New Password"><Input type="password" autoComplete="new-password" value={pw.confirm} onChange={(e) => setPw({ ...pw, confirm: e.target.value })} /></Field>
       </CardBody>
       <CardFooter>
         <Button
           disabled={!ok}
           onClick={async () => {
-            if (DATA_MODE === "demo") { setPw({ cur: "", next: "", confirm: "" }); toast("Password updated (simulated)", undefined, "success"); return; }
+            if (DATA_MODE === "demo") { setPw({ cur: "", next: "", confirm: "" }); toast("Password Updated (Simulated)", undefined, "success"); return; }
             try {
               await api("/api/auth/change-password", { body: { current: pw.cur, next: pw.next } });
               setPw({ cur: "", next: "", confirm: "" });
               if (!hasPassword) useStore.setState((st) => (st.session.user ? { session: { ...st.session, user: { ...st.session.user, hasPassword: true } } } : {}));
               toast(hasPassword ? "Password updated" : "Password added", "You’ve been signed out on your other devices.", "success");
             } catch (e) {
-              toast("Password not changed", (e as Error).message, "error");
+              toast("Password Not Changed", (e as Error).message, "error");
             }
           }}
         >
@@ -370,7 +370,7 @@ export function SessionsCard() {
   const endSession = async (body: { id?: string; others?: boolean }) => {
     if (DATA_MODE === "demo") {
       setSessions((x) => (body.others ? x.filter((s) => s.current) : x.filter((s) => s.id !== body.id)));
-      if (body.others) toast("Signed out of other sessions");
+      if (body.others) toast("Signed Out of Other Sessions");
       return;
     }
     try {
@@ -378,7 +378,7 @@ export function SessionsCard() {
       toast(body.others ? "Signed out of other sessions" : "Session signed out", undefined, "success");
       loadSessions();
     } catch (e) {
-      toast("Couldn’t sign out that session", (e as Error).message, "error");
+      toast("Couldn’t Sign Out That Session", (e as Error).message, "error");
     }
   };
   return (
@@ -427,9 +427,9 @@ export function SecuritySection() {
       <Card>
         <CardHeader title="Data Access" description="Who can see your practice data." />
         <CardBody className="divide-y divide-line py-1">
-          <Row title="Client portal" desc="Clients see only readings, files and consultation summaries you share. Private observations are never shown."><Badge tone="sage">Enforced</Badge></Row>
-          {DATA_MODE === "demo" && <Row title="AI assistance" desc="Chart questions are answered from your own records; data is not used to train models."><Badge tone="info">Practice-only</Badge></Row>}
-          <Row title="Connected integrations"><span className="text-[12.5px] text-muted">None connected</span></Row>
+          <Row title="Client Portal" desc="Clients see only readings, files and consultation summaries you share. Private observations are never shown."><Badge tone="sage">Enforced</Badge></Row>
+          {DATA_MODE === "demo" && <Row title="AI Assistance" desc="Chart questions are answered from your own records; data is not used to train models."><Badge tone="info">Practice-only</Badge></Row>}
+          <Row title="Connected Integrations"><span className="text-[12.5px] text-muted">None connected</span></Row>
         </CardBody>
       </Card>
     </div>
@@ -471,10 +471,10 @@ export function SubscriptionSection() {
   const counts = { clients: useStore((s) => s.clients.length), charts: useStore((s) => s.charts.length) };
   const usage = [
     { label: "Storage", used: "19 GB", of: "50 GB", pct: 38 },
-    { label: "Active clients", used: String(counts.clients), of: "Unlimited", pct: 0 },
-    { label: "Saved charts", used: String(counts.charts), of: "Unlimited", pct: 0 },
-    { label: "Recording minutes this month", used: "212 min", of: "600 min", pct: 35 },
-    { label: "AI assistant requests this month", used: "86", of: "500", pct: 17 },
+    { label: "Active Clients", used: String(counts.clients), of: "Unlimited", pct: 0 },
+    { label: "Saved Charts", used: String(counts.charts), of: "Unlimited", pct: 0 },
+    { label: "Recording Minutes This Month", used: "212 min", of: "600 min", pct: 35 },
+    { label: "AI Assistant Requests This Month", used: "86", of: "500", pct: 17 },
   ];
   return (
     <div className="space-y-6">
@@ -546,7 +546,7 @@ export function DataSection() {
     a.download = "astrologersdirect-practice-export.json";
     a.click();
     URL.revokeObjectURL(a.href);
-    s.toast("Export ready", "Your full practice data was downloaded as JSON.", "success");
+    s.toast("Export Ready", "Your full practice data was downloaded as JSON.", "success");
   };
 
   return (
@@ -554,10 +554,10 @@ export function DataSection() {
       <Card>
         <CardHeader title="Import & Export" />
         <CardBody className="divide-y divide-line py-1">
-          <Row title="Export all practice data" desc="Clients, people, charts, observations, consultations, tasks and delivery records (JSON).">
+          <Row title="Export All Practice Data" desc="Clients, people, charts, observations, consultations, tasks and delivery records (JSON).">
             <Button variant="secondary" size="sm" onClick={exportAll}><Download /> Export</Button>
           </Row>
-          <Row title="Import clients" desc="CSV or exports from other astrology software.">
+          <Row title="Import Clients" desc="CSV or exports from other astrology software.">
             <Button variant="secondary" size="sm" onClick={() => router.push("/app/clients")}><Upload /> Go to Import</Button>
           </Row>
         </CardBody>
@@ -566,14 +566,14 @@ export function DataSection() {
       <Card>
         <CardHeader title="Privacy" />
         <CardBody className="divide-y divide-line py-1">
-          <Row title="Contribute anonymised patterns to research" desc="Future feature: anonymised configuration statistics. Never includes names or notes.">
-            <Switch checked={privacy.anonymised} onCheckedChange={(v) => { setPrivacy({ ...privacy, anonymised: v }); s.toast("Privacy preference saved"); }} />
+          <Row title="Contribute Anonymised Patterns to Research" desc="Future feature: anonymised configuration statistics. Never includes names or notes.">
+            <Switch checked={privacy.anonymised} onCheckedChange={(v) => { setPrivacy({ ...privacy, anonymised: v }); s.toast("Privacy Preference Saved"); }} />
           </Row>
-          <Row title="Archived client retention">
-            <Select value={privacy.retention} onChange={(e) => { setPrivacy({ ...privacy, retention: e.target.value }); s.toast("Retention updated"); }} className="w-48">
-              <option value="indefinite">Keep indefinitely</option>
-              <option value="7y">Delete after 7 years</option>
-              <option value="3y">Delete after 3 years</option>
+          <Row title="Archived Client Retention">
+            <Select value={privacy.retention} onChange={(e) => { setPrivacy({ ...privacy, retention: e.target.value }); s.toast("Retention Updated"); }} className="w-48">
+              <option value="indefinite">Keep Indefinitely</option>
+              <option value="7y">Delete After 7 Years</option>
+              <option value="3y">Delete After 3 Years</option>
             </Select>
           </Row>
         </CardBody>
@@ -591,10 +591,10 @@ export function DataSection() {
         <Card>
           <CardHeader title="Sample Data" description="Explore with example clients, or start again with an empty practice." />
           <CardBody className="divide-y divide-line py-1">
-            <Row title="Add sample data" desc="12 example clients with charts, consultations, observations and readings, dated around today.">
-              <Button variant="secondary" size="sm" onClick={async () => { try { await loadSampleData(); s.toast("Sample data added", undefined, "success"); } catch (e) { s.toast("Couldn’t add sample data", (e as Error).message, "error"); } }}><Database /> Add Sample Data</Button>
+            <Row title="Add Sample Data" desc="12 example clients with charts, consultations, observations and readings, dated around today.">
+              <Button variant="secondary" size="sm" onClick={async () => { try { await loadSampleData(); s.toast("Sample Data Added", undefined, "success"); } catch (e) { s.toast("Couldn’t Add Sample Data", (e as Error).message, "error"); } }}><Database /> Add Sample Data</Button>
             </Row>
-            <Row title="Delete all client records" desc="Removes every client, chart, observation, consultation, task and delivery, and all client portal logins. Your account stays.">
+            <Row title="Delete All Client Records" desc="Removes every client, chart, observation, consultation, task and delivery, and all client portal logins. Your account stays.">
               <Button variant="secondary" size="sm" onClick={() => setClear(true)}><Trash2 /> Delete Records</Button>
             </Row>
           </CardBody>
@@ -617,9 +617,9 @@ export function DataSection() {
                     setClear(false);
                     useStore.setState({ session: { status: "idle" } });
                     await bootstrap("app");
-                    s.toast("All client records deleted", undefined, "success");
+                    s.toast("All Client Records Deleted", undefined, "success");
                   } catch (e) {
-                    s.toast("Nothing was deleted", (e as Error).message, "error");
+                    s.toast("Nothing Was Deleted", (e as Error).message, "error");
                   }
                 }}
               >
@@ -650,12 +650,12 @@ export function DataSection() {
                 variant="danger"
                 disabled={confirm !== "DELETE"}
                 onClick={async () => {
-                  if (DATA_MODE === "demo") { setDel(false); s.toast("Account deletion simulated", "Nothing was deleted in the prototype."); return; }
+                  if (DATA_MODE === "demo") { setDel(false); s.toast("Account Deletion Simulated", "Nothing was deleted in the prototype."); return; }
                   try {
                     await api("/api/v1/account", { method: "DELETE", body: { confirm: "DELETE", password: delPassword } });
                     window.location.href = "/";
                   } catch (e) {
-                    s.toast("Account not deleted", (e as Error).message, "error");
+                    s.toast("Account Not Deleted", (e as Error).message, "error");
                   }
                 }}
               >
@@ -665,7 +665,7 @@ export function DataSection() {
           }
         >
           <Field label={<>Type <span className="font-mono">DELETE</span> to confirm</>}><Input value={confirm} onChange={(e) => setConfirm(e.target.value)} /></Field>
-          {DATA_MODE !== "demo" && s.session.user?.hasPassword !== false && <Field label="Your password" className="mt-3"><Input type="password" autoComplete="current-password" value={delPassword} onChange={(e) => setDelPassword(e.target.value)} /></Field>}
+          {DATA_MODE !== "demo" && s.session.user?.hasPassword !== false && <Field label="Your Password" className="mt-3"><Input type="password" autoComplete="current-password" value={delPassword} onChange={(e) => setDelPassword(e.target.value)} /></Field>}
           {DATA_MODE === "demo" && <SimulatedNote className="mt-4">Simulated — no data is deleted.</SimulatedNote>}
         </DialogContent>
       </Dialog>

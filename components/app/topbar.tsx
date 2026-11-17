@@ -111,9 +111,9 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
           </DropdownTrigger>
           <DropdownContent className="w-60">
             <DropdownLabel>Help</DropdownLabel>
-            <DropdownItem onSelect={() => router.push("/contact#help")}><BookOpen /> Help center</DropdownItem>
-            <DropdownItem onSelect={() => router.push("/prototype")}><Compass /> Prototype guide & workflows</DropdownItem>
-            <DropdownItem onSelect={() => router.push("/contact")}><MessageCircle /> Contact support</DropdownItem>
+            <DropdownItem onSelect={() => router.push("/contact#help")}><BookOpen /> Help Center</DropdownItem>
+            <DropdownItem onSelect={() => router.push("/prototype")}><Compass /> Prototype Guide & Workflows</DropdownItem>
+            <DropdownItem onSelect={() => router.push("/contact")}><MessageCircle /> Contact Support</DropdownItem>
             <DropdownSeparator />
             <div className="flex items-center justify-between px-2.5 py-2 text-[12.5px] text-muted">
               <span className="flex items-center gap-2"><Keyboard className="size-4" /> Search</span>
@@ -136,9 +136,9 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
             <DropdownSeparator />
             <DropdownItem onSelect={() => router.push("/app/settings?section=profile")}><User /> Profile</DropdownItem>
             <DropdownItem onSelect={() => router.push("/app/settings")}><Settings /> Settings</DropdownItem>
-            <DropdownItem onSelect={() => router.push("/portal")}><ExternalLink /> Preview client portal</DropdownItem>
+            <DropdownItem onSelect={() => router.push("/portal")}><ExternalLink /> Preview Client Portal</DropdownItem>
             <DropdownSeparator />
-            <DropdownItem onSelect={() => (DATA_MODE === "demo" ? router.push("/auth/login") : void signOut())}><LogOut /> Sign out</DropdownItem>
+            <DropdownItem onSelect={() => (DATA_MODE === "demo" ? router.push("/auth/login") : void signOut())}><LogOut /> Sign Out</DropdownItem>
           </DropdownContent>
         </Dropdown>
       </div>

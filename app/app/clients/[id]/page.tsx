@@ -64,7 +64,7 @@ function Profile() {
   if (!client || !person) {
     return (
       <div>
-        <PageHeader title="Client Not Found" breadcrumbs={[{ label: "Clients", href: "/app/clients" }, { label: "Not found" }]} />
+        <PageHeader title="Client Not Found" breadcrumbs={[{ label: "Clients", href: "/app/clients" }, { label: "Not Found" }]} />
         <Card>
           <EmptyState title="This Client Doesn't Exist" body="It may have been created in a different browser, or the demo data was reset." action={<ButtonLink href="/app/clients" variant="secondary" size="sm">Back to Clients</ButtonLink>} />
         </Card>
@@ -126,18 +126,18 @@ function Profile() {
                 <Button variant="secondary" size="icon-sm" aria-label="More actions"><MoreHorizontal /></Button>
               </DropdownTrigger>
               <DropdownContent>
-                <DropdownItem onSelect={() => router.push(`/app/studio?client=${id}`)}><Mic /> Record a reading</DropdownItem>
-                <DropdownItem onSelect={() => router.push(`/app/delivery?new=1&client=${id}`)}><Send /> Deliver a reading</DropdownItem>
-                <DropdownItem onSelect={() => router.push(`/app/tasks?new=1&client=${id}`)}><ListPlus /> New task</DropdownItem>
-                <DropdownItem onSelect={() => router.push(`/portal?as=${id}`)}><Eye /> Preview their portal</DropdownItem>
+                <DropdownItem onSelect={() => router.push(`/app/studio?client=${id}`)}><Mic /> Record a Reading</DropdownItem>
+                <DropdownItem onSelect={() => router.push(`/app/delivery?new=1&client=${id}`)}><Send /> Deliver a Reading</DropdownItem>
+                <DropdownItem onSelect={() => router.push(`/app/tasks?new=1&client=${id}`)}><ListPlus /> New Task</DropdownItem>
+                <DropdownItem onSelect={() => router.push(`/portal?as=${id}`)}><Eye /> Preview Their Portal</DropdownItem>
                 {client.portalAccess !== "none" && (
                   <DropdownItem
                     onSelect={() => {
                       s.updateClient(id, { portalAccess: "none" });
-                      s.toast("Portal access turned off", `${name} is signed out and can no longer open their portal. Send a new invitation to restore it.`, "success");
+                      s.toast("Portal Access Turned Off", `${name} is signed out and can no longer open their portal. Send a new invitation to restore it.`, "success");
                     }}
                   >
-                    <KeyRound /> Turn off portal access
+                    <KeyRound /> Turn Off Portal Access
                   </DropdownItem>
                 )}
                 {client.portalAccess !== "active" && (
@@ -145,16 +145,16 @@ function Profile() {
                     onSelect={async () => {
                       if (DATA_MODE === "demo") {
                         s.updateClient(id, { portalAccess: "invited" });
-                        s.toast("Portal invitation sent", `${name} will receive an email invitation (simulated).`, "success");
+                        s.toast("Portal Invitation Sent", `${name} will receive an email invitation (simulated).`, "success");
                         return;
                       }
                       try {
                         await flushNow();
                         await api("/api/v1/portal/invite", { body: { clientId: id } });
                         useStore.setState((st) => ({ clients: st.clients.map((c) => (c.id === id ? { ...c, portalAccess: "invited" } : c)) }));
-                        s.toast("Portal invitation sent", `${name} will receive an email with a link to set their password.`, "success");
+                        s.toast("Portal Invitation Sent", `${name} will receive an email with a link to set their password.`, "success");
                       } catch (e) {
-                        s.toast("Invitation not sent", (e as Error).message, "error");
+                        s.toast("Invitation Not Sent", (e as Error).message, "error");
                       }
                     }}
                   >
@@ -163,7 +163,7 @@ function Profile() {
                 )}
                 <DropdownSeparator />
                 <DropdownItem onSelect={() => { s.updateClient(id, { status: archived ? "active" : "archived" }); s.toast(archived ? "Client restored" : "Client archived", undefined, "success"); }}>
-                  {archived ? <ArchiveRestore /> : <Archive />} {archived ? "Restore client" : "Archive client"}
+                  {archived ? <ArchiveRestore /> : <Archive />} {archived ? "Restore Client" : "Archive Client"}
                 </DropdownItem>
               </DropdownContent>
             </Dropdown>

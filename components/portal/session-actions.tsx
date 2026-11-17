@@ -22,7 +22,7 @@ export function SessionActions({ k, today, who, className }: { k: Session; today
   const send = async () => {
     if (DATA_MODE === "demo" || preview) {
       setOpen(false);
-      toast("Request sent", `${who} will be in touch to find a new time. (${preview ? "Preview: nothing was sent" : "Simulated in the demo"})`, "success");
+      toast("Request Sent", `${who} will be in touch to find a new time. (${preview ? "Preview: nothing was sent" : "Simulated in the demo"})`, "success");
       return;
     }
     setBusy(true);
@@ -30,9 +30,9 @@ export function SessionActions({ k, today, who, className }: { k: Session; today
       await api(`/api/v1/portal/consultations/${encodeURIComponent(k.id)}/reschedule`, { body: { message } });
       setOpen(false);
       setMessage("");
-      toast("Request sent", `${who} will reply by email to find a new time.`, "success");
+      toast("Request Sent", `${who} will reply by email to find a new time.`, "success");
     } catch (e) {
-      toast("Couldn’t send your request", (e as Error).message, "error");
+      toast("Couldn’t Send Your Request", (e as Error).message, "error");
     } finally {
       setBusy(false);
     }

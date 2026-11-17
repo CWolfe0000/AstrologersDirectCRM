@@ -66,7 +66,7 @@ export function TaskDetail({ id, onDeleted }: { id: string; onDeleted?: () => vo
         <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} onBlur={() => desc !== (t.description ?? "") && update(t.id, { description: desc })} placeholder="Add details…" className="min-h-[80px]" />
       </Field>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Field label="Due date">
+        <Field label="Due Date">
           <Input type="date" value={t.due} onChange={(e) => update(t.id, { due: e.target.value }, `Due date changed to ${fmtDate(e.target.value)}`)} />
         </Field>
         <Field label="Priority">
@@ -82,11 +82,11 @@ export function TaskDetail({ id, onDeleted }: { id: string; onDeleted?: () => vo
             onChange={(e) => {
               const v = e.target.value as TaskStatus;
               update(t.id, { status: v }, v === "done" ? "Completed" : v === "in-progress" ? "Moved to In progress" : "Moved to To do");
-              if (v === "done") toast("Task completed", t.title, "success");
+              if (v === "done") toast("Task Completed", t.title, "success");
             }}
           >
-            <option value="todo">To do</option>
-            <option value="in-progress">In progress</option>
+            <option value="todo">To Do</option>
+            <option value="in-progress">In Progress</option>
             <option value="done">Done</option>
           </Select>
         </Field>
@@ -95,7 +95,7 @@ export function TaskDetail({ id, onDeleted }: { id: string; onDeleted?: () => vo
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Client">
           <Select value={t.clientId ?? ""} onChange={(e) => update(t.id, { clientId: e.target.value || undefined, consultationId: undefined })}>
-            <option value="">No client</option>
+            <option value="">No Client</option>
             {clients.map((c) => <option key={c.id} value={c.id}>{personName(people.find((p) => p.id === c.id))}</option>)}
           </Select>
         </Field>
@@ -191,7 +191,7 @@ export function TaskDetail({ id, onDeleted }: { id: string; onDeleted?: () => vo
           className="text-danger hover:bg-danger-50"
           onClick={() => {
             useStore.setState((s) => ({ tasks: s.tasks.filter((x) => x.id !== t.id) }));
-            toast("Task deleted", t.title);
+            toast("Task Deleted", t.title);
             onDeleted?.();
           }}
         >

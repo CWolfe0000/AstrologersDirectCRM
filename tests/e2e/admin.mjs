@@ -69,7 +69,7 @@ step("change the plan");
 const before = (await db.query("select plan from practices where id=$1", [targetId])).rows[0].plan;
 const next = before === "premium" ? "standard" : "premium";
 await row.getByRole("combobox").selectOption(next);
-await admin.getByText("Plan updated").waitFor();
+await admin.getByText("Plan Updated").waitFor();
 assert.equal((await db.query("select plan from practices where id=$1", [targetId])).rows[0].plan, next);
 
 step("delete a practice (typing the owner's email)");
@@ -79,7 +79,7 @@ const del = dialog.getByRole("button", { name: "Delete Permanently" });
 assert.ok(await del.isDisabled(), "disabled until confirmed");
 await dialog.getByLabel(/to confirm/).fill(otherEmail);
 await del.click();
-await admin.getByText("Practice deleted").waitFor();
+await admin.getByText("Practice Deleted").waitFor();
 assert.equal((await db.query("select count(*)::int n from practices where id=$1", [targetId])).rows[0].n, 0, "practice gone");
 assert.equal((await db.query("select count(*)::int n from users where email=$1", [otherEmail])).rows[0].n, 0, "owner gone");
 const { rows: events } = await db.query("select action from admin_events where practice_id=$1 order by at", [targetId]);

@@ -130,7 +130,7 @@ function NewChart() {
     const { id: _id, createdAt: _c, updatedAt: _u, ...rest } = draft;
     void _id; void _c; void _u;
     const c = addChart(rest);
-    toast("Chart saved", `“${c.title}” is filed under ${name(clientId)}.`, "success");
+    toast("Chart Saved", `“${c.title}” is filed under ${name(clientId)}.`, "success");
     router.push(`/app/charts/${c.id}`);
   };
 
@@ -139,7 +139,7 @@ function NewChart() {
       <PageHeader
         title="Create Chart"
         description="Charts are always created for a person on file and saved to a client record."
-        breadcrumbs={[{ label: "Charts", href: "/app/charts" }, { label: "Create chart" }]}
+        breadcrumbs={[{ label: "Charts", href: "/app/charts" }, { label: "Create Chart" }]}
       />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,460px)]">
         <div className="space-y-5">
@@ -155,7 +155,7 @@ function NewChart() {
                     type === t.id ? "border-accent bg-accent-50/60 ring-1 ring-accent/30" : "border-line hover:border-line-strong",
                   )}
                 >
-                  <p className="flex items-center justify-between gap-2 text-[13.5px] font-medium text-ink">
+                  <p className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-[13.5px] font-medium text-ink">
                     {t.name}
                     {isPremiumChart(t.id) && <PremiumBadge locked={!premium} />}
                   </p>
@@ -173,7 +173,7 @@ function NewChart() {
           <Card>
             <CardHeader title={isHorary ? "2. Client & Question" : "2. Client & Subjects"} description={isHorary ? "The client asking (the querent), their question, and when and where you received it." : "Choose the client record this chart is filed under, then who is charted."} />
             <CardBody className="grid gap-4 sm:grid-cols-2">
-              <Field label="Client record">
+              <Field label="Client Record">
                 <Select value={clientId} onChange={(e) => setClientId(e.target.value)}>
                   {clients.filter((c) => c.status !== "archived").map((c) => (
                     <option key={c.id} value={c.id}>{name(c.id)}</option>
@@ -185,9 +185,9 @@ function NewChart() {
                   <Field label="Question" className="sm:col-span-2" hint="In the querent’s own words, as closely as you can.">
                     <Textarea rows={2} maxLength={1000} value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="e.g. Will I get the job I interviewed for on Monday?" />
                   </Field>
-                  <Field label="Date asked"><Input type="date" value={askedDate} onChange={(e) => setAskedDate(e.target.value)} /></Field>
-                  <Field label="Time asked" hint="Local time where it was asked. Defaults to now."><Input type="time" value={askedTime} onChange={(e) => setAskedTime(e.target.value)} /></Field>
-                  <Field label="Where it was asked" className="sm:col-span-2" hint="Usually where you were when you received and understood the question.">
+                  <Field label="Date Asked"><Input type="date" value={askedDate} onChange={(e) => setAskedDate(e.target.value)} /></Field>
+                  <Field label="Time Asked" hint="Local time where it was asked. Defaults to now."><Input type="time" value={askedTime} onChange={(e) => setAskedTime(e.target.value)} /></Field>
+                  <Field label="Where It Was Asked" className="sm:col-span-2" hint="Usually where you were when you received and understood the question.">
                     <PlaceLookup value={askedPlace} onChange={setAskedPlace} id="horary-place" />
                   </Field>
                 </>
@@ -200,7 +200,7 @@ function NewChart() {
                       {personName(p)}{p.relationship ? ` (${p.relationship})` : ""}
                     </option>
                   ))}
-                  <option value={NEW}>+ Add a new person…</option>
+                  <option value={NEW}>+ Add a New Person…</option>
                 </Select>
               </Field>
               )}
@@ -212,7 +212,7 @@ function NewChart() {
                         {personName(p)}{p.relationship ? ` (${p.relationship})` : ""}
                       </option>
                     ))}
-                    <option value={NEW}>+ Add a new person…</option>
+                    <option value={NEW}>+ Add a New Person…</option>
                   </Select>
                 </Field>
               )}
@@ -242,7 +242,7 @@ function NewChart() {
             <CardBody className="grid gap-4 sm:grid-cols-2">
               {!isMap && (
               <>
-              <Field label="House system" hint={isHorary ? "Regiomontanus is the traditional choice for horary." : undefined}>
+              <Field label="House System" hint={isHorary ? "Regiomontanus is the traditional choice for horary." : undefined}>
                 <Select value={houseSystem} onChange={(e) => setHouseSystem(e.target.value as HouseSystem)}>
                   {HOUSE_SYSTEMS.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
                 </Select>
@@ -254,7 +254,7 @@ function NewChart() {
               </Field>
               </>
               )}
-              <Field label="Chart title" className="sm:col-span-2">
+              <Field label="Chart Title" className="sm:col-span-2">
                 <Input value={title} onChange={(e) => { setTitle(e.target.value); setTitleTouched(true); }} />
               </Field>
             </CardBody>

@@ -29,7 +29,7 @@ await page.evaluate(() => fetch("/api/v1/sample-data", { method: "POST", headers
 
 step("record audio with real (fake) devices");
 await page.goto(BASE + "/app/studio?client=c1&chart=ch1");
-await page.getByText("Audio only").first().click();
+await page.getByText("Audio Only").first().click();
 await page.getByRole("switch").first().click();
 await page.getByRole("button", { name: /Start Recording/ }).click();
 await page.waitForTimeout(2500);
@@ -38,7 +38,7 @@ await page.getByText("Recorded in browser").waitFor({ timeout: 10000 });
 
 step("deliver: the recording uploads and becomes a playable reading");
 await page.getByRole("button", { name: /Deliver to Client Portal/ }).click();
-await page.getByText("Delivered to client portal").first().waitFor({ timeout: 20000 });
+await page.getByText("Delivered to Client Portal").first().waitFor({ timeout: 20000 });
 await page.waitForTimeout(500);
 await page.getByText("All changes saved").waitFor({ timeout: 20000 });
 const s = await page.evaluate(() => fetch("/api/v1/bootstrap?view=app").then((r) => r.json()));

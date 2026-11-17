@@ -153,7 +153,7 @@ export function ObservationEditor({ observationId, initial, lockChart, onCreated
     save(`Restored version from ${fmtDate(at)}`);
     dirtySinceRevision.current = false;
     setHistoryOpen(false);
-    toast("Version restored", "The previous text is now current. The replaced text is kept in history.", "success");
+    toast("Version Restored", "The previous text is now current. The replaced text is kept in history.", "success");
   };
 
   return (
@@ -194,7 +194,7 @@ export function ObservationEditor({ observationId, initial, lockChart, onCreated
                   clearTimeout(timer.current);
                   timer.current = undefined;
                   del(id);
-                  toast("Observation deleted");
+                  toast("Observation Deleted");
                   onDeleted?.();
                 }}
               >
@@ -232,21 +232,21 @@ export function ObservationEditor({ observationId, initial, lockChart, onCreated
       </div>
 
       <div className={cn("grid gap-3", compact ? "grid-cols-1" : "sm:grid-cols-2")}>
-        <Field label="Linked client">
+        <Field label="Linked Client">
           <Select value={d.clientId} onChange={(e) => setClient(e.target.value)} disabled={lockChart}>
             {clients.map((c) => (
               <option key={c.id} value={c.id}>{personName(people.find((p) => p.id === c.id))}</option>
             ))}
           </Select>
         </Field>
-        <Field label="Linked chart">
+        <Field label="Linked Chart">
           <Select value={d.chartId} onChange={(e) => setChart(e.target.value)} disabled={lockChart}>
             {clientCharts.map((c) => (
               <option key={c.id} value={c.id}>{c.title}</option>
             ))}
           </Select>
         </Field>
-        <Field label="Related consultation" optional className={compact ? "" : "sm:col-span-2"}>
+        <Field label="Related Consultation" optional className={compact ? "" : "sm:col-span-2"}>
           <Select value={d.consultationId ?? ""} onChange={(e) => change({ consultationId: e.target.value || undefined })}>
             <option value="">None</option>
             {clientConsults.map((k) => (
@@ -295,7 +295,7 @@ export function ObservationEditor({ observationId, initial, lockChart, onCreated
 
       {existing && <p className="text-[11.5px] text-muted">Created {fmtDate(existing.createdAt)} · Last edited {relTime(existing.updatedAt)}</p>}
 
-      <Sheet open={historyOpen} onOpenChange={setHistoryOpen} title="Revision history" description={d.title || "Untitled observation"} width="max-w-md">
+      <Sheet open={historyOpen} onOpenChange={setHistoryOpen} title="Revision History" description={d.title || "Untitled observation"} width="max-w-md">
         <ol className="relative px-6 py-5">
           <li className="relative border-l border-line pb-6 pl-5">
             <span className="absolute -left-[5px] top-1 size-2.5 rounded-full bg-accent" />

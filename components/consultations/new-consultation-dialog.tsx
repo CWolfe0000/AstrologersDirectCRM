@@ -83,7 +83,7 @@ export function NewConsultationDialog({
       readingIds: [],
       recordingIds: [],
     });
-    toast("Consultation scheduled", `${type} with ${personName(people.find((p) => p.id === clientId))}`, "success");
+    toast("Consultation Scheduled", `${type} with ${personName(people.find((p) => p.id === clientId))}`, "success");
     onOpenChange(false);
     onCreated?.(k);
   };
@@ -104,13 +104,13 @@ export function NewConsultationDialog({
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Client" className="sm:col-span-2">
             <Select value={clientId} onChange={(e) => setClientId(e.target.value)}>
-              <option value="">Select a client…</option>
+              <option value="">Select a Client…</option>
               {active.map((c) => (
                 <option key={c.id} value={c.id}>{personName(people.find((p) => p.id === c.id))}</option>
               ))}
             </Select>
           </Field>
-          <Field label="Consultation type">
+          <Field label="Consultation Type">
             <Select value={type} onChange={(e) => setType(e.target.value)}>
               {CONSULTATION_TYPES.map((t) => <option key={t}>{t}</option>)}
             </Select>
@@ -123,20 +123,20 @@ export function NewConsultationDialog({
             </Select>
           </Field>
           {location === "Video call" && (
-            <Field label="Video call link (optional)" className="sm:col-span-2" hint={urlOk ? "Zoom, Google Meet or similar. Your client joins from their portal and reminder email." : "Use the full link, starting with https://"}>
+            <Field label="Video Call Link (Optional)" className="sm:col-span-2" hint={urlOk ? "Zoom, Google Meet or similar. Your client joins from their portal and reminder email." : "Use the full link, starting with https://"}>
               <Input type="url" inputMode="url" placeholder="https://" value={meetingUrl} onChange={(e) => setMeetingUrl(e.target.value)} />
             </Field>
           )}
           <Field label="Date"><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></Field>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Start time"><Input type="time" value={time} onChange={(e) => setTime(e.target.value)} /></Field>
+            <Field label="Start Time"><Input type="time" value={time} onChange={(e) => setTime(e.target.value)} /></Field>
             <Field label="Duration">
               <Select value={duration} onChange={(e) => setDuration(+e.target.value)}>
                 {[30, 45, 60, 75, 90, 120].map((d) => <option key={d} value={d}>{d} min</option>)}
               </Select>
             </Field>
           </div>
-          <Field label="Linked charts" className="sm:col-span-2" hint={clientId ? undefined : "Choose a client to see their saved charts."}>
+          <Field label="Linked Charts" className="sm:col-span-2" hint={clientId ? undefined : "Choose a client to see their saved charts."}>
             {clientId && (
               <div className="grid gap-1.5 rounded-lg border border-line p-2 sm:grid-cols-2">
                 {clientCharts.length === 0 && <p className="p-2 text-[13px] text-muted">No saved charts for this client yet.</p>}
@@ -153,7 +153,7 @@ export function NewConsultationDialog({
               </div>
             )}
           </Field>
-          <Field label="Preparation notes" optional className="sm:col-span-2">
+          <Field label="Preparation Notes" optional className="sm:col-span-2">
             <Textarea value={prep} onChange={(e) => setPrep(e.target.value)} placeholder="What do you want to revisit or prepare before this session?" />
           </Field>
         </div>

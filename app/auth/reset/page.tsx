@@ -48,10 +48,10 @@ function DemoResetPage() {
               setStage("done");
             }}
           >
-            <Field label="New password" htmlFor="np">
+            <Field label="New Password" htmlFor="np">
               <Input id="np" type="password" required minLength={12} autoComplete="new-password" />
             </Field>
-            <Field label="Confirm new password" htmlFor="cp">
+            <Field label="Confirm New Password" htmlFor="cp">
               <Input id="cp" type="password" required minLength={12} autoComplete="new-password" />
             </Field>
             <Button type="submit" size="lg" className="w-full">

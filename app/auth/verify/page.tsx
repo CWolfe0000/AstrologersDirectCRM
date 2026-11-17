@@ -60,7 +60,7 @@ function Verify() {
       <p className="mt-3 text-center text-[12px] text-muted">Prototype: any code (or none) is accepted.</p>
       <p className="mt-8 text-center text-[13.5px] text-muted">
         Didn’t receive it?{" "}
-        <button className="font-medium text-accent hover:underline" onClick={() => toast("Code re-sent", "Simulated — no email was sent.")}>
+        <button className="font-medium text-accent hover:underline" onClick={() => toast("Code Re-Sent", "Simulated — no email was sent.")}>
           Resend code
         </button>{" "}
         · <Link href="/auth/signup" className="hover:text-ink">Change email</Link>

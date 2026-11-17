@@ -142,7 +142,7 @@ export function NewDeliveryDialog({
       (e: Error) => {
         setFile(null);
         setProgress(0);
-        if (e.message !== "Upload cancelled.") toast("Upload failed", e.message, "error");
+        if (e.message !== "Upload cancelled.") toast("Upload Failed", e.message, "error");
       },
     );
   };
@@ -188,10 +188,10 @@ export function NewDeliveryDialog({
     }
     if (send) {
       deliverReading(r.id);
-      toast("Reading delivered", `${person?.firstName} has been notified${notifyEmail ? " by email and in their portal" : " in their portal"}.`, "success");
+      toast("Reading Delivered", `${person?.firstName} has been notified${notifyEmail ? " by email and in their portal" : " in their portal"}.`, "success");
     } else {
       log({ kind: "reading", text: `Saved draft “${r.title}”`, clientId, href: `/app/delivery?id=${r.id}` });
-      toast("Draft saved", r.title);
+      toast("Draft Saved", r.title);
     }
     setDone({ ...r, status: send ? "delivered" : "draft" });
   };
@@ -272,7 +272,7 @@ export function NewDeliveryDialog({
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Client" className="sm:col-span-2">
                   <Select value={clientId} onChange={(e) => { setClientId(e.target.value); setChartId(""); setConsultationId(""); }}>
-                    <option value="">Select a client…</option>
+                    <option value="">Select a Client…</option>
                     {clients.filter((c) => c.status !== "archived").map((c) => (
                       <option key={c.id} value={c.id}>{personName(people.find((p) => p.id === c.id))}{c.portalAccess !== "active" ? " (portal not active)" : ""}</option>
                     ))}
@@ -280,7 +280,7 @@ export function NewDeliveryDialog({
                 </Field>
                 {clientId && (
                   <>
-                    <Field label="Related chart" optional className="sm:col-span-2">
+                    <Field label="Related Chart" optional className="sm:col-span-2">
                       <div className="grid gap-1.5 sm:grid-cols-2">
                         {clientCharts.map((c) => (
                           <button
@@ -297,7 +297,7 @@ export function NewDeliveryDialog({
                         ))}
                       </div>
                     </Field>
-                    <Field label="Related consultation" optional className="sm:col-span-2">
+                    <Field label="Related Consultation" optional className="sm:col-span-2">
                       <Select value={consultationId} onChange={(e) => setConsultationId(e.target.value)}>
                         <option value="">None</option>
                         {clientConsults.map((k) => <option key={k.id} value={k.id}>{k.type} · {fmtDate(k.start)}</option>)}
@@ -313,7 +313,7 @@ export function NewDeliveryDialog({
 
             {step === 1 && (
               <div className="space-y-4">
-                <Field label="Reading title">
+                <Field label="Reading Title">
                   <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Solar Return 2027 — Relocated to Lisbon" />
                 </Field>
                 <Segmented
@@ -371,7 +371,7 @@ export function NewDeliveryDialog({
 
             {step === 2 && (
               <div className="grid gap-5 lg:grid-cols-2">
-                <Field label="Message to client" hint="A short, personal note shown above the reading.">
+                <Field label="Message to Client" hint="A short, personal note shown above the reading.">
                   <Textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
@@ -388,12 +388,12 @@ export function NewDeliveryDialog({
                     </span>
                     <Switch checked={kind !== "link" && allowDownload} disabled={kind === "link"} onCheckedChange={setAllowDownload} />
                   </label>
-                  <Field label="Access expires">
+                  <Field label="Access Expires">
                     <Select value={expiry} onChange={(e) => setExpiry(e.target.value)}>
-                      <option value="never">Never — keep in the client's library</option>
-                      <option value="30">After 30 days</option>
-                      <option value="90">After 90 days</option>
-                      <option value="365">After 1 year</option>
+                      <option value="never">Never — Keep in the Client's Library</option>
+                      <option value="30">After 30 Days</option>
+                      <option value="90">After 90 Days</option>
+                      <option value="365">After 1 Year</option>
                     </Select>
                   </Field>
                   <label className="flex items-start justify-between gap-4 rounded-lg border border-line p-3">

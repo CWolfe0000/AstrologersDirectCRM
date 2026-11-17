@@ -57,7 +57,7 @@ await page.getByText("Load sample data").waitFor({ timeout: 15000 });
 
 step("load sample data");
 await page.getByText("Load sample data").click();
-await page.getByText("Sample data added").waitFor({ timeout: 30000 });
+await page.getByText("Sample Data Added").waitFor({ timeout: 30000 });
 await page.goto(BASE + "/app/clients");
 await page.getByText("Amelia Hart").first().waitFor();
 

@@ -194,7 +194,7 @@ export function ImportClientsDialog({ open, onOpenChange }: { open: boolean; onO
                 <label key={f.id} className="block text-[12.5px]">
                   <span className="mb-1 block text-muted">{f.label}{(f.id === "birthDate") && " (required)"}</span>
                   <Select value={mapping[f.id] === undefined ? "" : String(mapping[f.id])} onChange={(e) => setMapping((m) => ({ ...m, [f.id]: e.target.value === "" ? undefined : Number(e.target.value) }))}>
-                    <option value="">— Not in this file —</option>
+                    <option value="">— Not in This File —</option>
                     {headers.map((h, i) => <option key={i} value={i}>{h || `Column ${i + 1}`}</option>)}
                   </Select>
                 </label>
@@ -202,7 +202,7 @@ export function ImportClientsDialog({ open, onOpenChange }: { open: boolean; onO
             </div>
             <div className="flex flex-wrap items-center gap-3 text-[13px]">
               <span className="text-muted">Dates like 03/04/1988 mean</span>
-              <Segmented size="sm" value={order} onChange={setOrder} options={[{ value: "us", label: "March 4 (US)" }, { value: "intl", label: "3 April (international)" }]} />
+              <Segmented size="sm" value={order} onChange={setOrder} options={[{ value: "us", label: "March 4 (US)" }, { value: "intl", label: "3 April (International)" }]} />
             </div>
           </div>
         )}

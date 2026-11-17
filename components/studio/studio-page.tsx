@@ -25,10 +25,10 @@ import { MicMeter, useMicLevel } from "./mic-meter";
 import { SimPlayer } from "./sim-player";
 
 const MODES: { id: RecordingMode; label: string; desc: string; icon: React.ElementType; screen: boolean; cam: boolean }[] = [
-  { id: "audio", label: "Audio only", desc: "Microphone only — a spoken reading.", icon: Mic, screen: false, cam: false },
-  { id: "webcam", label: "Webcam + mic", desc: "Face-to-camera reading.", icon: Video, screen: false, cam: true },
-  { id: "screen", label: "Screen + mic", desc: "Walk through the chart on screen.", icon: MonitorUp, screen: true, cam: false },
-  { id: "screen-webcam", label: "Screen + webcam + mic", desc: "Chart walkthrough with a camera bubble.", icon: MonitorPlay, screen: true, cam: true },
+  { id: "audio", label: "Audio Only", desc: "Microphone only — a spoken reading.", icon: Mic, screen: false, cam: false },
+  { id: "webcam", label: "Webcam + Mic", desc: "Face-to-camera reading.", icon: Video, screen: false, cam: true },
+  { id: "screen", label: "Screen + Mic", desc: "Walk through the chart on screen.", icon: MonitorUp, screen: true, cam: false },
+  { id: "screen-webcam", label: "Screen + Webcam + Mic", desc: "Chart walkthrough with a camera bubble.", icon: MonitorPlay, screen: true, cam: true },
 ];
 export const MODE_LABEL: Record<RecordingMode, string> = { audio: "Audio only", webcam: "Webcam + mic", screen: "Screen + mic", "screen-webcam": "Screen + webcam + mic" };
 
@@ -173,7 +173,7 @@ export function StudioPage() {
         rec.start(500);
         recorder.current = rec;
       } catch (err) {
-        toast("Using simulated recording", err instanceof Error ? err.message : "Device access was not granted.", "error");
+        toast("Using Simulated Recording", err instanceof Error ? err.message : "Device access was not granted.", "error");
         recorder.current = null;
       }
     }
@@ -197,7 +197,7 @@ export function StudioPage() {
     setSavedId(null);
     setElapsed(0);
     setPhase("setup");
-    toast("Recording discarded");
+    toast("Recording Discarded");
   };
   /** Server mode with a real recording: upload it once, reuse the stored key. */
   const ensureUploaded = async () => {
@@ -216,19 +216,19 @@ export function StudioPage() {
   const save = async () => {
     if (savedId) {
       updateRecording(savedId, { title });
-      toast("Recording updated", title, "success");
+      toast("Recording Updated", title, "success");
       return savedId;
     }
     let up: UploadResult | null = null;
     try {
       up = await ensureUploaded();
     } catch (e) {
-      toast("Upload failed", (e as Error).message, "error");
+      toast("Upload Failed", (e as Error).message, "error");
       return null;
     }
     const r = addRecording({ clientId, chartId: chartId || undefined, title: title.trim() || "Untitled recording", mode, durationSec: elapsed, status: "saved", fileKey: up?.key, contentType: up?.contentType });
     setSavedId(r.id);
-    toast("Saved to client record", `${title} · ${personName(person)}`, "success");
+    toast("Saved to Client Record", `${title} · ${personName(person)}`, "success");
     return r.id;
   };
   const deliver = async () => {
@@ -255,7 +255,7 @@ export function StudioPage() {
     updateRecording(recId, { status: "delivered", readingId: reading.id, title });
     setDeliveredReadingId(reading.id);
     setPhase("done");
-    toast("Delivered to client portal", `${person?.firstName} has been notified.`, "success");
+    toast("Delivered to Client Portal", `${person?.firstName} has been notified.`, "success");
   };
   const reset = () => {
     setPhase("setup");
@@ -370,17 +370,17 @@ export function StudioPage() {
                 <div className="grid gap-4 md:grid-cols-3">
                   <Field label="Client">
                     <Select value={clientId} onChange={(e) => setClientId(e.target.value)}>
-                      {clients.length === 0 && <option value="">Add a client first</option>}
+                      {clients.length === 0 && <option value="">Add a Client First</option>}
                       {clients.filter((c) => c.status !== "archived").map((c) => <option key={c.id} value={c.id}>{personName(people.find((p) => p.id === c.id))}</option>)}
                     </Select>
                   </Field>
-                  <Field label="Associated chart">
+                  <Field label="Associated Chart">
                     <Select value={chartId} onChange={(e) => setChartId(e.target.value)}>
-                      {clientCharts.length === 0 && <option value="">No charts</option>}
+                      {clientCharts.length === 0 && <option value="">No Charts</option>}
                       {clientCharts.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
                     </Select>
                   </Field>
-                  <Field label="Recording title">
+                  <Field label="Recording Title">
                     <Input value={title} onChange={(e) => { setTitle(e.target.value); setTitleTouched(true); }} />
                   </Field>
                 </div>
@@ -482,16 +482,16 @@ export function StudioPage() {
                   </SimPlayer>
                 )}
                 <div className="grid gap-4 md:grid-cols-2">
-                  <Field label="Recording title">
+                  <Field label="Recording Title">
                     <Input value={title} onChange={(e) => setTitle(e.target.value)} />
                   </Field>
-                  <Field label="Associated chart">
+                  <Field label="Associated Chart">
                     <div className="flex h-9 items-center gap-2 rounded-lg border border-line bg-canvas/50 px-3 text-[13px]">
                       <span className="truncate">{chart?.title ?? "—"}</span>
                       {chart && <ChartTypeBadge type={chart.type} />}
                     </div>
                   </Field>
-                  <Field label="Message to client" className="md:col-span-2" hint="Shown above the recording in the client's portal if you deliver it.">
+                  <Field label="Message to Client" className="md:col-span-2" hint="Shown above the recording in the client's portal if you deliver it.">
                     <Textarea value={message} onChange={(e) => setMessage(e.target.value)} className="min-h-[90px]" />
                   </Field>
                 </div>
@@ -611,7 +611,7 @@ export function StudioPage() {
                       const reading = addReading({ clientId: r.clientId, chartId: r.chartId, title: r.title, kind: r.mode === "audio" ? "audio" : "video", fileName: `${r.title.replace(/[^\w]+/g, "_")}.${r.mode === "audio" ? "m4a" : "mp4"}`, sizeMB: Math.round(r.durationSec * (r.mode === "audio" ? 0.012 : 0.12)), durationSec: r.durationSec, message: "", status: "ready", allowDownload: true, notification: "pending" });
                       deliverReading(reading.id);
                       updateRecording(r.id, { status: "delivered", readingId: reading.id });
-                      toast("Delivered to client portal", r.title, "success");
+                      toast("Delivered to Client Portal", r.title, "success");
                     }}
                   >
                     <Send /> Deliver

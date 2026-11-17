@@ -27,7 +27,7 @@ export function useSimulatedDownload() {
       window.location.href = mediaUrl("readings", r.id, true);
       return;
     }
-    toast("Download started", `${r.fileName ?? r.title} (simulated in the prototype)`, "success");
+    toast("Download Started", `${r.fileName ?? r.title} (simulated in the prototype)`, "success");
   };
 }
 
@@ -37,7 +37,7 @@ export function ReadingCard({ r, className }: { r: Reading; className?: string }
   const many = usePortalPractices().length > 1;
   const from = usePractitionerFor(r);
   const primary =
-    r.kind === "audio" || r.kind === "video" ? { label: r.kind === "audio" ? "Listen" : "Watch", icon: Play } : r.kind === "link" ? { label: "Open link", icon: ExternalLink } : { label: "Read", icon: FileText };
+    r.kind === "audio" || r.kind === "video" ? { label: r.kind === "audio" ? "Listen" : "Watch", icon: Play } : r.kind === "link" ? { label: "Open Link", icon: ExternalLink } : { label: "Read", icon: FileText };
   return (
     <div className={cn("group flex flex-col rounded-2xl border border-line bg-surface p-4 shadow-card transition-colors hover:border-line-strong sm:p-5", className)}>
       <Link href={`/portal/readings/${r.id}`} className="flex items-start gap-3.5">

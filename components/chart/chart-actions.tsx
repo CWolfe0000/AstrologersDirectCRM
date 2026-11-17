@@ -23,11 +23,11 @@ export function ChartActionsMenu({ chart, svg, inWorkspace }: { chart: ChartReco
       <DropdownContent className="w-56" onClick={(e) => e.stopPropagation()}>
         {!inWorkspace && (
           <DropdownItem onSelect={() => router.push(`/app/charts/${chart.id}`)}>
-            <ExternalLink /> Open in workspace
+            <ExternalLink /> Open in Workspace
           </DropdownItem>
         )}
         <DropdownItem onSelect={() => router.push(`/app/clients/${chart.clientId}`)}>
-          <UserRound /> Open client record
+          <UserRound /> Open Client Record
         </DropdownItem>
         <DropdownItem
           onSelect={() => {
@@ -35,17 +35,17 @@ export function ChartActionsMenu({ chart, svg, inWorkspace }: { chart: ChartReco
             toast(chart.favorite ? "Removed from favorites" : "Added to favorites", chart.title);
           }}
         >
-          <Star /> {chart.favorite ? "Remove from favorites" : "Add to favorites"}
+          <Star /> {chart.favorite ? "Remove from Favorites" : "Add to Favorites"}
         </DropdownItem>
         <DropdownSeparator />
         <DropdownItem onSelect={() => router.push(`/app/studio?client=${chart.clientId}&chart=${chart.id}`)}>
-          <Mic /> Record reading
+          <Mic /> Record Reading
         </DropdownItem>
         <DropdownItem onSelect={() => router.push(`/app/delivery?new=1&client=${chart.clientId}&chart=${chart.id}`)}>
-          <Send /> Deliver reading
+          <Send /> Deliver Reading
         </DropdownItem>
         <DropdownSeparator />
-        <DropdownItem onSelect={() => (downloadSvg(getSvg(), chart.title) ? toast("Chart exported", "SVG downloaded.", "success") : toast("Export unavailable", undefined, "error"))}>
+        <DropdownItem onSelect={() => (downloadSvg(getSvg(), chart.title) ? toast("Chart Exported", "SVG downloaded.", "success") : toast("Export Unavailable", undefined, "error"))}>
           <Download /> Export as SVG
         </DropdownItem>
         <DropdownItem onSelect={() => downloadPng(getSvg(), chart.title).then((ok) => toast(ok ? "Chart exported" : "Export failed", ok ? "PNG downloaded." : undefined, ok ? "success" : "error"))}>

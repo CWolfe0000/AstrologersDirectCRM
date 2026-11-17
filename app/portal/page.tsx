@@ -146,7 +146,7 @@ export default function PortalHome() {
                 <ul className="mt-3 divide-y divide-line">
                   {files.map((f) => (
                     <li key={f.id}>
-                      <button onClick={() => (f.fileKey ? (window.location.href = mediaUrl("files", f.id, true)) : toast("Download started", `${f.name} (simulated)`, "success"))} className="flex w-full items-center gap-3 py-2.5 text-left hover:text-accent">
+                      <button onClick={() => (f.fileKey ? (window.location.href = mediaUrl("files", f.id, true)) : toast("Download Started", `${f.name} (simulated)`, "success"))} className="flex w-full items-center gap-3 py-2.5 text-left hover:text-accent">
                         <FileText className="size-4 text-muted" />
                         <span className="min-w-0 flex-1 truncate text-[13.5px]">{f.name}</span>
                         <span className="text-[12px] text-muted">{fmtDate(f.uploadedAt)}</span>
@@ -188,7 +188,7 @@ export default function PortalHome() {
               {pr.website && <p className="flex items-center gap-2 text-ink-3"><Globe className="size-4 text-muted" />{pr.website}</p>}
             </div>
             {DATA_MODE === "demo" ? (
-              <Button variant="secondary" className="mt-4 w-full" onClick={() => toast("Message sent", `${pr.firstName} will reply by email. (Simulated)`, "success")}>
+              <Button variant="secondary" className="mt-4 w-full" onClick={() => toast("Message Sent", `${pr.firstName} will reply by email. (Simulated)`, "success")}>
                 <Mail /> Message {pr.firstName}
               </Button>
             ) : pr.email ? (

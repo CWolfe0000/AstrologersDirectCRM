@@ -20,9 +20,9 @@ import Link from "next/link";
 type Q = "draft" | "ready" | "delivered" | "attention";
 const QUEUES: { id: Q; label: string; icon: React.ElementType; test: (r: Reading) => boolean }[] = [
   { id: "draft", label: "Drafts", icon: FileClock, test: (r) => r.status === "draft" },
-  { id: "ready", label: "Ready to send", icon: Inbox, test: (r) => r.status === "ready" },
+  { id: "ready", label: "Ready to Send", icon: Inbox, test: (r) => r.status === "ready" },
   { id: "delivered", label: "Delivered", icon: CheckCircle2, test: (r) => r.status === "delivered" },
-  { id: "attention", label: "Failed or pending", icon: AlertTriangle, test: (r) => r.status === "failed" || (r.status === "delivered" && r.notification === "pending") },
+  { id: "attention", label: "Failed or Pending", icon: AlertTriangle, test: (r) => r.status === "failed" || (r.status === "delivered" && r.notification === "pending") },
 ];
 
 export function DeliveryPage() {
@@ -64,7 +64,7 @@ export function DeliveryPage() {
 
   const quickSend = (r: Reading) => {
     deliver(r.id);
-    toast("Reading delivered", `${name(r.clientId)} has been notified.`, "success");
+    toast("Reading Delivered", `${name(r.clientId)} has been notified.`, "success");
   };
 
   return (

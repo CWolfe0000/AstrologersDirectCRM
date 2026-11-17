@@ -15,12 +15,12 @@ import { Switch } from "@/components/ui/switch";
 import { NotificationIcon } from "@/components/app/notification-icon";
 
 const TYPES: { id: NotificationType; label: string; desc: string }[] = [
-  { id: "consultation", label: "Upcoming consultations", desc: "Reminders before sessions and cancellations" },
-  { id: "client", label: "New client activity", desc: "Portal sign-ups, intake forms, profile updates" },
-  { id: "delivery", label: "Reading delivery confirmations", desc: "When readings are delivered and opened" },
-  { id: "upload", label: "Failed uploads", desc: "Problems delivering files to the client portal" },
-  { id: "task", label: "Outstanding tasks", desc: "Daily digest of overdue and due tasks" },
-  { id: "account", label: "Account notifications", desc: "Storage, billing and security" },
+  { id: "consultation", label: "Upcoming Consultations", desc: "Reminders before sessions and cancellations" },
+  { id: "client", label: "New Client Activity", desc: "Portal sign-ups, intake forms, profile updates" },
+  { id: "delivery", label: "Reading Delivery Confirmations", desc: "When readings are delivered and opened" },
+  { id: "upload", label: "Failed Uploads", desc: "Problems delivering files to the client portal" },
+  { id: "task", label: "Outstanding Tasks", desc: "Daily digest of overdue and due tasks" },
+  { id: "account", label: "Account Notifications", desc: "Storage, billing and security" },
 ];
 
 export default function NotificationsPage() {
@@ -38,7 +38,7 @@ export default function NotificationsPage() {
 
   const setPref = (id: string, k: "inApp" | "email", v: boolean) => {
     setPrefs((p) => ({ ...p, [id]: { ...p[id]!, [k]: v } }));
-    s.toast("Preference saved", `${TYPES.find((t) => t.id === id)?.label}: ${k === "inApp" ? "in-app" : "email"} ${v ? "on" : "off"}`);
+    s.toast("Preference Saved", `${TYPES.find((t) => t.id === id)?.label}: ${k === "inApp" ? "in-app" : "email"} ${v ? "on" : "off"}`);
   };
 
   return (
@@ -48,7 +48,7 @@ export default function NotificationsPage() {
         description="Everything that needs your attention across clients, consultations and deliveries."
         breadcrumbs={[{ label: "Dashboard", href: "/app" }, { label: "Notifications" }]}
         actions={
-          <Button variant="secondary" size="sm" onClick={() => { s.markAllNotifications(); s.toast("All notifications marked as read"); }} disabled={unread === 0}>
+          <Button variant="secondary" size="sm" onClick={() => { s.markAllNotifications(); s.toast("All Notifications Marked as Read"); }} disabled={unread === 0}>
             <CheckCheck /> Mark All as Read
           </Button>
         }
@@ -58,7 +58,7 @@ export default function NotificationsPage() {
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <Segmented value={view} onChange={setView} size="sm" options={[{ value: "all", label: "All", count: s.notifications.length }, { value: "unread", label: "Unread", count: unread }]} />
             <Select value={type} onChange={(e) => setType(e.target.value as typeof type)} className="w-56" aria-label="Filter by type">
-              <option value="all">All types</option>
+              <option value="all">All Types</option>
               {TYPES.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
             </Select>
           </div>

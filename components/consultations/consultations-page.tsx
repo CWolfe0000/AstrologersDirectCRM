@@ -165,19 +165,19 @@ export function ConsultationsPage() {
       {showFilters && (
         <div className="mb-4 grid gap-2 rounded-xl border border-line bg-surface p-3 sm:grid-cols-4">
           <Select value={client} onChange={(e) => setClient(e.target.value)}>
-            <option value="">All clients</option>
+            <option value="">All Clients</option>
             {clients.map((c) => <option key={c.id} value={c.id}>{nameOf(c.id)}</option>)}
           </Select>
           <Select value={type} onChange={(e) => setType(e.target.value)}>
-            <option value="">All types</option>
+            <option value="">All Types</option>
             {types.map((t) => <option key={t}>{t}</option>)}
           </Select>
           <Select value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option value="">All statuses</option>
+            <option value="">All Statuses</option>
             <option value="scheduled">Scheduled</option>
             <option value="completed">Completed</option>
             <option value="cancelled">Cancelled</option>
-            <option value="no-show">No-show</option>
+            <option value="no-show">No-Show</option>
           </Select>
           <Button variant="ghost" size="md" onClick={() => { setType(""); setStatus(""); setClient(""); }}>Clear Filters</Button>
         </div>

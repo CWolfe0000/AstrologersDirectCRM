@@ -100,7 +100,7 @@ assert.equal((await call(cp, `/api/v1/media/readings/${reading.id}`)).status, 41
 step("private files stay private; shared files are visible");
 await page.goto(BASE + "/app/clients/c1?tab=files");
 await page.locator('input[type="file"]').setInputFiles(pdfPath);
-await page.getByText("File uploaded").waitFor({ timeout: 15000 });
+await page.getByText("File Uploaded").waitFor({ timeout: 15000 });
 await page.getByText("All changes saved").waitFor({ timeout: 10000 });
 s = await state(page);
 const file = s.files.find((f) => f.fileKey && f.clientId === "c1");

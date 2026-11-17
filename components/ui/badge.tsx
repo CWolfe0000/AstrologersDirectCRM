@@ -46,15 +46,15 @@ const STATUS: Record<string, { tone: Tone; label: string }> = {
   scheduled: { tone: "info", label: "Scheduled" },
   completed: { tone: "sage", label: "Completed" },
   cancelled: { tone: "outline", label: "Cancelled" },
-  "no-show": { tone: "warn", label: "No-show" },
+  "no-show": { tone: "warn", label: "No-Show" },
   // tasks
-  todo: { tone: "neutral", label: "To do" },
-  "in-progress": { tone: "info", label: "In progress" },
+  todo: { tone: "neutral", label: "To Do" },
+  "in-progress": { tone: "info", label: "In Progress" },
   done: { tone: "sage", label: "Done" },
   overdue: { tone: "danger", label: "Overdue" },
   // delivery
   draft: { tone: "neutral", label: "Draft" },
-  ready: { tone: "accent", label: "Ready to send" },
+  ready: { tone: "accent", label: "Ready to Send" },
   delivered: { tone: "sage", label: "Delivered" },
   failed: { tone: "danger", label: "Failed" },
   pending: { tone: "warn", label: "Pending" },
@@ -62,7 +62,7 @@ const STATUS: Record<string, { tone: Tone; label: string }> = {
   opened: { tone: "sage", label: "Opened" },
   saved: { tone: "neutral", label: "Saved" },
   invited: { tone: "warn", label: "Invited" },
-  none: { tone: "outline", label: "No access" },
+  none: { tone: "outline", label: "No Access" },
   // priority
   high: { tone: "danger", label: "High" },
   medium: { tone: "warn", label: "Medium" },

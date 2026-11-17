@@ -70,7 +70,7 @@ export function NewTaskDialog({
         .filter(Boolean)
         .map((label) => ({ id: uid("ci"), label, done: false })),
     });
-    toast("Task created", `“${t.title}” due ${fmtDate(due)}`, "success");
+    toast("Task Created", `“${t.title}” due ${fmtDate(due)}`, "success");
     onOpenChange(false);
     onCreated?.(t);
   };
@@ -94,7 +94,7 @@ export function NewTaskDialog({
           <Field label="Description" optional className="sm:col-span-2">
             <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} className="min-h-[70px]" />
           </Field>
-          <Field label="Due date"><Input type="date" value={due} onChange={(e) => setDue(e.target.value)} /></Field>
+          <Field label="Due Date"><Input type="date" value={due} onChange={(e) => setDue(e.target.value)} /></Field>
           <Field label="Priority">
             <Select value={priority} onChange={(e) => setPriority(e.target.value as TaskPriority)}>
               <option value="high">High</option>
@@ -104,7 +104,7 @@ export function NewTaskDialog({
           </Field>
           <Field label="Client" optional>
             <Select value={clientId} onChange={(e) => { setClientId(e.target.value); setConsultationId(""); }}>
-              <option value="">No client</option>
+              <option value="">No Client</option>
               {clients.filter((c) => c.status !== "archived").map((c) => (
                 <option key={c.id} value={c.id}>{personName(people.find((p) => p.id === c.id))}</option>
               ))}

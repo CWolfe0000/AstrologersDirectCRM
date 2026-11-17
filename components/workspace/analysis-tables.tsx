@@ -240,7 +240,7 @@ export function ConditionTable({ view }: { view: ChartView }) {
         <thead className="border-b border-line">
           <tr>
             <th className={th}>Planet</th>
-            <th className={th}>Essential dignity</th>
+            <th className={th}>Essential Dignity</th>
             <th className={th}>Motion</th>
             <th className={cn(th, "text-right")}>Rules</th>
           </tr>

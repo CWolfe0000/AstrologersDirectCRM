@@ -31,7 +31,7 @@ export function ClientWorkTab({ client }: { client: Client }) {
   const groups = [
     { id: "open", title: "Shared with " + first, items: withState.filter((x) => x.w.status === "shared" && !x.st.done) },
     { id: "done", title: "Done", items: withState.filter((x) => x.w.status !== "archived" && x.w.status !== "draft" && x.st.done) },
-    { id: "draft", title: "Drafts (only you can see these)", items: withState.filter((x) => x.w.status === "draft") },
+    { id: "draft", title: "Drafts (Only You Can See These)", items: withState.filter((x) => x.w.status === "draft") },
   ];
   const archived = withState.filter((x) => x.w.status === "archived");
   const portalOff = client.portalAccess !== "active" && client.portalAccess !== "invited";
@@ -205,7 +205,7 @@ function WorkItem({ w, first, onEdit, defaultOpen }: { w: ClientWork; first: str
                 variant="ghost"
                 onClick={() => {
                   remove(w.id);
-                  toast("Draft deleted", undefined, "success");
+                  toast("Draft Deleted", undefined, "success");
                 }}
               >
                 <Trash2 /> Delete Draft
@@ -237,7 +237,7 @@ function WorkEditor({ client, first, editing, onClose, defaultConsultation }: { 
   const saveTemplate = () => {
     const title = d.title.trim();
     const others = mine.filter((t) => t.title.trim().toLowerCase() !== title.toLowerCase());
-    if (others.length >= 50) return toast("You have 50 templates", "Remove one before saving another.", "error");
+    if (others.length >= 50) return toast("You Have 50 Templates", "Remove one before saving another.", "error");
     const t = { id: uid("tpl"), kind: d.kind, title, instructions: d.instructions.trim() };
     updatePractitioner({ workTemplates: [t, ...others] });
     setTemplate(t.id);
@@ -246,7 +246,7 @@ function WorkEditor({ client, first, editing, onClose, defaultConsultation }: { 
   const removeTemplate = (id: string) => {
     updatePractitioner({ workTemplates: mine.filter((t) => t.id !== id) });
     setTemplate("");
-    toast("Template removed", undefined, "success");
+    toast("Template Removed", undefined, "success");
   };
   React.useEffect(() => {
     setTemplate("");
@@ -310,7 +310,7 @@ function WorkEditor({ client, first, editing, onClose, defaultConsultation }: { 
         >
           <div className="space-y-4">
             {isNew && (
-              <Field label="Start from a template (optional)" htmlFor="w-tpl">
+              <Field label="Start from a Template (Optional)" htmlFor="w-tpl">
                 <div className="flex items-center gap-2">
                   <Select id="w-tpl" value={template} onChange={(e) => pickTemplate(e.target.value)}>
                     <option value="">Blank</option>
@@ -357,7 +357,7 @@ function WorkEditor({ client, first, editing, onClose, defaultConsultation }: { 
               <Textarea id="w-instr" rows={6} value={d.instructions} onChange={(e) => setD({ ...d, instructions: e.target.value })} placeholder={`What would you like ${first} to do, notice or reflect on?`} maxLength={10000} />
             </Field>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Suggested date (optional)" htmlFor="w-due">
+              <Field label="Suggested Date (Optional)" htmlFor="w-due">
                 <Input id="w-due" type="date" value={d.dueDate} onChange={(e) => setD({ ...d, dueDate: e.target.value })} />
               </Field>
               {d.dueDate && (
@@ -371,7 +371,7 @@ function WorkEditor({ client, first, editing, onClose, defaultConsultation }: { 
                   </span>
                 </label>
               )}
-              <Field label="From consultation (optional)" htmlFor="w-k">
+              <Field label="From Consultation (Optional)" htmlFor="w-k">
                 <Select id="w-k" value={d.consultationId} onChange={(e) => setD({ ...d, consultationId: e.target.value })}>
                   <option value="">None</option>
                   {consultations.map((k) => (

@@ -80,10 +80,10 @@ export default function AdminPage() {
     setBusy(p.id);
     try {
       await api(`/api/admin/practices/${p.id}`, { method: "PATCH", body: { plan } });
-      toast("Plan updated", `${p.name} is now on ${plan === "premium" ? "Premium" : "Standard"}.`, "success");
+      toast("Plan Updated", `${p.name} is now on ${plan === "premium" ? "Premium" : "Standard"}.`, "success");
       load();
     } catch (e) {
-      toast("Couldn’t change the plan", (e as Error).message, "error");
+      toast("Couldn’t Change the Plan", (e as Error).message, "error");
     } finally {
       setBusy(null);
     }
@@ -93,12 +93,12 @@ export default function AdminPage() {
     setBusy(deleting.id);
     try {
       await api(`/api/admin/practices/${deleting.id}`, { method: "DELETE", body: { confirm } });
-      toast("Practice deleted", `${deleting.name} and all its data were removed.`, "success");
+      toast("Practice Deleted", `${deleting.name} and all its data were removed.`, "success");
       setDeleting(null);
       setConfirm("");
       load();
     } catch (e) {
-      toast("Couldn’t delete", (e as Error).message, "error");
+      toast("Couldn’t Delete", (e as Error).message, "error");
     } finally {
       setBusy(null);
     }
@@ -127,10 +127,10 @@ export default function AdminPage() {
             <tr>
               <th className="px-4 py-3 font-medium">Practice</th>
               <th className="px-4 py-3 font-medium">Joined</th>
-              <th className="px-4 py-3 font-medium">Last sign-in</th>
+              <th className="px-4 py-3 font-medium">Last Sign-In</th>
               <th className="px-4 py-3 text-right font-medium">Clients</th>
-              <th className="px-4 py-3 text-right font-medium">In portal</th>
-              <th className="px-4 py-3 text-right font-medium">Readings sent</th>
+              <th className="px-4 py-3 text-right font-medium">In Portal</th>
+              <th className="px-4 py-3 text-right font-medium">Readings Sent</th>
               <th className="px-4 py-3 font-medium">Plan</th>
               <th className="px-4 py-3"><span className="sr-only">Actions</span></th>
             </tr>

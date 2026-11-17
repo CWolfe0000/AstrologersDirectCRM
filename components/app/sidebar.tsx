@@ -110,9 +110,9 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                     setLoadingSample(true);
                     try {
                       await loadSampleData();
-                      toast("Sample data added", "12 example clients with charts, consultations and readings.", "success");
+                      toast("Sample Data Added", "12 example clients with charts, consultations and readings.", "success");
                     } catch {
-                      toast("Couldn’t add sample data", "Please try again.", "error");
+                      toast("Couldn’t Add Sample Data", "Please try again.", "error");
                     } finally {
                       setLoadingSample(false);
                     }

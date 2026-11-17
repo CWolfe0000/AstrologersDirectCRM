@@ -117,7 +117,7 @@ function Login() {
           }}
         >
           <ErrorNote message={error} />
-          <Field label="Code from the email" htmlFor="ecode">
+          <Field label="Code from the Email" htmlFor="ecode">
             <Input id="ecode" inputMode="numeric" autoComplete="one-time-code" autoFocus value={code} onChange={(e) => setCode(e.target.value)} placeholder="123 456" required />
           </Field>
           <Button type="submit" size="lg" className="w-full" disabled={loading}>{loading && <Loader2 className="animate-spin" />} Sign In</Button>
@@ -258,11 +258,11 @@ function Signup() {
       >
         <ErrorNote message={error} />
         <div className="grid grid-cols-2 gap-3">
-          <Field label="First name" htmlFor="fn"><Input id="fn" required autoComplete="given-name" value={f.first} onChange={set("first")} /></Field>
-          <Field label="Last name" htmlFor="ln"><Input id="ln" autoComplete="family-name" value={f.last} onChange={set("last")} /></Field>
+          <Field label="First Name" htmlFor="fn"><Input id="fn" required autoComplete="given-name" value={f.first} onChange={set("first")} /></Field>
+          <Field label="Last Name" htmlFor="ln"><Input id="ln" autoComplete="family-name" value={f.last} onChange={set("last")} /></Field>
         </div>
         <Field label="Email" htmlFor="em"><Input id="em" type="email" required autoComplete="email" value={f.email} onChange={set("email")} /></Field>
-        <Field label="Practice name" htmlFor="pn" optional><Input id="pn" placeholder="e.g. Morrow Astrological Consulting" value={f.practice} onChange={set("practice")} /></Field>
+        <Field label="Practice Name" htmlFor="pn" optional><Input id="pn" placeholder="e.g. Morrow Astrological Consulting" value={f.practice} onChange={set("practice")} /></Field>
         <Field label="Password" htmlFor="pw" optional hint={`Leave blank to sign in with emailed links instead. Otherwise at least ${MIN_PW} characters.`}>
           <Input id="pw" type="password" minLength={MIN_PW} autoComplete="new-password" value={f.password} onChange={set("password")} />
         </Field>
@@ -349,8 +349,8 @@ function Reset() {
           }}
         >
           <ErrorNote message={error} />
-          <Field label="New password" htmlFor="np"><Input id="np" type="password" required minLength={MIN_PW} autoComplete="new-password" value={pw.a} onChange={(e) => setPw((x) => ({ ...x, a: e.target.value }))} /></Field>
-          <Field label="Confirm new password" htmlFor="cp"><Input id="cp" type="password" required minLength={MIN_PW} autoComplete="new-password" value={pw.b} onChange={(e) => setPw((x) => ({ ...x, b: e.target.value }))} /></Field>
+          <Field label="New Password" htmlFor="np"><Input id="np" type="password" required minLength={MIN_PW} autoComplete="new-password" value={pw.a} onChange={(e) => setPw((x) => ({ ...x, a: e.target.value }))} /></Field>
+          <Field label="Confirm New Password" htmlFor="cp"><Input id="cp" type="password" required minLength={MIN_PW} autoComplete="new-password" value={pw.b} onChange={(e) => setPw((x) => ({ ...x, b: e.target.value }))} /></Field>
           <Button type="submit" size="lg" className="w-full" disabled={loading}>{loading && <Loader2 className="animate-spin" />} Update Password</Button>
         </form>
       </>
@@ -434,7 +434,7 @@ function Invite() {
           <p className="rounded-lg border border-line bg-canvas-2 px-3 py-2 text-[13px] text-muted">You already have a portal with another astrologer. {info.practitioner || "This astrologer"} will appear in the same portal, alongside them.</p>
         ) : null}
         {!info.hasPassword && (
-          <Field label="Create a password" htmlFor="pw" optional hint="No password needed: next time, we’ll email you a sign-in link. Add one if you’d rather.">
+          <Field label="Create a Password" htmlFor="pw" optional hint="No password needed: next time, we’ll email you a sign-in link. Add one if you’d rather.">
             <Input id="pw" type="password" minLength={MIN_PW} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
           </Field>
         )}
