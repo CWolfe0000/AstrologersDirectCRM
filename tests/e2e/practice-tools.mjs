@@ -55,7 +55,7 @@ const dlg = page.getByRole("dialog");
 await dlg.getByText("need a birthplace").waitFor();
 await dlg.getByText("Already a client (same email)").waitFor();
 await dlg.getByText("Can’t read the date “not-a-date”").waitFor();
-await dlg.locator('input[placeholder="Start typing a city…"]').first().fill("Par");
+await dlg.locator('input[placeholder="Start typing a town or city…"]').first().fill("Par");
 await dlg.locator("button", { hasText: "Paris, France" }).first().click();
 await dlg.getByRole("button", { name: /Import 3 clients/ }).click();
 await page.getByText("Imported 3 clients").waitFor();
