@@ -518,7 +518,7 @@ export function SubscriptionSection() {
           {DATA_MODE === "demo" ? (
             <SimulatedNote>No payment integration exists in the prototype. Billing details, invoices and payment methods will appear here once a payment provider is connected.</SimulatedNote>
           ) : (
-            <p className="text-[13.5px] text-ink-3">There’s nothing to pay during the private beta. Payment details, invoices and receipts will appear here when paid plans begin, and we’ll tell you well before anything changes.</p>
+            <p className="text-[13.5px] text-ink-3">There’s nothing to pay during the beta. Payment details, invoices and receipts will appear here when paid plans begin, and we’ll tell you well before anything changes.</p>
           )}
         </CardBody>
       </Card>

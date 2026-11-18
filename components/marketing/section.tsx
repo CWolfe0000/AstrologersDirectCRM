@@ -1,4 +1,5 @@
 import * as React from "react";
+import { SIGNUP_URL } from "@/lib/site";
 import { cn } from "@/lib/utils";
 import { ButtonLink } from "@/components/ui/button";
 
@@ -51,14 +52,14 @@ export function FinalCta({
         <h2 className="mx-auto max-w-2xl font-serif text-[34px] leading-[1.1] text-white md:text-[48px]">{title}</h2>
         <p className="mx-auto mt-4 max-w-xl text-[15.5px] text-[#CFCAD0]">{body}</p>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          <ButtonLink href="/request-access" size="lg">
+          <ButtonLink href={SIGNUP_URL} size="lg">
             Join the Beta
           </ButtonLink>
           <ButtonLink href="/how-it-works" size="lg" variant="secondary" className="border-white/15 bg-white/5 text-white hover:bg-white/10 hover:border-white/25">
             See How It Works
           </ButtonLink>
         </div>
-        <p className="mx-auto mt-8 max-w-xl text-[12.5px] text-[#9C969E]">Free during the private beta.</p>
+        <p className="mx-auto mt-8 max-w-xl text-[12.5px] text-[#9C969E]">Free during the beta.</p>
       </div>
     </section>
   );

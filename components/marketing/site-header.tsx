@@ -7,7 +7,7 @@ import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ButtonLink } from "@/components/ui/button";
 import { Wordmark } from "@/components/ui/misc";
-import { APP_URL } from "@/lib/site";
+import { APP_URL, SIGNUP_URL } from "@/lib/site";
 
 const LINKS = [
   { href: "/features", label: "Features" },
@@ -45,7 +45,7 @@ export function SiteHeader() {
           <ButtonLink href={`${APP_URL}/auth/login`} variant="ghost" size="sm">
             Sign In
           </ButtonLink>
-          <ButtonLink href="/request-access" size="sm">
+          <ButtonLink href={SIGNUP_URL} size="sm">
             Join the Beta
           </ButtonLink>
         </div>
@@ -68,7 +68,7 @@ export function SiteHeader() {
               <ButtonLink href={`${APP_URL}/auth/login`} variant="secondary">
                 Sign In
               </ButtonLink>
-              <ButtonLink href="/request-access">Join the Beta</ButtonLink>
+              <ButtonLink href={SIGNUP_URL}>Join the Beta</ButtonLink>
             </div>
           </nav>
         </div>

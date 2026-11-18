@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { Wordmark } from "@/components/ui/misc";
-import { APP_URL } from "@/lib/site";
+import { APP_URL, SIGNUP_URL } from "@/lib/site";
 
 const COLS = [
   { title: "Product", links: [["Features", "/features"], ["How It Works", "/how-it-works"], ["Pricing", "/pricing"]] },
   { title: "Company", links: [["About", "/about"], ["Contact", "/contact"], ["Privacy", "/legal/privacy"], ["Terms", "/legal/terms"]] },
-  { title: "Account", links: [["Sign In", `${APP_URL}/auth/login`], ["Join the Beta", "/request-access"], ["Client Portal", `${APP_URL}/auth/login`]] },
+  { title: "Account", links: [["Sign In", `${APP_URL}/auth/login`], ["Join the Beta", SIGNUP_URL], ["Client Portal", `${APP_URL}/auth/login`]] },
 ];
 
 export function SiteFooter() {
@@ -34,7 +34,7 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-line">
         <div className="container flex flex-col gap-3 py-5 text-[12.5px] text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 AstrologersDirect. Private beta.</p>
+          <p>© 2026 AstrologersDirect. Beta.</p>
           <div className="flex gap-5">
             <Link href="/legal/privacy" className="hover:text-ink">Privacy Policy</Link>
             <Link href="/legal/terms" className="hover:text-ink">Terms of Service</Link>

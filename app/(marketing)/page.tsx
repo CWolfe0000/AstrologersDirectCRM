@@ -6,7 +6,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { ProductShot } from "@/components/marketing/product-shot";
 import { FinalCta, SectionHeading } from "@/components/marketing/section";
 import { Faq } from "@/components/marketing/faq";
-import { APP_URL } from "@/lib/site";
+import { APP_URL, SIGNUP_URL } from "@/lib/site";
 
 const FEATURES = [
   { icon: Users, title: "Client Records", body: "Every client’s charts, people, sessions, notes and readings in one record that grows with your work together.", href: "/features#clients" },
@@ -33,7 +33,7 @@ const BETA = ["Everything in AstrologersDirect, free during the beta", "A direct
 
 const FAQ = [
   { q: "Who is AstrologersDirect for?", a: "Working astrologers who see clients: whether you’re building your first client base or running an established practice." },
-  { q: "What does the beta cost?", a: "Nothing. Everything is free during the private beta. We’ll announce plans well before it ends, and nothing is charged without your agreement." },
+  { q: "What does the beta cost?", a: "Nothing. Everything is free during the beta. We’ll announce plans well before it ends, and nothing is charged without your agreement." },
   { q: "Do my clients need an account?", a: "Only if you invite them to their client portal, which is free for them. They can also book with you without one." },
   { q: "Which chart techniques are included?", a: "Natal, synastry, midpoint composite, transits, secondary progressions, solar arcs, solar returns, horary, electional astrology, astrocartography and the convergence timeline." },
   { q: "Who can see my notes?", a: "Only you. Observations, preparation notes and session notes are private practitioner records and never appear in the client portal." },
@@ -47,7 +47,7 @@ export default function HomePage() {
         <div className="container pb-10 pt-14 md:pb-14 md:pt-20">
           <div className="mx-auto max-w-3xl text-center">
             <p className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-accent-100 bg-accent-50 px-3 py-1 text-[12.5px] font-medium text-accent">
-              <Sparkles className="size-3.5" /> Now in Private Beta
+              <Sparkles className="size-3.5" /> Now in Beta
             </p>
             <h1 className="font-serif text-[44px] leading-[1.04] tracking-[-0.01em] text-ink sm:text-[58px] md:text-[72px]">
               Better Tools. <span className="italic text-accent">Stronger Client Relationships.</span>
@@ -56,7 +56,7 @@ export default function HomePage() {
               AstrologersDirect brings your clients, charts, consultations and the work between sessions together in one professional workspace, so every session builds on the last.
             </p>
             <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
-              <ButtonLink href="/request-access" size="lg">
+              <ButtonLink href={SIGNUP_URL} size="lg">
                 Join the Beta <ArrowRight />
               </ButtonLink>
               <ButtonLink href="/how-it-works" size="lg" variant="secondary">
@@ -140,11 +140,11 @@ export default function HomePage() {
       <section className="container pb-16 md:pb-24">
         <div className="grid gap-10 rounded-2xl border border-line bg-surface p-8 shadow-card md:p-12 lg:grid-cols-2 lg:gap-16">
           <div>
-            <p className="eyebrow mb-3 text-accent">The Private Beta</p>
+            <p className="eyebrow mb-3 text-accent">The Beta</p>
             <h2 className="font-serif text-[32px] leading-tight text-ink md:text-[40px]">Free While We Build It Together.</h2>
-            <p className="mt-4 text-[15.5px] leading-relaxed text-muted">We’re welcoming working astrologers a few at a time. In return, we ask for one thing: your honest feedback.</p>
+            <p className="mt-4 text-[15.5px] leading-relaxed text-muted">Create your account in a minute and start with your own clients straight away. In return, we ask for one thing: your honest feedback.</p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <ButtonLink href="/request-access" size="lg">Request Access</ButtonLink>
+              <ButtonLink href={SIGNUP_URL} size="lg">Create Your Free Account</ButtonLink>
               <ButtonLink href="/pricing" size="lg" variant="secondary">Pricing</ButtonLink>
             </div>
           </div>

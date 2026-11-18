@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { PanelLeftClose, PanelLeftOpen, Sparkles, Star, UserRound, Mic, Send, SlidersHorizontal, MousePointerClick, CircleDot, Waves } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, Sparkles, Star, UserRound, Mic, Send, SlidersHorizontal, MousePointerClick, CircleDot, Waves, Maximize2 } from "lucide-react";
 import { ASPECTS, BODIES, HOUSE_SYSTEMS, ZODIACS, bodyIn, chartTypeMeta, dignityOf, fmtDeg, fmtOrb, signOf, type ChartSettings } from "@/lib/astro";
 import { useStore, personName } from "@/lib/store";
 import { isPremiumChart } from "@/lib/plan";
@@ -14,6 +14,7 @@ import { Sheet } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Breadcrumbs, EmptyState } from "@/components/ui/misc";
 import { ChartWheel } from "@/components/chart/chart-wheel";
+import { ExpandedWheel } from "@/components/chart/expanded-wheel";
 import { ChartTypeBadge, EngineNotice, useChartView } from "@/components/chart/chart-helpers";
 import { AstroMap } from "@/components/workspace/astro-map";
 import { HoraryPanel } from "@/components/workspace/horary-panel";
@@ -63,6 +64,7 @@ function Workspace() {
   const [selected, setSelected] = React.useState<string | null>(null);
   const [hoverAspect, setHoverAspect] = React.useState<string | null>(null);
   const [tab, setTab] = React.useState("placements");
+  const [expanded, setExpanded] = React.useState(false);
   const [editing, setEditing] = React.useState<string | "new" | null>(null);
   const [controlsOpen, setControlsOpen] = React.useState(false);
   const [docked, setDocked] = React.useState(true);
@@ -279,7 +281,10 @@ function Workspace() {
         <section className="min-w-0">
           {chart.type === "horary" && chart.horary && <HoraryPanel horary={chart.horary} view={view} className="mb-4" />}
           {chart.type === "election" && chart.election && <ElectionPanel election={chart.election} view={view} client={people.find((p) => p.id === chart.clientId)} className="mb-4" />}
-          <div className="ws-wheel rounded-xl border border-line bg-surface p-3 shadow-card sm:p-5">
+          <div className="ws-wheel relative rounded-xl border border-line bg-surface p-3 shadow-card sm:p-5">
+            <Button variant="secondary" size="sm" className="ws-noprint absolute right-3 top-3 z-10 sm:right-4 sm:top-4" onClick={() => setExpanded(true)} aria-label="Expand chart wheel" title="Expand">
+              <Maximize2 /> <span className="hidden sm:inline">Expand</span>
+            </Button>
             {view.outer && (
               <div className="mb-2 flex items-center justify-center gap-3 text-[12px] text-muted">
                 <span className="flex items-center gap-1.5"><RingTag label={labels.inner} /> inner</span>
@@ -301,6 +306,33 @@ function Workspace() {
                 showDegrees={s.showDegrees}
               />
             </div>
+            <ExpandedWheel
+              open={expanded}
+              onOpenChange={setExpanded}
+              title={chart.title}
+              caption={
+                selBody && sel ? (
+                  <span className="inline-flex flex-wrap items-center justify-center gap-2">
+                    <span className={cn("glyph text-[18px]", sel.ring === "outer" && "text-accent")}>{BODIES[sel.id].glyph}</span>
+                    {view.outer && <RingTag label={sel.ring === "outer" ? labels.outer : labels.inner} outer={sel.ring === "outer"} />}
+                    {BODIES[sel.id].name} {fmtDeg(selBody.lon)} {signOf(selBody.lon).name}
+                    <span className="text-muted">· {selAspects.length} aspect{selAspects.length === 1 ? "" : "s"} in orb</span>
+                  </span>
+                ) : (
+                  <span className="text-muted">Select a planet to see its aspects.</span>
+                )
+              }
+            >
+              <ChartWheel
+                view={view}
+                selected={selected}
+                onSelect={setSelected}
+                highlightAspect={hoverAspect}
+                showAspects={s.showAspectLines}
+                showHouses={s.showHouseCusps}
+                showDegrees={s.showDegrees}
+              />
+            </ExpandedWheel>
             <div className="ws-noprint mt-3 border-t border-line pt-3">
               {selBody && sel ? (
                 <div className="animate-fade-in">

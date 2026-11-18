@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import { SIGNUP_URL } from "@/lib/site";
 import { Check } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
 import { PageIntro, FinalCta } from "@/components/marketing/section";
 import { Faq } from "@/components/marketing/faq";
 
-export const metadata: Metadata = { title: "Pricing", description: "AstrologersDirect is free during the private beta." };
+export const metadata: Metadata = { title: "Pricing", description: "AstrologersDirect is free during the beta." };
 
 const INCLUDED = [
   "Unlimited clients, associated people and charts",
@@ -19,9 +20,9 @@ const INCLUDED = [
 ];
 
 const FAQ = [
-  { q: "What does the beta cost?", a: "Nothing. Everything in AstrologersDirect is free during the private beta." },
+  { q: "What does the beta cost?", a: "Nothing. Everything in AstrologersDirect is free during the beta." },
   { q: "What happens when the beta ends?", a: "We’ll announce plans and prices well before the beta ends. Nothing is ever charged without your agreement, and you can export all of your data at any time." },
-  { q: "How do I join?", a: "Request access. We welcome practitioners a few at a time and email you a personal link to create your account." },
+  { q: "How do I join?", a: "Create your account. It takes a minute, and there’s no card to enter." },
   { q: "Can I import my existing clients?", a: "Yes. Import your client list and birth data from a spreadsheet (CSV)." },
   { q: "Which calculation engine does AstrologersDirect use?", a: "Swiss Ephemeris, the professional standard, with Astrodienst’s data files." },
   { q: "Do my clients need to pay for the client portal?", a: "No. Clients are invited by you and sign in for free." },
@@ -35,10 +36,10 @@ export default function PricingPage() {
       <section className="container pb-16 md:pb-20">
         <div className="grid gap-10 rounded-2xl border border-line bg-surface p-8 shadow-card md:p-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
           <div>
-            <p className="eyebrow text-accent">Private Beta</p>
+            <p className="eyebrow text-accent">Beta</p>
             <p className="mt-3 font-serif text-[56px] leading-none text-ink">$0</p>
             <p className="mt-2 text-[14.5px] text-muted">for as long as the beta runs</p>
-            <ButtonLink href="/request-access" size="lg" className="mt-8">Request Access</ButtonLink>
+            <ButtonLink href={SIGNUP_URL} size="lg" className="mt-8">Create Your Free Account</ButtonLink>
             <p className="mt-4 text-[13px] text-muted">We’ll announce plans well before the beta ends. Nothing is charged without your agreement.</p>
           </div>
           <ul className="grid gap-3 sm:grid-cols-1">
