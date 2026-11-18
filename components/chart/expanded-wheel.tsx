@@ -35,11 +35,15 @@ export function ExpandedWheel({
           </div>
           <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-auto p-3">
             {/* Square: the smaller of the available width and height. */}
-            <div className="w-full" style={{ maxWidth: "min(100%, calc(100dvh - 10rem))" }}>
+            <div className="w-full" style={{ maxWidth: "min(100%, calc(100dvh - 15rem))" }}>
               {children}
             </div>
           </div>
-          {caption && <div className="min-h-[44px] border-t border-line px-4 py-2.5 text-center text-[13.5px] text-ink sm:px-5">{caption}</div>}
+          {caption && (
+            <div className="border-t border-line px-3 py-3 sm:px-5">
+              <div className="mx-auto max-w-3xl rounded-xl border border-line bg-canvas/60 px-4 py-3 text-[13.5px] text-ink">{caption}</div>
+            </div>
+          )}
         </D.Content>
       </D.Portal>
     </D.Root>

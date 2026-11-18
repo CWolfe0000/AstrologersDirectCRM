@@ -55,6 +55,8 @@ export interface ChartSettings {
   showAspectLines: boolean;
   showHouseCusps: boolean;
   showDegrees: boolean;
+  /** House rulers: traditional (Mars rules Scorpio) or modern (Pluto rules Scorpio, Uranus Aquarius, Neptune Pisces). Default traditional. */
+  rulership?: "traditional" | "modern";
   /** Convergence timeline defaults (practice-wide). Missing means the built-in defaults. */
   timeline?: TimelineDefaults;
 }

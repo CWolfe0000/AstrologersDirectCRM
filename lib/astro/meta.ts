@@ -158,3 +158,13 @@ export function ordinal(n: number) {
   const v = n % 100;
   return n + (s[(v - 20) % 10] || s[v] || s[0]!);
 }
+
+/** The houses a planet rules, from the signs on the cusps, by traditional or modern rulership. */
+export function housesRuledBy(id: BodyId, cusps: number[], rulership: "traditional" | "modern" = "traditional") {
+  const out: number[] = [];
+  cusps.forEach((c, i) => {
+    const r = RULERS[SIGNS[Math.floor((((c % 360) + 360) % 360) / 30)]!.id];
+    if ((rulership === "modern" ? r.modern ?? r.traditional : r.traditional) === id) out.push(i + 1);
+  });
+  return out;
+}

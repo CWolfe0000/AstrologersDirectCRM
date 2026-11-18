@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { PanelLeftClose, PanelLeftOpen, Sparkles, Star, UserRound, Mic, Send, SlidersHorizontal, MousePointerClick, CircleDot, Waves, Maximize2 } from "lucide-react";
-import { ASPECTS, BODIES, HOUSE_SYSTEMS, ZODIACS, bodyIn, chartTypeMeta, dignityOf, fmtDeg, fmtOrb, signOf, type ChartSettings } from "@/lib/astro";
+import { ASPECTS, BODIES, HOUSE_SYSTEMS, ZODIACS, bodyIn, chartTypeMeta, dignityOf, fmtDeg, fmtOrb, housesRuledBy, ordinal, signOf, type ChartSettings } from "@/lib/astro";
 import { useStore, personName } from "@/lib/store";
 import { isPremiumChart } from "@/lib/plan";
 import { PremiumGate, usePremium } from "@/components/plan/premium";
@@ -168,6 +168,42 @@ function Workspace() {
   const sel = selected ? { ring: selected.split(":")[0] as "inner" | "outer", id: selected.split(":")[1] as keyof typeof BODIES } : null;
   const selBody = sel ? bodyIn(sel.ring === "outer" && view.outer ? view.outer : view.inner, sel.id) : null;
   const selAspects = selected ? view.aspects.filter((a) => `${a.aRing}:${a.a}` === selected || `${a.bRing}:${a.b}` === selected) : [];
+  // The selected planet: placement, the houses it rules, dignity and aspects (shown under the wheel and in the expanded view).
+  const selRules = sel && sel.id !== "asc" && sel.id !== "mc" ? housesRuledBy(sel.id, (sel.ring === "outer" && view.outer ? view.outer : view.inner).cusps, s.rulership ?? "traditional") : [];
+  const selectionDetail = selBody && sel ? (
+    <div className="animate-fade-in">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="flex items-center gap-2 text-[14px] font-medium text-ink">
+          <span className={cn("glyph text-[20px]", sel.ring === "outer" && "text-accent")}>{BODIES[sel.id].glyph}</span>
+          {view.outer && <RingTag label={sel.ring === "outer" ? labels.outer : labels.inner} outer={sel.ring === "outer"} />}
+          {BODIES[sel.id].name} {fmtDeg(selBody.lon)} {signOf(selBody.lon).name}
+          {selBody.speed < 0 && <span className="text-warn">℞</span>}
+        </p>
+        <button onClick={() => setSelected(null)} className="text-[12px] text-muted hover:text-ink">Clear Selection</button>
+      </div>
+      <p className="mt-0.5 text-[12.5px] text-muted">
+        {sel.id !== "asc" && sel.id !== "mc" && <>{ordinal(selBody.house)}-house placement · </>}
+      {selRules.length > 0 && <>Rules the {selRules.map(ordinal).join(" & ")} · </>}
+        {dignityOf(sel.id, selBody.lon) ? `${dignityOf(sel.id, selBody.lon)} · ` : ""}
+        {selAspects.length} aspect{selAspects.length === 1 ? "" : "s"} in orb
+      </p>
+      {selAspects.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {selAspects.slice(0, 8).map((a) => {
+            const k = `${a.aRing}:${a.a}-${a.bRing}:${a.b}`;
+            const other = `${a.aRing}:${a.a}` === selected ? { id: a.b, ring: a.bRing } : { id: a.a, ring: a.aRing };
+            return (
+              <span key={k} onMouseEnter={() => setHoverAspect(k)} onMouseLeave={() => setHoverAspect(null)} className="inline-flex cursor-default items-center gap-1 rounded-md border border-line bg-canvas/50 px-2 py-1 text-[12px] text-ink-3">
+                <span className="glyph">{ASPECTS[a.type].glyph}</span>
+                <span className={cn("glyph", other.ring === "outer" && "text-accent")}>{BODIES[other.id].glyph}</span>
+                {BODIES[other.id].name} <span className="text-muted">{fmtOrb(a.orb)}</span>
+              </span>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  ) : null;
 
   return (
     <div>
@@ -310,18 +346,7 @@ function Workspace() {
               open={expanded}
               onOpenChange={setExpanded}
               title={chart.title}
-              caption={
-                selBody && sel ? (
-                  <span className="inline-flex flex-wrap items-center justify-center gap-2">
-                    <span className={cn("glyph text-[18px]", sel.ring === "outer" && "text-accent")}>{BODIES[sel.id].glyph}</span>
-                    {view.outer && <RingTag label={sel.ring === "outer" ? labels.outer : labels.inner} outer={sel.ring === "outer"} />}
-                    {BODIES[sel.id].name} {fmtDeg(selBody.lon)} {signOf(selBody.lon).name}
-                    <span className="text-muted">· {selAspects.length} aspect{selAspects.length === 1 ? "" : "s"} in orb</span>
-                  </span>
-                ) : (
-                  <span className="text-muted">Select a planet to see its aspects.</span>
-                )
-              }
+              caption={selectionDetail ?? <span className="text-muted">Select a planet to see its aspects.</span>}
             >
               <ChartWheel
                 view={view}
@@ -335,37 +360,7 @@ function Workspace() {
             </ExpandedWheel>
             <div className="ws-noprint mt-3 border-t border-line pt-3">
               {selBody && sel ? (
-                <div className="animate-fade-in">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="flex items-center gap-2 text-[14px] font-medium text-ink">
-                      <span className={cn("glyph text-[20px]", sel.ring === "outer" && "text-accent")}>{BODIES[sel.id].glyph}</span>
-                      {view.outer && <RingTag label={sel.ring === "outer" ? labels.outer : labels.inner} outer={sel.ring === "outer"} />}
-                      {BODIES[sel.id].name} {fmtDeg(selBody.lon)} {signOf(selBody.lon).name}
-                      {selBody.speed < 0 && <span className="text-warn">℞</span>}
-                    </p>
-                    <button onClick={() => setSelected(null)} className="text-[12px] text-muted hover:text-ink">Clear selection</button>
-                  </div>
-                  <p className="mt-0.5 text-[12.5px] text-muted">
-                    {sel.id !== "asc" && sel.id !== "mc" && <>{selBody.house}th-house placement · </>}
-                    {dignityOf(sel.id, selBody.lon) ? `${dignityOf(sel.id, selBody.lon)} · ` : ""}
-                    {selAspects.length} aspect{selAspects.length === 1 ? "" : "s"} in orb
-                  </p>
-                  {selAspects.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {selAspects.slice(0, 8).map((a) => {
-                        const k = `${a.aRing}:${a.a}-${a.bRing}:${a.b}`;
-                        const other = `${a.aRing}:${a.a}` === selected ? { id: a.b, ring: a.bRing } : { id: a.a, ring: a.aRing };
-                        return (
-                          <span key={k} onMouseEnter={() => setHoverAspect(k)} onMouseLeave={() => setHoverAspect(null)} className="inline-flex cursor-default items-center gap-1 rounded-md border border-line bg-canvas/50 px-2 py-1 text-[12px] text-ink-3">
-                            <span className="glyph">{ASPECTS[a.type].glyph}</span>
-                            <span className={cn("glyph", other.ring === "outer" && "text-accent")}>{BODIES[other.id].glyph}</span>
-                            {BODIES[other.id].name} <span className="text-muted">{fmtOrb(a.orb)}</span>
-                          </span>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+                selectionDetail
               ) : (
                 <div className="flex flex-wrap items-center justify-between gap-3 text-[12px] text-muted">
                   <span className="flex items-center gap-1.5"><MousePointerClick className="size-3.5" /> Click a planet to isolate its aspects.</span>

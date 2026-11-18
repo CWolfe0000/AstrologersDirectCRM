@@ -115,13 +115,17 @@ export function ChartControls({
       </Section>
       )}
 
-      <Section title="House System & Zodiac">
+      <Section title="Houses, Zodiac & Rulership">
         <div className="space-y-2">
           <Select value={settings.houseSystem} onChange={(e) => onChange({ houseSystem: e.target.value as HouseSystem })} aria-label="House system">
             {HOUSE_SYSTEMS.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
           </Select>
           <Select value={settings.zodiac} onChange={(e) => onChange({ zodiac: e.target.value as ZodiacType })} aria-label="Zodiac">
             {ZODIACS.map((z) => <option key={z.id} value={z.id}>{z.name}</option>)}
+          </Select>
+          <Select value={settings.rulership ?? "traditional"} onChange={(e) => onChange({ rulership: e.target.value as "traditional" | "modern" })} aria-label="Rulership">
+            <option value="traditional">Traditional rulers</option>
+            <option value="modern">Modern rulers</option>
           </Select>
         </div>
       </Section>

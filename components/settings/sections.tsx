@@ -166,6 +166,12 @@ export function AstrologySection() {
               {ZODIACS.map((z) => <option key={z.id} value={z.id}>{z.name}</option>)}
             </Select>
           </Row>
+          <Row title="Rulership" desc="Traditional: Mars rules Scorpio, Saturn Aquarius, Jupiter Pisces. Modern: Pluto, Uranus and Neptune instead.">
+            <Select value={d.rulership ?? "traditional"} onChange={(e) => set({ rulership: e.target.value as "traditional" | "modern" })} className="w-56">
+              <option value="traditional">Traditional</option>
+              <option value="modern">Modern</option>
+            </Select>
+          </Row>
           <Row title="Show Aspect Lines"><Switch checked={d.showAspectLines} onCheckedChange={(v) => set({ showAspectLines: v })} /></Row>
           <Row title="Show House Cusps"><Switch checked={d.showHouseCusps} onCheckedChange={(v) => set({ showHouseCusps: v })} /></Row>
           <Row title="Show Degrees on the Wheel"><Switch checked={d.showDegrees} onCheckedChange={(v) => set({ showDegrees: v })} /></Row>

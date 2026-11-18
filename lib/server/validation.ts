@@ -53,6 +53,7 @@ export const settingsSchema = z
     showAspectLines: z.boolean(),
     showHouseCusps: z.boolean(),
     showDegrees: z.boolean(),
+    rulership: z.enum(["traditional", "modern"]).optional(),
     timeline: timelineDefaultsSchema.optional(),
   })
   .strict();
