@@ -10,7 +10,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="grid min-h-screen bg-canvas lg:grid-cols-[1fr_minmax(0,0.9fr)]">
       <div className="flex flex-col px-5 py-6 sm:px-10 md:px-16">
-        <Link href={SITE_URL || "/"} className="self-start" aria-label="AstrologersDirect home">
+        <Link href={SITE_URL || "/"} className="self-start">
           <Wordmark />
         </Link>
         <main id="main" className="flex flex-1 items-center justify-center py-10">
