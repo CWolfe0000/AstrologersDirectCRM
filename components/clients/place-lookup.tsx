@@ -22,7 +22,7 @@ function localMatches(q: string): Result[] {
  * zone), falling back to the built-in list if the service is unavailable.
  * Demo mode: the built-in list only.
  */
-export function PlaceLookup({ value, onChange, id }: { value: PlaceValue | null; onChange: (v: PlaceValue) => void; id?: string }) {
+export function PlaceLookup({ value, onChange, id, endpoint = "/api/v1/places" }: { value: PlaceValue | null; onChange: (v: PlaceValue) => void; id?: string; /** Public pages use /api/public/places. */ endpoint?: string }) {
   const [q, setQ] = React.useState(value?.place ?? "");
   const [open, setOpen] = React.useState(false);
   const [active, setActive] = React.useState(0);
@@ -42,7 +42,7 @@ export function PlaceLookup({ value, onChange, id }: { value: PlaceValue | null;
     let cancelled = false;
     setLoading(true);
     const t = setTimeout(() => {
-      api<{ results: Result[] }>(`/api/v1/places?q=${encodeURIComponent(query)}`)
+      api<{ results: Result[] }>(`${endpoint}?q=${encodeURIComponent(query)}`)
         .then((r) => {
           remoteCache.set(query.toLowerCase(), r.results);
           if (!cancelled) setRemote({ q: query, results: r.results });

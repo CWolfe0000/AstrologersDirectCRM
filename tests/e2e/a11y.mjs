@@ -15,7 +15,7 @@ const APP = [
   "/app/clients/c1?tab=observations", "/app/clients/c1?tab=work", "/app/clients/c1?tab=readings", "/app/clients/c1?tab=files", "/app/clients/new", "/app/charts", "/app/charts/new", "/app/charts/new?type=horary&client=c1", "/app/charts/new?type=astrocartography&client=c1", "/app/charts/new?type=election&client=c1", "/app/timeline?client=c1",
   "/app/charts/ch1", "/app/charts/ch3", "/app/observations?id=o6", "/app/consultations", "/app/consultations?id=k1", "/app/tasks", "/app/tasks?id=t1",
   "/app/delivery", "/app/delivery?id=r11", "/app/studio", "/app/reports", "/app/notifications", "/app/settings", "/app/settings?section=astrology",
-  "/app/settings?section=security", "/app/settings?section=notifications", "/app/settings?section=data",
+  "/app/settings?section=security", "/app/settings?section=booking", "/app/settings?section=notifications", "/app/settings?section=data",
   "/portal?as=c1", "/portal/readings", "/portal/readings/r3", "/portal/readings/r1", "/portal/consultations", "/portal/work", "/portal/work/w1", "/portal/settings",
 ];
 
@@ -31,6 +31,13 @@ await page.check('input[type="checkbox"][required]');
 await page.click('button[type="submit"]');
 await page.waitForURL(/verify/);
 await page.evaluate(() => fetch("/api/v1/sample-data", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }));
+// A published booking page to scan as a visitor would see it.
+const bookSlug = `axe-${stamp}`;
+await page.evaluate(async (slug) => {
+  const p = (await fetch("/api/v1/booking").then((r) => r.json())).profile;
+  await fetch("/api/v1/booking", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...p, slug, enabled: true }) });
+}, bookSlug);
+APP.push(`/book/${bookSlug}`);
 
 const summary = new Map();
 let serious = 0;

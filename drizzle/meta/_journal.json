@@ -71,6 +71,13 @@
       "when": 1794954215695,
       "tag": "0009_admin_events",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794965862762,
+      "tag": "0010_booking",
+      "breakpoints": true
     }
   ]
 }

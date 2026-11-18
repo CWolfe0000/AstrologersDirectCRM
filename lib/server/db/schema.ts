@@ -229,3 +229,27 @@ export const adminEvents = pgTable("admin_events", {
   detail: text("detail"),
   at: timestamp("at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+/** Each practice's public booking page: its address (slug) and settings. */
+export const bookingProfiles = pgTable(
+  "booking_profiles",
+  {
+    practiceId: text("practice_id").primaryKey().references(() => practices.id, { onDelete: "cascade" }),
+    slug: text("slug").notNull(),
+    enabled: integer("enabled").notNull().default(0),
+    data: jsonb("data").notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [uniqueIndex("booking_profiles_slug_idx").on(t.slug)],
+);
+
+/** Short-lived claims on 15-minute blocks while a booking is made, so two people can't take the same time. */
+export const bookingHolds = pgTable(
+  "booking_holds",
+  {
+    practiceId: text("practice_id").notNull().references(() => practices.id, { onDelete: "cascade" }),
+    block: text("block").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.practiceId, t.block] })],
+);
