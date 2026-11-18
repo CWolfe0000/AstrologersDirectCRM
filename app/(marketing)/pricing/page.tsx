@@ -18,7 +18,7 @@ const FAQ = [
 export default function PricingPage() {
   return (
     <>
-      <PageIntro eyebrow="Pricing" title="Invest in your practice. Build on your expertise.">
+      <PageIntro eyebrow="Pricing" title="Invest in Your Practice. Build on Your Expertise.">
         <div className="mt-5 max-w-2xl space-y-3 text-[17px] leading-relaxed text-muted">
           <p>Your tools should help your practice grow without making it more complicated.</p>
           <p>Whether you’re building your first client base or running an established practice, AstrologersDirect is designed to grow with you. Simple plans. Professional capabilities. Your knowledge always belongs to you.</p>
@@ -30,7 +30,7 @@ export default function PricingPage() {
       </section>
       <section className="container pb-16 md:pb-20">
         <div className="grid gap-10 rounded-2xl border border-line bg-surface p-8 md:p-12 lg:grid-cols-2 lg:gap-16">
-          <h2 className="font-serif text-[30px] leading-tight text-ink md:text-[38px]">Your knowledge should never be locked inside your software.</h2>
+          <h2 className="font-serif text-[30px] leading-tight text-ink md:text-[38px]">Your Knowledge Should Never Be Locked Inside Your Software.</h2>
           <div className="space-y-3 text-[15.5px] leading-relaxed text-ink-3">
             <p>Your client records, observations and professional work are yours.</p>
             <p>You can export all of your practice data at any time, from Settings.</p>
@@ -42,13 +42,13 @@ export default function PricingPage() {
         <div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr]">
           <div>
             <p className="eyebrow mb-3 text-accent">FAQ</p>
-            <h2 className="font-serif text-[32px] leading-tight text-ink md:text-[40px]">Frequently asked questions</h2>
+            <h2 className="font-serif text-[32px] leading-tight text-ink md:text-[40px]">Frequently Asked Questions</h2>
             <p className="mt-3 text-[14.5px] text-muted">Can’t find what you’re looking for? <a href="/contact" className="text-accent underline underline-offset-2">Contact us</a>.</p>
           </div>
           <Faq items={FAQ} />
         </div>
       </section>
-      <FinalCta title="Help shape what comes next." body="We’re working with professional astrologers to decide the right features, limits and pricing. Join the early-access community and help us build a platform worth investing in." />
+      <FinalCta title="Help Shape What Comes Next." body="We’re working with professional astrologers to decide the right features, limits and pricing. Join the early-access community and help us build a platform worth investing in." />
     </>
   );
 }

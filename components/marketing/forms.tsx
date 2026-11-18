@@ -45,7 +45,7 @@ export function ContactForm() {
     return (
       <div className="flex flex-col items-start rounded-xl border border-line bg-surface p-8">
         <CheckCircle2 className="size-8 text-sage-dark" />
-        <h3 className="mt-4 font-serif text-[26px] text-ink">Thank you — message received.</h3>
+        <h3 className="mt-4 font-serif text-[26px] text-ink">Thank You — Message Received.</h3>
         <p className="mt-2 text-[14px] text-muted">We’ll reply to {f.email || "you"} by email, usually within two working days.</p>
         <Button variant="secondary" className="mt-6" onClick={() => { setF((x) => ({ ...x, message: "" })); setSent(false); }}>
           Send another message

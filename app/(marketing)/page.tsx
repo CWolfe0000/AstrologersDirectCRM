@@ -6,11 +6,11 @@ import { SectionHeading } from "@/components/marketing/section";
 const SCATTERED = ["Client records in one place.", "Notes somewhere else.", "Appointments, recordings, follow-ups and messages scattered across different tools."];
 
 const PILLARS = [
-  { icon: Users, title: "Know your clients better.", body: "Keep their charts, personal history, previous consultations and your observations together." },
-  { icon: MessagesSquare, title: "Make every consultation count.", body: "Prepare with context, record important insights, and build on previous conversations." },
-  { icon: HeartHandshake, title: "Stay connected between sessions.", body: "Share assignments, journaling prompts, goals and follow-up activities that support your clients’ ongoing development. They respond in their portal; you see it on their record." },
-  { icon: LayoutPanelTop, title: "Deliver a professional experience.", body: "Record and share readings, share files and resources, and give clients a private portal for their work with you." },
-  { icon: CalendarCheck, title: "Spend less time managing. More time practicing.", body: "Appointments, client records, follow-up tasks and reminders in one place, instead of a collection of disconnected systems." },
+  { icon: Users, title: "Know Your Clients Better.", body: "Keep their charts, personal history, previous consultations and your observations together." },
+  { icon: MessagesSquare, title: "Make Every Consultation Count.", body: "Prepare with context, record important insights, and build on previous conversations." },
+  { icon: HeartHandshake, title: "Stay Connected Between Sessions.", body: "Share assignments, journaling prompts, goals and follow-up activities that support your clients’ ongoing development. They respond in their portal; you see it on their record." },
+  { icon: LayoutPanelTop, title: "Deliver a Professional Experience.", body: "Record and share readings, share files and resources, and give clients a private portal for their work with you." },
+  { icon: CalendarCheck, title: "Spend Less Time Managing. More Time Practicing.", body: "Appointments, client records, follow-up tasks and reminders in one place, instead of a collection of disconnected systems." },
 ];
 
 export default function HomePage() {
@@ -52,7 +52,7 @@ export default function HomePage() {
       <section className="border-y border-line bg-surface">
         <div className="container grid gap-12 py-20 md:py-28 lg:grid-cols-2 lg:gap-20">
           <div>
-            <SectionHeading title="Your work doesn’t end with the reading. Why should your software?" />
+            <SectionHeading title="Your Work Doesn’t End with the Reading. Why Should Your Software?" />
             <div className="mt-6 space-y-4 text-[16px] leading-relaxed text-muted">
               <p className="text-ink-3">Every client has a story.</p>
               <p>Their birth chart is one part of it. Their experiences, relationships, goals, and the work you’ve done together are the rest.</p>
@@ -74,7 +74,7 @@ export default function HomePage() {
 
       {/* How → What */}
       <section className="container py-20 md:py-28">
-        <SectionHeading align="center" title="One platform. Every part of your practice." />
+        <SectionHeading align="center" title="One Platform. Every Part of Your Practice." />
         <div className="mt-14 grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-6">
           {PILLARS.map((p, i) => (
             <div key={p.title} className={`bg-surface p-6 md:p-7 ${i < 3 ? "lg:col-span-2" : "lg:col-span-3"} ${i === PILLARS.length - 1 ? "sm:col-span-2" : ""}`}>
@@ -89,7 +89,7 @@ export default function HomePage() {
       {/* Philosophy */}
       <section className="border-y border-line bg-surface">
         <div className="container grid gap-12 py-20 md:py-28 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
-          <SectionHeading title="Because the relationship is the real work." />
+          <SectionHeading title="Because the Relationship Is the Real Work." />
           <div className="space-y-4 text-[16.5px] leading-relaxed text-ink-3">
             <p>A chart can tell you where to begin.</p>
             <p>But understanding how someone experiences those patterns takes time, conversation and trust.</p>

@@ -9,12 +9,12 @@ export default function TermsPage() {
       title="Terms of Service"
       updated="November 14, 2026"
       sections={[
-        { h: "The service", p: "AstrologersDirect is software for managing an astrology practice. It does not provide astrological advice; interpretations are the responsibility of the practitioner." },
+        { h: "The Service", p: "AstrologersDirect is software for managing an astrology practice. It does not provide astrological advice; interpretations are the responsibility of the practitioner." },
         { h: "Accounts", p: "You are responsible for keeping your account credentials secure and for the activity on your account, including access you give to clients through the portal." },
-        { h: "Your content", p: "You own the client records, charts, observations and files you store. You grant us only the permissions needed to operate the service." },
-        { h: "Acceptable use", p: "Do not use the service unlawfully, upload content you have no right to share, or attempt to access other practitioners’ data." },
-        { h: "Plans and billing", p: "Plans, prices and allowances will be published before general availability. The prototype is provided free for evaluation." },
-        { h: "Changes and termination", p: "We may update these terms with notice. You can close your account at any time and export your data first." },
+        { h: "Your Content", p: "You own the client records, charts, observations and files you store. You grant us only the permissions needed to operate the service." },
+        { h: "Acceptable Use", p: "Do not use the service unlawfully, upload content you have no right to share, or attempt to access other practitioners’ data." },
+        { h: "Plans and Billing", p: "Plans, prices and allowances will be published before general availability. The prototype is provided free for evaluation." },
+        { h: "Changes and Termination", p: "We may update these terms with notice. You can close your account at any time and export your data first." },
       ]}
     />
   );

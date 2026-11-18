@@ -38,7 +38,7 @@ export function PageIntro({ eyebrow, title, body, children }: { eyebrow: string;
 }
 
 export function FinalCta({
-  title = "Build stronger client relationships.",
+  title = "Build Stronger Client Relationships.",
   body = "We’re building the workspace we believe astrologers should have had years ago: one that supports the whole journey with each client. Explore it, and join the early practitioner community shaping what comes next.",
 }: {
   title?: string;

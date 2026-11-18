@@ -6,18 +6,18 @@ import { AdvisoryForm } from "@/components/marketing/forms";
 export const metadata: Metadata = { title: "About" };
 
 const PRINCIPLES = [
-  { icon: UserRound, title: "The relationship is the real work.", body: "A chart is where understanding begins. Trust, conversation and time are where it grows." },
-  { icon: Compass, title: "The astrologer comes first.", body: "Technology should support professional judgment, not replace it." },
-  { icon: Layers, title: "Knowledge should accumulate.", body: "What you discover through your work should stay accessible and useful for years." },
-  { icon: Sparkles, title: "Complexity shouldn’t mean complication.", body: "Sophisticated tools can be powerful without being difficult to use." },
-  { icon: KeyRound, title: "Your work belongs to you.", body: "Your clients, observations and methods stay under your control, and you can export them at any time." },
-  { icon: Search, title: "Better questions lead to better understanding.", body: "We want to make it easier to investigate patterns, compare observations and learn from experience." },
+  { icon: UserRound, title: "The Relationship Is the Real Work.", body: "A chart is where understanding begins. Trust, conversation and time are where it grows." },
+  { icon: Compass, title: "The Astrologer Comes First.", body: "Technology should support professional judgment, not replace it." },
+  { icon: Layers, title: "Knowledge Should Accumulate.", body: "What you discover through your work should stay accessible and useful for years." },
+  { icon: Sparkles, title: "Complexity Shouldn’t Mean Complication.", body: "Sophisticated tools can be powerful without being difficult to use." },
+  { icon: KeyRound, title: "Your Work Belongs to You.", body: "Your clients, observations and methods stay under your control, and you can export them at any time." },
+  { icon: Search, title: "Better Questions Lead to Better Understanding.", body: "We want to make it easier to investigate patterns, compare observations and learn from experience." },
 ];
 
 export default function AboutPage() {
   return (
     <>
-      <PageIntro eyebrow="About AstrologersDirect" title="We believe astrology deserves better tools. And stronger client relationships.">
+      <PageIntro eyebrow="About AstrologersDirect" title="We Believe Astrology Deserves Better Tools. And Stronger Client Relationships.">
         <div className="mt-5 max-w-2xl space-y-3 text-[17px] leading-relaxed text-muted">
           <p>Professional astrology is built on more than calculations. It’s built on conversation, trust, interpretation and experience, and on relationships that often last for years.</p>
           <p>Yet the tools astrologers use were designed around the moment a chart is calculated. Everything else, the client’s story, the work between sessions, years of observation, ends up scattered across notebooks, inboxes and separate programs.</p>
@@ -28,7 +28,7 @@ export default function AboutPage() {
       <section className="container grid gap-12 py-16 md:py-24 lg:grid-cols-2 lg:gap-20">
         <div>
           <p className="eyebrow mb-3 text-accent">Our mission</p>
-          <h2 className="font-serif text-[32px] leading-tight text-ink md:text-[40px]">Help astrologers do their best work, and build on it.</h2>
+          <h2 className="font-serif text-[32px] leading-tight text-ink md:text-[40px]">Help Astrologers Do Their Best Work, and Build on It.</h2>
         </div>
         <div className="space-y-4 text-[16px] leading-relaxed text-ink-3">
           <p>We believe the future of astrology depends on giving practitioners better ways to work, to preserve what they know, and to investigate what they observe.</p>
@@ -43,7 +43,7 @@ export default function AboutPage() {
         <div className="container grid gap-12 py-16 md:py-24 lg:grid-cols-2 lg:gap-20">
           <div>
             <p className="eyebrow mb-3 text-accent">Why we’re building something different</p>
-            <h2 className="font-serif text-[32px] leading-tight text-ink md:text-[40px]">The goal isn’t more convenient software. It’s more useful knowledge.</h2>
+            <h2 className="font-serif text-[32px] leading-tight text-ink md:text-[40px]">The Goal Isn’t More Convenient Software. It’s More Useful Knowledge.</h2>
           </div>
           <div className="space-y-4 text-[16px] leading-relaxed text-ink-3">
             <p>Most professions have technology designed around how their practitioners actually work.</p>
@@ -60,7 +60,7 @@ export default function AboutPage() {
 
       <section className="container py-16 md:py-24">
         <p className="eyebrow mb-3 text-accent">Our principles</p>
-        <h2 className="max-w-2xl font-serif text-[32px] leading-tight text-ink md:text-[40px]">What we believe.</h2>
+        <h2 className="max-w-2xl font-serif text-[32px] leading-tight text-ink md:text-[40px]">What We Believe.</h2>
         <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {PRINCIPLES.map((p) => (
             <div key={p.title}>
@@ -76,7 +76,7 @@ export default function AboutPage() {
         <div className="container grid gap-12 py-16 md:py-24 lg:grid-cols-2 lg:gap-20">
           <div>
             <p className="eyebrow mb-3 text-accent">Our vision</p>
-            <h2 className="font-serif text-[32px] leading-tight text-ink md:text-[40px]">A more connected profession.</h2>
+            <h2 className="font-serif text-[32px] leading-tight text-ink md:text-[40px]">A More Connected Profession.</h2>
           </div>
           <div className="space-y-4 text-[16px] leading-relaxed text-ink-3">
             <p>Imagine searching decades of your own observations. Investigating recurring configurations. Building research collections from real client experience.</p>
@@ -89,7 +89,7 @@ export default function AboutPage() {
       <section className="container py-20 md:py-28">
         <div className="rounded-2xl bg-ink px-6 py-12 md:px-14 md:py-16">
           <p className="eyebrow mb-3 text-[#C9B3BA]">Build it with us</p>
-          <h2 className="max-w-2xl font-serif text-[32px] leading-tight text-white md:text-[42px]">The people who understand astrology best are the people who practice it.</h2>
+          <h2 className="max-w-2xl font-serif text-[32px] leading-tight text-white md:text-[42px]">The People Who Understand Astrology Best Are the People Who Practice It.</h2>
           <p className="mt-4 max-w-2xl text-[15.5px] text-[#CFCAD0]">We’re inviting working astrologers to use AstrologersDirect, share what they experience, and help decide what the profession needs next.</p>
           <div className="mt-8 max-w-3xl">
             <AdvisoryForm />

@@ -24,7 +24,7 @@ export const FEATURES: Feature[] = [
     id: "charts",
     icon: CircleDot,
     title: "Professional Chart Workspace",
-    headline: "The chart is where the work begins. Not where it ends.",
+    headline: "The Chart Is Where the Work Begins. Not Where It Ends.",
     story: [
       "A chart holds the astronomical facts. Your experience gives them meaning.",
       "Work with natal charts, synastry, midpoint composites, transits, secondary progressions, solar arcs, solar returns, horary, electional charts and astrocartography in a workspace built for serious analysis. Every chart stays connected to the person it describes and the observations it inspired.",
@@ -47,7 +47,7 @@ export const FEATURES: Feature[] = [
     id: "clients",
     icon: Users,
     title: "Client Management",
-    headline: "Know the person, not just their birth data.",
+    headline: "Know the Person, Not Just Their Birth Data.",
     story: [
       "A client is more than a name and a chart. They have a history, relationships, questions and experiences that shape every consultation.",
       "Keep their charts, associated people, appointments, notes and delivered readings in one record.",
@@ -63,7 +63,7 @@ export const FEATURES: Feature[] = [
     id: "observations",
     icon: NotebookPen,
     title: "Notes & Observations",
-    headline: "Your experience should become more valuable with time.",
+    headline: "Your Experience Should Become More Valuable with Time.",
     story: [
       "Think of every interpretation you’ve made. Every pattern you’ve noticed. Every time a client came back with something that deepened your understanding of a configuration.",
       "Those observations are valuable. Save them directly to the natal, relationship or timing chart they belong to. Tag them by planet, aspect, house and theme. Find them again across your whole practice.",
@@ -79,7 +79,7 @@ export const FEATURES: Feature[] = [
     id: "ai",
     icon: Sparkles,
     title: "Intelligent Assistance",
-    headline: "Artificial intelligence should support your intelligence.",
+    headline: "Artificial Intelligence Should Support Your Intelligence.",
     story: [
       "An astrologer’s value isn’t simply knowing what a configuration means. It’s knowing what matters, recognizing context, and exercising judgment.",
       "We’re building an assistant that retrieves your past observations, organizes chart information and points out connections worth exploring. Calculated facts, your own notes and generated suggestions will always be clearly labeled.",
@@ -96,7 +96,7 @@ export const FEATURES: Feature[] = [
     id: "consultations",
     icon: CalendarDays,
     title: "Consultations & Calendar",
-    headline: "Every conversation is part of a larger story.",
+    headline: "Every Conversation Is Part of a Larger Story.",
     story: [
       "A consultation doesn’t exist in isolation. It builds on what came before, and it creates questions, goals and work for the future.",
       "Keep each appointment connected to its charts, preparation notes, session notes and follow-up tasks.",
@@ -112,7 +112,7 @@ export const FEATURES: Feature[] = [
     id: "between",
     icon: Sprout,
     title: "Between Sessions",
-    headline: "The work continues after the session ends.",
+    headline: "The Work Continues After the Session Ends.",
     story: [
       "Clients reflect, make decisions and live through the patterns you discussed. The most valuable insight often arrives between consultations.",
       "Share an assignment, a journaling prompt, a goal or a follow-up activity. Your client sees it in their portal, writes their responses, and marks it done. You see everything on their record, ready for the next session.",
@@ -128,7 +128,7 @@ export const FEATURES: Feature[] = [
     id: "recording",
     icon: Mic,
     title: "Recording Studio",
-    headline: "Share your interpretation, your way.",
+    headline: "Share Your Interpretation, Your Way.",
     story: [
       "Some insights are best written down. Others come alive when a client can hear your voice, or watch you work through their chart.",
       "Record audio, your webcam or your screen as you walk through the chart, right in the browser. Then save it to the client’s record, or deliver it.",
@@ -143,7 +143,7 @@ export const FEATURES: Feature[] = [
     id: "delivery",
     icon: Send,
     title: "Reading Delivery",
-    headline: "The experience should reflect the quality of your work.",
+    headline: "The Experience Should Reflect the Quality of Your Work.",
     story: [
       "The care you put into a reading shouldn’t end when the file is finished.",
       "Deliver written reports, audio, video or links through a private, professional experience. Add a personal message, decide whether it can be downloaded, and set when access ends.",
@@ -159,7 +159,7 @@ export const FEATURES: Feature[] = [
     id: "portal",
     icon: LayoutPanelTop,
     title: "Client Portal",
-    headline: "A professional experience for the people who trust you.",
+    headline: "A Professional Experience for the People Who Trust You.",
     story: [
       "Your clients shouldn’t have to search their inbox for the reading you sent six months ago.",
       "Give them a private, mobile-friendly place for their readings, recordings and consultation history.",

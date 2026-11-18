@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Features" };
 export default function FeaturesPage() {
   return (
     <>
-      <PageIntro eyebrow="Features" title="Every tool serves one purpose: the relationship with your client.">
+      <PageIntro eyebrow="Features" title="Every Tool Serves One Purpose: The Relationship with Your Client.">
         <div className="mt-5 max-w-2xl space-y-3 text-[17px] leading-relaxed text-muted">
           <p>Your work is more than the sum of its charts, appointments and files.</p>
           <p>It’s a relationship that unfolds over months and years. Every part of AstrologersDirect is designed to support it: before the session, during it, and in everything that happens between.</p>
@@ -94,7 +94,7 @@ export default function FeaturesPage() {
         ))}
       </div>
 
-      <FinalCta title="Your practice works better when everything works together." body="Each feature solves a problem. Together, they change how your practice works." />
+      <FinalCta title="Your Practice Works Better When Everything Works Together." body="Each feature solves a problem. Together, they change how your practice works." />
     </>
   );
 }

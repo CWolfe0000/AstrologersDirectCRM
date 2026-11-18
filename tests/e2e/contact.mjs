@@ -36,7 +36,7 @@ await page.getByLabel("Email").fill(`rosa-${stamp}@example.com`);
 await page.getByLabel("Topic").selectOption("early");
 await page.getByLabel("Message").fill(`Hello from the contact test ${stamp}`);
 await page.getByRole("button", { name: "Send message" }).click();
-await page.getByText("Thank you — message received.").waitFor();
+await page.getByText("Thank You — Message Received.").waitFor();
 const m = await mail(`contact test ${stamp}`);
 assert.ok(m, "email queued to CONTACT_EMAIL");
 assert.equal(m.subject, "Website: Early access & pricing from Rosa Test");

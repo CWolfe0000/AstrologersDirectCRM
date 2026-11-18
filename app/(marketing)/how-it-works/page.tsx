@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "How It Works" };
 
 const STEPS = [
   {
-    title: "Every client has a place.",
+    title: "Every Client Has a Place.",
     body: [
       "Start with a client’s birth information, contact details and the people in their life.",
       "Their charts, consultations, observations and readings belong to one record that grows with your work together.",
@@ -18,7 +18,7 @@ const STEPS = [
     link: { href: "/app/clients/c1", label: "Explore Client Records" },
   },
   {
-    title: "Work with the charts you need.",
+    title: "Work with the Charts You Need.",
     body: [
       "Open a client’s chart and begin. Explore placements, aspects, houses, relationships and timing with your own settings.",
       "Create more charts without losing the connection to the person you’re studying.",
@@ -28,7 +28,7 @@ const STEPS = [
     link: { href: "/app/charts/ch1", label: "Explore Chart Analysis" },
   },
   {
-    title: "Turn observations into lasting knowledge.",
+    title: "Turn Observations into Lasting Knowledge.",
     body: [
       "Write down what you notice as you work. Attach it to the chart it describes, tag it by configuration, and come back to it whenever you need it.",
       "Prepare for consultations with what you’ve already learned.",
@@ -38,7 +38,7 @@ const STEPS = [
     link: { href: "/app/observations", label: "Explore Observations" },
   },
   {
-    title: "Deliver work you’re proud of.",
+    title: "Deliver Work You’re Proud Of.",
     body: [
       "Upload a written report, or record a walkthrough of the chart in the studio.",
       "Send it to the client’s private portal with a personal message and the access you choose. They’re notified by email.",
@@ -48,7 +48,7 @@ const STEPS = [
     link: { href: "/app/delivery", label: "Explore Reading Delivery" },
   },
   {
-    title: "Keep the conversation going.",
+    title: "Keep the Conversation Going.",
     body: [
       "Share a journaling prompt, an assignment, a goal or a practice to try before you meet again.",
       "Your client responds in their portal, in their own time. You see what they wrote, and when they’ve finished, on their record.",
@@ -58,7 +58,7 @@ const STEPS = [
     link: { href: "/app/clients/c1?tab=work", label: "Explore Between Sessions" },
   },
   {
-    title: "Pick up where you left off.",
+    title: "Pick Up Where You Left Off.",
     body: [
       "Six months later, your client returns.",
       "Their charts are there. Their previous readings are there. Everything they wrote between sessions is there, alongside your observations and consultation history.",
@@ -72,7 +72,7 @@ const STEPS = [
 export default function HowItWorksPage() {
   return (
     <>
-      <PageIntro eyebrow="How it works" title="A practice built around the whole client journey.">
+      <PageIntro eyebrow="How it works" title="A Practice Built Around the Whole Client Journey.">
         <div className="mt-5 max-w-2xl space-y-3 text-[17px] leading-relaxed text-muted">
           <p>A client relationship isn’t a series of separate appointments. It’s one continuous story.</p>
           <p>From the first consultation to the tenth, AstrologersDirect keeps that story organized, connected and ready when you need it. Here’s what that looks like.</p>
@@ -102,7 +102,7 @@ export default function HowItWorksPage() {
           ))}
         </ol>
       </div>
-      <FinalCta title="See the difference for yourself." body="Explore the prototype, built around realistic client scenarios. Follow a consultation from beginning to end, and see how the pieces fit together." />
+      <FinalCta title="See the Difference for Yourself." body="Explore the prototype, built around realistic client scenarios. Follow a consultation from beginning to end, and see how the pieces fit together." />
     </>
   );
 }

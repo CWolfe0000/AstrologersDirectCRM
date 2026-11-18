@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Globe, Briefcase, UserRound, FlaskConical, ChevronRight } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
 
-export const metadata: Metadata = { title: "Prototype guide" };
+export const metadata: Metadata = { title: "Prototype Guide" };
 
 const ENVIRONMENTS = [
   {
@@ -63,7 +63,7 @@ const ENVIRONMENTS = [
 const WORKFLOWS: { id: string; title: string; summary: string; steps: [string, string][] }[] = [
   {
     id: "A",
-    title: "New client",
+    title: "New Client",
     summary: "Create a client, enter birth data and generate their natal chart.",
     steps: [
       ["Create client", "/app/clients/new"],
@@ -75,7 +75,7 @@ const WORKFLOWS: { id: string; title: string; summary: string; steps: [string, s
   },
   {
     id: "B",
-    title: "Chart analysis",
+    title: "Chart Analysis",
     summary: "Review a client’s chart and record an observation against it.",
     steps: [
       ["Open client", "/app/clients/c1"],
@@ -87,7 +87,7 @@ const WORKFLOWS: { id: string; title: string; summary: string; steps: [string, s
   },
   {
     id: "C",
-    title: "Returning consultation",
+    title: "Returning Consultation",
     summary: "Prepare for today’s session with Amelia using her history.",
     steps: [
       ["Open calendar", "/app/consultations"],
@@ -100,7 +100,7 @@ const WORKFLOWS: { id: string; title: string; summary: string; steps: [string, s
   },
   {
     id: "D",
-    title: "Recorded reading",
+    title: "Recorded Reading",
     summary: "Record a chart walkthrough and deliver it to the client portal.",
     steps: [
       ["Open client chart", "/app/charts/ch2"],
@@ -112,7 +112,7 @@ const WORKFLOWS: { id: string; title: string; summary: string; steps: [string, s
   },
   {
     id: "E",
-    title: "Written reading delivery",
+    title: "Written Reading Delivery",
     summary: "Upload a PDF reading and follow it through to the client.",
     steps: [
       ["Open Reading Delivery", "/app/delivery"],
@@ -125,7 +125,7 @@ const WORKFLOWS: { id: string; title: string; summary: string; steps: [string, s
   },
   {
     id: "F",
-    title: "Knowledge retrieval",
+    title: "Knowledge Retrieval",
     summary: "Search your observations by configuration and jump to the source.",
     steps: [
       ["Search notes", "/app/observations"],
@@ -137,7 +137,7 @@ const WORKFLOWS: { id: string; title: string; summary: string; steps: [string, s
   },
   {
     id: "G",
-    title: "Between sessions",
+    title: "Between Sessions",
     summary: "Share a journaling prompt with Amelia, then see it, and respond, as she does.",
     steps: [
       ["Open Amelia’s Between Sessions", "/app/clients/c1?tab=work"],
@@ -164,7 +164,7 @@ export default function PrototypeGuidePage() {
       <section className="border-b border-line">
         <div className="container py-14 md:py-20">
           <p className="eyebrow mb-4 text-accent">Prototype guide</p>
-          <h1 className="max-w-3xl font-serif text-[40px] leading-[1.05] text-ink md:text-[56px]">Don’t just imagine a better way to work. Explore it.</h1>
+          <h1 className="max-w-3xl font-serif text-[40px] leading-[1.05] text-ink md:text-[56px]">Don’t Just Imagine a Better Way to Work. Explore It.</h1>
           <div className="mt-5 max-w-2xl space-y-3 text-[16.5px] leading-relaxed text-muted">
             <p>Follow a client from their first chart to a completed consultation, through the work between sessions, to a delivered reading. See the practitioner’s workspace and what the client sees in their portal.</p>
             <p>The demo uses realistic sample data. Changes you make are saved in your browser; use “Reset demo data” in the sidebar to start again.</p>
@@ -234,7 +234,7 @@ export default function PrototypeGuidePage() {
       <section id="simulated" className="container scroll-mt-20 py-14 md:py-20">
         <div className="flex items-center gap-2">
           <FlaskConical className="size-5 text-warn" />
-          <h2 className="font-serif text-[30px] text-ink md:text-[36px]">What the demo simulates</h2>
+          <h2 className="font-serif text-[30px] text-ink md:text-[36px]">What the Demo Simulates</h2>
         </div>
         <p className="mt-2 max-w-2xl text-[14.5px] text-muted">
           In the demo, anything simulated carries a dashed amber “Simulated” label.
