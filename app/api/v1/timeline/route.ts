@@ -26,6 +26,8 @@ const schema = z.object({
       aspects: z.array(z.enum(TIMELINE_ASPECTS.map((a) => a.id) as [string, ...string[]])).min(1).max(9),
       orbs: z.object({ transit: orb, directed: orb, lunation: orb, eclipse: orb }),
       transitOrbs: z.record(body, orb),
+      backgroundBodies: z.array(body).max(14),
+      targets: z.array(z.enum(["asc", "mc", ...PLANET_IDS] as unknown as [string, ...string[]])).max(14),
     })
     .partial()
     .strict()

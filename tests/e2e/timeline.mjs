@@ -65,8 +65,8 @@ const total = await rows.count();
 assert.ok(total > 20, `rows: ${total}`);
 
 step("page: focusing a busy period filters the rows");
-await page.locator("button[aria-pressed]").first().click();
-await page.getByText(/^Showing the \d+ contacts in orb/).waitFor();
+await page.locator("section[aria-labelledby=tl-conv] button[aria-pressed]").first().click();
+await page.getByText(/^Showing the short-term contacts in orb/).waitFor();
 assert.ok((await rows.count()) < total);
 await page.getByRole("button", { name: "Show All", exact: true }).click();
 

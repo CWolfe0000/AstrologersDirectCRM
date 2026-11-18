@@ -21,6 +21,9 @@ export function presetOf(bodies: BodyId[]): BodyPreset {
   return "custom";
 }
 
+export const DEFAULT_BACKGROUND: BodyId[] = ["uranus", "neptune", "pluto"];
+export const BACKGROUND_CHOICES: BodyId[] = ["jupiter", "saturn", "uranus", "neptune", "pluto", "chiron", "node"];
+
 /** Same settings, ignoring order. */
 export function sameTimeline(a: TimelineDefaults, b: TimelineDefaults) {
   const norm = (t: TimelineDefaults) =>
@@ -29,6 +32,7 @@ export function sameTimeline(a: TimelineDefaults, b: TimelineDefaults) {
       transitBodies: [...t.transitBodies].sort(),
       aspects: [...t.aspects].sort(),
       transitOrbs: Object.fromEntries(Object.entries(t.transitOrbs).sort()),
+      backgroundBodies: [...(t.backgroundBodies ?? DEFAULT_BACKGROUND)].sort(),
     });
   return norm(a) === norm(b);
 }
@@ -81,6 +85,7 @@ export function TimelineOptionsEditor({ value, onChange, compact }: { value: Tim
     onChange({ ...value, transitOrbs: next });
   };
   const heading = "text-[12.5px] font-semibold text-ink";
+  const bg = value.backgroundBodies ?? DEFAULT_BACKGROUND;
 
   return (
     <div className={cn("space-y-5", compact && "space-y-4")}>
@@ -146,6 +151,19 @@ export function TimelineOptionsEditor({ value, onChange, compact }: { value: Tim
           {PLANET_IDS.map((b) => (
             <label key={b} className="flex items-center gap-1.5 text-[12.5px]">
               <Checkbox checked={value.transitBodies.includes(b)} onChange={(e) => toggleBody(b, e.target.checked)} />
+              <span aria-hidden className="glyph w-4 text-center text-[14px]">{BODIES[b].glyph}</span> {BODIES[b].name}
+            </label>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <p className={heading}>Background planets</p>
+        <p className="mt-0.5 text-[11.5px] text-muted">Their transits count as long-term background rather than short-term triggers. Progressions and solar arcs are always background; lunations and eclipses are always triggers.</p>
+        <div className={cn("mt-2 grid gap-x-3 gap-y-1.5", compact ? "grid-cols-3" : "grid-cols-3 sm:grid-cols-4 lg:grid-cols-7")}>
+          {BACKGROUND_CHOICES.map((b) => (
+            <label key={b} className="flex items-center gap-1.5 text-[12.5px]">
+              <Checkbox checked={bg.includes(b)} onChange={(e) => onChange({ ...value, backgroundBodies: e.target.checked ? [...bg, b] : bg.filter((x) => x !== b) })} />
               <span aria-hidden className="glyph w-4 text-center text-[14px]">{BODIES[b].glyph}</span> {BODIES[b].name}
             </label>
           ))}

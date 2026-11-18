@@ -21,6 +21,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { ChartThumb, ChartTypeBadge, EngineNotice } from "@/components/chart/chart-helpers";
 import { isUpcoming, TODAY_ISO, fmtCoord } from "./helpers";
 import { AddPersonDialog, relationshipLabel } from "./dialogs";
+import { ActivationCard } from "./activation-card";
 
 const LOC = { "Video call": Video, Phone: Phone, "In person": MapPin } as const;
 
@@ -91,6 +92,8 @@ export function OverviewTab({ client, person, onTab }: { client: Client; person:
             />
           </CardBody>
         </Card>
+
+        <ActivationCard clientId={client.id} person={person} />
 
         <Card>
           <CardHeader title="Recent Notes" icon={<NotebookPen />} action={<button onClick={() => onTab("observations")} className="text-[12.5px] font-medium text-accent hover:underline">All Observations</button>} />

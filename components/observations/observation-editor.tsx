@@ -9,6 +9,7 @@ import { cn, fmtDate, fmtTime, relTime, stripHtml, DATA_MODE } from "@/lib/utils
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Field, Select } from "@/components/ui/input";
+import { Segmented } from "@/components/ui/tabs";
 import { Sheet } from "@/components/ui/dialog";
 import { RichEditor } from "./rich-editor";
 import { TagPicker } from "./tag-picker";
@@ -256,6 +257,19 @@ export function ObservationEditor({ observationId, initial, lockChart, onCreated
             ))}
           </Select>
         </Field>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 text-[12.5px]">
+        <span className="text-muted">Kind of note</span>
+        <Segmented
+          size="sm"
+          value={d.tags.includes("client-reported") ? "client" : "mine"}
+          onChange={(v) => change({ tags: v === "client" ? [...d.tags.filter((t) => t !== "client-reported"), "client-reported"] : d.tags.filter((t) => t !== "client-reported") })}
+          options={[
+            { value: "mine", label: "My Interpretation" },
+            { value: "client", label: "What the Client Reported" },
+          ]}
+        />
       </div>
 
       <div className="rounded-lg border border-line">

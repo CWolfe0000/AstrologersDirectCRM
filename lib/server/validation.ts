@@ -39,6 +39,7 @@ export const timelineDefaultsSchema = z
     aspects: z.array(aspectId).min(1).max(9),
     orbs: z.object({ transit: orbDeg, directed: orbDeg, lunation: orbDeg, eclipse: orbDeg }).strict(),
     transitOrbs: z.record(bodyId, orbDeg),
+    backgroundBodies: z.array(bodyId).max(14).optional(),
   })
   .strict();
 

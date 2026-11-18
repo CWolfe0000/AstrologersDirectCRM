@@ -8,6 +8,10 @@ import { ASPECTS, BODIES, DEFAULT_TIMELINE, RULERS, fmtDeg, ordinal, signOf, typ
 import { fetchTimeline, type TimelineResponse } from "@/lib/astro/timeline-client";
 import type { ConvergenceWindow, TargetId, TimelineContact, TimelineTechnique } from "@/lib/astro/timeline";
 import { sameTimeline, TimelineOptionsEditor } from "./timeline-options";
+import { TECH, pointName, pointGlyph, sourceName, Glyphs, contactLabel, DAY, fmt, fmtShort, fmtTime, fmtRange, addMonths } from "./labels";
+import { activationModel, dayIndex, passesSignificance, type Significance } from "@/lib/astro/activation";
+import { ActivationOverview, BackgroundInfluences, ClientContext, ConvergenceAnalysis, HouseSheet, LifecycleSection, PointSheet, useConfigurationNote } from "./activation";
+import { BACKGROUND_CHOICES, DEFAULT_BACKGROUND } from "./timeline-options";
 import type { ChartRecord } from "@/lib/data/types";
 import { useStore, personName } from "@/lib/store";
 import { cn, TODAY } from "@/lib/utils";
@@ -21,69 +25,6 @@ import { Sheet } from "@/components/ui/dialog";
 import { EngineNotice } from "@/components/chart/chart-helpers";
 import { useHydrated } from "@/components/workspace/use-hydrated";
 import { PremiumGate, usePremium } from "@/components/plan/premium";
-
-// ---------------------------------------------------------------------------
-// Labels and colors
-
-const TECH: Record<TimelineTechnique, { label: string; short: string; color: string; soft: string; chart: ChartRecord["type"] }> = {
-  transit: { label: "Transit", short: "Tr", color: "#824B59", soft: "#F3E6E9", chart: "transits" },
-  progressed: { label: "Progression", short: "Pr", color: "#4D5A70", soft: "#E6EAF1", chart: "progressions" },
-  "solar-arc": { label: "Solar Arc", short: "SA", color: "#6E4F6E", soft: "#EFE6EF", chart: "solar-arc" },
-  lunation: { label: "Lunation", short: "Lu", color: "#9A6A1F", soft: "#F6EDDC", chart: "transits" },
-  eclipse: { label: "Eclipse", short: "Ec", color: "#29272B", soft: "#E9E6E4", chart: "transits" },
-};
-
-const pointName = (id: TargetId) => BODIES[id].name;
-const pointGlyph = (id: TargetId) => BODIES[id].glyph;
-
-function sourceName(c: TimelineContact) {
-  if (c.technique === "lunation") return c.source === "new-moon" ? "New Moon" : "Full Moon";
-  if (c.technique === "eclipse") return c.source === "new-moon" ? "Solar Eclipse" : "Lunar Eclipse";
-  const n = BODIES[c.source as BodyId].name;
-  if (c.technique === "progressed") return `Progressed ${n}`;
-  if (c.technique === "solar-arc") return `Solar arc ${n}`;
-  return n;
-}
-function sourceGlyph(c: TimelineContact) {
-  if (c.technique === "lunation" || c.technique === "eclipse") return c.source === "new-moon" ? "●" : "○";
-  return BODIES[c.source as BodyId].glyph;
-}
-/** Source, aspect and target glyphs, in the symbol font used by the chart tables. */
-function Glyphs({ c, size = 15 }: { c: TimelineContact; size?: number }) {
-  const g = (text: string, color?: string) =>
-    text.length === 2 ? (
-      <span className="font-semibold" style={{ fontSize: size * 0.68, color }}>{text}</span>
-    ) : (
-      <span className="glyph" style={{ fontSize: size, color }}>{text}</span>
-    );
-  return (
-    <span className="inline-flex items-baseline gap-[0.3em] leading-none" aria-hidden>
-      {g(sourceGlyph(c), TECH[c.technique].color)}
-      {g(ASPECTS[c.aspect].glyph)}
-      {g(pointGlyph(c.target))}
-    </span>
-  );
-}
-
-export function contactLabel(c: TimelineContact) {
-  return `${sourceName(c)} ${aspectVerb(c.aspect)} natal ${pointName(c.target)}`;
-}
-
-const DAY = 86_400_000;
-const fmt = (iso: string, opts: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", year: "numeric" }) =>
-  new Date(iso.length === 10 ? `${iso}T12:00:00Z` : iso).toLocaleDateString("en-US", { timeZone: "UTC", ...opts });
-const fmtShort = (iso: string) => fmt(iso, { month: "short", day: "numeric" });
-const fmtTime = (iso: string) => new Date(iso).toLocaleString("en-US", { timeZone: "UTC", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }) + " UTC";
-function fmtRange(a: string, b: string) {
-  const sameYear = a.slice(0, 4) === b.slice(0, 4);
-  return `${sameYear ? fmtShort(a) : fmt(a)} – ${fmt(b)}`;
-}
-function addMonths(date: string, n: number) {
-  const d = new Date(`${date}T12:00:00Z`);
-  d.setUTCMonth(d.getUTCMonth() + n);
-  d.setUTCDate(d.getUTCDate() - 1);
-  return d.toISOString().slice(0, 10);
-}
 
 // ---------------------------------------------------------------------------
 // Options
@@ -131,6 +72,12 @@ function Timeline() {
   const [groupBy, setGroupBy] = React.useState<GroupBy>("point");
   const [focus, setFocus] = React.useState<ConvergenceWindow | null>(null);
   const [detail, setDetail] = React.useState<TimelineContact | null>(null);
+  const [asOfRaw, setAsOf] = React.useState(TODAY);
+  const [sig, setSig] = React.useState<Significance>("moderate");
+  const [pointSheet, setPointSheet] = React.useState<TargetId | null>(null);
+  const [houseSheet, setHouseSheet] = React.useState<number | null>(null);
+  const consultations = useStore((s) => s.consultations);
+  const sessions = React.useMemo(() => consultations.filter((k) => k.clientId === clientId && k.status !== "cancelled").sort((a, b) => (a.start < b.start ? -1 : 1)), [consultations, clientId]);
   const [state, setState] = React.useState<{ data: TimelineResponse | null; loading: boolean; error: string | null }>({ data: null, loading: false, error: null });
 
   const rangeError = end < start ? "The end date is before the start date." : (Date.parse(end) - Date.parse(start)) / DAY > 3 * 366 ? "Choose a range of up to three years." : null;
@@ -166,6 +113,17 @@ function Timeline() {
 
   // The previous result stays on screen while a new one calculates.
   const shown = state.data?.timeline;
+  const lastDay = shown ? shown.days[shown.days.length - 1]!.date : end;
+  const asOf = shown ? (asOfRaw < shown.days[0]!.date ? shown.days[0]!.date : asOfRaw > lastDay ? lastDay : asOfRaw) : asOfRaw;
+  const model = React.useMemo(() => (shown ? activationModel(shown, sig) : null), [shown, sig]);
+  const d = shown ? dayIndex(shown, asOf) : 0;
+  const lastSession = sessions.filter((k) => k.start.slice(0, 10) < asOf && k.status !== "scheduled").pop() ?? sessions.filter((k) => k.start.slice(0, 10) < asOf).pop() ?? null;
+  const nextSession = sessions.find((k) => k.start.slice(0, 10) > asOf) ?? null;
+  const addConfigNote = useConfigurationNote(clientId, person?.id ?? "", personName(person), asOf);
+  const moveAsOf = (date: string) => {
+    setAsOf(date);
+    toast("As Of Date Moved", fmt(date), "success");
+  };
 
   if (hydrated && !premium) {
     return (
@@ -258,6 +216,34 @@ function Timeline() {
               {fmtRange(start, end)} · {defaults.zodiac === "tropical" ? "Tropical" : "Sidereal"}
             </span>
           </fieldset>
+          <div className="flex flex-wrap items-end gap-x-6 gap-y-3 border-t border-line pt-4 lg:col-span-3">
+            <Field label="As Of">
+              <span className="flex flex-wrap items-center gap-2">
+                <Input type="date" value={asOf} min={start} max={end} onChange={(e) => e.target.value && setAsOf(e.target.value)} className="w-[150px]" />
+                <button type="button" className="text-[12.5px] text-accent hover:underline" onClick={() => setAsOf(TODAY)}>Today</button>
+                {nextSession && <button type="button" className="text-[12.5px] text-accent hover:underline" onClick={() => setAsOf(nextSession.start.slice(0, 10))}>Next Session ({fmtShort(nextSession.start.slice(0, 10))})</button>}
+              </span>
+            </Field>
+            <div>
+              <p className="mb-1.5 text-[12.5px] font-medium text-ink">Show</p>
+              <Segmented value={sig} onChange={setSig} options={[{ value: "major", label: "Major Cycles" }, { value: "moderate", label: "Moderate" }, { value: "all", label: "All Contacts" }]} />
+            </div>
+            <div className="min-w-0">
+              <p className="mb-1.5 text-[12.5px] font-medium text-ink">Background Planets</p>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {BACKGROUND_CHOICES.map((b) => {
+                  const bg = opts.backgroundBodies ?? DEFAULT_BACKGROUND;
+                  const on = bg.includes(b);
+                  return (
+                    <button key={b} type="button" aria-pressed={on} onClick={() => setOpts((o) => ({ ...o, backgroundBodies: on ? bg.filter((x) => x !== b) : [...bg, b] }))} className={cn("inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[12px]", on ? "border-ink bg-ink text-white" : "border-line-strong bg-surface text-ink hover:bg-canvas-2")}>
+                      <span className="glyph" aria-hidden>{BODIES[b].glyph}</span> {BODIES[b].name}
+                    </button>
+                  );
+                })}
+                <span className="text-[11.5px] text-muted">+ progressions and solar arcs, always</span>
+              </div>
+            </div>
+          </div>
         </CardBody>
       </Card>
 
@@ -279,9 +265,28 @@ function Timeline() {
               <div>{shown.notes.map((n) => <p key={n}>{n}</p>)}</div>
             </div>
           )}
-          <DensityStrip tl={shown} focus={focus} onFocus={setFocus} />
-          <Convergences tl={shown} focus={focus} onFocus={setFocus} onOpen={setDetail} />
-          <ContactGrid tl={shown} groupBy={groupBy} setGroupBy={setGroupBy} focus={focus} onFocus={setFocus} onOpen={setDetail} />
+          {model && (
+            <ClientContext.Provider value={clientId}>
+              <section aria-labelledby="tl-act" className="space-y-3">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <h2 id="tl-act" className="font-serif text-[22px] text-ink">Client Activation</h2>
+                  <p className="text-[12.5px] text-muted">As of {fmt(asOf)} · {sig === "major" ? "Major cycles only" : sig === "moderate" ? "Major and moderate influences" : "All contacts"}</p>
+                </div>
+                <ActivationOverview m={model} d={d} lastSession={lastSession ? { date: lastSession.start.slice(0, 10), type: lastSession.type } : null} onOpenContact={setDetail} onPoint={setPointSheet} onHouse={setHouseSheet} />
+              </section>
+              <section aria-labelledby="tl-an" className="space-y-3">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <h2 id="tl-an" className="font-serif text-[22px] text-ink">Convergence Analysis</h2>
+                  <p className="text-[12.5px] text-muted">Active contacts grouped by shared natal points, rulerships and natal aspects.</p>
+                </div>
+                <ConvergenceAnalysis m={model} d={d} onOpenContact={setDetail} onNote={addConfigNote} />
+              </section>
+            </ClientContext.Provider>
+          )}
+          <DensityStrip tl={shown} focus={focus} onFocus={setFocus} asOf={asOf} onAsOf={moveAsOf} />
+          <Convergences tl={shown} focus={focus} onFocus={setFocus} onOpen={setDetail} onAsOf={(x) => { moveAsOf(x); window.scrollTo({ top: 0, behavior: "smooth" }); }} />
+          {model && <BackgroundInfluences m={model} d={d} onOpenContact={setDetail} />}
+          <ContactGrid tl={shown} sig={sig} groupBy={groupBy} setGroupBy={setGroupBy} focus={focus} onFocus={setFocus} onOpen={setDetail} />
           <p className="text-[12px] leading-relaxed text-muted">
             The density score adds up the contacts in orb each day, giving more weight to slow planets, hard aspects and the Sun, Moon, angles and chart ruler, and more to a contact the closer it is to exact. It is a counting aid, not an interpretation, and the weights are provisional.
             Times are in UTC. Progressions use one day per year of life; solar arcs use the true solar arc. Lunations and eclipses are checked by conjunction, opposition and square.
@@ -289,7 +294,13 @@ function Timeline() {
         </div>
       )}
 
-      {detail && person && shown && <ContactSheet contact={detail} clientId={clientId} personId={person.id} clientName={personName(person)} tl={shown} onClose={() => setDetail(null)} />}
+      {detail && person && shown && <ContactSheet contact={detail} clientId={clientId} personId={person.id} clientName={personName(person)} tl={shown} asOf={asOf} opts={opts} onClose={() => setDetail(null)} />}
+      {model && (
+        <ClientContext.Provider value={clientId}>
+          {pointSheet && <PointSheet m={model} d={d} id={pointSheet} onClose={() => setPointSheet(null)} onOpenContact={(c) => { setPointSheet(null); setDetail(c); }} onNote={addConfigNote} />}
+          {houseSheet && <HouseSheet m={model} d={d} h={houseSheet} onClose={() => setHouseSheet(null)} onOpenContact={(c) => { setHouseSheet(null); setDetail(c); }} />}
+        </ClientContext.Provider>
+      )}
     </div>
   );
 }
@@ -372,36 +383,58 @@ function MonthGrid({ axis, labels }: { axis: ReturnType<typeof useAxis>; labels?
   );
 }
 
-function DensityStrip({ tl, focus, onFocus }: { tl: NonNullable<TimelineResponse["timeline"]>; focus: ConvergenceWindow | null; onFocus: (w: ConvergenceWindow | null) => void }) {
+function DensityStrip({ tl, focus, onFocus, asOf, onAsOf }: { tl: NonNullable<TimelineResponse["timeline"]>; focus: ConvergenceWindow | null; onFocus: (w: ConvergenceWindow | null) => void; asOf: string; onAsOf: (d: string) => void }) {
   const axis = useAxis(tl.from, tl.to);
   const [hover, setHover] = React.useState<number | null>(null);
   const max = Math.max(1, ...tl.days.map((d) => d.score));
   const n = tl.days.length;
-  const path = React.useMemo(() => {
-    const y = (d: { score: number }) => 100 - (d.score / max) * 92;
-    const pts = tl.days.map((d, i) => `${((i + 0.5) / n) * 1000},${y(d)}`);
-    const line = `M0,${y(tl.days[0]!)} L${pts.join(" L")} L1000,${y(tl.days[n - 1]!)}`;
-    return { line, area: `${line} L1000,100 L0,100 Z` };
+  const paths = React.useMemo(() => {
+    const X = (i: number) => ((i + 0.5) / n) * 1000;
+    const Y = (v: number) => 100 - (v / max) * 92;
+    const area = (top: (i: number) => number, base: (i: number) => number) => {
+      let p = `M${X(0)},${Y(base(0))}`;
+      for (let i = 0; i < n; i++) p += ` L${X(i)},${Y(top(i))}`;
+      for (let i = n - 1; i >= 0; i--) p += ` L${X(i)},${Y(base(i))}`;
+      return p + " Z";
+    };
+    const bg = (i: number) => tl.days[i]!.score - (tl.days[i]!.trigger ?? 0);
+    return { bg: area(bg, () => 0), tr: area((i) => tl.days[i]!.score, bg) };
   }, [tl.days, n, max]);
-  const peak = tl.days.reduce((a, b) => (b.score > a.score ? b : a), tl.days[0]!);
+  // The busiest day by short-term activity: the same measure the busy periods use.
+  const peak = tl.days.reduce((a, b) => ((b.trigger ?? b.score) > (a.trigger ?? a.score) ? b : a), tl.days[0]!);
   const h = hover !== null ? tl.days[hover] : null;
+  const asOfPct = axis.pct(asOf) + 50 / n;
 
   return (
     <Card>
       <CardHeader
         icon={<Waves />}
         title="Convergence"
-        description="How many contacts are in orb each day, weighted. Shaded bands are the busiest periods."
-        action={<span className="hidden text-[12px] text-muted sm:inline">{h ? `${fmt(h.date)} · ${h.count} contacts in orb` : `Busiest day: ${fmt(peak.date)} (${peak.count} contacts)`}</span>}
+        description="Weighted intensity each day. Background influences are grey; short-term triggers sit on top. Shaded bands are busy periods. Select a day to move the As Of date."
+        action={
+          <span className="hidden text-right text-[12px] text-muted sm:block">
+            {h ? `${fmt(h.date)} · ${h.count} in orb (${h.triggerCount ?? 0} triggers, ${h.count - (h.triggerCount ?? 0)} background)` : `Most short-term activity: ${fmt(peak.date)} (${peak.triggerCount ?? 0} triggers, ${peak.count} in orb in all)`}
+            <span className="mt-1 flex justify-end gap-3">
+              <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2 w-3 rounded-sm bg-ink/20" /> Background</span>
+              <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2 w-3 rounded-sm bg-accent/50" /> Triggers</span>
+            </span>
+          </span>
+        }
       />
       <CardBody className="pb-8 pt-8">
         <div
-          className="relative h-[110px]"
+          className="relative h-[110px] cursor-crosshair"
           onMouseMove={(e) => {
             const r = e.currentTarget.getBoundingClientRect();
             setHover(Math.max(0, Math.min(n - 1, Math.floor(((e.clientX - r.left) / r.width) * n))));
           }}
           onMouseLeave={() => setHover(null)}
+          onClick={(e) => {
+            if ((e.target as HTMLElement).closest("button")) return;
+            const r = e.currentTarget.getBoundingClientRect();
+            const i = Math.max(0, Math.min(n - 1, Math.floor(((e.clientX - r.left) / r.width) * n)));
+            onAsOf(tl.days[i]!.date);
+          }}
         >
           <MonthGrid axis={axis} labels />
           {tl.convergences.map((w) => (
@@ -419,17 +452,16 @@ function DensityStrip({ tl, focus, onFocus }: { tl: NonNullable<TimelineResponse
             preserveAspectRatio="none"
             className="pointer-events-none absolute inset-0 size-full"
             role="img"
-            aria-label={`Convergence from ${fmt(tl.from.slice(0, 10))} to ${fmt(tl.days[n - 1]!.date)}. ${tl.convergences.length} busy periods. Busiest day ${fmt(peak.date)} with ${peak.count} contacts in orb.`}
+            aria-label={`Convergence from ${fmt(tl.from.slice(0, 10))} to ${fmt(tl.days[n - 1]!.date)}. ${tl.convergences.length} busy periods. Most short-term activity on ${fmt(peak.date)}.`}
           >
-            <defs>
-              <linearGradient id="tl-fill" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor="#824B59" stopOpacity="0.55" />
-                <stop offset="100%" stopColor="#824B59" stopOpacity="0.08" />
-              </linearGradient>
-            </defs>
-            <path d={path.area} fill="url(#tl-fill)" />
-            <path d={path.line} fill="none" stroke="#824B59" strokeWidth="1.4" vectorEffect="non-scaling-stroke" />
+            <path d={paths.bg} style={{ fill: "rgb(41 39 43 / 0.16)" }} />
+            <path d={paths.tr} style={{ fill: "rgb(var(--accent) / 0.42)" }} />
           </svg>
+          {asOfPct >= 0 && asOfPct <= 100 && (
+            <div className="pointer-events-none absolute -inset-y-1 w-0.5 bg-ink" style={{ left: `${asOfPct}%` }} aria-hidden>
+              <span className="absolute -bottom-5 -translate-x-1/2 whitespace-nowrap text-[10.5px] font-medium text-ink">As Of</span>
+            </div>
+          )}
           {hover !== null && <div className="pointer-events-none absolute inset-y-0 w-px bg-ink/50" style={{ left: `${((hover + 0.5) / n) * 100}%` }} aria-hidden />}
         </div>
       </CardBody>
@@ -438,116 +470,96 @@ function DensityStrip({ tl, focus, onFocus }: { tl: NonNullable<TimelineResponse
 }
 
 // ---------------------------------------------------------------------------
-// Convergence windows
+// Busy periods
 
-/** Houses a planet rules in this natal chart (by the sign on each cusp; traditional and modern rulers). */
-function housesRuled(id: TargetId, cusps: number[] | null) {
-  if (!cusps) return [];
-  return cusps.map((c, i) => ({ h: i + 1, r: RULERS[signOf(c).id] })).filter(({ r }) => r.traditional === id || r.modern === id).map(({ h }) => h);
-}
-/** A house's rulers: traditional first, then modern if different. */
-function houseRulers(h: number, cusps: number[] | null): BodyId[] {
-  if (!cusps) return [];
-  const r = RULERS[signOf(cusps[h - 1]!).id];
-  return r.modern && r.modern !== r.traditional ? [r.traditional, r.modern] : [r.traditional];
-}
-const list = (xs: string[]) => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
-
-/** What a busy period activates: the natal planet hit most (where it sits, what it rules), and the house hit most (and its ruler). */
-function Activated({ w, tl, byId }: { w: ConvergenceWindow; tl: NonNullable<TimelineResponse["timeline"]>; byId: Map<string, TimelineContact> }) {
-  const cusps = tl.cusps ?? null;
-  const hits = (id: TargetId) => w.contacts.filter((k) => byId.get(k)?.target === id).length;
-  const t = w.focus.target;
-  const natal = t ? tl.natal.find((n) => n.id === t) : undefined;
-  const isAngle = t === "asc" || t === "mc";
-  const rules = t && !isAngle ? housesRuled(t, cusps) : [];
-  const h = w.focus.house;
-  const rulers = h ? houseRulers(h, cusps) : [];
-  if (!t && !h) return null;
-  return (
-    <dl className="mt-2.5 space-y-1 rounded-lg bg-canvas/60 px-2.5 py-2 text-[12.5px] leading-snug">
-      {t && (
-        <div className="flex gap-2">
-          <dt className="w-12 shrink-0 text-muted">Planet</dt>
-          <dd className="text-ink">
-            <span className="font-medium">{isAngle ? "" : "Natal "}{pointName(t)}</span> <span className="text-muted">· {w.focus.targetCount} contacts</span>
-            {(natal?.house || rules.length > 0) && (
-              <span className="block text-ink-3">
-                {natal?.house && !isAngle ? `In the ${ordinal(natal.house)}` : ""}
-                {natal?.house && !isAngle && rules.length ? " · " : ""}
-                {rules.length ? `Rules the ${list(rules.map(ordinal))}` : ""}
-              </span>
-            )}
-          </dd>
-        </div>
-      )}
-      {h && (
-        <div className="flex gap-2">
-          <dt className="w-12 shrink-0 text-muted">House</dt>
-          <dd className="text-ink">
-            <span className="font-medium">{ordinal(h)} house</span> <span className="text-muted">· {w.focus.houseCount} contacts to planets there</span>
-            {rulers.length > 0 && (
-              <span className="block text-ink-3">
-                Ruled by {list(rulers.map((r) => { const n = hits(r as TargetId); return `${BODIES[r].name}${n ? ` (${n} contact${n === 1 ? "" : "s"})` : ""}`; }))}
-              </span>
-            )}
-          </dd>
-        </div>
-      )}
-    </dl>
-  );
-}
-
-function Convergences({ tl, focus, onFocus, onOpen }: { tl: NonNullable<TimelineResponse["timeline"]>; focus: ConvergenceWindow | null; onFocus: (w: ConvergenceWindow | null) => void; onOpen: (c: TimelineContact) => void }) {
+function Convergences({ tl, focus, onFocus, onOpen, onAsOf }: { tl: NonNullable<TimelineResponse["timeline"]>; focus: ConvergenceWindow | null; onFocus: (w: ConvergenceWindow | null) => void; onOpen: (c: TimelineContact) => void; onAsOf: (d: string) => void }) {
   const byId = React.useMemo(() => new Map(tl.contacts.map((c) => [c.id, c])), [tl.contacts]);
   if (tl.convergences.length === 0) {
     return (
       <Card>
-        <EmptyState icon={<Layers />} title="No Standout Periods" body="Contacts are spread fairly evenly across this range. Try a longer period, or include more bodies or techniques." />
+        <EmptyState icon={<Layers />} title="No Standout Periods" body="Short-term activity is spread fairly evenly across this range. Try a longer period, or include more bodies or techniques." />
       </Card>
     );
   }
+  const strongest = Math.max(...tl.convergences.map((w) => w.peakScore));
+  const natal = new Map(tl.natal.map((n) => [n.id, n]));
+  const cusps = tl.cusps ?? null;
+  const ruled = (id: TargetId) => (cusps && id !== "asc" && id !== "mc" ? cusps.map((c, i) => ({ h: i + 1, r: RULERS[signOf(c).id] })).filter(({ r }) => r.traditional === id || r.modern === id).map(({ h }) => h) : []);
+  const rulersOf = (h: number) => {
+    if (!cusps) return [];
+    const r = RULERS[signOf(cusps[h - 1]!).id];
+    return r.modern && r.modern !== r.traditional ? [r.traditional, r.modern] : [r.traditional];
+  };
   return (
     <section aria-labelledby="tl-conv">
-      <h2 id="tl-conv" className="mb-2.5 text-[15px] font-semibold text-ink">
-        Busiest Periods
-      </h2>
+      <h2 id="tl-conv" className="mb-1 text-[15px] font-semibold text-ink">Busiest Periods</h2>
+      <p className="mb-2.5 text-[12.5px] text-muted">Found and ranked by short-term activity, so a long transit can’t make a whole stretch look busy.</p>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {tl.convergences.map((w) => {
           const active = focus?.start === w.start;
           const top = w.contacts.slice(0, 4).map((id) => byId.get(id)!).filter(Boolean);
+          const t = w.focus.target, hs = w.focus.house;
+          const tHouse = t ? natal.get(t)?.house : null;
           return (
-            <div key={w.start} className={cn("rounded-xl border bg-surface p-4 shadow-card transition-colors", active ? "border-accent/60 ring-1 ring-accent/30" : "border-line")}>
+            <div key={w.start} className={cn("flex flex-col gap-2.5 rounded-xl border bg-surface p-4 shadow-card transition-colors", active ? "border-accent/60 ring-1 ring-accent/30" : "border-line")}>
               <button type="button" onClick={() => onFocus(active ? null : w)} className="block w-full text-left" aria-pressed={active}>
-                <p className="flex items-center gap-1.5 text-[12px] font-medium text-accent">
-                  <CalendarRange className="size-3.5" /> {fmtRange(w.start, w.end)}
+                <p className="flex flex-wrap items-center gap-1.5 text-[12px] font-medium text-accent">
+                  <CalendarRange className="size-3.5" /> {w.startOpen ? "Before " : ""}{fmtRange(w.start, w.end)}{w.endOpen ? " and beyond" : ""}
+                  {w.peakScore === strongest && <span className="rounded-full bg-accent-50 px-2 py-0.5 text-[10.5px]">Strongest</span>}
                 </p>
-                <p className="mt-1 text-[14.5px] font-semibold leading-snug text-ink">
-                  {w.contacts.length} contacts in orb
-                </p>
-                <p className="mt-0.5 text-[12px] text-muted">
-                  {w.exactCount} exact in this period · peak {fmtShort(w.peak)}
-                </p>
+                {w.startOpen && <p className="mt-1 text-[11.5px] text-warn">Began before this range: it may be longer, and may have peaked earlier.</p>}
+                {w.endOpen && <p className="mt-1 text-[11.5px] text-warn">Runs past the end of this range.</p>}
               </button>
-              <Activated w={w} tl={tl} byId={byId} />
-              <ul className="mt-3 space-y-1">
+              <div className="grid grid-cols-3 gap-1.5">
+                <div className="rounded-lg bg-canvas-2 px-2 py-1.5"><b className="block text-[15px] tabular-nums text-ink">{fmtShort(w.peak)}</b><span className="block text-[10.5px] leading-tight text-muted">Peak day: {w.peakCount} in orb at once, {w.peakTriggers} of them triggers</span></div>
+                <div className="rounded-lg bg-canvas-2 px-2 py-1.5"><b className="block text-[15px] tabular-nums text-ink">{w.contacts.length + w.background.length}</b><span className="block text-[10.5px] leading-tight text-muted">Distinct contacts over the period</span></div>
+                <div className="rounded-lg bg-canvas-2 px-2 py-1.5"><b className="block text-[15px] tabular-nums text-ink">{w.exactCount}</b><span className="block text-[10.5px] leading-tight text-muted">Exact hits inside the period</span></div>
+              </div>
+              {(t || hs) && (
+                <dl className="space-y-1 rounded-lg bg-canvas/60 px-2.5 py-2 text-[12.5px] leading-snug">
+                  {t && (
+                    <div className="flex gap-2">
+                      <dt className="w-12 shrink-0 text-muted">Planet</dt>
+                      <dd className="text-ink">
+                        <span className="font-medium">{t === "asc" || t === "mc" ? "" : "Natal "}{pointName(t)}</span> <span className="text-muted">· {w.focus.targetCount} Contacts</span>
+                        {(tHouse || ruled(t).length > 0) && t !== "asc" && t !== "mc" && (
+                          <span className="block text-ink-3">{tHouse ? `In the ${ordinal(tHouse)}` : ""}{tHouse && ruled(t).length ? " · " : ""}{ruled(t).length ? `Rules the ${ruled(t).map(ordinal).join(" & ")}` : ""}</span>
+                        )}
+                      </dd>
+                    </div>
+                  )}
+                  {hs && (
+                    <div className="flex gap-2">
+                      <dt className="w-12 shrink-0 text-muted">House</dt>
+                      <dd className="text-ink">
+                        <span className="font-medium">{ordinal(hs)} House</span> <span className="text-muted">· {w.focus.houseCount} Contacts to planets there</span>
+                        {rulersOf(hs).length > 0 && <span className="block text-ink-3">Ruled by {rulersOf(hs).map((r) => BODIES[r].name).join(" and ")}</span>}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              )}
+              <ul className="space-y-0.5">
                 {top.map((c) => (
                   <li key={c.id}>
                     <button type="button" onClick={() => onOpen(c)} className="flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left text-[12.5px] text-ink hover:bg-canvas-2">
                       <span className="inline-block size-2 shrink-0 rounded-full" style={{ background: TECH[c.technique].color }} aria-hidden />
-                      <span className="w-16 shrink-0 text-ink">
-                        <Glyphs c={c} />
-                      </span>
+                      <span className="w-16 shrink-0 text-ink"><Glyphs c={c} /></span>
                       <span className="truncate">{contactLabel(c)}</span>
                     </button>
                   </li>
                 ))}
               </ul>
-              {w.contacts.length > top.length && (
-                <button type="button" onClick={() => onFocus(w)} className="mt-1 px-1.5 text-[12px] text-accent hover:underline">
-                  Show all {w.contacts.length} below
-                </button>
+              {w.background.length > 0 && (
+                <p className="text-[11.5px] text-muted">
+                  Against the background of {w.background.slice(0, 2).map((id) => byId.get(id)).filter(Boolean).map((c) => contactLabel(c!)).join(" and ")}
+                  {w.background.length > 2 ? ` (+${w.background.length - 2})` : ""}.
+                </p>
               )}
+              <div className="mt-auto flex flex-wrap gap-x-4 gap-y-1">
+                {w.contacts.length > top.length && <button type="button" onClick={() => onFocus(w)} className="text-[12px] text-accent hover:underline">Show all {w.contacts.length} below</button>}
+                <button type="button" onClick={() => onAsOf(w.peak)} className="text-[12px] text-accent hover:underline">Set As Of to the peak day</button>
+              </div>
             </div>
           );
         })}
@@ -561,6 +573,7 @@ function Convergences({ tl, focus, onFocus, onOpen }: { tl: NonNullable<Timeline
 
 function ContactGrid({
   tl,
+  sig,
   groupBy,
   setGroupBy,
   focus,
@@ -568,6 +581,7 @@ function ContactGrid({
   onOpen,
 }: {
   tl: NonNullable<TimelineResponse["timeline"]>;
+  sig: Significance;
   groupBy: GroupBy;
   setGroupBy: (g: GroupBy) => void;
   focus: ConvergenceWindow | null;
@@ -579,14 +593,14 @@ function ContactGrid({
   const natal = React.useMemo(() => new Map(tl.natal.map((n) => [n.id, n])), [tl.natal]);
 
   const visible = React.useMemo(() => {
-    let list = tl.contacts;
+    let list = tl.contacts.filter((c) => passesSignificance(c, sig));
     if (focus) {
       const ids = new Set(focus.contacts);
       list = list.filter((c) => ids.has(c.id));
     }
     if (exactOnly) list = list.filter((c) => c.windows.some((w) => w.exacts.length > 0));
     return list;
-  }, [tl.contacts, focus, exactOnly]);
+  }, [tl.contacts, focus, exactOnly, sig]);
 
   const groups = React.useMemo(() => {
     const out = new Map<string, { title: React.ReactNode; sub?: string; order: number; items: TimelineContact[] }>();
@@ -622,7 +636,7 @@ function ContactGrid({
       <CardHeader
         icon={<CircleDot />}
         title="Contacts"
-        description={focus ? `Showing the ${focus.contacts.length} contacts in orb ${fmtRange(focus.start, focus.end)}.` : `${tl.contacts.length} contacts in orb during the period. Bars show time in orb; diamonds mark exact hits.`}
+        description={focus ? `Showing the short-term contacts in orb ${fmtRange(focus.start, focus.end)}.` : `${visible.length} of ${tl.contacts.length} contacts in orb during the period (“${sig === "major" ? "Major Cycles" : sig === "moderate" ? "Moderate" : "All Contacts"}”). Bars show time in orb; diamonds mark exact hits.`}
         action={focus ? <Button size="sm" variant="ghost" onClick={() => onFocus(null)}>Show All</Button> : undefined}
       />
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-3">
@@ -708,7 +722,7 @@ function ContactRow({ c, axis, onOpen, groupBy }: { c: TimelineContact; axis: Re
   const exacts = c.windows.flatMap((w) => w.exacts);
   const total = exacts.length;
   const firstExact = exacts[0];
-  const summary = firstExact ? (total > 1 ? `${total} exact hits, first ${fmtShort(firstExact.utc)}` : `exact ${fmt(firstExact.utc)}`) : "in orb, not exact in this period";
+  const summary = firstExact ? (total > 1 ? `${total} exact hits, first ${fmtShort(firstExact.utc)}` : `Exact ${fmt(firstExact.utc)}`) : "In orb, not exact in this period";
   return (
     <li>
       <button
@@ -768,8 +782,51 @@ function ContactRow({ c, axis, onOpen, groupBy }: { c: TimelineContact; axis: Re
 // ---------------------------------------------------------------------------
 // Detail sheet
 
-function ContactSheet({ contact: c, clientId, personId, clientName, tl, onClose }: { contact: TimelineContact; clientId: string; personId: string; clientName: string; tl: NonNullable<TimelineResponse["timeline"]>; onClose: () => void }) {
+const lifecycleCache = new Map<string, Promise<TimelineContact | null>>();
+
+/** The whole life of one contact: recalculated for just that contact, 18 months either side of the As Of date. */
+function useFullContact(c: TimelineContact, personId: string, asOf: string, opts: TimelineDefaults) {
+  const person = useStore((s) => s.people.find((p) => p.id === personId));
+  const defaults = useStore((s) => s.defaults);
+  const [full, setFull] = React.useState<TimelineContact | null | "loading">(c.events ? null : "loading");
+  React.useEffect(() => {
+    if (c.events || !person?.birth) return setFull(null);
+    const from = new Date(Date.parse(`${asOf}T00:00:00Z`) - 540 * DAY).toISOString().slice(0, 10);
+    const to = new Date(Date.parse(`${asOf}T00:00:00Z`) + 540 * DAY).toISOString().slice(0, 10);
+    const src = c.source as BodyId;
+    const options = {
+      transits: c.technique === "transit",
+      progressions: c.technique === "progressed",
+      solarArcs: c.technique === "solar-arc",
+      lunations: false,
+      transitBodies: c.technique === "transit" ? [src] : [],
+      progressedBodies: c.technique === "progressed" ? [src] : [],
+      aspects: [c.aspect],
+      targets: [c.target],
+      orbs: opts.orbs,
+      transitOrbs: opts.transitOrbs,
+      backgroundBodies: opts.backgroundBodies ?? DEFAULT_BACKGROUND,
+    };
+    const key = JSON.stringify([person.birth, defaults.zodiac, defaults.houseSystem, from, to, options]);
+    let p = lifecycleCache.get(key);
+    if (!p) {
+      p = fetchTimeline(person.birth, { ...defaults, timeline: undefined }, from, to, options).then((r) => r.timeline.contacts.find((x) => x.id === c.id) ?? null);
+      lifecycleCache.set(key, p);
+    }
+    let live = true;
+    setFull("loading");
+    p.then((x) => live && setFull(x), () => { lifecycleCache.delete(key); if (live) setFull(null); });
+    return () => {
+      live = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [c.id, asOf, person?.birth]);
+  return full;
+}
+
+function ContactSheet({ contact: c, clientId, personId, clientName, tl, asOf, opts, onClose }: { contact: TimelineContact; clientId: string; personId: string; clientName: string; tl: NonNullable<TimelineResponse["timeline"]>; asOf: string; opts: TimelineDefaults; onClose: () => void }) {
   const router = useRouter();
+  const full = useFullContact(c, personId, asOf, opts);
   const charts = useStore((s) => s.charts);
   const addChart = useStore((s) => s.addChart);
   const t = TECH[c.technique];
@@ -837,6 +894,8 @@ function ContactSheet({ contact: c, clientId, personId, clientName, tl, onClose 
           </div>
         </div>
 
+        {!c.events && <LifecycleSection c={c} at={Date.parse(`${asOf}T12:00:00Z`)} full={full} />}
+
         {c.events ? (
           <section>
             <h3 className="mb-2 text-[13px] font-semibold text-ink">Events</h3>
@@ -859,7 +918,7 @@ function ContactSheet({ contact: c, clientId, personId, clientName, tl, onClose 
           </section>
         ) : (
           <section>
-            <h3 className="mb-2 text-[13px] font-semibold text-ink">Time in Orb</h3>
+            <h3 className="mb-2 text-[13px] font-semibold text-ink">Time in Orb This Range</h3>
             <ul className="space-y-3">
               {c.windows.map((w, i) => (
                 <li key={i} className="rounded-lg border border-line p-3 text-[12.5px]">
@@ -879,7 +938,7 @@ function ContactSheet({ contact: c, clientId, personId, clientName, tl, onClose 
                             <span className="text-muted">
                               {" "}
                               · pass {e.pass} of {exacts.length}
-                              {e.retrograde ? " · retrograde" : ""}
+                              {e.retrograde ? " · Retrograde" : ""}
                             </span>
                           </span>
                           <Button size="sm" variant="ghost" onClick={() => openChart(e.utc.slice(0, 10))}>

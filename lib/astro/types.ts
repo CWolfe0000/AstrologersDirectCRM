@@ -42,6 +42,8 @@ export interface TimelineDefaults {
   orbs: { transit: number; directed: number; lunation: number; eclipse: number };
   /** Optional per-planet transit orbs; a planet without one uses orbs.transit. */
   transitOrbs: Partial<Record<BodyId, number>>;
+  /** Transiting planets counted as long-term background rather than short-term triggers (default Uranus, Neptune, Pluto). */
+  backgroundBodies?: BodyId[];
 }
 
 export interface ChartSettings {
