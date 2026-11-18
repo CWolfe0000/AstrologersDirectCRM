@@ -49,7 +49,7 @@ export interface TimelineOptions {
   backgroundBodies?: BodyId[];
 }
 
-export const DEFAULT_BACKGROUND_BODIES: BodyId[] = ["saturn", "uranus", "neptune", "pluto", "node", "chiron"];
+export const DEFAULT_BACKGROUND_BODIES: BodyId[] = ["uranus", "neptune", "pluto"];
 
 /** "background": slow influences that set the tone for months or years. "trigger": short-term activity that times events. */
 export type TimelineLayer = "background" | "trigger";
