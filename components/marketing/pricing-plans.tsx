@@ -54,7 +54,7 @@ const ROWS: { group: string; rows: [string, Cell, Cell, Cell][] }[] = [
       ["Natal & synastry charts, aspects and grids", true, true, true],
       ["Transits, progressions, solar arcs & solar returns", false, true, true],
       ["Midpoint composite charts", false, true, true],
-      ["Horary charts & astrocartography", false, true, true],
+      ["Horary, electional & astrocartography", false, true, true],
       ["Convergence timeline", false, true, true],
       ["Notes & observations with revision history", true, true, true],
       ["Intelligent assistance", false, "Usage TBD", "Usage TBD"],

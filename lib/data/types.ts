@@ -27,7 +27,23 @@ export interface Client {
   summary?: string;
 }
 
-export type ChartType = "natal" | "synastry" | "composite" | "transits" | "progressions" | "solar-arc" | "solar-return" | "horary" | "astrocartography";
+export type ChartType = "natal" | "synastry" | "composite" | "transits" | "progressions" | "solar-arc" | "solar-return" | "horary" | "astrocartography" | "election";
+
+/** An elected moment: what it's for, when and where, and the rules it was chosen by. */
+export interface ElectionData {
+  purpose: string;
+  event: "general" | "contract" | "relationship" | "launch" | "travel" | "move";
+  /** Local date and time, YYYY-MM-DDTHH:mm. */
+  at: string;
+  place: string;
+  lat: number;
+  lon: number;
+  tz: string;
+  checks: string[];
+  /** Whether the client's natal chart was part of the choice. */
+  useNatal: boolean;
+  eclipseNear?: string;
+}
 
 /** The question and the moment and place it was asked (horary charts). */
 export interface HoraryData {
@@ -52,6 +68,8 @@ export interface ChartRecord {
   refDate?: string;
   /** Horary charts: the question, and when and where it was asked. personIds holds the querent. */
   horary?: HoraryData;
+  /** Electional charts: the chosen moment and how it was chosen. personIds holds the client. */
+  election?: ElectionData;
   settings?: Partial<ChartSettings>;
   createdAt: string;
   updatedAt: string;

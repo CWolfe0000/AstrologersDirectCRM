@@ -8,7 +8,7 @@ import type { ChartType } from "@/lib/data/types";
  */
 export type Plan = "standard" | "premium";
 
-export const PREMIUM_CHART_TYPES: ChartType[] = ["composite", "transits", "progressions", "solar-arc", "solar-return", "horary", "astrocartography"];
+export const PREMIUM_CHART_TYPES: ChartType[] = ["composite", "transits", "progressions", "solar-arc", "solar-return", "horary", "astrocartography", "election"];
 export const isPremiumChart = (t: ChartType) => PREMIUM_CHART_TYPES.includes(t);
 
 /** Shown wherever a premium feature is locked. */
@@ -20,5 +20,6 @@ export const PREMIUM_FEATURES = [
   "Solar Returns",
   "Midpoint Composite Charts",
   "Horary Charts",
+  "Electional Astrology",
   "Astrocartography",
 ];

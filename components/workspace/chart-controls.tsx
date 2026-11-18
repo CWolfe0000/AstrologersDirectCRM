@@ -69,7 +69,15 @@ export function ChartControls({
         </Link>
       </Section>
 
-      {chart.type === "horary" && chart.horary ? (
+      {chart.type === "election" && chart.election ? (
+        <Section title="Elected Moment">
+          <div className="rounded-lg border border-line bg-canvas/50 p-2.5">
+            <p className="font-medium text-ink">For {personName(subjects[0])}</p>
+            <p className="mt-0.5 text-[12px] text-muted">{fmtDate(chart.election.at.slice(0, 10))} · {fmtClock(chart.election.at.slice(11, 16))}</p>
+            <p className="text-[12px] text-muted">{chart.election.place}</p>
+          </div>
+        </Section>
+      ) : chart.type === "horary" && chart.horary ? (
         <Section title="Question & Moment">
           <div className="rounded-lg border border-line bg-canvas/50 p-2.5">
             <p className="font-medium text-ink">Querent: {personName(subjects[0])}</p>

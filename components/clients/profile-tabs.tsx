@@ -183,6 +183,7 @@ const CHART_GROUPS: { title: string; types: ChartRecord["type"][]; desc: string 
   { title: "Synastry", types: ["synastry"], desc: "Relationship comparison bi-wheels" },
   { title: "Composite", types: ["composite"], desc: "Midpoint composite charts" },
   { title: "Horary", types: ["horary"], desc: "Charts for the moment a question was asked" },
+  { title: "Elections", types: ["election"], desc: "Chosen times to begin something" },
   { title: "Astrocartography", types: ["astrocartography"], desc: "Planetary lines on the world map" },
 ];
 

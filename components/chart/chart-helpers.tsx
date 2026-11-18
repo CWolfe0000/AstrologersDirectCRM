@@ -17,7 +17,7 @@ const CACHE_LIMIT = 300;
 
 function cacheKey(chart: ChartRecord, people: Person[], overrides: Partial<ChartSettings> | undefined, defaults: ChartSettings) {
   const subjects = chart.personIds.map((id) => people.find((p) => p.id === id)?.birth ?? null);
-  return JSON.stringify([getEngine().info.id, chart.type, chart.personIds, chart.refDate, chart.horary ?? null, chart.settings, subjects, overrides ?? null, defaults]);
+  return JSON.stringify([getEngine().info.id, chart.type, chart.personIds, chart.refDate, chart.horary ?? null, chart.election ?? null, chart.settings, subjects, overrides ?? null, defaults]);
 }
 
 export type ChartViewState = { view: ChartView | null; loading: boolean; error: string | null; locked?: boolean };
@@ -130,6 +130,7 @@ export function ChartTypeBadge({ type, className }: { type: ChartRecord["type"];
     "solar-arc": "bg-[#ECEEF3] text-[#4D5A70] border-[#DCE3EC]",
     "solar-return": "bg-[#F3EDE4] text-[#7A6145] border-[#E8DCCB]",
     horary: "bg-[#EEF1F5] text-[#4B5D73] border-[#DCE3EC]",
+    election: "bg-[#F3EDE4] text-[#7A6145] border-[#E8DCCB]",
     astrocartography: "bg-sage-50 text-sage-dark border-sage-100",
   };
   return <span className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium", tone[type], className)}>{chartTypeMeta(type).short}</span>;

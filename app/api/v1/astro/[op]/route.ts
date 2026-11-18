@@ -3,6 +3,8 @@ import { handler, HttpError, json, readJson, requireUser } from "@/lib/server/ht
 import { birthSchema, settingsSchema } from "@/lib/server/validation";
 import { acgChart, natalChart, positionsAt, progressedChart, solarArcChart, solarReturnChart } from "@/lib/server/astro";
 import { SWISS_INFO } from "@/lib/server/swiss";
+import { findElections } from "@/lib/server/elect";
+import { ELECTION_CHECKS, type ElectionCheck } from "@/lib/astro/elect";
 import { requirePremium } from "@/lib/server/plan";
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -13,6 +15,17 @@ const Bodies = {
   progressed: z.object({ birth: birthSchema, target: date, settings: settingsSchema }),
   "solar-arc": z.object({ birth: birthSchema, target: date, settings: settingsSchema }),
   acg: z.object({ birth: birthSchema, settings: settingsSchema }),
+  elect: z.object({
+    from: date,
+    to: date,
+    dailyFrom: z.string().regex(/^\d{2}:\d{2}$/),
+    dailyTo: z.string().regex(/^\d{2}:\d{2}$/),
+    stepMin: z.union([z.literal(15), z.literal(30), z.literal(60)]),
+    place: z.object({ lat: z.number().min(-90).max(90), lon: z.number().min(-180).max(180), tz: z.string().min(1).max(80) }),
+    settings: settingsSchema,
+    checks: z.array(z.enum(Object.keys(ELECTION_CHECKS) as [ElectionCheck, ...ElectionCheck[]])).min(1).max(20),
+    natal: birthSchema.optional(),
+  }),
   "solar-return": z.object({ birth: birthSchema, year: z.number().int().min(1800).max(2399), settings: settingsSchema, place: z.object({ lat: z.number(), lon: z.number() }).optional() }),
 };
 
@@ -39,6 +52,15 @@ export const POST = handler(async (req: Request, ctx: { params: Promise<{ op: st
         return json({ engine: SWISS_INFO, points: await progressedChart(b.birth, b.target, b.settings) });
       case "solar-arc":
         return json({ engine: SWISS_INFO, points: await solarArcChart(b.birth, b.target, b.settings) });
+      case "elect": {
+        const days = (Date.parse(b.to as string) - Date.parse(b.from as string)) / 86_400_000 + 1;
+        if (days < 1 || days > 120) throw new HttpError(422, "Choose a range of up to 120 days.");
+        if ((b.dailyFrom as string) > (b.dailyTo as string)) throw new HttpError(422, "The daily window should start before it ends.");
+        const [h1, m1] = (b.dailyFrom as string).split(":").map(Number), [h2, m2] = (b.dailyTo as string).split(":").map(Number);
+        const slots = days * (Math.floor((h2! * 60 + m2! - h1! * 60 - m1!) / (b.stepMin as number)) + 1);
+        if (slots > 6000) throw new HttpError(422, "That’s a lot of moments to check. Shorten the range or the daily window, or check every 30 or 60 minutes.");
+        return json({ engine: SWISS_INFO, windows: findElections(b as never) });
+      }
       case "acg":
         return json({ engine: SWISS_INFO, acg: acgChart(b.birth, (b.settings as { bodies: never[] }).bodies) });
       case "solar-return":

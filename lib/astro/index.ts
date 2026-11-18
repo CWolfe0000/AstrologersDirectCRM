@@ -31,6 +31,7 @@ export const CHART_TYPES: { id: ChartType; name: string; short: string; people: 
   { id: "solar-arc", name: "Solar Arc Directions", short: "Solar Arcs", people: 1, timing: true, description: "Natal chart directed by the solar arc." },
   { id: "solar-return", name: "Solar Return", short: "Solar Return", people: 1, timing: true, description: "Chart for the Sun's return to its natal position." },
   { id: "horary", name: "Horary", short: "Horary", people: 1, timing: false, description: "Chart for the moment and place a question is asked." },
+  { id: "election", name: "Electional", short: "Election", people: 1, timing: false, description: "Find the best time to begin something, then chart it." },
   { id: "astrocartography", name: "Astrocartography", short: "Astrocartography", people: 1, timing: false, description: "World map of where each planet rises, sets and culminates." },
 ];
 
@@ -123,9 +124,10 @@ export function horaryBirth(h: NonNullable<ChartRecord["horary"]>): BirthData {
 export async function buildChart(chart: ChartRecord, people: Person[], overrides?: Partial<ChartSettings>, base?: ChartSettings): Promise<ChartView> {
   const engine = getEngine();
   const settings = resolveSettings({ ...chart.settings, ...overrides }, base);
-  if (chart.type === "horary") {
-    if (!chart.horary) throw new Error("This horary chart has no question time and place.");
-    const inner = await engine.natal(horaryBirth(chart.horary), settings);
+  if (chart.type === "horary" || chart.type === "election") {
+    const moment = chart.type === "horary" ? chart.horary : chart.election;
+    if (!moment) throw new Error("This chart has no time and place.");
+    const inner = await engine.natal(horaryBirth({ ...moment, question: "" }), settings);
     return { engine: engine.info, type: chart.type, inner, aspects: computeAspects(inner, settings), settings };
   }
   const pa = people.find((p) => p.id === chart.personIds[0]);

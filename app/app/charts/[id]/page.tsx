@@ -17,6 +17,7 @@ import { ChartWheel } from "@/components/chart/chart-wheel";
 import { ChartTypeBadge, EngineNotice, useChartView } from "@/components/chart/chart-helpers";
 import { AstroMap } from "@/components/workspace/astro-map";
 import { HoraryPanel } from "@/components/workspace/horary-panel";
+import { ElectionPanel } from "@/components/workspace/election-panel";
 import { ChartActionsMenu } from "@/components/chart/chart-actions";
 import { ChartControls } from "@/components/workspace/chart-controls";
 import { AspectsTable, ConditionTable, HousesTable, PlacementsTable, RingTag } from "@/components/workspace/analysis-tables";
@@ -187,7 +188,11 @@ function Workspace() {
             <ChartTypeBadge type={chart.type} />
           </div>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] text-muted">
-            {chart.type === "horary" && chart.horary ? (
+            {chart.type === "election" && chart.election ? (
+              <span>
+                <span className="font-medium text-ink-3">For {name(chart.clientId)}</span> · {fmtDate(chart.election.at.slice(0, 10))}, {fmtClock(chart.election.at.slice(11, 16))} · {chart.election.place.split(",")[0]}
+              </span>
+            ) : chart.type === "horary" && chart.horary ? (
               <span>
                 <span className="font-medium text-ink-3">Querent: {name(chart.personIds[0])}</span> · Asked {fmtDate(chart.horary.at.slice(0, 10))}, {fmtClock(chart.horary.at.slice(11, 16))} · {chart.horary.place.split(",")[0]}
               </span>
@@ -218,7 +223,7 @@ function Workspace() {
           <ButtonLink href={`/app/clients/${chart.clientId}`} variant="secondary" aria-label="Client profile">
             <UserRound /> <span className="hidden sm:inline xl:hidden 2xl:inline">Client Profile</span>
           </ButtonLink>
-          {chart.personIds.length === 1 && chart.personIds[0] === chart.clientId && chart.type !== "horary" && (
+          {chart.personIds.length === 1 && chart.personIds[0] === chart.clientId && chart.type !== "horary" && chart.type !== "election" && (
             <ButtonLink href={`/app/timeline?client=${chart.personIds[0]}`} variant="secondary" aria-label="Timeline">
               <Waves /> <span className="hidden sm:inline xl:hidden 2xl:inline">Timeline</span>
             </ButtonLink>
@@ -273,6 +278,7 @@ function Workspace() {
         {/* CENTER: wheel */}
         <section className="min-w-0">
           {chart.type === "horary" && chart.horary && <HoraryPanel horary={chart.horary} view={view} className="mb-4" />}
+          {chart.type === "election" && chart.election && <ElectionPanel election={chart.election} view={view} client={people.find((p) => p.id === chart.clientId)} className="mb-4" />}
           <div className="ws-wheel rounded-xl border border-line bg-surface p-3 shadow-card sm:p-5">
             {view.outer && (
               <div className="mb-2 flex items-center justify-center gap-3 text-[12px] text-muted">
