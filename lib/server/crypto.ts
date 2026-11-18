@@ -25,7 +25,7 @@ export function seal(value: unknown): string {
 
 export function unseal<T = unknown>(sealed: string): T {
   const [v, iv, tag, ct] = sealed.split(".");
-  if (v !== "v1" || !iv || !tag || !ct) throw new Error("Unrecognised ciphertext");
+  if (v !== "v1" || !iv || !tag || !ct) throw new Error("Unrecognized ciphertext");
   const decipher = createDecipheriv("aes-256-gcm", getKey(), Buffer.from(iv, "base64url"));
   decipher.setAuthTag(Buffer.from(tag, "base64url"));
   const pt = Buffer.concat([decipher.update(Buffer.from(ct, "base64url")), decipher.final()]);

@@ -119,8 +119,8 @@ npm run screenshots                   # terminal 2
 
 Simulated features carry a dashed amber **Simulated** badge in the interface.
 In **demo mode**, chart positions come from a demonstration engine. They are
-approximate, always labelled, and must not be used for interpretation. In
-**server mode**, charts and the timeline use Swiss Ephemeris, labelled "not yet
+approximate, always labeled, and must not be used for interpretation. In
+**server mode**, charts and the timeline use Swiss Ephemeris, labeled "not yet
 checked against reference charts" until verified (`docs/techniques.md`).
 
 [`SIMULATED_FEATURES.md`](./SIMULATED_FEATURES.md) lists every simulated

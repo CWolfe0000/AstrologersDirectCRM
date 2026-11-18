@@ -57,7 +57,7 @@ function ChartDirectory() {
     <div>
       <PageHeader
         title="Charts"
-        description="Every saved chart, filed under the client it belongs to. Open a chart to analyse it, add observations, or record a reading."
+        description="Every saved chart, filed under the client it belongs to. Open a chart to analyze it, add observations, or record a reading."
         breadcrumbs={[{ label: "Dashboard", href: "/app" }, { label: "Charts" }]}
         actions={
           <>

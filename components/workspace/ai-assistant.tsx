@@ -15,10 +15,10 @@ type Reply = { calculated: string[]; observations: string[]; obsNote?: string; g
 type Msg = { role: "user"; text: string } | { role: "assistant"; reply: Reply };
 
 const SUGGESTIONS = [
-  "Summarise the Saturn configurations",
+  "Summarize the Saturn configurations",
   "What have I written about the Moon before?",
   "Compare observations across consultations",
-  "Organise my notes on this chart",
+  "Organize my notes on this chart",
 ];
 
 function ordinalHouse(n: number) {
@@ -31,7 +31,7 @@ function ordinalHouse(n: number) {
  * SIMULATED assistant. Deterministic responses built only from (1) engine
  * output for this chart and (2) the practitioner's saved observations. The
  * "generated interpretation" text is templated — in production this would
- * call an LLM with the same three, separately-labelled sources.
+ * call an LLM with the same three, separately-labeled sources.
  */
 function respond(q: string, ctx: { chart: ChartRecord; view: ChartView; obs: Observation[]; people: Person[]; consultations: Consultation[] }): Reply {
   const { chart, view, obs, people, consultations } = ctx;
@@ -117,7 +117,7 @@ function respond(q: string, ctx: { chart: ChartRecord; view: ChartView; obs: Obs
       groups.set(k, [...(groups.get(k) ?? []), o]);
     });
     return {
-      topic: "Organising your notes",
+      topic: "Organizing your notes",
       calculated: [`${view.inner.bodies.length} points calculated · ${view.aspects.length} aspects within current orbs`, ...view.aspects.slice(0, 2).map(aspectLine)],
       observations: scoped.map((o) => o.id),
       generated: [
@@ -184,7 +184,7 @@ export function AiAssistant({ chart, view, onSaved }: { chart: ChartRecord; view
           <p className="flex items-center gap-1.5 text-[13px] font-medium text-ink">
             <Sparkles className="size-4 text-accent" /> Chart assistant
           </p>
-          <p className="mt-0.5 text-[12px] leading-snug text-muted">Answers draw on this chart's calculated data and your saved observations, labelled separately.</p>
+          <p className="mt-0.5 text-[12px] leading-snug text-muted">Answers draw on this chart's calculated data and your saved observations, labeled separately.</p>
         </div>
         <SimulatedBadge />
       </div>

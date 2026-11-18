@@ -46,9 +46,9 @@ None of the failures are in the calculation tests.
 | Tests | Cause | Relevant to AstrologersDirect? |
 |---|---|---|
 | `test-birth-time.js` ×2, `test-engine-http.js` ×1 | The environment needs `GEO_PROVIDER=geoapify` (geocoder config). | No: environment setup |
-| `test-birth-time-ui.js` ×1 | Checks controls on the LLZ customise page. | No: LLZ web page |
+| `test-birth-time-ui.js` ×1 | Checks controls on the LLZ customize page. | No: LLZ web page |
 | `test-engine-preview.js` | The test file has a **syntax error**: an over-escaped regex on line 6, so the file never runs. | No, but worth fixing in Sky |
-| `test-engine.js` "Saturn square MC at 2°" | `preview-in-orb` behaviour. The test stubs `we.buildChart`, which the Swiss path no longer uses. | Indirectly; see mirror drift below |
+| `test-engine.js` "Saturn square MC at 2°" | `preview-in-orb` behavior. The test stubs `we.buildChart`, which the Swiss path no longer uses. | Indirectly; see mirror drift below |
 | `test-presentation*.js` ×5 | LLZ presentation and review layer (Step 6, D-046 digests). | No: consumer presentation |
 
 ### Mirror drift between `engine/` and `service/engine/`
@@ -110,7 +110,7 @@ The prototype's UI talks only to the `AstrologyEngine` interface in `lib/astro/t
 |---|---|---|
 | Natal wheel, placements, houses, rulers, condition | ✅ `buildNatalProfile` | Adapter only. Add essential dignity (already in `we.js`) to the output. |
 | Retrograde flags | Speed is available from `swiss.calculate` | Expose speed |
-| Aspects: configurable set and orbs, minor aspects, applying/separating | Fixed set of 5 majors, no phase | Small: parametrise `natalAspects`. Phase comes from speeds. |
+| Aspects: configurable set and orbs, minor aspects, applying/separating | Fixed set of 5 majors, no phase | Small: parametrize `natalAspects`. Phase comes from speeds. |
 | House systems: Porphyry, Regiomontanus, Campanus | Not mapped | Trivial: add Swiss codes `O`, `R`, `C` to `swiss.js`, plus tests |
 | Sidereal zodiac (Lahiri, Fagan/Bradley) | Not supported | Small: `swe_set_sid_mode` + `SEFLG_SIDEREAL`. Needs validation fixtures. |
 | Transit bi-wheel (positions at a moment) | ✅ `we.eclLon` / `swiss.calculate` | Adapter only |
@@ -142,12 +142,12 @@ The new module is written from scratch for the professional workspace. Scope:
 - **House overlays.** Each person's points placed in the other's houses with strict cusps (`houseOfStrict` semantics), both ways.
 - **No compatibility scores, weights, rankings or interpretive labels.** The astrologer interprets.
 - **Midpoint composite** is built on the same module (house method still to be decided).
-- **Validation.** Tests check results against reference charts that you or a trusted astrologer supply. Results are labelled verified only after those pass.
+- **Validation.** Tests check results against reference charts that you or a trusted astrologer supply. Results are labeled verified only after those pass.
 
 ## Recommended integration
 
 1. **Extract one engine package.** Move the calculation core into a single package that both Sky's `service/` and AstrologersDirect depend on, for example a `packages/sky-engine` workspace or a private npm package. Scope it to `swiss.js`, `we.js` (calculation parts), `time-scales`, `birth-time`, `chart-context`, `house-resolution`, `natal-profile`, `event-math`, the retrograde modules, `sky.js` and the transit modules. This removes the `engine/` vs `service/engine/` drift for good.
-2. **Run calculations on a server.** `sweph` is a native add-on that needs the ephemeris files on disk, and the licence check runs at import time. That suits a long-running Node service, for example a small "astro API" on Render next to Sky's existing services. It does not suit browser or serverless functions. The AstrologersDirect web app calls this API.
+2. **Run calculations on a server.** `sweph` is a native add-on that needs the ephemeris files on disk, and the license check runs at import time. That suits a long-running Node service, for example a small "astro API" on Render next to Sky's existing services. It does not suit browser or serverless functions. The AstrologersDirect web app calls this API.
 3. **Make the prototype's interface asynchronous.** `AstrologyEngine` is synchronous today because the demo engine runs in the browser. Change it to return promises, and add loading states to the chart hooks. This is a UI-side change worth making early.
 4. **Fix a few things in Sky first:**
    - Commit a lockfile.
@@ -165,7 +165,7 @@ The new module is written from scratch for the professional workspace. Scope:
 
 Decided: synastry is scrapped and rewritten from scratch, with no compatibility scores (2026-11-15).
 
-## Licence checklist (Swiss Ephemeris)
+## License checklist (Swiss Ephemeris)
 
 You said the Professional License was purchased on 2026-11-10. Before AstrologersDirect goes live:
 
@@ -181,5 +181,5 @@ This is a list of things to check, not legal advice. The agreement's own wording
 
 1. Answer the decisions above.
 2. Set up the shared engine package and the astro API skeleton, with natal and transit endpoints only.
-3. Write an `AstrologyEngine` adapter in AstrologersDirect that calls the API. Keep the demo engine as an offline fallback, clearly labelled.
+3. Write an `AstrologyEngine` adapter in AstrologersDirect that calls the API. Keep the demo engine as an offline fallback, clearly labeled.
 4. Add progressions, solar arcs and solar returns one at a time, then the new synastry and composite module. Each needs reference-chart tests before the UI shows it as verified.

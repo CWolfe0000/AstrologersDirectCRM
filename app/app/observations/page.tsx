@@ -227,7 +227,7 @@ function Observations() {
         <Badge tone="outline" className="ml-auto">Future</Badge>
       </div>
       <p className="text-[12px] leading-snug text-muted">
-        Cross-client configuration search (“every client with Saturn square Moon”), research collections, and anonymised pattern analysis across your practice.
+        Cross-client configuration search (“every client with Saturn square Moon”), research collections, and anonymized pattern analysis across your practice.
       </p>
     </div>
   );

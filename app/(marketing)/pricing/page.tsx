@@ -22,7 +22,7 @@ export default function PricingPage() {
         <div className="mt-5 max-w-2xl space-y-3 text-[17px] leading-relaxed text-muted">
           <p>Your tools should help your practice grow without making it more complicated.</p>
           <p>Whether you’re building your first client base or running an established practice, AstrologersDirect is designed to grow with you. Simple plans. Professional capabilities. Your knowledge always belongs to you.</p>
-          <p className="text-[14.5px]">Pricing is being finalised. Join early access to help shape the plans.</p>
+          <p className="text-[14.5px]">Pricing is being finalized. Join early access to help shape the plans.</p>
         </div>
       </PageIntro>
       <section className="container py-16 md:py-20">

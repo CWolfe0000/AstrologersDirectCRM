@@ -22,7 +22,7 @@ export const POST = handler(async (req) => {
   if (!user) throw new HttpError(400, timedOut);
   assertNotLocked(user);
   if (!(await checkSecondFactor(user, String(code ?? "")))) {
-    // Each ticket allows a few tries; every miss also counts towards the account lockout.
+    // Each ticket allows a few tries; every miss also counts toward the account lockout.
     await db().update(schema.authTokens).set({ attempts: sql`${schema.authTokens.attempts} + 1` }).where(eq(schema.authTokens.id, ticketId));
     await recordFailure(user.id);
     throw new HttpError(401, "That code didn’t match. Try the newest code from your app, or a recovery code.");

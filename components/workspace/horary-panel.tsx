@@ -9,7 +9,7 @@ import { cn, fmtClock, fmtDate } from "@/lib/utils";
 const ICON = { caution: AlertTriangle, clear: CheckCircle2, info: Info } as const;
 const TONE = { caution: "text-warn", clear: "text-sage-dark", info: "text-muted" } as const;
 
-/** The question, when and where it was asked, and the traditional considerations before judgement. */
+/** The question, when and where it was asked, and the traditional considerations before judgment. */
 export function HoraryPanel({ horary, view, className }: { horary: HoraryData; view: ChartView; className?: string }) {
   const items = horaryConsiderations(view.inner, horary.at);
   const cautions = items.filter((i) => i.tone === "caution").length;
@@ -22,7 +22,7 @@ export function HoraryPanel({ horary, view, className }: { horary: HoraryData; v
       </p>
       <div className="mt-4 border-t border-line pt-3">
         <p className="mb-2 flex items-center justify-between text-[13px] font-semibold text-ink">
-          Considerations Before Judgement
+          Considerations Before Judgment
           <span className={cn("text-[12px] font-normal", cautions ? "text-warn" : "text-sage-dark")}>{cautions ? `${cautions} caution${cautions === 1 ? "" : "s"}` : "No cautions"}</span>
         </p>
         <ul className="space-y-2.5">
@@ -39,7 +39,7 @@ export function HoraryPanel({ horary, view, className }: { horary: HoraryData; v
             );
           })}
         </ul>
-        <p className="mt-3 text-[11.5px] text-muted">Traditional cautions (after Bonatti and Lilly) to weigh in your judgement, not verdicts.</p>
+        <p className="mt-3 text-[11.5px] text-muted">Traditional cautions (after Bonatti and Lilly) to weigh in your judgment, not verdicts.</p>
       </div>
     </div>
   );

@@ -107,13 +107,13 @@ export function PracticeSection() {
           </Field>
         </div>
         <div>
-          <div className="mb-2 flex items-center gap-2"><Palette className="size-4 text-muted" /><p className="text-[13.5px] font-medium">Client portal colour</p></div>
+          <div className="mb-2 flex items-center gap-2"><Palette className="size-4 text-muted" /><p className="text-[13.5px] font-medium">Client portal color</p></div>
           <div className="grid gap-4 sm:grid-cols-[1fr_260px]">
             <div className="space-y-3">
-              <p className="text-[12.5px] text-muted">Buttons, links and highlights in your clients’ portal use this colour. Clients who see more than one astrologer get the standard colour.</p>
+              <p className="text-[12.5px] text-muted">Buttons, links and highlights in your clients’ portal use this color. Clients who see more than one astrologer get the standard color.</p>
               <div className="flex gap-2">
                 {BRAND.map((c) => (
-                  <button key={c} onClick={() => setColor(c)} className={cn("flex size-8 items-center justify-center rounded-full ring-offset-2", color === c && "ring-2 ring-ink/30")} style={{ background: c }} aria-label={`Portal colour ${["plum (standard)", "sage", "slate blue", "bronze", "charcoal"][BRAND.indexOf(c)]}`} aria-pressed={color === c}>
+                  <button key={c} onClick={() => setColor(c)} className={cn("flex size-8 items-center justify-center rounded-full ring-offset-2", color === c && "ring-2 ring-ink/30")} style={{ background: c }} aria-label={`Portal color ${["plum (standard)", "sage", "slate blue", "bronze", "charcoal"][BRAND.indexOf(c)]}`} aria-pressed={color === c}>
                     {color === c && <Check className="size-4 text-white" />}
                   </button>
                 ))}
@@ -485,7 +485,7 @@ export function SubscriptionSection() {
         <CardBody className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="font-serif text-[26px]">Professional</p>
-            <p className="text-[13px] text-muted">Pricing and plan limits are not yet finalised. Figures shown are placeholders.</p>
+            <p className="text-[13px] text-muted">Pricing and plan limits are not yet finalized. Figures shown are placeholders.</p>
           </div>
           <div className="flex gap-2">
             <Button variant="secondary" size="sm" onClick={() => router.push("/pricing")}>Compare Plans</Button>
@@ -534,7 +534,7 @@ export function DataSection() {
   const [clear, setClear] = React.useState(false);
   const [delPassword, setDelPassword] = React.useState("");
   const [confirm, setConfirm] = React.useState("");
-  const [privacy, setPrivacy] = React.useState({ anonymised: false, retention: "indefinite" });
+  const [privacy, setPrivacy] = React.useState({ anonymized: false, retention: "indefinite" });
 
   const exportAll = () => {
     const { toasts, session, sync, portalClientId, ...rest } = useStore.getState();
@@ -566,8 +566,8 @@ export function DataSection() {
       <Card>
         <CardHeader title="Privacy" />
         <CardBody className="divide-y divide-line py-1">
-          <Row title="Contribute Anonymised Patterns to Research" desc="Future feature: anonymised configuration statistics. Never includes names or notes.">
-            <Switch checked={privacy.anonymised} onCheckedChange={(v) => { setPrivacy({ ...privacy, anonymised: v }); s.toast("Privacy Preference Saved"); }} />
+          <Row title="Contribute Anonymized Patterns to Research" desc="Future feature: anonymized configuration statistics. Never includes names or notes.">
+            <Switch checked={privacy.anonymized} onCheckedChange={(v) => { setPrivacy({ ...privacy, anonymized: v }); s.toast("Privacy Preference Saved"); }} />
           </Row>
           <Row title="Archived Client Retention">
             <Select value={privacy.retention} onChange={(e) => { setPrivacy({ ...privacy, retention: e.target.value }); s.toast("Retention Updated"); }} className="w-48">

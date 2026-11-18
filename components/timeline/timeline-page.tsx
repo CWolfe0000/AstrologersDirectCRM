@@ -23,7 +23,7 @@ import { useHydrated } from "@/components/workspace/use-hydrated";
 import { PremiumGate, usePremium } from "@/components/plan/premium";
 
 // ---------------------------------------------------------------------------
-// Labels and colours
+// Labels and colors
 
 const TECH: Record<TimelineTechnique, { label: string; short: string; color: string; soft: string; chart: ChartRecord["type"] }> = {
   transit: { label: "Transit", short: "Tr", color: "#824B59", soft: "#F3E6E9", chart: "transits" },

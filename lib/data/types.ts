@@ -248,7 +248,7 @@ export interface Practitioner {
   plan: string;
   /** Automatic consultation reminder emails to clients. */
   reminders?: { clients: boolean; hoursBefore: number };
-  /** Accent colour for this practice's client portal (one of PORTAL_ACCENTS). */
+  /** Accent color for this practice's client portal (one of PORTAL_ACCENTS). */
   portalAccent?: string;
   /** Reusable Between Sessions items. */
   workTemplates?: WorkTemplate[];

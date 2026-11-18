@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "About" };
 
 const PRINCIPLES = [
   { icon: UserRound, title: "The relationship is the real work.", body: "A chart is where understanding begins. Trust, conversation and time are where it grows." },
-  { icon: Compass, title: "The astrologer comes first.", body: "Technology should support professional judgement, not replace it." },
+  { icon: Compass, title: "The astrologer comes first.", body: "Technology should support professional judgment, not replace it." },
   { icon: Layers, title: "Knowledge should accumulate.", body: "What you discover through your work should stay accessible and useful for years." },
   { icon: Sparkles, title: "Complexity shouldn’t mean complication.", body: "Sophisticated tools can be powerful without being difficult to use." },
   { icon: KeyRound, title: "Your work belongs to you.", body: "Your clients, observations and methods stay under your control, and you can export them at any time." },
@@ -80,7 +80,7 @@ export default function AboutPage() {
           </div>
           <div className="space-y-4 text-[16px] leading-relaxed text-ink-3">
             <p>Imagine searching decades of your own observations. Investigating recurring configurations. Building research collections from real client experience.</p>
-            <p>Imagine professional knowledge that is easier to organise, examine, and share responsibly, always under the practitioner’s control.</p>
+            <p>Imagine professional knowledge that is easier to organize, examine, and share responsibly, always under the practitioner’s control.</p>
             <p>That’s the future we’re working toward. It begins with building a better workspace for the astrologers doing the work today.</p>
           </div>
         </div>
@@ -89,7 +89,7 @@ export default function AboutPage() {
       <section className="container py-20 md:py-28">
         <div className="rounded-2xl bg-ink px-6 py-12 md:px-14 md:py-16">
           <p className="eyebrow mb-3 text-[#C9B3BA]">Build it with us</p>
-          <h2 className="max-w-2xl font-serif text-[32px] leading-tight text-white md:text-[42px]">The people who understand astrology best are the people who practise it.</h2>
+          <h2 className="max-w-2xl font-serif text-[32px] leading-tight text-white md:text-[42px]">The people who understand astrology best are the people who practice it.</h2>
           <p className="mt-4 max-w-2xl text-[15.5px] text-[#CFCAD0]">We’re inviting working astrologers to use AstrologersDirect, share what they experience, and help decide what the profession needs next.</p>
           <div className="mt-8 max-w-3xl">
             <AdvisoryForm />

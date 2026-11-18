@@ -32,7 +32,7 @@ Applying and separating between two natal charts comes from each chart's natal s
 - A point present in only one chart is left out.
 - **Houses, "derived-mc":** the composite MC is the midpoint of the two MCs, and houses are cast from that MC's right ascension at a reference latitude. By default that latitude is the midpoint of the two birth latitudes; a location can be given instead.
 - **Houses, "midpoint-cusps":** each cusp is the midpoint of the two charts' cusps.
-- Not yet handled: the "wrong-side" Mercury and Venus that some software corrects to stay near the composite Sun. This is a known judgement call. Say if you want a rule for it.
+- Not yet handled: the "wrong-side" Mercury and Venus that some software corrects to stay near the composite Sun. This is a known judgment call. Say if you want a rule for it.
 
 ### Secondary progressions
 
@@ -108,7 +108,7 @@ Times go in as UTC. Sky's `time-scales.js` handles the UTC → UT1 conversion.
 
 The unit tests check the arithmetic against a stand-in ephemeris with simple linear motions, so expected values can be worked out by hand. They prove the methods are applied correctly. They do **not** prove the results match professional software.
 
-Before any of this is labelled "verified" in the app:
+Before any of this is labeled "verified" in the app:
 
 1. Fill in `tests/fixtures/reference-charts.template.json` with charts calculated in software you trust (Solar Fire, Astro Gold, Kepler, astro.com, etc.). Include the method settings used for each.
 2. Once the Sky adapter exists, `tests/reference-charts.test.ts` compares our results against those values, within one arcminute for planets and two for angles.

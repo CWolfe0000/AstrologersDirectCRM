@@ -45,7 +45,7 @@ const STATUS: Record<string, { tone: Tone; label: string }> = {
   // consultation
   scheduled: { tone: "info", label: "Scheduled" },
   completed: { tone: "sage", label: "Completed" },
-  cancelled: { tone: "outline", label: "Cancelled" },
+  cancelled: { tone: "outline", label: "Canceled" },
   "no-show": { tone: "warn", label: "No-Show" },
   // tasks
   todo: { tone: "neutral", label: "To Do" },

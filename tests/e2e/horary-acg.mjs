@@ -51,7 +51,7 @@ assert.equal(await page.getByLabel("House System").inputValue(), "regiomontanus"
 assert.match(await page.getByLabel("Chart Title").inputValue(), /Horary: Will I get the job I interviewed for\?/);
 await page.getByRole("button", { name: /Save & Open Workspace/i }).click();
 await page.waitForURL(/\/app\/charts\/(?!new)/);
-await page.getByText("Considerations Before Judgement").waitFor({ timeout: 20000 });
+await page.getByText("Considerations Before Judgment").waitFor({ timeout: 20000 });
 await page.getByText("“Will I get the job I interviewed for?”").waitFor();
 await page.getByText(/Asked on a Tuesday, ruled by Mars/).waitFor();
 if (SHOTS) await page.screenshot({ path: `${SHOTS}/horary.png`, fullPage: true });

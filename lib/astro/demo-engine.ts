@@ -50,7 +50,7 @@ function daysSinceJ2000(date: string, time: string) {
 }
 
 function sunLon(days: number) {
-  // Mean anomaly + equation of centre (low precision solar formula)
+  // Mean anomaly + equation of center (low precision solar formula)
   const g = norm(357.529 + 0.98560028 * days) * (Math.PI / 180);
   const q = norm(280.459 + 0.98564736 * days);
   return norm(q + 1.915 * Math.sin(g) + 0.02 * Math.sin(2 * g));

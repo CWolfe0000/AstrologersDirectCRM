@@ -1,8 +1,8 @@
 /**
- * Traditional considerations before judgement for a horary chart (after
+ * Traditional considerations before judgment for a horary chart (after
  * Bonatti and Lilly): cautions that suggest the chart may not be radical or
  * that nothing will come of the matter. They inform the astrologer's
- * judgement; they don't replace it.
+ * judgment; they don't replace it.
  */
 import type { BodyId, ChartPoints } from "./types";
 
@@ -62,7 +62,7 @@ export function horaryConsiderations(points: ChartPoints, localAt: string): Cons
     out.push({
       id: `saturn-${saturn.house}`,
       title: `Saturn in the ${saturn.house === 1 ? "1st" : "7th"} house`,
-      detail: saturn.house === 1 ? "Traditionally, the querent may be troubled, or the matter seldom goes well." : "Traditionally, a warning that the astrologer’s judgement may err; take extra care.",
+      detail: saturn.house === 1 ? "Traditionally, the querent may be troubled, or the matter seldom goes well." : "Traditionally, a warning that the astrologer’s judgment may err; take extra care.",
       tone: "caution",
     });
 

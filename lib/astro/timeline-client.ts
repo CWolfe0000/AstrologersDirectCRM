@@ -12,7 +12,7 @@ export type TimelineResponse = { engine: EngineInfo; timeline: TimelineResult };
 
 /**
  * Server mode: calculated on the server with Swiss Ephemeris.
- * Demo mode: calculated in the browser with the demonstration ephemeris (approximate, labelled).
+ * Demo mode: calculated in the browser with the demonstration ephemeris (approximate, labeled).
  */
 export async function fetchTimeline(birth: BirthData, settings: ChartSettings, from: string, to: string, options: Partial<TimelineOptions>): Promise<TimelineResponse> {
   if (DATA_MODE === "server") return api<TimelineResponse>("/api/v1/timeline", { body: { birth, settings, from, to, options } });

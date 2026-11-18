@@ -37,7 +37,7 @@ export async function hashPassword(pw: string) {
 let dummyHash: Promise<string> | undefined;
 export async function verifyPassword(pw: string, hash: string | null) {
   if (!hash) {
-    // Equalise timing for unknown accounts / accounts without a password.
+    // Equalize timing for unknown accounts / accounts without a password.
     dummyHash ??= bcrypt.hash("timing-equaliser", 12);
     await bcrypt.compare(pw, await dummyHash);
     return false;

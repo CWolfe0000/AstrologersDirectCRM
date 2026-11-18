@@ -1,6 +1,6 @@
 /**
  * The client portal's session and account buttons are real: join the video
- * link, add to calendar, request a reschedule, the practice's portal colour,
+ * link, add to calendar, request a reschedule, the practice's portal color,
  * real security settings, download my data, and close my account.
  *   node tests/e2e/portal-account.mjs   (production server running; reads email from the outbox)
  */
@@ -40,7 +40,7 @@ const api = (url, init) =>
     return { status: r.status, body: await r.json().catch(() => null) };
   }, { url, init });
 
-step("practitioner: sample data, a video session tomorrow with a link, a portal colour");
+step("practitioner: sample data, a video session tomorrow with a link, a portal color");
 await page.goto(BASE + "/auth/signup");
 await page.fill("#fn", "Pat");
 await page.fill("#em", ownerEmail);
@@ -58,7 +58,7 @@ assert.equal((await api("/api/v1/records/consultations/kVid", { method: "PUT", b
 assert.equal((await api("/api/v1/records/consultations/kVid", { method: "PUT", body: JSON.stringify({ ...k, meetingUrl: MEET }) })).status, 200);
 assert.equal((await api("/api/v1/portal/invite", { method: "POST", body: JSON.stringify({ clientId: "c1" }) })).status, 200);
 
-step("client joins; the portal uses the practice's colour");
+step("client joins; the portal uses the practice's color");
 const cctx = await browser.newContext({ acceptDownloads: true });
 const cp = await cctx.newPage();
 cp.on("pageerror", (e) => errors.push("portal: " + e.message));

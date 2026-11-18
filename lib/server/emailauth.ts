@@ -60,7 +60,7 @@ export async function signInWithLink(token: string) {
   return finish(user);
 }
 
-/** Sign in with the emailed 6-digit code. Each code allows a few tries; misses count towards the account lockout. */
+/** Sign in with the emailed 6-digit code. Each code allows a few tries; misses count toward the account lockout. */
 export async function signInWithCode(email: string, code: string) {
   const user = await findUserByEmail(email);
   if (!user || (user.lockedUntil && user.lockedUntil > new Date())) return null;

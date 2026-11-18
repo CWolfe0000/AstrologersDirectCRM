@@ -90,7 +90,7 @@ export const observations: Observation[] = [
   },
   {
     id: "o5", title: "Daniel's Mars to Amelia's Venus", scope: "relationship", chartId: "ch3", personIds: ["c1", "p1"], clientId: "c1", consultationId: "k13",
-    body: "<p>Strong attraction contact both recognised immediately. Daniel initiates; Amelia responds. Under stress this becomes a pursuit/withdraw dynamic.</p>",
+    body: "<p>Strong attraction contact both recognized immediately. Daniel initiates; Amelia responds. Under stress this becomes a pursuit/withdraw dynamic.</p>",
     planets: ["mars", "venus"], aspects: ["conjunction"], houses: [7], tags: ["attraction", "dynamics"], createdAt: "2025-06-12T13:10:00", updatedAt: "2026-10-29T11:00:00",
     revisions: [{ at: "2025-06-12T13:10:00", summary: "Created" }, { at: "2026-10-29T11:00:00", summary: "Expanded stress pattern" }],
   },
@@ -165,7 +165,7 @@ export const observations: Observation[] = [
 // ——— Tasks ————————————————————————————————————————————————————————————
 export const tasks: Task[] = [
   { id: "t1", title: "Send Jonah written summary of progressions", description: "He asked for a written summary before the Nov 17 call. Combine progressed Moon notes with solar arc MC.", due: "2026-11-13", priority: "high", status: "in-progress", clientId: "c2", consultationId: "k16", chartId: "ch8", checklist: [{ id: "a", label: "Review progressed Moon timing", done: true }, { id: "b", label: "Cross-check solar arc MC", done: false }, { id: "c", label: "Export PDF and upload to Reading Delivery", done: false }], history: [{ at: "2026-10-27T11:30:00", text: "Created from consultation" }, { at: "2026-11-10T14:30:00", text: "Moved to In progress" }] },
-  { id: "t2", title: "Rectification questionnaire for Marcus", description: "Send life-events questionnaire before or after first session.", due: "2026-11-12", priority: "medium", status: "todo", clientId: "c4", chartId: "ch12", checklist: [{ id: "a", label: "Customise questionnaire", done: false }, { id: "b", label: "Send via portal", done: false }], history: [{ at: "2026-11-06T15:10:00", text: "Created at intake" }] },
+  { id: "t2", title: "Rectification questionnaire for Marcus", description: "Send life-events questionnaire before or after first session.", due: "2026-11-12", priority: "medium", status: "todo", clientId: "c4", chartId: "ch12", checklist: [{ id: "a", label: "Customize questionnaire", done: false }, { id: "b", label: "Send via portal", done: false }], history: [{ at: "2026-11-06T15:10:00", text: "Created at intake" }] },
   { id: "t3", title: "Prepare relocated solar return (Lisbon)", due: "2026-11-14", priority: "high", status: "done", clientId: "c1", consultationId: "k1", chartId: "ch6", checklist: [{ id: "a", label: "Create solar return chart", done: true }, { id: "b", label: "Save Lisbon configuration", done: true }], history: [{ at: "2026-10-08T12:40:00", text: "Created from consultation" }, { at: "2026-11-08T16:00:00", text: "Completed" }], completedAt: "2026-11-08T16:00:00" },
   { id: "t4", title: "Review Amelia's prep notes before 10:00", due: "2026-11-14", priority: "high", status: "todo", clientId: "c1", consultationId: "k1", checklist: [{ id: "a", label: "Re-read Saturn/Moon observations", done: false }, { id: "b", label: "Open transit chart", done: false }], history: [{ at: "2026-11-13T09:00:00", text: "Created" }] },
   { id: "t5", title: "Upload Hannah's December pacing notes", due: "2026-11-16", priority: "medium", status: "todo", clientId: "c7", consultationId: "k17", checklist: [], history: [{ at: "2026-11-02T09:30:00", text: "Created" }] },
@@ -226,7 +226,7 @@ export const notifications: AppNotification[] = [
   { id: "n6", type: "client", title: "New intake form submitted", body: "Grace Liu updated her birth time note.", at: "2026-11-11T15:42:00", read: true, href: "/app/clients/c9" },
   { id: "n7", type: "delivery", title: "Reading delivered", body: "“Winter Transit Review” delivered to Hannah Okafor.", at: "2026-11-03T10:00:00", read: true, href: "/app/delivery?id=r6" },
   { id: "n8", type: "account", title: "Storage at 38%", body: "You're using 19 GB of your demonstration storage allowance.", at: "2026-11-01T08:00:00", read: true, href: "/app/settings?section=subscription" },
-  { id: "n9", type: "consultation", title: "Consultation cancelled", body: "Hannah Okafor cancelled the Nov 11 follow-up call.", at: "2026-11-10T16:00:00", read: true, href: "/app/consultations?id=k25" },
+  { id: "n9", type: "consultation", title: "Consultation canceled", body: "Hannah Okafor canceled the Nov 11 follow-up call.", at: "2026-11-10T16:00:00", read: true, href: "/app/consultations?id=k25" },
 ];
 
 // ——— Activity ————————————————————————————————————————————————————————
@@ -276,7 +276,7 @@ export const clientWork: ClientWork[] = [
 
 /** Amelia's responses (written in her portal). */
 export const workResponses: WorkResponse[] = [
-  { id: "wr1", workId: "w1", clientId: "c1", type: "entry", text: "Nov 6: Offered to take on the team reorganisation at work, then felt instantly heavy about it. Same feeling as last year when I said yes to the board role.", createdAt: "2026-11-06T21:12:00" },
+  { id: "wr1", workId: "w1", clientId: "c1", type: "entry", text: "Nov 6: Offered to take on the team reorganization at work, then felt instantly heavy about it. Same feeling as last year when I said yes to the board role.", createdAt: "2026-11-06T21:12:00" },
   { id: "wr2", workId: "w1", clientId: "c1", type: "entry", text: "Nov 10: Turned down a weekend commitment for the first time in months. Relief, then guilt, then relief again.", createdAt: "2026-11-10T22:03:00" },
   { id: "wr3", workId: "w3", clientId: "c1", type: "entry", text: "We talked on Sunday. Daniel is more open to Lisbon than I expected.", createdAt: "2026-11-09T19:30:00" },
   { id: "wr4", workId: "w3", clientId: "c1", type: "done", createdAt: "2026-11-09T19:31:00" },

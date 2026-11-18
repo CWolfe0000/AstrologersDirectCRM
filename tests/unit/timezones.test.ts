@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ianaZone, zonedToUtc } from "@/lib/timezones";
 
 describe("practice time zones", () => {
-  it("reads IANA names, including older labelled values", () => {
+  it("reads IANA names, including older labeled values", () => {
     expect(ianaZone("America/Los_Angeles (Pacific Time)")).toBe("America/Los_Angeles");
     expect(ianaZone("Europe/London")).toBe("Europe/London");
     expect(ianaZone("America/Argentina/Buenos_Aires")).toBe("America/Argentina/Buenos_Aires");

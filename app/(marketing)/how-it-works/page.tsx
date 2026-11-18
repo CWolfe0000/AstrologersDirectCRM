@@ -75,7 +75,7 @@ export default function HowItWorksPage() {
       <PageIntro eyebrow="How it works" title="A practice built around the whole client journey.">
         <div className="mt-5 max-w-2xl space-y-3 text-[17px] leading-relaxed text-muted">
           <p>A client relationship isn’t a series of separate appointments. It’s one continuous story.</p>
-          <p>From the first consultation to the tenth, AstrologersDirect keeps that story organised, connected and ready when you need it. Here’s what that looks like.</p>
+          <p>From the first consultation to the tenth, AstrologersDirect keeps that story organized, connected and ready when you need it. Here’s what that looks like.</p>
         </div>
       </PageIntro>
       <div className="container py-16 md:py-24">

@@ -4,7 +4,7 @@ import * as React from "react";
 import { ASPECTS, BODIES, SIGNS, degInSign, norm, type Aspect, type BodyId, type BodyPosition, type ChartView } from "@/lib/astro";
 import { cn } from "@/lib/utils";
 
-const C = 300; // centre (viewBox 600x600)
+const C = 300; // center (viewBox 600x600)
 
 function pt(r: number, a: number) {
   const rad = (a * Math.PI) / 180;
@@ -13,7 +13,7 @@ function pt(r: number, a: number) {
 }
 
 function spread(items: { key: string; lon: number }[], minSep: number) {
-  // Positions are kept unnormalised while relaxing so neighbours keep their order.
+  // Positions are kept unnormalized while relaxing so neighbors keep their order.
   const sorted = [...items].sort((a, b) => a.lon - b.lon).map((i) => ({ ...i, pos: i.lon }));
   const n = sorted.length;
   for (let pass = 0; pass < 80 && n > 1; pass++) {

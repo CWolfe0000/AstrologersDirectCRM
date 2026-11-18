@@ -1,7 +1,7 @@
 import { UserPlus, CircleDot, CalendarPlus, NotebookPen, ListPlus, Mic, Send } from "lucide-react";
 
 /**
- * Quick-create destinations. Pages honour these query params:
+ * Quick-create destinations. Pages honor these query params:
  *   /app/clients/new                      — new client wizard (Workflow A)
  *   /app/charts/new?client=<id>           — create chart
  *   /app/consultations?new=1&client=<id>  — open "New consultation" dialog

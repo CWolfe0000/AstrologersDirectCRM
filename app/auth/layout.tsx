@@ -42,7 +42,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </ul>
         </div>
         <figure className="mt-14 border-t border-white/10 pt-8">
-          <blockquote className="font-serif text-[21px] leading-snug text-[#F1EDEF]">“The technology does the organising. You do the interpreting.”</blockquote>
+          <blockquote className="font-serif text-[21px] leading-snug text-[#F1EDEF]">“The technology does the organizing. You do the interpreting.”</blockquote>
           <figcaption className="mt-3 text-[12.5px] text-[#9C969E]">AstrologersDirect product philosophy</figcaption>
         </figure>
       </aside>

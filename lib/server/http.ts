@@ -14,7 +14,7 @@ export function json(data: unknown, status = 200) {
   return NextResponse.json(data, { status, headers: { "Cache-Control": "no-store" } });
 }
 
-/** Reject cross-site state-changing requests (defence in depth on top of SameSite cookies). */
+/** Reject cross-site state-changing requests (defense in depth on top of SameSite cookies). */
 export function assertSameOrigin(req: Request) {
   if (req.method === "GET" || req.method === "HEAD") return;
   const origin = req.headers.get("origin");
@@ -79,7 +79,7 @@ export function clientIp(req: Request) {
 
 /**
  * Small fixed-window rate limiter (per server instance) — a first line of
- * defence against floods. Account-level protection (lockout, 2FA attempt
+ * defense against floods. Account-level protection (lockout, 2FA attempt
  * limits) lives in the database: see lib/server/guard.ts.
  */
 const buckets = new Map<string, { n: number; reset: number }>();

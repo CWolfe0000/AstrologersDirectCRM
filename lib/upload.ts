@@ -44,7 +44,7 @@ export function uploadFile(file: File, onProgress: (pct: number) => void, signal
           }
         };
         xhr.onerror = () => reject(new ApiError(0, "Upload failed. Check your connection and try again."));
-        xhr.onabort = () => reject(new ApiError(0, "Upload cancelled."));
+        xhr.onabort = () => reject(new ApiError(0, "Upload canceled."));
         signal?.addEventListener("abort", () => xhr.abort());
         xhr.send(file);
       }),

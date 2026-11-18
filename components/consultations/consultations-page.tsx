@@ -176,7 +176,7 @@ export function ConsultationsPage() {
             <option value="">All Statuses</option>
             <option value="scheduled">Scheduled</option>
             <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
+            <option value="cancelled">Canceled</option>
             <option value="no-show">No-Show</option>
           </Select>
           <Button variant="ghost" size="md" onClick={() => { setType(""); setStatus(""); setClient(""); }}>Clear Filters</Button>
@@ -195,7 +195,7 @@ export function ConsultationsPage() {
           <div className="mt-3 flex flex-wrap items-center gap-4 text-[12px] text-muted">
             <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-accent" /> Scheduled</span>
             <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-sage" /> Completed</span>
-            <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-line-strong" /> Cancelled</span>
+            <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm bg-line-strong" /> Canceled</span>
           </div>
 
           {!xl && <div className="mt-6">{listPanel}</div>}

@@ -142,7 +142,7 @@ export function NewDeliveryDialog({
       (e: Error) => {
         setFile(null);
         setProgress(0);
-        if (e.message !== "Upload cancelled.") toast("Upload Failed", e.message, "error");
+        if (e.message !== "Upload canceled.") toast("Upload Failed", e.message, "error");
       },
     );
   };

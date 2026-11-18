@@ -21,7 +21,7 @@ import { newToken, sha256 } from "./crypto";
  *   large files never pass through the web server (Vercel caps request bodies).
  *
  * Object keys always start with the practice id; every download is
- * authorised against the record that references the key.
+ * authorized against the record that references the key.
  */
 
 export const MAX_UPLOAD_BYTES = 2 * 1024 ** 3; // 2 GB

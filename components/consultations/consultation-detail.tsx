@@ -57,7 +57,7 @@ export function ConsultationDetail({ id }: { id: string }) {
   const setStatus = (status: typeof k.status) => {
     update(k.id, { status });
     log({ kind: "consultation", text: `Marked “${k.type}” with ${name} as ${status}`, clientId: k.clientId, href: `/app/consultations?id=${k.id}` });
-    toast(status === "completed" ? "Consultation completed" : status === "cancelled" ? "Consultation cancelled" : "Consultation restored", `${k.type} · ${name}`, "success");
+    toast(status === "completed" ? "Consultation completed" : status === "cancelled" ? "Consultation canceled" : "Consultation restored", `${k.type} · ${name}`, "success");
   };
 
   return (

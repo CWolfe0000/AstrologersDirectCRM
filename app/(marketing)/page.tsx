@@ -10,7 +10,7 @@ const PILLARS = [
   { icon: MessagesSquare, title: "Make every consultation count.", body: "Prepare with context, record important insights, and build on previous conversations." },
   { icon: HeartHandshake, title: "Stay connected between sessions.", body: "Share assignments, journaling prompts, goals and follow-up activities that support your clients’ ongoing development. They respond in their portal; you see it on their record." },
   { icon: LayoutPanelTop, title: "Deliver a professional experience.", body: "Record and share readings, share files and resources, and give clients a private portal for their work with you." },
-  { icon: CalendarCheck, title: "Spend less time managing. More time practising.", body: "Appointments, client records, follow-up tasks and reminders in one place, instead of a collection of disconnected systems." },
+  { icon: CalendarCheck, title: "Spend less time managing. More time practicing.", body: "Appointments, client records, follow-up tasks and reminders in one place, instead of a collection of disconnected systems." },
 ];
 
 export default function HomePage() {

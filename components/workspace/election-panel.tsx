@@ -42,7 +42,7 @@ export function ElectionPanel({ election, view, client, className }: { election:
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-[11.5px] text-muted">Traditional elective rules, weighted to rank candidate times. Your judgement decides.</p>
+      <p className="mt-3 text-[11.5px] text-muted">Traditional elective rules, weighted to rank candidate times. Your judgment decides.</p>
     </div>
   );
 }

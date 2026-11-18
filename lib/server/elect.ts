@@ -20,7 +20,7 @@ const hhmm = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${St
 
 /**
  * Scan local times from `from` to `to` (inclusive), within the daily window,
- * every `stepMin` minutes, at `place`. Neighbouring moments that pass and fail
+ * every `stepMin` minutes, at `place`. Neighboring moments that pass and fail
  * the same rules form one window; the best windows come back first.
  */
 export function findElections(opts: {
