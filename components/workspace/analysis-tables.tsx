@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ASPECTS, BODIES, RULERS, SIGNS, bodyIn, degInSign, dignityOf, fmtDeg, fmtOrb, ordinal, signOf, type Aspect, type AspectId, type BodyId, type ChartView } from "@/lib/astro";
+import { ASPECTS, BODIES, RULERS, SIGNS, bodyIn, degInSign, dignityOf, fmtDeg, fmtOrb, ordinal, signOf, type Aspect, type AspectId, type BodyId, type ChartView, aspectVerb } from "@/lib/astro";
 import { cn } from "@/lib/utils";
 import { Segmented } from "@/components/ui/tabs";
 
@@ -153,7 +153,7 @@ export function AspectsTable({
                       <Glyph id={a.b} outer={a.bRing === "outer"} />
                       <span className="ml-1 text-[12.5px] text-ink-3">
                         {view.outer && <span className="text-accent">{labels.outer} </span>}
-                        {BODIES[a.a].name} {ASPECTS[a.type].name.toLowerCase()} {view.outer && <span>{labels.inner} </span>}
+                        {BODIES[a.a].name} {aspectVerb(a.type)} {view.outer && <span>{labels.inner} </span>}
                         {BODIES[a.b].name}
                       </span>
                     </span>

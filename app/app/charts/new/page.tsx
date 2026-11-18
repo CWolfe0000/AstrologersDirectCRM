@@ -50,7 +50,7 @@ function NewChart() {
   const [zodiac, setZodiac] = React.useState<ZodiacType>(defaults.zodiac);
   const [title, setTitle] = React.useState("");
   /** Which slot a newly added person fills ("A" or "B"), while the Add Person dialog is open. */
-  const [adding, setAdding] = React.useState<"A" | "B" | null>(null);
+  const [adding, setAdding] = React.useState<"B" | null>(null);
   const [titleTouched, setTitleTouched] = React.useState(false);
   // Horary: the question, and the moment and place it was asked (defaults to now).
   const [question, setQuestion] = React.useState("");
@@ -74,10 +74,20 @@ function NewChart() {
   const pool = people.filter((p) => p.id === clientId || p.clientId === clientId);
   const others = people.filter((p) => p.id !== personA && (p.id === clientId || p.clientId === clientId || clients.some((c) => c.id === p.id)));
 
+  // Opened without a client (e.g. from the Create menu): start with the first active client.
+  const activeClients = clients.filter((c) => c.status !== "archived");
   React.useEffect(() => {
-    if (isHorary || isElection) setPersonA(clientId);
+    if (activeClients.length && !activeClients.some((c) => c.id === clientId)) {
+      setClientId(activeClients[0].id);
+      setPersonA(activeClients[0].id);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHorary, isElection, clientId]);
+  }, [activeClients.length, clientId]);
+  // Single-person charts are always the client's own; other people's birth data lives on the client's file.
+  React.useEffect(() => {
+    if (meta.people === 1) setPersonA(clientId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [meta.people, clientId]);
   React.useEffect(() => {
     if (!pool.some((p) => p.id === personA)) setPersonA(clientId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -181,11 +191,11 @@ function NewChart() {
 
           <Card>
             <CardHeader
-              title={isHorary ? "2. Client & Question" : isElection ? "2. Client & Event" : "2. Client & Subjects"}
-              description={isHorary ? "The client asking (the querent), their question, and when and where you received it." : isElection ? "What’s being started, when it could happen and where. We check every moment in the range and rank the best." : "Choose the client record this chart is filed under, then who is charted."}
+              title={isHorary ? "2. Client & Question" : isElection ? "2. Client & Event" : meta.people === 2 ? "2. Client & People" : "2. Client"}
+              description={isHorary ? "The client asking (the querent), their question, and when and where you received it." : isElection ? "What’s being started, when it could happen and where. We check every moment in the range and rank the best." : meta.people === 2 ? "Choose the client record this chart is filed under, then who is in each wheel." : "Choose whose chart this is."}
             />
             <CardBody className="grid gap-4 sm:grid-cols-2">
-              <Field label="Client Record">
+              <Field label={meta.people === 2 || isHorary || isElection ? "Client Record" : "Client"}>
                 <Select value={clientId} onChange={(e) => setClientId(e.target.value)}>
                   {clients.filter((c) => c.status !== "archived").map((c) => (
                     <option key={c.id} value={c.id}>{name(c.id)}</option>
@@ -214,15 +224,14 @@ function NewChart() {
                   onPick={setElection}
                 />
               )}
-              {!isHorary && !isElection && (
-              <Field label={meta.people === 2 ? "Person A (Inner Wheel)" : "Subject"}>
-                <Select value={personA} onChange={(e) => (e.target.value === NEW ? setAdding("A") : setPersonA(e.target.value))}>
+              {meta.people === 2 && (
+              <Field label="Person A (Inner Wheel)">
+                <Select value={personA} onChange={(e) => setPersonA(e.target.value)}>
                   {pool.map((p) => (
                     <option key={p.id} value={p.id}>
                       {personName(p)}{p.relationship ? ` (${p.relationship})` : ""}
                     </option>
                   ))}
-                  <option value={NEW}>+ Add a New Person…</option>
                 </Select>
               </Field>
               )}
@@ -287,7 +296,7 @@ function NewChart() {
           open={!!adding}
           onOpenChange={(o) => !o && setAdding(null)}
           clientId={clientId}
-          onAdded={(p) => (adding === "A" ? setPersonA(p.id) : setPersonB(p.id))}
+          onAdded={(p) => setPersonB(p.id)}
         />
 
         <div className="lg:sticky lg:top-24 lg:self-start">

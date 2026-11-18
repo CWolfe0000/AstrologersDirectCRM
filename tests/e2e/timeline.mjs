@@ -109,7 +109,7 @@ const dialog = page.getByRole("dialog");
 await dialog.getByText(/pass 1 of/).first().waitFor();
 await dialog.getByRole("button", { name: /Add Observation/ }).click();
 await page.waitForURL(/\/app\/charts\/[^?]+\?note=1/);
-await page.getByText("Pluto conjunction natal Moon").first().waitFor();
+await page.getByText("Pluto conjunct natal Moon").first().waitFor();
 await page.getByText(/Belongs to the timing chart/).waitFor();
 
 step("open chart at a date");

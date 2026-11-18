@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ASPECTS, BODIES, PLANET_IDS, fmtDeg, fmtOrb, ordinal, signOf, type Aspect, type BodyId, type ChartPoints, type ChartView } from "@/lib/astro";
+import { ASPECTS, BODIES, PLANET_IDS, fmtDeg, fmtOrb, ordinal, signOf, type Aspect, type BodyId, type ChartPoints, type ChartView, aspectVerb } from "@/lib/astro";
 import { houseOf } from "@/lib/astro/techniques/aspects";
 import { cn } from "@/lib/utils";
 import { RingTag } from "./analysis-tables";
@@ -75,8 +75,8 @@ export function AspectGrid({
         tabIndex={0}
         onMouseEnter={() => onHover(k)}
         onFocus={() => onHover(k)}
-        title={`${name(r)} ${ASPECTS[a.type].name.toLowerCase()} ${name(c)} · orb ${fmtOrb(a.orb)} · ${a.applying ? "applying" : "separating"}`}
-        aria-label={`${name(r)} ${ASPECTS[a.type].name.toLowerCase()} ${name(c)}, orb ${fmtOrb(a.orb)}, ${a.applying ? "applying" : "separating"}`}
+        title={`${name(r)} ${aspectVerb(a.type)} ${name(c)} · orb ${fmtOrb(a.orb)} · ${a.applying ? "applying" : "separating"}`}
+        aria-label={`${name(r)} ${aspectVerb(a.type)} ${name(c)}, orb ${fmtOrb(a.orb)}, ${a.applying ? "applying" : "separating"}`}
         className={cn("size-8 cursor-default border border-line/60 p-0 text-center align-middle leading-none", hovered === k && "bg-accent-50")}
       >
         <span className={cn("glyph block text-[14px]", tone(a.type))} aria-hidden>

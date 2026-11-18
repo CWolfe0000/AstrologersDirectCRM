@@ -94,11 +94,11 @@ export function AstroMap({ birth, settings, compact }: { birth: BirthData; setti
   if (error) return <p className="rounded-lg border border-line bg-canvas px-4 py-6 text-center text-[13px] text-muted">{error}</p>;
 
   const map = (
-    <div className="relative overflow-hidden rounded-lg border border-line bg-[#EEF2F4]">
+    <div className="relative overflow-hidden rounded-lg border border-line bg-[#F4F7F9]">
       <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" role="img" aria-label={`Astrocartography map: ${shown.length} planetary lines`}>
         {[-60, -30, 0, 30, 60].map((lat) => <line key={`lat${lat}`} x1={0} x2={W} y1={y(lat)} y2={y(lat)} stroke="#D9E0E4" strokeWidth={lat === 0 ? 1 : 0.6} />)}
         {[-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150].map((lon) => <line key={`lon${lon}`} y1={0} y2={H} x1={x(lon)} x2={x(lon)} stroke="#D9E0E4" strokeWidth={lon === 0 ? 1 : 0.6} />)}
-        {land && <path d={land} fill="#F7F5F1" stroke="#C9C2B8" strokeWidth={0.6} />}
+        {land && <path d={land} fill="#E4DDD1" stroke="#B3A897" strokeWidth={0.7} />}
         {shown.map((l) => {
           const key = `${l.body}-${l.angle}`;
           const dash = ANGLES.find((a) => a.id === l.angle)!.dash;

@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { ArrowUp, Calculator, Quote, Sparkles, NotebookPen, Loader2 } from "lucide-react";
-import { ASPECTS, BODIES, PLANET_IDS, bodyIn, dignityOf, fmtDeg, fmtOrb, signOf, type BodyId, type ChartView } from "@/lib/astro";
+import { ASPECTS, BODIES, PLANET_IDS, bodyIn, dignityOf, fmtDeg, fmtOrb, signOf, type BodyId, type ChartView, aspectVerb } from "@/lib/astro";
 import type { ChartRecord, Consultation, Observation, Person } from "@/lib/data/types";
 import { useStore, personName } from "@/lib/store";
 import { cn, fmtDate, stripHtml } from "@/lib/utils";
@@ -49,7 +49,7 @@ function respond(q: string, ctx: { chart: ChartRecord; view: ChartView; obs: Obs
     return `${ring === "outer" ? "Outer-wheel " : ""}${BODIES[id].name} ${fmtDeg(b.lon)} ${signOf(b.lon).name}${id !== "asc" && id !== "mc" ? `, ${ordinalHouse(b.house)} house` : ""}${b.speed < 0 ? ", retrograde" : ""}${dig && dig !== "Peregrine" ? ` (${dig.toLowerCase()})` : ""}`;
   };
   const aspectLine = (a: ChartView["aspects"][number]) =>
-    `${a.aRing === "outer" ? "Outer " : ""}${BODIES[a.a].name} ${ASPECTS[a.type].name.toLowerCase()} ${a.bRing === "outer" ? "outer " : ""}${BODIES[a.b].name} — orb ${fmtOrb(a.orb)}, ${a.applying ? "applying" : "separating"}`;
+    `${a.aRing === "outer" ? "Outer " : ""}${BODIES[a.a].name} ${aspectVerb(a.type)} ${a.bRing === "outer" ? "outer " : ""}${BODIES[a.b].name} — orb ${fmtOrb(a.orb)}, ${a.applying ? "applying" : "separating"}`;
 
   if (planet && !ql.includes("written")) {
     const asp = view.aspects.filter((a) => a.a === planet || a.b === planet).slice(0, 5);

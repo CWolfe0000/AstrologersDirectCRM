@@ -174,6 +174,8 @@ export interface TimelineResult {
   contacts: TimelineContact[];
   convergences: ConvergenceWindow[];
   natal: { id: TargetId; lon: number; house: number | null; key: boolean }[];
+  /** Natal house cusps (1st–12th), when the birth time is known: for house rulerships. */
+  cusps: number[] | null;
   lunations: LunationEvent[];
   notes: string[];
 }
@@ -552,6 +554,7 @@ export async function convergenceTimeline(input: TimelineInput): Promise<Timelin
     contacts,
     convergences: findConvergences(days, activeSets, byContact),
     natal: allTargets.map((t) => ({ id: t.id, lon: t.lon, house: houseOfTarget(t.lon), key: isKey(t.id) })),
+    cusps: cusps && cusps.length === 12 ? cusps : null,
     lunations,
     notes,
   };

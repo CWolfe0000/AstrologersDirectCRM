@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CalendarRange, CircleDot, Info, Layers, Loader2, NotebookPen, RotateCcw, Save, SlidersHorizontal, Waves } from "lucide-react";
-import { ASPECTS, BODIES, DEFAULT_TIMELINE, fmtDeg, ordinal, signOf, type BodyId, type TimelineDefaults } from "@/lib/astro";
+import { ASPECTS, BODIES, DEFAULT_TIMELINE, RULERS, fmtDeg, ordinal, signOf, type BodyId, type TimelineDefaults, aspectVerb } from "@/lib/astro";
 import { fetchTimeline, type TimelineResponse } from "@/lib/astro/timeline-client";
 import type { ConvergenceWindow, TargetId, TimelineContact, TimelineTechnique } from "@/lib/astro/timeline";
 import { sameTimeline, TimelineOptionsEditor } from "./timeline-options";
@@ -66,7 +66,7 @@ function Glyphs({ c, size = 15 }: { c: TimelineContact; size?: number }) {
 }
 
 export function contactLabel(c: TimelineContact) {
-  return `${sourceName(c)} ${ASPECTS[c.aspect].name.toLowerCase()} natal ${pointName(c.target)}`;
+  return `${sourceName(c)} ${aspectVerb(c.aspect)} natal ${pointName(c.target)}`;
 }
 
 const DAY = 86_400_000;
@@ -440,11 +440,62 @@ function DensityStrip({ tl, focus, onFocus }: { tl: NonNullable<TimelineResponse
 // ---------------------------------------------------------------------------
 // Convergence windows
 
-function focusText(w: ConvergenceWindow) {
-  const parts: string[] = [];
-  if (w.focus.target) parts.push(`natal ${pointName(w.focus.target)}`);
-  if (w.focus.house) parts.push(`${ordinal(w.focus.house)} house`);
-  return parts.join(" / ");
+/** Houses a planet rules in this natal chart (by the sign on each cusp; traditional and modern rulers). */
+function housesRuled(id: TargetId, cusps: number[] | null) {
+  if (!cusps) return [];
+  return cusps.map((c, i) => ({ h: i + 1, r: RULERS[signOf(c).id] })).filter(({ r }) => r.traditional === id || r.modern === id).map(({ h }) => h);
+}
+/** A house's rulers: traditional first, then modern if different. */
+function houseRulers(h: number, cusps: number[] | null): BodyId[] {
+  if (!cusps) return [];
+  const r = RULERS[signOf(cusps[h - 1]!).id];
+  return r.modern && r.modern !== r.traditional ? [r.traditional, r.modern] : [r.traditional];
+}
+const list = (xs: string[]) => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
+
+/** What a busy period activates: the natal planet hit most (where it sits, what it rules), and the house hit most (and its ruler). */
+function Activated({ w, tl, byId }: { w: ConvergenceWindow; tl: NonNullable<TimelineResponse["timeline"]>; byId: Map<string, TimelineContact> }) {
+  const cusps = tl.cusps ?? null;
+  const hits = (id: TargetId) => w.contacts.filter((k) => byId.get(k)?.target === id).length;
+  const t = w.focus.target;
+  const natal = t ? tl.natal.find((n) => n.id === t) : undefined;
+  const isAngle = t === "asc" || t === "mc";
+  const rules = t && !isAngle ? housesRuled(t, cusps) : [];
+  const h = w.focus.house;
+  const rulers = h ? houseRulers(h, cusps) : [];
+  if (!t && !h) return null;
+  return (
+    <dl className="mt-2.5 space-y-1 rounded-lg bg-canvas/60 px-2.5 py-2 text-[12.5px] leading-snug">
+      {t && (
+        <div className="flex gap-2">
+          <dt className="w-12 shrink-0 text-muted">Planet</dt>
+          <dd className="text-ink">
+            <span className="font-medium">{isAngle ? "" : "Natal "}{pointName(t)}</span> <span className="text-muted">· {w.focus.targetCount} contacts</span>
+            {(natal?.house || rules.length > 0) && (
+              <span className="block text-ink-3">
+                {natal?.house && !isAngle ? `In the ${ordinal(natal.house)}` : ""}
+                {natal?.house && !isAngle && rules.length ? " · " : ""}
+                {rules.length ? `Rules the ${list(rules.map(ordinal))}` : ""}
+              </span>
+            )}
+          </dd>
+        </div>
+      )}
+      {h && (
+        <div className="flex gap-2">
+          <dt className="w-12 shrink-0 text-muted">House</dt>
+          <dd className="text-ink">
+            <span className="font-medium">{ordinal(h)} house</span> <span className="text-muted">· {w.focus.houseCount} contacts to planets there</span>
+            {rulers.length > 0 && (
+              <span className="block text-ink-3">
+                Ruled by {list(rulers.map((r) => { const n = hits(r as TargetId); return `${BODIES[r].name}${n ? ` (${n} contact${n === 1 ? "" : "s"})` : ""}`; }))}
+              </span>
+            )}
+          </dd>
+        </div>
+      )}
+    </dl>
+  );
 }
 
 function Convergences({ tl, focus, onFocus, onOpen }: { tl: NonNullable<TimelineResponse["timeline"]>; focus: ConvergenceWindow | null; onFocus: (w: ConvergenceWindow | null) => void; onOpen: (c: TimelineContact) => void }) {
@@ -465,7 +516,6 @@ function Convergences({ tl, focus, onFocus, onOpen }: { tl: NonNullable<Timeline
         {tl.convergences.map((w) => {
           const active = focus?.start === w.start;
           const top = w.contacts.slice(0, 4).map((id) => byId.get(id)!).filter(Boolean);
-          const f = focusText(w);
           return (
             <div key={w.start} className={cn("rounded-xl border bg-surface p-4 shadow-card transition-colors", active ? "border-accent/60 ring-1 ring-accent/30" : "border-line")}>
               <button type="button" onClick={() => onFocus(active ? null : w)} className="block w-full text-left" aria-pressed={active}>
@@ -473,12 +523,13 @@ function Convergences({ tl, focus, onFocus, onOpen }: { tl: NonNullable<Timeline
                   <CalendarRange className="size-3.5" /> {fmtRange(w.start, w.end)}
                 </p>
                 <p className="mt-1 text-[14.5px] font-semibold leading-snug text-ink">
-                  {w.contacts.length} contacts{f ? <> converge on {f}</> : " in orb"}
+                  {w.contacts.length} contacts in orb
                 </p>
                 <p className="mt-0.5 text-[12px] text-muted">
                   {w.exactCount} exact in this period · peak {fmtShort(w.peak)}
                 </p>
               </button>
+              <Activated w={w} tl={tl} byId={byId} />
               <ul className="mt-3 space-y-1">
                 {top.map((c) => (
                   <li key={c.id}>
@@ -673,7 +724,7 @@ function ContactRow({ c, axis, onOpen, groupBy }: { c: TimelineContact; axis: Re
           </span>
           <span className="min-w-0">
             <span className="block truncate text-[12.5px] text-ink">
-              {sourceName(c)} {ASPECTS[c.aspect].name.toLowerCase()}{" "}
+              {sourceName(c)} {aspectVerb(c.aspect)}{" "}
               {groupBy === "point" ? <span className="sr-only">natal {pointName(c.target)}</span> : `natal ${pointName(c.target)}`}
             </span>
             <span className="block truncate text-[11px] text-muted">{summary}</span>

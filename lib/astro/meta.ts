@@ -49,6 +49,10 @@ export const ASPECTS: Record<AspectId, { name: string; glyph: string; angle: num
   sesquiquadrate: { name: "Sesquiquadrate", glyph: "⚼", angle: 135, nature: "minor", defaultOrb: 2 },
 };
 
+/** The aspect as astrologers say it in a sentence: "Uranus conjunct natal Mars", "Saturn opposite the Sun". */
+const ASPECT_VERBS: Partial<Record<AspectId, string>> = { conjunction: "conjunct", opposition: "opposite" };
+export const aspectVerb = (a: AspectId) => ASPECT_VERBS[a] ?? ASPECTS[a].name.toLowerCase();
+
 export const HOUSE_SYSTEMS: { id: HouseSystem; name: string }[] = [
   { id: "placidus", name: "Placidus" },
   { id: "whole-sign", name: "Whole Sign" },
