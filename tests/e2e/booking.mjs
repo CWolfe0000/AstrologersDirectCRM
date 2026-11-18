@@ -55,7 +55,7 @@ assert.equal(prof.enabled, true);
 assert.equal(prof.slug, slug);
 // Wider hours so the test always finds times, whenever it runs.
 const allDay = Object.fromEntries(["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map((d) => [d, [{ start: "06:00", end: "22:00" }]]));
-const r1 = await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify({ ...prof, rules: { ...prof.rules, weekly: allDay, minNoticeHours: 2, maxAdvanceDays: 14, stepMin: 60, bufferMin: 15 } }) });
+const r1 = await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify({ ...prof, rules: { ...prof.rules, weekly: allDay, minNoticeHours: 2, maxAdvanceDays: 14, stepMin: 60, bufferMin: 15, changeNoticeHours: 1 } }) });
 assert.equal(r1.status, 200);
 prof = r1.body.profile;
 assert.equal((await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify({ ...prof, slug: "admin" }) })).status, 422, "reserved address");
@@ -121,6 +121,58 @@ assert.equal(r2.status, 200, JSON.stringify(r2.body));
 const s2 = (await call(page, "/api/v1/bootstrap?view=app")).body;
 assert.equal(s2.clients.filter((c) => c.email === visitor).length, 1, "no duplicate client");
 assert.equal(s2.consultations.filter((x) => x.clientId === client.id).length, 2);
+
+step("the client reschedules from their private link");
+const links = (await mail(visitor)).filter((m) => m.subject.startsWith("Booked:")).map((m) => m.body.match(/https?:\/\/[^\s]+\/book\/manage\/[A-Za-z0-9_-]+/)[0].replace(/^https?:\/\/[^/]+/, BASE));
+assert.equal(links.length, 2, "a manage link in each confirmation");
+await v.goto(links[0]);
+await v.getByRole("heading", { name: "Your Booking" }).waitFor();
+await v.getByText("Natal Chart Reading").first().waitFor();
+await v.getByRole("button", { name: "Reschedule" }).click();
+const newTimes = v.getByRole("group", { name: "Times" });
+await newTimes.getByRole("button").first().waitFor();
+const moveSlots = (await call(v, links[0].replace(BASE + "/book/manage/", "/api/public/booking/") + "/slots")).body.slots;
+// Move it to the last open time (on a later day, clear of the old one).
+await v.getByRole("group", { name: "Days" }).getByRole("button").last().click();
+await newTimes.getByRole("button").last().click();
+await v.getByRole("button", { name: "Confirm New Time" }).click();
+await v.getByText("Your session has been moved").waitFor();
+if (SHOTS) await v.screenshot({ path: `${SHOTS}/booking-manage.png`, fullPage: true });
+let s3 = (await call(page, "/api/v1/bootstrap?view=app")).body;
+const moved = s3.consultations.find((x) => x.id === k.id);
+assert.notEqual(moved.start, k.start, "moved");
+assert.ok(moved.prepNotes.includes("Rescheduled online by the client"));
+const NYp = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(moveSlots[moveSlots.length - 1])).map((x) => [x.type, x.value]));
+assert.equal(moved.start, `${NYp.year}-${NYp.month}-${NYp.day}T${NYp.hour}:${NYp.minute}:00`, "moved to the chosen time");
+assert.ok(s3.notifications.some((n) => n.title === "Session rescheduled"));
+assert.ok((await mail(visitor)).some((m) => m.subject === "Rescheduled: Natal Chart Reading with Maya Lin"));
+assert.ok((await call(v, `/api/public/book/${slug}/slots?service=natal`)).body.slots.includes(bookedStart), "the old time is free again");
+
+step("…and cancels");
+await v.getByRole("button", { name: "Cancel Session" }).click();
+await v.getByLabel(/Anything you’d like/).fill("Something came up at work.");
+await v.getByRole("button", { name: "Cancel Session" }).last().click();
+await v.getByText("This session is canceled.").waitFor();
+assert.equal(await v.getByRole("button", { name: "Reschedule" }).count(), 0);
+s3 = (await call(page, "/api/v1/bootstrap?view=app")).body;
+const canceled = s3.consultations.find((x) => x.id === k.id);
+assert.equal(canceled.status, "cancelled");
+assert.ok(canceled.prepNotes.includes("Something came up at work."));
+assert.ok(s3.notifications.some((n) => n.title === "Session canceled"));
+assert.ok((await mail(ownerEmail)).some((m) => m.subject === "Session canceled: Rosa Vale"));
+const t0 = links[0].split("/").pop();
+assert.equal((await call(v, `/api/public/booking/${t0}/cancel`, { method: "POST", body: "{}" })).status, 409, "can't cancel twice");
+
+step("after the cutoff, changes go through the astrologer");
+await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify({ ...prof, rules: { ...prof.rules, changeNoticeHours: 336 } }) });
+const t1 = links[1].split("/").pop();
+assert.equal((await call(v, `/api/public/booking/${t1}/cancel`, { method: "POST", body: "{}" })).status, 409);
+assert.equal((await call(v, `/api/public/booking/${t1}/slots`)).status, 409);
+await v.goto(links[1]);
+await v.getByText(/Changes can be made online up to 336 hours/).waitFor();
+await v.goto(`${BASE}/book/manage/not-a-real-token-123456789`);
+await v.getByText("This Booking Link Isn’t Valid").waitFor();
+await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify(prof) });
 
 step("spam trap, and a page that's off");
 assert.equal((await call(v, `/api/public/book/${slug}`, { method: "POST", body: JSON.stringify({ ...req(after[3], `bot-${stamp}@example.com`), website: "http://spam" }) })).status, 422);

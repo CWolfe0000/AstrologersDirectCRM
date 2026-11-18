@@ -28,6 +28,8 @@ export interface BookingRules {
   maxAdvanceDays: number;
   /** Start times are offered on this grid (minutes). */
   stepMin: number;
+  /** Clients can reschedule or cancel online until this many hours before the session. */
+  changeNoticeHours: number;
 }
 
 export interface BookingProfile {
@@ -55,8 +57,9 @@ export const DEFAULT_RULES: BookingRules = {
   minNoticeHours: 24,
   maxAdvanceDays: 60,
   stepMin: 30,
+  changeNoticeHours: 24,
 };
 
 /** Public booking page address: lowercase letters, numbers and hyphens. */
 export const SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])$/;
-export const RESERVED_SLUGS = new Set(["admin", "api", "app", "auth", "book", "portal", "help", "support", "about", "pricing", "contact", "features", "login", "signup", "settings", "astrologersdirect"]);
+export const RESERVED_SLUGS = new Set(["admin", "manage", "api", "app", "auth", "book", "portal", "help", "support", "about", "pricing", "contact", "features", "login", "signup", "settings", "astrologersdirect"]);

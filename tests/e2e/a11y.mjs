@@ -38,6 +38,15 @@ await page.evaluate(async (slug) => {
   await fetch("/api/v1/booking", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...p, slug, enabled: true }) });
 }, bookSlug);
 APP.push(`/book/${bookSlug}`);
+const manage = await page.evaluate(async (slug) => {
+  const p = (await fetch("/api/v1/booking").then((r) => r.json())).profile;
+  const allDay = Object.fromEntries(["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map((d) => [d, [{ start: "06:00", end: "22:00" }]]));
+  await fetch("/api/v1/booking", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...p, slug, enabled: true, rules: { ...p.rules, weekly: allDay, minNoticeHours: 2, changeNoticeHours: 1 } }) });
+  const slots = (await fetch(`/api/public/book/${slug}/slots?service=natal`).then((r) => r.json())).slots;
+  const r = await fetch(`/api/public/book/${slug}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ serviceId: "natal", start: slots[slots.length - 1], firstName: "Axe", lastName: "Test", email: `axe-visitor-${slug}@example.com`, phone: "", birth: { date: "1990-01-01", time: "12:00", timeAccuracy: "unknown", place: "Paris, France", lat: 48.86, lon: 2.35, tz: "Europe/Paris" }, notes: "", tz: "UTC" }) }).then((r) => r.json());
+  return r.manage;
+}, bookSlug);
+if (manage) APP.push(manage);
 
 const summary = new Map();
 let serious = 0;

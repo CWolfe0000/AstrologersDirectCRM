@@ -2,34 +2,19 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeft, CalendarCheck, Check, Clock, Globe2, Loader2, MapPin, Phone, Video } from "lucide-react";
+import { ArrowLeft, CalendarCheck, Check, Clock, Loader2, MapPin, Phone, Video } from "lucide-react";
 import { api } from "@/lib/api";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Checkbox, Field, Input, Select, Textarea } from "@/components/ui/input";
+import { Checkbox, Field, Input, Textarea } from "@/components/ui/input";
 import { Avatar } from "@/components/ui/avatar";
-import { Wordmark } from "@/components/ui/misc";
 import { PlaceLookup, type PlaceValue } from "@/components/clients/place-lookup";
+import { BookingShell, TimePicker, browserZone, longWhen } from "./shared";
 
 type Service = { id: string; name: string; description: string; durationMin: number; price: string; format: "Video call" | "Phone" | "In person" };
 type Profile = { slug: string; displayName: string; headline: string; about: string; location: string; practice: string; tz: string; services: Service[] };
-type Booked = { start: string; service: string; durationMin: number; format: string; displayName: string; meetingUrl: string | null };
+type Booked = { start: string; service: string; durationMin: number; format: string; displayName: string; meetingUrl: string | null; manage: string };
 
 const FORMAT_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin } as const;
-const dayKey = (iso: string, tz: string) => new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(iso));
-const timeLabel = (iso: string, tz: string) => new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit" }).format(new Date(iso));
-const dayLabel = (key: string) => new Date(`${key}T12:00:00Z`).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
-const longWhen = (iso: string, tz: string) =>
-  `${new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "long", month: "long", day: "numeric" }).format(new Date(iso))} at ${new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit", timeZoneName: "short" }).format(new Date(iso))}`;
-
-function browserZone() {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-  } catch {
-    return "UTC";
-  }
-}
-
 /** The public booking page: profile and services → time → details → booked. */
 export function BookingPage({ slug }: { slug: string }) {
   const [profile, setProfile] = React.useState<Profile | null>(null);
@@ -37,7 +22,6 @@ export function BookingPage({ slug }: { slug: string }) {
   const [service, setService] = React.useState<Service | null>(null);
   const [slots, setSlots] = React.useState<string[] | null>(null);
   const [tz, setTz] = React.useState("UTC");
-  const [day, setDay] = React.useState<string | null>(null);
   const [start, setStart] = React.useState<string | null>(null);
   const [booked, setBooked] = React.useState<Booked | null>(null);
 
@@ -49,40 +33,12 @@ export function BookingPage({ slug }: { slug: string }) {
   React.useEffect(() => {
     if (!service) return;
     setSlots(null);
-    setDay(null);
     setStart(null);
     api<{ slots: string[] }>(`/api/public/book/${encodeURIComponent(slug)}/slots?service=${encodeURIComponent(service.id)}`).then((r) => setSlots(r.slots), (e: Error) => setError(e.message));
   }, [service, slug]);
 
-  const byDay = React.useMemo(() => {
-    const m = new Map<string, string[]>();
-    for (const s of slots ?? []) {
-      const k = dayKey(s, tz);
-      m.set(k, [...(m.get(k) ?? []), s]);
-    }
-    return m;
-  }, [slots, tz]);
-  React.useEffect(() => {
-    if (slots && !day) setDay([...byDay.keys()][0] ?? null);
-  }, [slots, byDay, day]);
-
-  const zones = React.useMemo(() => {
-    try {
-      return Array.from(new Set([tz, ...(Intl as unknown as { supportedValuesOf: (k: string) => string[] }).supportedValuesOf("timeZone")]));
-    } catch {
-      return [tz];
-    }
-  }, [tz]);
-
   return (
-    <div className="min-h-screen bg-canvas">
-      <header className="border-b border-line bg-surface">
-        <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
-          <span className="text-[13px] text-muted">Online booking</span>
-          <Link href="/" className="opacity-80 hover:opacity-100" aria-label="AstrologersDirect"><Wordmark compact /></Link>
-        </div>
-      </header>
-      <main id="main" className="mx-auto max-w-4xl px-4 py-8 md:py-12">
+    <BookingShell>
         {error && !profile && (
           <div className="rounded-2xl border border-line bg-surface px-6 py-12 text-center">
             <p className="font-serif text-[26px] text-ink">This booking page isn’t available</p>
@@ -135,35 +91,15 @@ export function BookingPage({ slug }: { slug: string }) {
                   <button type="button" onClick={() => setService(null)} className="inline-flex items-center gap-1 text-[13px] text-muted hover:text-ink"><ArrowLeft className="size-4" /> All sessions</button>
                   <h2 className="mt-3 font-serif text-[24px] text-ink">{service.name}</h2>
                   <p className="text-[13px] text-muted">{service.durationMin} minutes · {service.format}{service.price ? ` · ${service.price}` : ""}</p>
-                  <div className="mt-5 flex flex-wrap items-center gap-2 text-[12.5px] text-muted">
-                    <Globe2 className="size-4" />
-                    <label htmlFor="bk-tz">Times shown in</label>
-                    <Select id="bk-tz" value={tz} onChange={(e) => setTz(e.target.value)} className="h-8 w-auto max-w-[240px] text-[12.5px]">
-                      {zones.map((z) => <option key={z} value={z}>{z.replace(/_/g, " ")}</option>)}
-                    </Select>
+                  <div className="mt-5">
+                    <TimePicker
+                      slots={slots}
+                      tz={tz}
+                      onTz={setTz}
+                      onPick={setStart}
+                      empty={<p className="rounded-xl border border-dashed border-line bg-surface px-5 py-8 text-center text-[14px] text-muted">No open times right now. Please check back soon, or contact {profile.displayName} directly.</p>}
+                    />
                   </div>
-                  {!slots ? (
-                    <div className="mt-6 flex items-center gap-2 text-[13px] text-muted"><Loader2 className="size-4 animate-spin" /> Finding open times…</div>
-                  ) : byDay.size === 0 ? (
-                    <p className="mt-6 rounded-xl border border-dashed border-line bg-surface px-5 py-8 text-center text-[14px] text-muted">No open times right now. Please check back soon, or contact {profile.displayName} directly.</p>
-                  ) : (
-                    <>
-                      <div className="mt-5 flex gap-2 overflow-x-auto pb-2" role="group" aria-label="Days">
-                        {[...byDay.keys()].map((k) => (
-                          <button key={k} type="button" aria-pressed={day === k} onClick={() => setDay(k)} className={cn("shrink-0 rounded-xl border px-3 py-2 text-[13px]", day === k ? "border-ink bg-ink text-white" : "border-line bg-surface text-ink hover:border-line-strong")}>
-                            {dayLabel(k)}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4" role="group" aria-label="Times">
-                        {(day ? byDay.get(day) ?? [] : []).map((s) => (
-                          <button key={s} type="button" onClick={() => setStart(s)} className="rounded-lg border border-line bg-surface px-2 py-2.5 text-[14px] font-medium text-ink hover:border-accent hover:text-accent">
-                            {timeLabel(s, tz)}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
                 </>
               ) : (
                 <Details slug={slug} profile={profile} service={service} start={start} tz={tz} onBack={() => setStart(null)} onBooked={setBooked} onTaken={() => { setStart(null); setService({ ...service }); }} />
@@ -171,11 +107,7 @@ export function BookingPage({ slug }: { slug: string }) {
             </section>
           </div>
         )}
-      </main>
-      <footer className="mx-auto max-w-4xl px-4 pb-10 text-center text-[12px] text-muted">
-        Booking by AstrologersDirect · <Link href="/legal/privacy" className="underline">Privacy</Link>
-      </footer>
-    </div>
+    </BookingShell>
   );
 }
 
@@ -278,10 +210,11 @@ function Confirmation({ booked, tz }: { booked: Booked; tz: string }) {
       <p className="mt-2 text-[15px] text-ink-3">{booked.service} with {booked.displayName}</p>
       <p className="text-[15px] font-medium text-ink">{longWhen(booked.start, tz)}</p>
       <p className="mt-1 text-[13px] text-muted">{booked.durationMin} minutes · {booked.format}</p>
-      <p className="mt-5 text-[13.5px] leading-relaxed text-muted">We’ve emailed your confirmation. To change or cancel, reply to that email.</p>
+      <p className="mt-5 text-[13.5px] leading-relaxed text-muted">We’ve emailed your confirmation, with a link to reschedule or cancel if you need to.</p>
       <a href={ics} download="session.ics" className="mt-5 inline-flex h-10 items-center gap-2 rounded-lg border border-line px-4 text-[14px] font-medium text-ink hover:bg-canvas-2">
         <CalendarCheck className="size-4" /> Add to Calendar
       </a>
+      <p className="mt-4"><a href={booked.manage} className="text-[13px] text-accent underline">Manage this booking</a></p>
     </div>
   );
 }

@@ -3,8 +3,8 @@ import { and, eq, inArray, lt, ne } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "./db";
 import { HttpError } from "./http";
-import { getSettings, listCollection, upsertRecord } from "./records";
-import { newId } from "./crypto";
+import { getRecord, getSettings, listCollection, upsertRecord } from "./records";
+import { newId, newToken, sha256 } from "./crypto";
 import { link, sendMail } from "./mail";
 import { inviteClient } from "./invite";
 import { birthSchema } from "./validation";
@@ -48,6 +48,7 @@ export const profileSchema = z
         minNoticeHours: z.number().int().min(0).max(24 * 30),
         maxAdvanceDays: z.number().int().min(1).max(365),
         stepMin: z.union([z.literal(15), z.literal(30), z.literal(60)]),
+        changeNoticeHours: z.number().int().min(0).max(24 * 14),
       })
       .strict(),
     autoInvite: z.boolean(),
@@ -65,12 +66,15 @@ async function ownerEmail(practiceId: string) {
   return o?.email ?? null;
 }
 
+/** Settings saved before a rule existed get its default. */
+const withDefaults = (p: BookingProfile): BookingProfile => ({ ...p, rules: { ...DEFAULT_RULES, ...p.rules } });
+
 const slugify = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
 
 /** The practice's booking settings, or a starting point built from their profile. */
 export async function getBookingProfile(practiceId: string): Promise<BookingProfile> {
   const [row] = await db().select().from(schema.bookingProfiles).where(eq(schema.bookingProfiles.practiceId, practiceId));
-  if (row) return { ...(row.data as BookingProfile), slug: row.slug, enabled: !!row.enabled };
+  if (row) return withDefaults({ ...(row.data as BookingProfile), slug: row.slug, enabled: !!row.enabled });
   const p = await practitionerOf(practiceId);
   let slug = slugify(p.name || p.practice || "astrologer");
   if (!SLUG_RE.test(slug) || RESERVED_SLUGS.has(slug)) slug = `astrologer-${practiceId.slice(-6).toLowerCase().replace(/[^a-z0-9]/g, "")}`;
@@ -112,7 +116,7 @@ export async function saveBookingProfile(practiceId: string, input: unknown) {
 export async function publicBooking(slug: string) {
   const [row] = await db().select().from(schema.bookingProfiles).where(eq(schema.bookingProfiles.slug, slug.toLowerCase()));
   if (!row || !row.enabled) throw new HttpError(404, "This booking page isn’t available.");
-  const profile = { ...(row.data as BookingProfile), slug: row.slug, enabled: true };
+  const profile = withDefaults({ ...(row.data as BookingProfile), slug: row.slug, enabled: true });
   const p = await practitionerOf(row.practiceId);
   return { practiceId: row.practiceId, profile, tz: p.tz, practitioner: p };
 }
@@ -133,10 +137,10 @@ export function publicView(b: Awaited<ReturnType<typeof publicBooking>>) {
   };
 }
 
-async function busyTimes(practiceId: string, tz: string) {
+async function busyTimes(practiceId: string, tz: string, excludeId?: string) {
   const ks = await listCollection(practiceId, "consultations");
   return ks
-    .filter((k) => k.status === "scheduled")
+    .filter((k) => k.status === "scheduled" && k.id !== excludeId)
     .map((k) => {
       const start = zonedToUtc(String(k.start), tz).getTime();
       return { start, end: start + Number(k.durationMin) * 60_000 };
@@ -155,6 +159,7 @@ function wallTime(ms: number, tz: string) {
   const p = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(ms)).map((x) => [x.type, x.value]));
   return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:00`;
 }
+const noticeText = (h: number) => (h % 24 === 0 ? `${h / 24} day${h === 24 ? "" : "s"}` : `${h} hour${h === 1 ? "" : "s"}`);
 const when = (ms: number, tz: string) =>
   `${new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(new Date(ms))} at ${new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit", timeZoneName: "short" }).format(new Date(ms))}`;
 
@@ -173,6 +178,30 @@ export const bookingRequest = z
   })
   .strict();
 
+const blocksOf = (start: number, end: number) => {
+  const out: string[] = [];
+  for (let t = Math.floor(start / 900_000) * 900_000; t < end; t += 900_000) out.push(new Date(t).toISOString());
+  return out;
+};
+
+/**
+ * Claim the 15-minute blocks a session covers, so a simultaneous booking for an
+ * overlapping time gets a conflict; then re-check against sessions (with the
+ * buffer). `release`: a session's previous time, freed first when it moves.
+ */
+async function claimTime(practiceId: string, tz: string, start: number, end: number, bufferMin: number, excludeId?: string, release?: { start: number; end: number }) {
+  const buffer = bufferMin * 60_000;
+  const blocks = blocksOf(start, end);
+  await db().delete(schema.bookingHolds).where(and(eq(schema.bookingHolds.practiceId, practiceId), lt(schema.bookingHolds.createdAt, new Date(Date.now() - 10 * 60_000))));
+  if (release) await db().delete(schema.bookingHolds).where(and(eq(schema.bookingHolds.practiceId, practiceId), inArray(schema.bookingHolds.block, blocksOf(release.start, release.end))));
+  const claimed = await db().insert(schema.bookingHolds).values(blocks.map((block) => ({ practiceId, block }))).onConflictDoNothing().returning({ block: schema.bookingHolds.block });
+  if (claimed.length < blocks.length) {
+    if (claimed.length) await db().delete(schema.bookingHolds).where(and(eq(schema.bookingHolds.practiceId, practiceId), inArray(schema.bookingHolds.block, claimed.map((c) => c.block))));
+    throw new HttpError(409, "Someone just booked that time. Please choose another.");
+  }
+  if ((await busyTimes(practiceId, tz, excludeId)).some((x) => start < x.end + buffer && end > x.start - buffer)) throw new HttpError(409, "That time is no longer available. Please choose another.");
+}
+
 /**
  * Book a session: re-checks the time, claims it against simultaneous
  * bookings, then files everything in the practice: client (matched by email),
@@ -189,17 +218,7 @@ export async function book(slug: string, input: z.infer<typeof bookingRequest>) 
   const open = availableSlots({ rules: profile.rules, tz, durationMin: service.durationMin, busy, now: Date.now() });
   if (!open.includes(new Date(start).toISOString())) throw new HttpError(409, "That time is no longer available. Please choose another.");
 
-  // Claim the 15-minute blocks this session (and its buffer) covers; a simultaneous booking for an overlapping time gets a conflict.
-  const buffer = profile.rules.bufferMin * 60_000;
-  const blocks: string[] = [];
-  for (let t = Math.floor((start - buffer) / 900_000) * 900_000; t < end + buffer; t += 900_000) blocks.push(new Date(t).toISOString());
-  await db().delete(schema.bookingHolds).where(and(eq(schema.bookingHolds.practiceId, practiceId), lt(schema.bookingHolds.createdAt, new Date(Date.now() - 10 * 60_000))));
-  const claimed = await db().insert(schema.bookingHolds).values(blocks.map((block) => ({ practiceId, block }))).onConflictDoNothing().returning({ block: schema.bookingHolds.block });
-  if (claimed.length < blocks.length) {
-    if (claimed.length) await db().delete(schema.bookingHolds).where(and(eq(schema.bookingHolds.practiceId, practiceId), inArray(schema.bookingHolds.block, claimed.map((c) => c.block))));
-    throw new HttpError(409, "Someone just booked that time. Please choose another.");
-  }
-  if ((await busyTimes(practiceId, tz)).some((x) => start < x.end + buffer && end > x.start - buffer)) throw new HttpError(409, "That time is no longer available. Please choose another.");
+  await claimTime(practiceId, tz, start, end, profile.rules.bufferMin);
 
   const now = nowLocal();
   const clients = await listCollection(practiceId, "clients");
@@ -237,6 +256,9 @@ export async function book(slug: string, input: z.infer<typeof bookingRequest>) 
     readingIds: [],
     recordingIds: [],
   });
+  const { raw: token, hash: tokenHash } = newToken();
+  await db().insert(schema.bookingTokens).values({ tokenHash, practiceId, consultationId, serviceId: service.id, clientEmail: input.email, clientName: name });
+  const manage = link(`/book/manage/${token}`);
   await upsertRecord(practiceId, "notifications", {
     id: newId("n"),
     type: "consultation",
@@ -254,7 +276,7 @@ export async function book(slug: string, input: z.infer<typeof bookingRequest>) 
   await sendMail(
     input.email,
     `Booked: ${service.name} with ${astro}`,
-    `Hi ${input.firstName},\n\nYour ${service.name} with ${astro} is booked for ${when(start, visitorTz)}${visitorTz !== tz ? ` (${when(start, tz)} for ${astro})` : ""}.\n\n${service.durationMin} minutes · ${place}${service.price ? `\nPrice: ${service.price} (payment arranged directly with ${astro})` : ""}\n\nNeed to change or cancel? Reply to this email.\n${profile.autoInvite && !existing ? `\nYou’ll also get an invitation to your private client portal, where ${astro} can share your readings.\n` : ""}`,
+    `Hi ${input.firstName},\n\nYour ${service.name} with ${astro} is booked for ${when(start, visitorTz)}${visitorTz !== tz ? ` (${when(start, tz)} for ${astro})` : ""}.\n\n${service.durationMin} minutes · ${place}${service.price ? `\nPrice: ${service.price} (payment arranged directly with ${astro})` : ""}\n\nNeed to reschedule or cancel? Use your booking link${profile.rules.changeNoticeHours ? ` (up to ${noticeText(profile.rules.changeNoticeHours)} before)` : ""}:\n${manage}\n\nOr reply to this email.\n${profile.autoInvite && !existing ? `\nYou’ll also get an invitation to your private client portal, where ${astro} can share your readings.\n` : ""}`,
     owner ? { replyTo: owner } : {},
   );
   if (owner)
@@ -268,5 +290,93 @@ export async function book(slug: string, input: z.infer<typeof bookingRequest>) 
     // Best effort: an address that can't be invited (e.g. a practitioner's) just isn't.
     await inviteClient({ practiceId }, clientId).catch(() => {});
   }
-  return { start: new Date(start).toISOString(), service: service.name, durationMin: service.durationMin, format: service.format, displayName: astro, meetingUrl: meetingUrl ?? null };
+  return { start: new Date(start).toISOString(), service: service.name, durationMin: service.durationMin, format: service.format, displayName: astro, meetingUrl: meetingUrl ?? null, manage: `/book/manage/${token}` };
+}
+
+// ——— Managing a booking (the client's private link) ————————————————————
+
+async function lookup(token: string) {
+  if (!/^[A-Za-z0-9_-]{20,100}$/.test(token)) throw new HttpError(404, "This booking link isn’t valid.");
+  const [row] = await db().select().from(schema.bookingTokens).where(eq(schema.bookingTokens.tokenHash, sha256(token)));
+  if (!row) throw new HttpError(404, "This booking link isn’t valid.");
+  const k = await getRecord(row.practiceId, "consultations", row.consultationId);
+  if (!k) throw new HttpError(404, "This session no longer exists. Please contact your astrologer.");
+  const profile = await getBookingProfile(row.practiceId);
+  const p = await practitionerOf(row.practiceId);
+  const tz = p.tz;
+  const start = zonedToUtc(String(k.start), tz).getTime();
+  const deadline = start - profile.rules.changeNoticeHours * 3_600_000;
+  const service = profile.services.find((x) => x.id === row.serviceId);
+  const canChange = k.status === "scheduled" && Date.now() <= deadline;
+  return { row, k, profile, practitioner: p, tz, start, deadline, service, canChange, canReschedule: canChange && profile.enabled && !!service };
+}
+
+/** What the client sees on their booking page. */
+export async function manageView(token: string) {
+  const b = await lookup(token);
+  return {
+    service: String(b.k.type),
+    durationMin: Number(b.k.durationMin),
+    format: String(b.k.location),
+    start: new Date(b.start).toISOString(),
+    status: b.k.status === "cancelled" ? "canceled" : b.start + Number(b.k.durationMin) * 60_000 < Date.now() ? "past" : b.k.status === "scheduled" ? "scheduled" : "closed",
+    displayName: b.profile.displayName || b.practitioner.name || "Your astrologer",
+    clientName: b.row.clientName,
+    meetingUrl: typeof b.k.meetingUrl === "string" ? b.k.meetingUrl : null,
+    canChange: b.canChange,
+    canReschedule: b.canReschedule,
+    deadline: new Date(b.deadline).toISOString(),
+    noticeHours: b.profile.rules.changeNoticeHours,
+  };
+}
+
+export async function manageSlots(token: string) {
+  const b = await lookup(token);
+  if (!b.canReschedule || !b.service) throw new HttpError(409, "This session can’t be rescheduled online. Please contact your astrologer.");
+  const busy = await busyTimes(b.row.practiceId, b.tz, b.row.consultationId);
+  return availableSlots({ rules: b.profile.rules, tz: b.tz, durationMin: Number(b.k.durationMin), busy, now: Date.now() }).filter((x) => Date.parse(x) !== b.start);
+}
+
+async function tellBoth(b: Awaited<ReturnType<typeof lookup>>, client: { subject: string; body: string }, astro: { title: string; body: string; email: string }) {
+  await upsertRecord(b.row.practiceId, "notifications", { id: newId("n"), type: "consultation", title: astro.title, body: astro.body, at: nowLocal(), read: false, href: `/app/consultations?id=${b.row.consultationId}` });
+  const owner = await ownerEmail(b.row.practiceId);
+  await sendMail(b.row.clientEmail, client.subject, client.body, owner ? { replyTo: owner } : {});
+  if (owner) await sendMail(owner, astro.title + `: ${b.row.clientName}`, astro.email, { replyTo: b.row.clientEmail });
+}
+
+export async function reschedule(token: string, startIso: string, visitorTz: string) {
+  const b = await lookup(token);
+  if (!b.canReschedule || !b.service) throw new HttpError(409, "This session can’t be rescheduled online. Please contact your astrologer.");
+  const start = Date.parse(startIso);
+  const duration = Number(b.k.durationMin);
+  const busy = await busyTimes(b.row.practiceId, b.tz, b.row.consultationId);
+  if (!availableSlots({ rules: b.profile.rules, tz: b.tz, durationMin: duration, busy, now: Date.now() }).includes(new Date(start).toISOString()))
+    throw new HttpError(409, "That time is no longer available. Please choose another.");
+  await claimTime(b.row.practiceId, b.tz, start, start + duration * 60_000, b.profile.rules.bufferMin, b.row.consultationId, { start: b.start, end: b.start + duration * 60_000 });
+  const fresh = (await getRecord(b.row.practiceId, "consultations", b.row.consultationId))!;
+  const note = `Rescheduled online by the client from ${when(b.start, b.tz)} to ${when(start, b.tz)}.`;
+  await upsertRecord(b.row.practiceId, "consultations", { ...fresh, start: wallTime(start, b.tz), prepNotes: [fresh.prepNotes, note].filter(Boolean).join("\n\n") });
+  const astro = b.profile.displayName || b.practitioner.name || "your astrologer";
+  const vz = ianaZone(visitorTz) || b.tz;
+  await tellBoth(
+    b,
+    { subject: `Rescheduled: ${b.k.type} with ${astro}`, body: `Hi ${b.row.clientName.split(" ")[0]},\n\nYour ${b.k.type} with ${astro} is now ${when(start, vz)}.\n\nYour booking link still works if you need to change it again:\n${link(`/book/manage/${token}`)}\n` },
+    { title: "Session rescheduled", body: `${b.row.clientName} moved ${b.k.type} from ${when(b.start, b.tz)} to ${when(start, b.tz)}.`, email: `${b.row.clientName} moved ${b.k.type}:\n\nFrom: ${when(b.start, b.tz)}\nTo: ${when(start, b.tz)}\n\nOpen the session:\n${link(`/app/consultations?id=${b.row.consultationId}`)}\n` },
+  );
+  return manageView(token);
+}
+
+export async function cancelBooking(token: string, reason: string) {
+  const b = await lookup(token);
+  if (!b.canChange) throw new HttpError(409, "This session can’t be canceled online. Please contact your astrologer.");
+  const fresh = (await getRecord(b.row.practiceId, "consultations", b.row.consultationId))!;
+  const why = reason.trim().slice(0, 1000);
+  await upsertRecord(b.row.practiceId, "consultations", { ...fresh, status: "cancelled", prepNotes: [fresh.prepNotes, `Canceled online by the client.${why ? ` Their reason: ${why}` : ""}`].filter(Boolean).join("\n\n") });
+  const astro = b.profile.displayName || b.practitioner.name || "your astrologer";
+  await tellBoth(
+    b,
+    { subject: `Canceled: ${b.k.type} with ${astro}`, body: `Hi ${b.row.clientName.split(" ")[0]},\n\nYour ${b.k.type} with ${astro} on ${when(b.start, b.tz)} is canceled.${b.profile.enabled && b.profile.slug ? `\n\nWhenever you’d like to book again:\n${link(`/book/${b.profile.slug}`)}` : ""}\n` },
+    { title: "Session canceled", body: `${b.row.clientName} canceled ${b.k.type} on ${when(b.start, b.tz)}.${why ? ` “${why.slice(0, 140)}”` : ""}`, email: `${b.row.clientName} canceled ${b.k.type} on ${when(b.start, b.tz)}.${why ? `\n\nTheir reason:\n${why}` : ""}\n\nThe time is free again on your booking page.\n` },
+  );
+  return manageView(token);
 }

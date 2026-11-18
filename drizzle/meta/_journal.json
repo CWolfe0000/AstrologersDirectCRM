@@ -78,6 +78,13 @@
       "when": 1794965862762,
       "tag": "0010_booking",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1794968482118,
+      "tag": "0011_booking_tokens",
+      "breakpoints": true
     }
   ]
 }

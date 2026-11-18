@@ -253,3 +253,18 @@ export const bookingHolds = pgTable(
   },
   (t) => [primaryKey({ columns: [t.practiceId, t.block] })],
 );
+
+/** Private links that let a client reschedule or cancel a session they booked online (only the hash is stored). */
+export const bookingTokens = pgTable(
+  "booking_tokens",
+  {
+    tokenHash: text("token_hash").primaryKey(),
+    practiceId: text("practice_id").notNull().references(() => practices.id, { onDelete: "cascade" }),
+    consultationId: text("consultation_id").notNull(),
+    serviceId: text("service_id").notNull(),
+    clientEmail: text("client_email").notNull(),
+    clientName: text("client_name").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [index("booking_tokens_consultation_idx").on(t.practiceId, t.consultationId)],
+);

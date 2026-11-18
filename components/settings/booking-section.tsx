@@ -175,6 +175,11 @@ export function BookingSection() {
                 <option value={60}>Hour</option>
               </Select>
             </Field>
+            <Field label="Online Changes" htmlFor="bk-chg" hint="Clients get a link to reschedule or cancel. After this, they contact you instead.">
+              <Select id="bk-chg" value={p.rules.changeNoticeHours} onChange={(e) => set({ rules: { ...p.rules, changeNoticeHours: +e.target.value } })}>
+                {[0, 2, 12, 24, 48, 72, 168].map((h) => <option key={h} value={h}>{h === 0 ? "Any time before the session" : `Up to ${h < 24 ? `${h} hours` : h === 168 ? "1 week" : `${h / 24} day${h === 24 ? "" : "s"}`} before`}</option>)}
+              </Select>
+            </Field>
           </div>
           <div className="pt-2">
             <Checkbox label={<span className="text-[13px]">Invite new clients to their client portal when they book</span>} checked={p.autoInvite} onChange={(e) => set({ autoInvite: e.target.checked })} />
