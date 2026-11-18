@@ -68,6 +68,8 @@ await page.goto(BASE + "/app/charts/new?type=composite&client=c1");
 await page.getByLabel(/Person B/).selectOption({ label: "+ Add a New Person…" });
 await dialog.getByLabel("First Name").fill("Theo");
 await dialog.getByLabel("Last Name").fill(`Lane${stamp}`);
+await dialog.getByLabel("Relationship").selectOption("Other");
+await dialog.getByLabel(/Who Are They to/).fill("godparent");
 await dialog.getByLabel("Date", { exact: true }).fill("1988-12-12");
 await dialog.getByPlaceholder("Start typing a town or city…").fill("Par");
 await dialog.locator("button", { hasText: "Paris, France" }).first().click();
@@ -78,6 +80,7 @@ await page.getByText("All changes saved").waitFor({ timeout: 15000 });
 s = await state();
 const theo = s.people.find((p) => p.lastName === `Lane${stamp}`);
 assert.ok(theo && !s.charts.some((c) => c.personIds[0] === theo.id && c.type === "natal"), "no natal chart when unticked");
+assert.equal(theo.relationship, "Godparent", "Other: the typed relationship, capitalized");
 
 assert.deepEqual(errors, []);
 await browser.close();

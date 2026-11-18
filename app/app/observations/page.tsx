@@ -350,7 +350,7 @@ function Observations() {
             }}
             className="mb-3 inline-flex items-center gap-1.5 text-[13px] text-muted hover:text-ink lg:hidden"
           >
-            <ArrowLeft className="size-4" /> All observations
+            <ArrowLeft className="size-4" /> All Observations
           </button>
           <div className="rounded-xl border border-line bg-surface p-4 shadow-card md:p-6 lg:sticky lg:top-20">{editor}</div>
         </section>

@@ -71,7 +71,7 @@ export function WorkspaceObservations({
     return (
       <div>
         <button onClick={() => setEditing(null)} className="mb-3 inline-flex items-center gap-1.5 text-[12.5px] text-muted hover:text-ink">
-          <ArrowLeft className="size-3.5" /> All observations for this chart
+          <ArrowLeft className="size-3.5" /> All Observations for This Chart
         </button>
         <ObservationEditor
           key={editing}

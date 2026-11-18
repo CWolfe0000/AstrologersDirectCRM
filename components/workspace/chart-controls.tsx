@@ -8,6 +8,7 @@ import { ASPECTS, BODIES, HOUSE_SYSTEMS, PLANET_IDS, ZODIACS, chartTypeMeta, typ
 import type { ChartRecord } from "@/lib/data/types";
 import { useStore, personName } from "@/lib/store";
 import { cn, fmtClock, fmtDate } from "@/lib/utils";
+import { relationshipLabel } from "@/components/clients/dialogs";
 import { Button } from "@/components/ui/button";
 import { Checkbox, Input, Select } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -100,7 +101,7 @@ export function ChartControls({
               <p className="text-[12px] text-muted">{p!.birth.place}</p>
               <p className={cn("mt-1 text-[11px]", p!.birth.timeAccuracy === "exact" ? "text-sage-dark" : "text-warn")}>
                 Birth time: {p!.birth.timeAccuracy}
-                {p!.relationship ? ` · ${p!.relationship}` : ""}
+                {p!.relationship ? ` · ${relationshipLabel(p!.relationship)}` : ""}
               </p>
             </div>
           ))}

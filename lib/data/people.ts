@@ -35,7 +35,7 @@ export const associatedPeople: Person[] = [
   { id: "p2", clientId: "c1", relationship: "Mother", firstName: "Rose", lastName: "Hart", birth: b("1961-01-22", "09:00", "Eugene, Oregon, USA", 44.05, -123.09, "America/Los_Angeles", "approximate"), notes: "Birth time from family memory — treat as approximate." },
   { id: "p3", clientId: "c2", relationship: "Daughter", firstName: "Clara", lastName: "Whitaker", birth: b("2012-04-03", "03:47", "Chicago, Illinois, USA", 41.88, -87.63, "America/Chicago") },
   { id: "p4", clientId: "c3", relationship: "Spouse", firstName: "Arjun", lastName: "Mehta", birth: b("1990-02-11", "23:05", "Mumbai, India", 19.08, 72.88, "Asia/Kolkata") },
-  { id: "p5", clientId: "c8", relationship: "Business partner", firstName: "Lucía", lastName: "Ferrer", birth: b("1981-03-02", "10:30", "Barcelona, Spain", 41.39, 2.17, "Europe/Madrid") },
+  { id: "p5", clientId: "c8", relationship: "Business Partner", firstName: "Lucía", lastName: "Ferrer", birth: b("1981-03-02", "10:30", "Barcelona, Spain", 41.39, 2.17, "Europe/Madrid") },
 ];
 
 export const clients: Client[] = [

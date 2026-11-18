@@ -15,7 +15,7 @@ import { Field, Input, Select, Textarea } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/misc";
 import { ChartWheel } from "@/components/chart/chart-wheel";
 import { EngineNotice, useChartView } from "@/components/chart/chart-helpers";
-import { AddPersonDialog } from "@/components/clients/dialogs";
+import { AddPersonDialog, relationshipLabel } from "@/components/clients/dialogs";
 import { PlaceLookup, type PlaceValue } from "@/components/clients/place-lookup";
 import { AstroMap } from "@/components/workspace/astro-map";
 import { ElectionFinder } from "@/components/chart/election-finder";
@@ -229,7 +229,7 @@ function NewChart() {
                 <Select value={personA} onChange={(e) => setPersonA(e.target.value)}>
                   {pool.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {personName(p)}{p.relationship ? ` (${p.relationship})` : ""}
+                      {personName(p)}{p.relationship ? ` (${relationshipLabel(p.relationship)})` : ""}
                     </option>
                   ))}
                 </Select>
@@ -238,9 +238,11 @@ function NewChart() {
               {meta.people === 2 && (
                 <Field label="Person B (Outer Wheel)" hint={`${name(clientId)}’s associated people are listed first. Not on file yet? Choose “Add a new person”.`}>
                   <Select value={personB} onChange={(e) => (e.target.value === NEW ? setAdding("B") : setPersonB(e.target.value))}>
+                    {/* A placeholder, so "Add a New Person" is always a change, even when it's the only choice. */}
+                    {!others.some((p) => p.id === personB) && <option value="">Choose a person…</option>}
                     {[...others].sort((a, b) => Number(b.clientId === clientId) - Number(a.clientId === clientId)).map((p) => (
                       <option key={p.id} value={p.id}>
-                        {personName(p)}{p.relationship ? ` (${p.relationship})` : ""}
+                        {personName(p)}{p.relationship ? ` (${relationshipLabel(p.relationship)})` : ""}
                       </option>
                     ))}
                     <option value={NEW}>+ Add a New Person…</option>

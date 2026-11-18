@@ -20,7 +20,7 @@ import { Segmented } from "@/components/ui/tabs";
 import { Avatar } from "@/components/ui/avatar";
 import { ChartThumb, ChartTypeBadge, EngineNotice } from "@/components/chart/chart-helpers";
 import { isUpcoming, TODAY_ISO, fmtCoord } from "./helpers";
-import { AddPersonDialog } from "./dialogs";
+import { AddPersonDialog, relationshipLabel } from "./dialogs";
 
 const LOC = { "Video call": Video, Phone: Phone, "In person": MapPin } as const;
 
@@ -93,7 +93,7 @@ export function OverviewTab({ client, person, onTab }: { client: Client; person:
         </Card>
 
         <Card>
-          <CardHeader title="Recent Notes" icon={<NotebookPen />} action={<button onClick={() => onTab("observations")} className="text-[12.5px] font-medium text-accent hover:underline">All observations</button>} />
+          <CardHeader title="Recent Notes" icon={<NotebookPen />} action={<button onClick={() => onTab("observations")} className="text-[12.5px] font-medium text-accent hover:underline">All Observations</button>} />
           {d.observations.length === 0 ? (
             <EmptyState icon={<NotebookPen />} title="No Observations Yet" body="Observations you save in the chart workspace appear here." />
           ) : (
@@ -274,7 +274,7 @@ export function PeopleTab({ client }: { client: Client }) {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="text-[15px] font-semibold">{n}</p>
-                      <Badge tone="accent">{p.relationship}</Badge>
+                      <Badge tone="accent">{relationshipLabel(p.relationship)}</Badge>
                     </div>
                     <p className="mt-1 text-[12.5px] text-muted">
                       {fmtDate(p.birth.date)} · {p.birth.timeAccuracy === "unknown" ? "time unknown" : fmtClock(p.birth.time)}

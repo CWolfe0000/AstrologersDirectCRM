@@ -90,7 +90,9 @@ function BirthFields({ birth, setBirth, place, setPlace }: { birth: BirthData; s
   );
 }
 
-export const RELATIONSHIPS = ["Partner", "Spouse", "Ex-partner", "Mother", "Father", "Daughter", "Son", "Sibling", "Grandparent", "Child", "Friend", "Business partner", "Colleague", "Other"];
+export const RELATIONSHIPS = ["Partner", "Spouse", "Ex-Partner", "Mother", "Father", "Daughter", "Son", "Sibling", "Grandparent", "Child", "Friend", "Business Partner", "Colleague", "Other"];
+/** A relationship as shown: each word capitalized ("ex-partner" → "Ex-Partner"), including ones saved before or typed under Other. */
+export const relationshipLabel = (r?: string) => (r ?? "").replace(/(^|[\s-])(\p{Ll})/gu, (_m, a: string, b: string) => a + b.toUpperCase());
 
 export function AddPersonDialog({
   open,
@@ -109,7 +111,7 @@ export function AddPersonDialog({
   const s = useStore();
   const [saveChart, setSaveChart] = React.useState(true);
   const clientFirst = s.people.find((x) => x.id === clientId)?.firstName ?? "the client";
-  const empty = { firstName: "", lastName: "", relationship: defaultRelationship, notes: "" };
+  const empty = { firstName: "", lastName: "", relationship: defaultRelationship, other: "", notes: "" };
   const [f, setF] = React.useState(empty);
   const [birth, setBirth] = React.useState<BirthData>({ date: "", time: "12:00", timeAccuracy: "exact", place: "", lat: 0, lon: 0, tz: "" });
   const [place, setPlace] = React.useState<PlaceValue | null>(null);
@@ -126,7 +128,7 @@ export function AddPersonDialog({
 
   const save = () => {
     if (!place) return;
-    const p = s.addPerson({ firstName: f.firstName, lastName: f.lastName, relationship: f.relationship, notes: f.notes || undefined, clientId, birth: { ...birth, ...place } });
+    const p = s.addPerson({ firstName: f.firstName, lastName: f.lastName, relationship: f.relationship === "Other" ? relationshipLabel(f.other.trim()) || "Other" : f.relationship, notes: f.notes || undefined, clientId, birth: { ...birth, ...place } });
     if (saveChart) s.addChart({ title: `${p.firstName} ${p.lastName} — Natal`, type: "natal", personIds: [p.id], clientId });
     s.toast("Person Added", saveChart ? `${p.firstName}'s natal chart was saved to ${clientFirst}'s record.` : `${p.firstName} was added to ${clientFirst}'s record.`, "success");
     onOpenChange(false);
@@ -154,6 +156,11 @@ export function AddPersonDialog({
               {RELATIONSHIPS.map((r) => <option key={r}>{r}</option>)}
             </Select>
           </Field>
+          {f.relationship === "Other" && (
+            <Field label={`Who Are They to ${clientFirst}?`} optional hint="Leave blank to show “Other”." className="sm:col-span-3">
+              <Input value={f.other} maxLength={60} placeholder="e.g. Stepmother, Mentor, Godparent" onChange={(e) => setF({ ...f, other: e.target.value })} />
+            </Field>
+          )}
         </div>
         <p className="eyebrow mb-3 mt-6">Birth data</p>
         <BirthFields birth={birth} setBirth={setBirth} place={place} setPlace={setPlace} />
