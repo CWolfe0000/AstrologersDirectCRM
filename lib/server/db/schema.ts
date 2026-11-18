@@ -268,3 +268,30 @@ export const bookingTokens = pgTable(
   },
   (t) => [index("booking_tokens_consultation_idx").on(t.practiceId, t.consultationId)],
 );
+
+/** Beta applications from practitioners; approved ones get a single-use sign-up link (only its hash is stored). */
+export const accessRequests = pgTable(
+  "access_requests",
+  {
+    id: text("id").primaryKey(),
+    email: text("email").notNull(),
+    name: text("name").notNull(),
+    practice: text("practice").notNull(),
+    website: text("website").notNull(),
+    experience: text("experience").notNull(),
+    about: text("about").notNull(),
+    status: text("status").notNull().default("pending"),
+    inviteHash: text("invite_hash"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    decidedAt: timestamp("decided_at", { withTimezone: true }),
+    decidedBy: text("decided_by"),
+  },
+  (t) => [uniqueIndex("access_requests_email_idx").on(t.email)],
+);
+
+/** Platform-wide switches the admin can change (e.g. whether sign-up needs approval). */
+export const platformSettings = pgTable("platform_settings", {
+  key: text("key").primaryKey(),
+  value: jsonb("value").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});

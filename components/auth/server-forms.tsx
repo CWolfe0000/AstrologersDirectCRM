@@ -9,6 +9,7 @@ import { Field, Input, Checkbox } from "@/components/ui/input";
 import { Avatar } from "@/components/ui/avatar";
 import { AuthHeading } from "@/components/marketing/auth-ui";
 import { api, ApiError } from "@/lib/api";
+import { SITE_URL } from "@/lib/site";
 
 const MIN_PW = 10;
 
@@ -239,19 +240,47 @@ function LinkSignIn() {
 
 function Signup() {
   const router = useRouter();
+  const inviteToken = useSearchParams().get("invite");
   const { loading, error, run } = useSubmit();
   const [f, setF] = React.useState({ first: "", last: "", email: "", practice: "", password: "" });
+  const [status, setStatus] = React.useState<{ open: boolean; invite: { email: string; name: string; practice: string } | null } | null>(null);
+  React.useEffect(() => {
+    api<{ open: boolean; invite: { email: string; name: string; practice: string } | null }>(`/api/auth/signup/status${inviteToken ? `?invite=${encodeURIComponent(inviteToken)}` : ""}`).then((r) => {
+      setStatus(r);
+      if (r.invite) {
+        const [first, ...rest] = r.invite.name.split(/\s+/);
+        setF((x) => ({ ...x, email: r.invite!.email, first: first ?? "", last: rest.join(" "), practice: r.invite!.practice }));
+      }
+    }, () => setStatus({ open: true, invite: null }));
+  }, [inviteToken]);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF((x) => ({ ...x, [k]: e.target.value }));
+  if (!status) return <AuthHeading title="Create Your Account" />;
+  if (!status.open && !status.invite)
+    return (
+      <>
+        <AuthHeading
+          title="AstrologersDirect Is in Private Beta"
+          body={inviteToken ? "This invitation link has already been used or is no longer valid. If you’ve created your account, sign in." : "We’re welcoming practitioners a few at a time. Request access, and we’ll email you a personal link to create your account."}
+        />
+        <a href={`${SITE_URL}/request-access`} className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-accent px-5 text-[15px] font-medium text-white hover:bg-accent-hover">Request Access</a>
+        <p className="mt-6 text-center text-[13.5px] text-muted">
+          Already have an account? <Link href="/auth/login" className="font-medium text-accent hover:underline">Sign in</Link>
+        </p>
+      </>
+    );
   return (
     <>
-      <AuthHeading title="Build stronger client relationships." body="Create your practice and join the early practitioner community shaping AstrologersDirect. It takes a few minutes." />
+      <AuthHeading
+        title={status.invite ? `Welcome, ${f.first || "Astrologer"}` : "Build Stronger Client Relationships."}
+        body={status.invite ? "Your place in the beta is ready. Create your account to get started." : "Create your practice and join the early practitioner community shaping AstrologersDirect. It takes a few minutes."}
+      />
       <form
         className="space-y-4"
         onSubmit={(e) => {
           e.preventDefault();
           run(async () => {
             const name = `${f.first.trim()} ${f.last.trim()}`.trim();
-            await api("/api/auth/signup", { body: { name, practice: f.practice.trim() || `${name}'s practice`, email: f.email, password: f.password || undefined, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone } });
+            await api("/api/auth/signup", { body: { name, practice: f.practice.trim() || `${name}'s practice`, email: f.email, password: f.password || undefined, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, invite: inviteToken || undefined } });
             router.replace(`/auth/verify?sent=1&email=${encodeURIComponent(f.email)}`);
           });
         }}
@@ -261,7 +290,7 @@ function Signup() {
           <Field label="First Name" htmlFor="fn"><Input id="fn" required autoComplete="given-name" value={f.first} onChange={set("first")} /></Field>
           <Field label="Last Name" htmlFor="ln"><Input id="ln" autoComplete="family-name" value={f.last} onChange={set("last")} /></Field>
         </div>
-        <Field label="Email" htmlFor="em"><Input id="em" type="email" required autoComplete="email" value={f.email} onChange={set("email")} /></Field>
+        <Field label="Email" htmlFor="em" hint={status.invite ? "The address your invitation was sent to." : undefined}><Input id="em" type="email" required autoComplete="email" value={f.email} onChange={set("email")} readOnly={!!status.invite} className={status.invite ? "bg-canvas-2 text-muted" : undefined} /></Field>
         <Field label="Practice Name" htmlFor="pn" optional><Input id="pn" placeholder="e.g. Morrow Astrological Consulting" value={f.practice} onChange={set("practice")} /></Field>
         <Field label="Password" htmlFor="pw" optional hint={`Leave blank to sign in with emailed links instead. Otherwise at least ${MIN_PW} characters.`}>
           <Input id="pw" type="password" minLength={MIN_PW} autoComplete="new-password" value={f.password} onChange={set("password")} />
