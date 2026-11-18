@@ -37,8 +37,8 @@ const pointName = (id: TargetId) => BODIES[id].name;
 const pointGlyph = (id: TargetId) => BODIES[id].glyph;
 
 function sourceName(c: TimelineContact) {
-  if (c.technique === "lunation") return c.source === "new-moon" ? "New moon" : "Full moon";
-  if (c.technique === "eclipse") return c.source === "new-moon" ? "Solar eclipse" : "Lunar eclipse";
+  if (c.technique === "lunation") return c.source === "new-moon" ? "New Moon" : "Full Moon";
+  if (c.technique === "eclipse") return c.source === "new-moon" ? "Solar Eclipse" : "Lunar Eclipse";
   const n = BODIES[c.source as BodyId].name;
   if (c.technique === "progressed") return `Progressed ${n}`;
   if (c.technique === "solar-arc") return `Solar arc ${n}`;
@@ -844,7 +844,7 @@ function ContactSheet({ contact: c, clientId, personId, clientName, tl, onClose 
               {c.events.map((e) => (
                 <li key={e.utc} className="flex items-center justify-between gap-3 px-3 py-2.5 text-[12.5px]">
                   <span>
-                    <span className="font-medium text-ink">{e.eclipse ? e.eclipse.replace(/^\w/, (x) => x.toUpperCase()) : e.kind === "new" ? "New moon" : "Full moon"}</span>
+                    <span className="font-medium text-ink">{e.eclipse ? e.eclipse.replace(/\b\w/g, (x) => x.toUpperCase()) : e.kind === "new" ? "New Moon" : "Full Moon"}</span>
                     {e.eclipseApproximate && <span className="text-muted"> (estimated)</span>}
                     <span className="block text-muted">
                       {fmtTime(e.utc)} · {fmtDeg(e.lon)} {signOf(e.lon).name} · orb {e.orb.toFixed(2)}°
