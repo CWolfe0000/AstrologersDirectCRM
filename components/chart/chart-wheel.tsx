@@ -183,16 +183,29 @@ export function ChartWheel({ view, compact, className, selected, onSelect, highl
       {/* angles labels */}
       {!compact &&
         [
-          { lon: inner.asc, label: "AC" },
-          { lon: norm(inner.asc + 180), label: "DC" },
-          { lon: inner.mc, label: "MC" },
-          { lon: norm(inner.mc + 180), label: "IC" },
+          { lon: inner.asc, label: "AC", key: "inner:asc", name: "Ascendant" },
+          { lon: norm(inner.asc + 180), label: "DC", key: "inner:asc", name: "Descendant (the Ascendant axis)" },
+          { lon: inner.mc, label: "MC", key: "inner:mc", name: "Midheaven" },
+          { lon: norm(inner.mc + 180), label: "IC", key: "inner:mc", name: "IC (the Midheaven axis)" },
         ].map((x) => {
+          // Angles are selectable like planets: the Descendant and IC select their axis.
           const [lx, ly] = pt(R_OUT + 16, ang(x.lon));
+          const on = focus === x.key;
           return (
-            <text key={x.label} x={lx} y={ly} textAnchor="middle" dominantBaseline="central" fontSize={12.5} fontWeight={600} fill="#29272B" fontFamily="Inter Variable, Inter, sans-serif">
-              {x.label}
-            </text>
+            <g
+              key={x.label}
+              className={cn(onSelect && "cursor-pointer")}
+              onMouseEnter={() => setHover(x.key)}
+              onMouseLeave={() => setHover(null)}
+              onClick={onSelect ? sel(x.key) : undefined}
+              opacity={focus && !on && !aspects.some((y) => isRelated(y) && (`${y.aRing}:${y.a}` === x.key || `${y.bRing}:${y.b}` === x.key)) ? 0.45 : 1}
+            >
+              <title>{x.name}</title>
+              {on && <circle cx={lx} cy={ly} r={13} fill="#EFF3F0" stroke="#29272B" strokeOpacity={0.4} />}
+              <text x={lx} y={ly} textAnchor="middle" dominantBaseline="central" fontSize={12.5} fontWeight={600} fill="#29272B" fontFamily="Inter Variable, Inter, sans-serif">
+                {x.label}
+              </text>
+            </g>
           );
         })}
 

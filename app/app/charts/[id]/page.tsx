@@ -182,7 +182,7 @@ function Workspace() {
         <button onClick={() => setSelected(null)} className="text-[12px] text-muted hover:text-ink">Clear Selection</button>
       </div>
       <p className="mt-0.5 text-[12.5px] text-muted">
-        {sel.id !== "asc" && sel.id !== "mc" && <>{ordinal(selBody.house)}-house placement · </>}
+        {sel.id === "asc" ? <>1st-house cusp; the Descendant is opposite · </> : sel.id === "mc" ? <>10th-house cusp; the IC is opposite · </> : <>{ordinal(selBody.house)}-house placement · </>}
       {selRules.length > 0 && <>Rules the {selRules.map(ordinal).join(" & ")} · </>}
         {dignityOf(sel.id, selBody.lon) ? `${dignityOf(sel.id, selBody.lon)} · ` : ""}
         {selAspects.length} aspect{selAspects.length === 1 ? "" : "s"} in orb
@@ -346,7 +346,7 @@ function Workspace() {
               open={expanded}
               onOpenChange={setExpanded}
               title={chart.title}
-              caption={selectionDetail ?? <span className="text-muted">Select a planet to see its aspects.</span>}
+              caption={selectionDetail ?? <span className="text-muted">Select a planet or angle to see its aspects.</span>}
             >
               <ChartWheel
                 view={view}
@@ -363,7 +363,7 @@ function Workspace() {
                 selectionDetail
               ) : (
                 <div className="flex flex-wrap items-center justify-between gap-3 text-[12px] text-muted">
-                  <span className="flex items-center gap-1.5"><MousePointerClick className="size-3.5" /> Click a planet to isolate its aspects.</span>
+                  <span className="flex items-center gap-1.5"><MousePointerClick className="size-3.5" /> Click a planet or angle to isolate its aspects.</span>
                   <span className="flex items-center gap-3">
                     <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 bg-accent" /> Hard</span>
                     <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 bg-sage-dark" /> Soft</span>
