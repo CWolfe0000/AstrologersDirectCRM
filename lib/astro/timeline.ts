@@ -41,7 +41,18 @@ export interface TimelineOptions {
   transitOrbs?: Partial<Record<BodyId, number>>;
   /** Natal points to aim at. Defaults to every natal point available. */
   targets?: TargetId[];
+  /**
+   * Transiting planets treated as long-term background influences rather than
+   * short-term triggers. Progressions and solar arcs are always background;
+   * lunations and eclipses are always triggers.
+   */
+  backgroundBodies?: BodyId[];
 }
+
+export const DEFAULT_BACKGROUND_BODIES: BodyId[] = ["saturn", "uranus", "neptune", "pluto", "node", "chiron"];
+
+/** "background": slow influences that set the tone for months or years. "trigger": short-term activity that times events. */
+export type TimelineLayer = "background" | "trigger";
 
 export const TIMELINE_ASPECTS: { id: AspectId; angle: number }[] = [
   { id: "conjunction", angle: 0 },
@@ -142,7 +153,11 @@ export interface TimelineContact {
   aspect: AspectId;
   target: TargetId;
   targetHouse: number | null;
+  /** Intensity: how strongly the contact counts on each day it's in orb. */
   weight: number;
+  layer: TimelineLayer;
+  /** Days in orb within the range (a lunation or eclipse counts for the days it's scored). */
+  durationDays: number;
   windows: TimelineWindow[];
   /** Lunations/eclipses: the individual events (each also has a zero-length window). */
   events?: (LunationEvent & { orb: number })[];
@@ -151,11 +166,20 @@ export interface TimelineContact {
 export interface ConvergenceWindow {
   start: string;
   end: string;
+  /** The period runs on before the start / after the end of the range: it may be longer, and peak outside it. */
+  startOpen: boolean;
+  endOpen: boolean;
+  /** The day with the most short-term (trigger) activity. */
   peak: string;
   peakScore: number;
-  /** Contact ids active during the window: those exact inside it first, then by weight. */
+  /** Contacts in orb on the peak day: all of them, and the short-term triggers among them. */
+  peakCount: number;
+  peakTriggers: number;
+  /** Short-term contacts active during the window: exact inside it first, then by weight. */
   contacts: string[];
-  /** How many of them are exact inside the window. */
+  /** Background contacts in orb during the window, by weight. */
+  background: string[];
+  /** How many contacts (both layers) are exact inside the window. */
   exactCount: number;
   /** The natal point and house most contacts aim at during the window. */
   focus: { target: TargetId | null; targetCount: number; house: number | null; houseCount: number };
@@ -163,11 +187,16 @@ export interface ConvergenceWindow {
 
 export interface TimelineDay {
   date: string;
+  /** Weighted intensity and number of contacts in orb: all of them … */
   score: number;
   count: number;
+  /** … and the short-term triggers among them (the rest are background). */
+  trigger: number;
+  triggerCount: number;
 }
 
 export interface TimelineResult {
+  backgroundBodies: BodyId[];
   from: string;
   to: string;
   days: TimelineDay[];
@@ -413,16 +442,25 @@ export async function convergenceTimeline(input: TimelineInput): Promise<Timelin
   const aspectWeight = (a: AspectId) => WEIGHTS.aspect[a] ?? WEIGHTS.minorAspect;
 
   const nDays = Math.round((toMs - fromMs) / DAY);
+  const background = new Set<BodyId>(o.backgroundBodies ?? DEFAULT_BACKGROUND_BODIES);
+  const layerOf = (technique: TimelineTechnique, source: SourceId): TimelineLayer =>
+    technique === "progressed" || technique === "solar-arc" || (technique === "transit" && background.has(source as BodyId)) ? "background" : "trigger";
   const score = new Float64Array(nDays);
+  const trig = new Float64Array(nDays);
   const activeSets: Set<string>[] = Array.from({ length: nDays }, () => new Set());
+  const triggerSets: Set<string>[] = Array.from({ length: nDays }, () => new Set());
   const dayOf = (t: number) => Math.floor((t - fromMs) / DAY);
-  const addScore = (t: number, hDays: number, w: number) => {
+  const addScore = (t: number, hDays: number, w: number, layer: TimelineLayer) => {
+    const add = (d: number, x: number) => {
+      score[d] += x;
+      if (layer === "trigger") trig[d] += x;
+    };
     if (hDays >= 1) {
       const d0 = dayOf(t);
-      for (let d = Math.max(0, d0); d < Math.min(nDays, d0 + Math.round(hDays)); d++) score[d] += w;
+      for (let d = Math.max(0, d0); d < Math.min(nDays, d0 + Math.round(hDays)); d++) add(d, w);
     } else {
       const d = dayOf(t);
-      if (d >= 0 && d < nDays) score[d] += w * hDays;
+      if (d >= 0 && d < nDays) add(d, w * hDays);
     }
   };
 
@@ -434,9 +472,10 @@ export async function convergenceTimeline(input: TimelineInput): Promise<Timelin
         if (technique !== "transit" && source === target.id && a.angle === 0) continue; // a point directed onto itself only at birth
         const weight = sourceWeight * aspectWeight(a.id) * (isKey(target.id) ? WEIGHTS.keyTarget : 1);
         const id = `${technique}:${source}:${a.id}:${target.id}`;
+        const layer = layerOf(technique, source);
         const sides = a.angle === 0 || a.angle === 180 ? [a.angle] : [a.angle, -a.angle];
         const edge = technique === "transit" ? 0.5 : 0;
-        const raw = sides.flatMap((s) => scan(tr, norm(target.lon + s), orb, { sample: (t, h, c) => addScore(t, h, weight * c) }, fromMs, toMs, edge));
+        const raw = sides.flatMap((s) => scan(tr, norm(target.lon + s), orb, { sample: (t, h, c) => addScore(t, h, weight * c, layer) }, fromMs, toMs, edge));
         if (raw.length === 0) continue;
         raw.sort((x, y) => x.s - y.s);
         let pass = 0;
@@ -450,8 +489,14 @@ export async function convergenceTimeline(input: TimelineInput): Promise<Timelin
           exacts: w.ex.map((x) => ({ utc: iso(x.t), pass: ++pass, retrograde: x.retro })),
           stations: stations.filter((s) => s.t >= w.s && s.t <= w.e).map((s) => ({ utc: iso(s.t), kind: s.kind })),
         }));
-        for (const w of raw) for (let d = Math.max(0, dayOf(w.s)); d <= Math.min(nDays - 1, dayOf(w.e)); d++) activeSets[d]!.add(id);
-        contacts.push({ id, technique, source, aspect: a.id, target: target.id, targetHouse: houseOfTarget(target.lon), weight: Math.round(weight * 100) / 100, windows });
+        let durationDays = 0;
+        for (const w of raw)
+          for (let d = Math.max(0, dayOf(w.s)); d <= Math.min(nDays - 1, dayOf(w.e)); d++) {
+            activeSets[d]!.add(id);
+            if (layer === "trigger") triggerSets[d]!.add(id);
+            durationDays++;
+          }
+        contacts.push({ id, technique, source, aspect: a.id, target: target.id, targetHouse: houseOfTarget(target.lon), weight: Math.round(weight * 100) / 100, layer, durationDays, windows });
       }
     }
   }
@@ -520,7 +565,7 @@ export async function convergenceTimeline(input: TimelineInput): Promise<Timelin
           const weight = (l.eclipse ? WEIGHTS.eclipse : WEIGHTS.lunation) * aspectWeight(a.id) * (isKey(target.id) ? WEIGHTS.keyTarget : 1);
           let c = byId.get(id);
           if (!c) {
-            c = { id, technique, source, aspect: a.id, target: target.id, targetHouse: houseOfTarget(target.lon), weight: Math.round(weight * 100) / 100, windows: [], events: [] };
+            c = { id, technique, source, aspect: a.id, target: target.id, targetHouse: houseOfTarget(target.lon), weight: Math.round(weight * 100) / 100, layer: "trigger", durationDays: 0, windows: [], events: [] };
             byId.set(id, c);
             contacts.push(c);
           }
@@ -531,7 +576,10 @@ export async function convergenceTimeline(input: TimelineInput): Promise<Timelin
           const closeness = 1 - 0.5 * (off / orb);
           for (let d = Math.max(0, dayOf(t)); d < Math.min(nDays, dayOf(t) + spanDays); d++) {
             score[d] += weight * closeness;
+            trig[d] += weight * closeness;
             activeSets[d]!.add(id);
+            triggerSets[d]!.add(id);
+            c.durationDays++;
           }
         }
       }
@@ -542,12 +590,15 @@ export async function convergenceTimeline(input: TimelineInput): Promise<Timelin
     date: new Date(fromMs + d * DAY).toISOString().slice(0, 10),
     score: Math.round(score[d]! * 100) / 100,
     count: activeSets[d]!.size,
+    trigger: Math.round(trig[d]! * 100) / 100,
+    triggerCount: triggerSets[d]!.size,
   }));
 
   contacts.sort((a, b) => firstTime(a) - firstTime(b) || b.weight - a.weight);
   const byContact = new Map(contacts.map((c) => [c.id, c]));
 
   return {
+    backgroundBodies: [...background],
     from: iso(fromMs),
     to: iso(toMs),
     days,
@@ -566,17 +617,20 @@ function firstTime(c: TimelineContact) {
 }
 
 /**
- * Periods where the density score stands out from the rest of the range:
- * days above mean + 0.75 σ with at least three contacts, merged across gaps of
- * up to five days. The six strongest are returned, in date order.
+ * Busy periods are found from short-term (trigger) activity only, so a
+ * long background transit can't make a whole stretch look busy: days whose
+ * trigger score stands out (above mean + 0.75 σ, with at least two triggers in
+ * orb), merged across gaps of up to six days. Periods touching either end of
+ * the range are marked open: they may run on, and peak, outside it. The six
+ * with the highest peak are returned, in date order.
  */
 function findConvergences(days: TimelineDay[], active: Set<string>[], contacts: Map<string, TimelineContact>): ConvergenceWindow[] {
   if (days.length === 0) return [];
-  const scores = days.map((d) => d.score);
+  const scores = days.map((d) => d.trigger);
   const mean = scores.reduce((s, x) => s + x, 0) / scores.length;
   const sd = Math.sqrt(scores.reduce((s, x) => s + (x - mean) ** 2, 0) / scores.length);
   const threshold = mean + 0.75 * sd;
-  const hot = days.map((d) => d.score > threshold && d.count >= 3);
+  const hot = days.map((d) => d.trigger > threshold && d.triggerCount >= 2);
 
   const runs: [number, number][] = [];
   for (let i = 0; i < hot.length; i++) {
@@ -586,16 +640,15 @@ function findConvergences(days: TimelineDay[], active: Set<string>[], contacts: 
     else runs.push([i, i]);
   }
 
+  const last = days.length - 1;
   const windows = runs
     .filter(([a, b]) => b - a >= 2)
     .map(([a, b]) => {
       const ids = new Set<string>();
       let peak = a;
-      let total = 0;
       for (let d = a; d <= b; d++) {
         active[d]!.forEach((id) => ids.add(id));
-        total += days[d]!.score;
-        if (days[d]!.score > days[peak]!.score) peak = d;
+        if (days[d]!.trigger > days[peak]!.trigger) peak = d;
       }
       const lo = Date.parse(`${days[a]!.date}T00:00:00Z`), hi = Date.parse(`${days[b]!.date}T00:00:00Z`) + DAY;
       const exactIn = (id: string) => contacts.get(id)!.windows.some((w) => w.exacts.some((e) => Date.parse(e.utc) >= lo && Date.parse(e.utc) < hi));
@@ -609,23 +662,26 @@ function findConvergences(days: TimelineDay[], active: Set<string>[], contacts: 
       }
       const top = <K,>(m: Map<K, number>) => [...m.entries()].sort((x, y) => y[1] - x[1])[0];
       const t = top(perTarget), h = top(perHouse);
+      const byLayer = (layer: TimelineLayer) => [...ids].filter((id) => contacts.get(id)!.layer === layer);
+      const byWeight = (x: string, y: string) => contacts.get(y)!.weight - contacts.get(x)!.weight;
       return {
-        total,
-        w: {
-          start: days[a]!.date,
-          end: days[b]!.date,
-          peak: days[peak]!.date,
-          peakScore: days[peak]!.score,
-          contacts: [...ids].sort((x, y) => Number(exactIn(y)) - Number(exactIn(x)) || contacts.get(y)!.weight - contacts.get(x)!.weight),
-          exactCount: [...ids].filter(exactIn).length,
-          focus: { target: t && t[1] >= 2 ? t[0] : null, targetCount: t?.[1] ?? 0, house: h && h[1] >= 2 ? h[0] : null, houseCount: h?.[1] ?? 0 },
-        } satisfies ConvergenceWindow,
-      };
+        start: days[a]!.date,
+        end: days[b]!.date,
+        startOpen: a === 0,
+        endOpen: b === last,
+        peak: days[peak]!.date,
+        peakScore: days[peak]!.trigger,
+        peakCount: days[peak]!.count,
+        peakTriggers: days[peak]!.triggerCount,
+        contacts: byLayer("trigger").sort((x, y) => Number(exactIn(y)) - Number(exactIn(x)) || byWeight(x, y)),
+        background: byLayer("background").sort(byWeight),
+        exactCount: [...ids].filter(exactIn).length,
+        focus: { target: t && t[1] >= 2 ? t[0] : null, targetCount: t?.[1] ?? 0, house: h && h[1] >= 2 ? h[0] : null, houseCount: h?.[1] ?? 0 },
+      } satisfies ConvergenceWindow;
     });
 
   return windows
-    .sort((x, y) => y.total - x.total)
+    .sort((x, y) => y.peakScore - x.peakScore)
     .slice(0, 6)
-    .map((x) => x.w)
     .sort((x, y) => x.start.localeCompare(y.start));
 }
