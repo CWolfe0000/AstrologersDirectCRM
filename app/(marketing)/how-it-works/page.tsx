@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { ProductShot } from "@/components/marketing/product-shot";
 import { FinalCta, PageIntro } from "@/components/marketing/section";
 
@@ -14,8 +12,6 @@ const STEPS = [
       "Their charts, consultations, observations and readings belong to one record that grows with your work together.",
     ],
     close: "Enter it once. Build on it for years.",
-    shot: "/screenshots/client-profile.png",
-    link: { href: "/app/clients/c1", label: "Explore Client Records" },
   },
   {
     title: "Work with the Charts You Need.",
@@ -24,8 +20,6 @@ const STEPS = [
       "Create more charts without losing the connection to the person you’re studying.",
     ],
     close: "The chart workspace is part of the client record, not a separate destination.",
-    shot: "/screenshots/chart-workspace.png",
-    link: { href: "/app/charts/ch1", label: "Explore Chart Analysis" },
   },
   {
     title: "Turn Observations into Lasting Knowledge.",
@@ -34,8 +28,6 @@ const STEPS = [
       "Prepare for consultations with what you’ve already learned.",
     ],
     close: "Your experience accumulates, instead of starting over with every appointment.",
-    shot: "/screenshots/observations.png",
-    link: { href: "/app/observations", label: "Explore Observations" },
   },
   {
     title: "Deliver Work You’re Proud Of.",
@@ -44,8 +36,6 @@ const STEPS = [
       "Send it to the client’s private portal with a personal message and the access you choose. They’re notified by email.",
     ],
     close: "A professional delivery, without a collection of disconnected services.",
-    shot: "/screenshots/delivery.png",
-    link: { href: "/app/delivery", label: "Explore Reading Delivery" },
   },
   {
     title: "Keep the Conversation Going.",
@@ -54,8 +44,6 @@ const STEPS = [
       "Your client responds in their portal, in their own time. You see what they wrote, and when they’ve finished, on their record.",
     ],
     close: "The relationship doesn’t pause between appointments. Neither does the work.",
-    shot: "/screenshots/between-sessions.png",
-    link: { href: "/app/clients/c1?tab=work", label: "Explore Between Sessions" },
   },
   {
     title: "Pick Up Where You Left Off.",
@@ -64,8 +52,6 @@ const STEPS = [
       "Their charts are there. Their previous readings are there. Everything they wrote between sessions is there, alongside your observations and consultation history.",
     ],
     close: "You spend your time exploring what’s changed, not searching for what happened.",
-    shot: "/screenshots/portal.png",
-    link: { href: "/portal", label: "Explore the Client Portal" },
   },
 ];
 
@@ -78,31 +64,26 @@ export default function HowItWorksPage() {
           <p>From the first consultation to the tenth, AstrologersDirect keeps that story organized, connected and ready when you need it. Here’s what that looks like.</p>
         </div>
       </PageIntro>
+      <div className="container pb-6">
+        <ProductShot src="/screenshots/client-profile.png" alt="A client record in AstrologersDirect" url="app.astrologersdirect.com" />
+      </div>
       <div className="container py-16 md:py-24">
-        <ol className="relative space-y-20 md:space-y-28">
+        <ol className="grid gap-x-16 gap-y-14 md:grid-cols-2">
           {STEPS.map((s, i) => (
-            <li key={s.title} className="grid items-center gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
-              <div className={i % 2 === 1 ? "lg:order-2" : undefined}>
-                <span className="font-serif text-[22px] text-accent">{String(i + 1).padStart(2, "0")}</span>
-                <h2 className="mt-3 font-serif text-[30px] leading-tight text-ink md:text-[38px]">{s.title}</h2>
-                <div className="mt-4 space-y-3 text-[15.5px] leading-relaxed text-muted">
-                  {s.body.map((p) => (
-                    <p key={p}>{p}</p>
-                  ))}
-                </div>
-                <p className="mt-5 border-l-2 border-accent-200 pl-4 text-[15px] font-medium text-ink">{s.close}</p>
-                <Link href={s.link.href} className="mt-7 inline-flex items-center gap-1.5 text-[14px] font-medium text-accent hover:text-accent-hover">
-                  {s.link.label} <ArrowRight className="size-4" />
-                </Link>
+            <li key={s.title}>
+              <span className="font-serif text-[22px] text-accent">{String(i + 1).padStart(2, "0")}</span>
+              <h2 className="mt-2 font-serif text-[28px] leading-tight text-ink md:text-[32px]">{s.title}</h2>
+              <div className="mt-3 space-y-3 text-[15.5px] leading-relaxed text-muted">
+                {s.body.map((p) => (
+                  <p key={p}>{p}</p>
+                ))}
               </div>
-              <div className={i % 2 === 1 ? "lg:order-1" : undefined}>
-                <ProductShot src={s.shot} alt={`${s.title} Screenshot`} url={s.shot.includes("portal") ? "app.astrologersdirect.com/portal" : undefined} />
-              </div>
+              <p className="mt-4 border-l-2 border-accent-200 pl-4 text-[15px] font-medium text-ink">{s.close}</p>
             </li>
           ))}
         </ol>
       </div>
-      <FinalCta title="See the Difference for Yourself." body="Explore the prototype, built around realistic client scenarios. Follow a consultation from beginning to end, and see how the pieces fit together." />
+      <FinalCta title="See the Difference for Yourself." body="Join the beta and bring your own clients, charts and consultations into one place." />
     </>
   );
 }

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowRight, Check, Mic, MonitorPlay, Pause, Video } from "lucide-react";
+import { Check, Mic, MonitorPlay, Pause, Video } from "lucide-react";
 import { ProductShot } from "@/components/marketing/product-shot";
 import { FinalCta, PageIntro } from "@/components/marketing/section";
 import { FEATURES } from "@/components/marketing/features-data";
@@ -43,49 +42,35 @@ export default function FeaturesPage() {
                   ))}
                   {f.close && <p className="font-medium text-ink">{f.close}</p>}
                 </div>
-                <div className="mt-7 grid gap-6 sm:grid-cols-2">
-                  <ul className="space-y-2.5">
-                    {f.points.map((p) => (
-                      <li key={p} className="flex items-start gap-2.5 text-[13.5px] text-ink-3">
-                        <Check className="mt-0.5 size-4 shrink-0 text-sage-dark" /> {p}
-                      </li>
-                    ))}
-                  </ul>
-                  <ul className="space-y-2.5">
-                    {f.detail.map((p) => (
-                      <li key={p} className="flex items-start gap-2.5 text-[13.5px] text-ink-3">
-                        <span className="mt-2 size-1.5 shrink-0 rounded-full bg-accent" /> {p}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <Link href={f.href} className="mt-8 inline-flex items-center gap-1.5 text-[14px] font-medium text-accent hover:text-accent-hover">
-                  {f.cta} <ArrowRight className="size-4" />
-                </Link>
+                {f.shot && <Lists f={f} />}
               </div>
               <div className={i % 2 === 1 ? "lg:order-1" : undefined}>
-                {f.id === "portal" ? (
+                {f.id === "portal" && f.shot ? (
                   <div className="flex items-end justify-center gap-6">
                     <ProductShot src={f.shot} alt={`${f.title} screenshot`} className="hidden flex-1 sm:block" url="app.astrologersdirect.com/portal" />
                     <ProductShot src="/screenshots/portal-mobile.png" alt="Client portal on mobile" device="phone" className="w-[46%] max-w-[220px] sm:-ml-20 sm:w-[34%]" />
                   </div>
-                ) : (
+                ) : f.shot ? (
                   <ProductShot src={f.shot} alt={`${f.title} screenshot`} />
-                )}
-                {f.id === "recording" && (
-                  <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    {(
-                      [
-                        [Mic, "Audio only"],
-                        [Video, "Webcam + mic"],
-                        [MonitorPlay, "Screen + mic"],
-                        [Pause, "Screen, webcam + mic"],
-                      ] as const
-                    ).map(([Icon, l]) => (
-                      <div key={l} className="rounded-lg border border-line bg-surface p-3 text-[12.5px] text-ink-3">
-                        <Icon className="mb-2 size-4 text-accent" /> {l}
+                ) : (
+                  <div className="rounded-2xl border border-line bg-surface p-6 md:p-8">
+                    <Lists f={f} />
+                    {f.id === "recording" && (
+                      <div className="mt-6 grid grid-cols-2 gap-3">
+                        {(
+                          [
+                            [Mic, "Audio only"],
+                            [Video, "Webcam + mic"],
+                            [MonitorPlay, "Screen + mic"],
+                            [Pause, "Screen, webcam + mic"],
+                          ] as const
+                        ).map(([Icon, l]) => (
+                          <div key={l} className="rounded-lg border border-line bg-canvas p-3 text-[12.5px] text-ink-3">
+                            <Icon className="mb-2 size-4 text-accent" /> {l}
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    )}
                   </div>
                 )}
               </div>
@@ -96,5 +81,26 @@ export default function FeaturesPage() {
 
       <FinalCta title="Your Practice Works Better When Everything Works Together." body="Each feature solves a problem. Together, they change how your practice works." />
     </>
+  );
+}
+
+function Lists({ f }: { f: (typeof FEATURES)[number] }) {
+  return (
+    <div className="mt-7 grid gap-6 sm:grid-cols-2">
+      <ul className="space-y-2.5">
+        {f.points.map((p) => (
+          <li key={p} className="flex items-start gap-2.5 text-[13.5px] text-ink-3">
+            <Check className="mt-0.5 size-4 shrink-0 text-sage-dark" /> {p}
+          </li>
+        ))}
+      </ul>
+      <ul className="space-y-2.5">
+        {f.detail.map((p) => (
+          <li key={p} className="flex items-start gap-2.5 text-[13.5px] text-ink-3">
+            <span className="mt-2 size-1.5 shrink-0 rounded-full bg-accent" /> {p}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

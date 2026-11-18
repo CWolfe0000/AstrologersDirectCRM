@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { Wordmark, Toaster } from "@/components/ui/misc";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = { title: { default: "Account", template: "%s · AstrologersDirect" } };
 
@@ -9,7 +10,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="grid min-h-screen bg-canvas lg:grid-cols-[1fr_minmax(0,0.9fr)]">
       <div className="flex flex-col px-5 py-6 sm:px-10 md:px-16">
-        <Link href="/" className="self-start">
+        <Link href={SITE_URL || "/"} className="self-start" aria-label="AstrologersDirect home">
           <Wordmark />
         </Link>
         <main id="main" className="flex flex-1 items-center justify-center py-10">
@@ -17,7 +18,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </main>
         {process.env.NEXT_PUBLIC_DATA_MODE === "demo" && (
           <p className="text-center text-[12px] text-muted">
-            Prototype — authentication is simulated. <Link href="/prototype" className="underline hover:text-ink">Prototype guide</Link>
+            Prototype — authentication is simulated.
           </p>
         )}
       </div>

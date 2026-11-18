@@ -90,9 +90,6 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               <Link href="/portal" className="inline-flex items-center gap-1.5 text-[11.5px] text-[#E3C9D0] hover:text-white" onClick={onNavigate}>
                 <ExternalLink className="size-3" /> View client portal
               </Link>
-              <Link href="/prototype" className="inline-flex items-center gap-1.5 text-[11.5px] text-[#E3C9D0] hover:text-white" onClick={onNavigate}>
-                <ExternalLink className="size-3" /> Prototype guide
-              </Link>
               <button onClick={resetDemo} className="inline-flex items-center gap-1.5 text-left text-[11.5px] text-[#9C969E] hover:text-white">
                 <RotateCcw className="size-3" /> Reset demo data
               </button>

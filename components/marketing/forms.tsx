@@ -74,7 +74,7 @@ export function ContactForm() {
         <Select id="c-topic" value={f.topic} onChange={set("topic")}>
           <option value="general">General inquiry</option>
           <option value="support">Product support</option>
-          <option value="early">Early access & pricing</option>
+          <option value="early">The beta & pricing</option>
           <option value="partnership">Partnerships & press</option>
           <option value="data">Privacy & data</option>
         </Select>

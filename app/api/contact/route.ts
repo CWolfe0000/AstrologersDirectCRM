@@ -3,7 +3,7 @@ import { env } from "@/lib/server/env";
 import { handler, HttpError, json, rateLimit, readJson } from "@/lib/server/http";
 import { sendMail } from "@/lib/server/mail";
 
-const TOPICS = { general: "General inquiry", support: "Product support", early: "Early access & pricing", partnership: "Partnerships & press", data: "Privacy & data" } as const;
+const TOPICS = { general: "General inquiry", support: "Product support", early: "The beta & pricing", partnership: "Partnerships & press", data: "Privacy & data" } as const;
 
 const body = z.discriminatedUnion("kind", [
   z.object({

@@ -12,7 +12,7 @@ function parse(href: string, base: Loc): Loc {
   return { pathname: u.pathname.replace(/\/+$/, "") || "/", search: u.search, hash: u.hash };
 }
 
-let current: Loc = { pathname: "/prototype", search: "", hash: "" };
+let current: Loc = { pathname: "/app", search: "", hash: "" };
 const stack: Loc[] = [];
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());

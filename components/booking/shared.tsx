@@ -6,6 +6,7 @@ import { Globe2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Select } from "@/components/ui/input";
 import { Wordmark } from "@/components/ui/misc";
+import { SITE_URL } from "@/lib/site";
 
 export const dayKey = (iso: string, tz: string) => new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(iso));
 export const timeLabel = (iso: string, tz: string) => new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit" }).format(new Date(iso));
@@ -28,7 +29,7 @@ export function BookingShell({ children }: { children: React.ReactNode }) {
       <header className="border-b border-line bg-surface">
         <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
           <span className="text-[13px] text-muted">Online booking</span>
-          <Link href="/" className="opacity-80 hover:opacity-100" aria-label="AstrologersDirect"><Wordmark compact /></Link>
+          <Link href={SITE_URL || "/"} className="opacity-80 hover:opacity-100" aria-label="AstrologersDirect"><Wordmark compact /></Link>
         </div>
       </header>
       <main id="main" className="mx-auto max-w-4xl px-4 py-8 md:py-12">{children}</main>

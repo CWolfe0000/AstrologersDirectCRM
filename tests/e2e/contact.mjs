@@ -39,7 +39,7 @@ await page.getByRole("button", { name: "Send message" }).click();
 await page.getByText("Thank You — Message Received.").waitFor();
 const m = await mail(`contact test ${stamp}`);
 assert.ok(m, "email queued to CONTACT_EMAIL");
-assert.equal(m.subject, "Website: Early access & pricing from Rosa Test");
+assert.equal(m.subject, "Website: The beta & pricing from Rosa Test");
 assert.ok(m.body.includes(`rosa-${stamp}@example.com`));
 
 step("advisory group sign-up sends to the inbox");

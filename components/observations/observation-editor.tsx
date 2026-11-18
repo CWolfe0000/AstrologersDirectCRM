@@ -190,7 +190,7 @@ export function ObservationEditor({ observationId, initial, lockChart, onCreated
                 aria-label="Delete observation"
                 title="Delete"
                 onClick={() => {
-                  if (!confirm("Delete this observation? This cannot be undone in the prototype.")) return;
+                  if (!confirm("Delete this observation? This can’t be undone.")) return;
                   clearTimeout(timer.current);
                   timer.current = undefined;
                   del(id);

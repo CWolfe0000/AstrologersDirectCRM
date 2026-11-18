@@ -39,7 +39,7 @@ export function PageIntro({ eyebrow, title, body, children }: { eyebrow: string;
 
 export function FinalCta({
   title = "Build Stronger Client Relationships.",
-  body = "We’re building the workspace we believe astrologers should have had years ago: one that supports the whole journey with each client. Explore it, and join the early practitioner community shaping what comes next.",
+  body = "The workspace astrologers should have had years ago: one that supports the whole journey with each client. Join the beta and help shape what comes next.",
 }: {
   title?: string;
   body?: string;
@@ -51,14 +51,14 @@ export function FinalCta({
         <h2 className="mx-auto max-w-2xl font-serif text-[34px] leading-[1.1] text-white md:text-[48px]">{title}</h2>
         <p className="mx-auto mt-4 max-w-xl text-[15.5px] text-[#CFCAD0]">{body}</p>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          <ButtonLink href="/prototype" size="lg">
-            Explore the Prototype
+          <ButtonLink href="/request-access" size="lg">
+            Join the Beta
           </ButtonLink>
-          <ButtonLink href="/auth/signup" size="lg" variant="secondary" className="border-white/15 bg-white/5 text-white hover:bg-white/10 hover:border-white/25">
-            Join Early Access
+          <ButtonLink href="/how-it-works" size="lg" variant="secondary" className="border-white/15 bg-white/5 text-white hover:bg-white/10 hover:border-white/25">
+            See How It Works
           </ButtonLink>
         </div>
-        <p className="mx-auto mt-8 max-w-xl text-[12.5px] text-[#9C969E]">AstrologersDirect is in private beta. Some features, including the AI assistant, are still in development.</p>
+        <p className="mx-auto mt-8 max-w-xl text-[12.5px] text-[#9C969E]">Free during the private beta.</p>
       </div>
     </section>
   );

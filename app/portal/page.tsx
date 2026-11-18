@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { ArrowRight, Video, Phone, MapPin, Mail, Globe, FileText, Headphones, Film, Bell, Check, FolderOpen } from "lucide-react";
 import { useStore, personName } from "@/lib/store";
@@ -23,6 +24,11 @@ export default function PortalHome() {
   const PORTAL_CLIENT_ID = usePortalClientId();
   const me = useStore((s) => s.people.find((p) => p.id === PORTAL_CLIENT_ID));
   const practices = usePortalPractices();
+  const [hello, setHello] = React.useState("Welcome");
+  React.useEffect(() => {
+    const h = new Date().getHours();
+    setHello(h < 12 ? "Good Morning" : h < 18 ? "Good Afternoon" : "Good Evening");
+  }, []);
   const sessionWho = (k: unknown) => practices.find((p) => p.id === practiceOf(k)) ?? practices[0]!;
   const notes = useStore((s) => s.portalNotifications);
   const markRead = useStore((s) => s.markPortalNotification);
@@ -40,7 +46,7 @@ export default function PortalHome() {
       {/* Welcome */}
       <section className="animate-fade-in">
         <p className="eyebrow">{fmtLong(PORTAL_NOW)}</p>
-        <h1 className="mt-2 font-serif text-[36px] leading-[1.1] text-ink md:text-[44px]">Good Morning, {me?.firstName ?? "there"}.</h1>
+        <h1 className="mt-2 font-serif text-[36px] leading-[1.1] text-ink md:text-[44px]">{hello}, {me?.firstName ?? "there"}.</h1>
         <p className="mt-2 max-w-xl text-[15px] text-muted">
           Everything {joinNames(practices.map((p) => p.firstName)) || "your astrologer"} {practices.length > 1 ? "have" : "has"} shared with you lives here: your readings, recordings, sessions, and the work you’re doing between them.
         </p>

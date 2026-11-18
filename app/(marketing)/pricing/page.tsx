@@ -1,41 +1,54 @@
 import type { Metadata } from "next";
+import { Check } from "lucide-react";
+import { ButtonLink } from "@/components/ui/button";
 import { PageIntro, FinalCta } from "@/components/marketing/section";
-import { PricingPlans } from "@/components/marketing/pricing-plans";
 import { Faq } from "@/components/marketing/faq";
 
-export const metadata: Metadata = { title: "Pricing" };
+export const metadata: Metadata = { title: "Pricing", description: "AstrologersDirect is free during the private beta." };
+
+const INCLUDED = [
+  "Unlimited clients, associated people and charts",
+  "Natal, synastry, composite, transits, progressions, solar arcs and solar returns",
+  "Horary, electional astrology and astrocartography",
+  "The convergence timeline",
+  "Consultations, calendar, reminders and your own booking page",
+  "Notes and observations with full version history",
+  "Reading delivery, the recording studio and a private client portal",
+  "Between Sessions: assignments, prompts, goals and activities",
+  "Practice reports, data export and two-step verification",
+];
 
 const FAQ = [
-  { q: "When will pricing be announced?", a: "Plans and prices are being shaped with working astrologers. Early-access members will hear first, and help decide what each plan includes." },
-  { q: "Can I import my existing clients?", a: "Yes. You can import your client list and birth data from a spreadsheet (CSV) on every plan. Import formats for other astrology software are being reviewed with practitioners." },
-  { q: "Which calculation engine does AstrologersDirect use?", a: "Swiss Ephemeris, the professional standard, with Astrodienst’s data files. We’re checking results against reference charts from established software; until that’s complete, charts carry a small “not yet checked” label." },
-  { q: "Do my clients need to pay for the client portal?", a: "No. The client portal is part of your subscription. Clients are invited by you and sign in for free." },
+  { q: "What does the beta cost?", a: "Nothing. Everything in AstrologersDirect is free during the private beta." },
+  { q: "What happens when the beta ends?", a: "We’ll announce plans and prices well before the beta ends. Nothing is ever charged without your agreement, and you can export all of your data at any time." },
+  { q: "How do I join?", a: "Request access. We welcome practitioners a few at a time and email you a personal link to create your account." },
+  { q: "Can I import my existing clients?", a: "Yes. Import your client list and birth data from a spreadsheet (CSV)." },
+  { q: "Which calculation engine does AstrologersDirect use?", a: "Swiss Ephemeris, the professional standard, with Astrodienst’s data files." },
+  { q: "Do my clients need to pay for the client portal?", a: "No. Clients are invited by you and sign in for free." },
   { q: "Who can see my observations?", a: "Only you. Observations, preparation notes and session notes are private practitioner records and never appear in the client portal." },
-  { q: "What happens to my data if I leave?", a: "You can export all of your practice data at any time from Settings: clients, people, charts, observations, consultations, tasks and delivery records. Your professional knowledge belongs to you." },
-  { q: "Is there a free trial?", a: "Trial terms will be announced with pricing. During the private beta, early-access members use AstrologersDirect free." },
 ];
 
 export default function PricingPage() {
   return (
     <>
-      <PageIntro eyebrow="Pricing" title="Invest in Your Practice. Build on Your Expertise.">
-        <div className="mt-5 max-w-2xl space-y-3 text-[17px] leading-relaxed text-muted">
-          <p>Your tools should help your practice grow without making it more complicated.</p>
-          <p>Whether you’re building your first client base or running an established practice, AstrologersDirect is designed to grow with you. Simple plans. Professional capabilities. Your knowledge always belongs to you.</p>
-          <p className="text-[14.5px]">Pricing is being finalized. Join early access to help shape the plans.</p>
-        </div>
-      </PageIntro>
-      <section className="container py-16 md:py-20">
-        <PricingPlans />
-      </section>
+      <PageIntro eyebrow="Pricing" title="Free During the Beta." body="Every feature, for every beta practitioner. In return, we ask for your honest feedback." />
       <section className="container pb-16 md:pb-20">
-        <div className="grid gap-10 rounded-2xl border border-line bg-surface p-8 md:p-12 lg:grid-cols-2 lg:gap-16">
-          <h2 className="font-serif text-[30px] leading-tight text-ink md:text-[38px]">Your Knowledge Should Never Be Locked Inside Your Software.</h2>
-          <div className="space-y-3 text-[15.5px] leading-relaxed text-ink-3">
-            <p>Your client records, observations and professional work are yours.</p>
-            <p>You can export all of your practice data at any time, from Settings.</p>
-            <p className="font-medium text-ink">Because the value of your practice belongs to you, not to the platform you use.</p>
+        <div className="grid gap-10 rounded-2xl border border-line bg-surface p-8 shadow-card md:p-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+          <div>
+            <p className="eyebrow text-accent">Private Beta</p>
+            <p className="mt-3 font-serif text-[56px] leading-none text-ink">$0</p>
+            <p className="mt-2 text-[14.5px] text-muted">for as long as the beta runs</p>
+            <ButtonLink href="/request-access" size="lg" className="mt-8">Request Access</ButtonLink>
+            <p className="mt-4 text-[13px] text-muted">We’ll announce plans well before the beta ends. Nothing is charged without your agreement.</p>
           </div>
+          <ul className="grid gap-3 sm:grid-cols-1">
+            {INCLUDED.map((x) => (
+              <li key={x} className="flex items-start gap-3 text-[15px] text-ink-3">
+                <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-sage-50 text-sage-dark"><Check className="size-3.5" /></span>
+                {x}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
       <section className="container pb-8">
@@ -48,7 +61,7 @@ export default function PricingPage() {
           <Faq items={FAQ} />
         </div>
       </section>
-      <FinalCta title="Help Shape What Comes Next." body="We’re working with professional astrologers to decide the right features, limits and pricing. Join the early-access community and help us build a platform worth investing in." />
+      <FinalCta />
     </>
   );
 }

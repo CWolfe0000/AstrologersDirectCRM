@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Real application screenshot inside a refined browser (or phone) frame.
- * Screenshots live in /public/screenshots and are generated from the running prototype.
+ * Screenshots live in /public/screenshots and are generated from the running application (scripts/screenshots.mjs).
  */
 export function ProductShot({
   src,

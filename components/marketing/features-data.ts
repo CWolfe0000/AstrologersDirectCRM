@@ -13,9 +13,8 @@ export type Feature = {
   close?: string;
   points: string[];
   detail: string[];
-  shot: string;
-  href: string;
-  cta: string;
+  /** A screenshot for the few features that most benefit from one. */
+  shot?: string;
   status?: string;
 };
 
@@ -40,8 +39,6 @@ export const FEATURES: Feature[] = [
     ],
     detail: ["Seven house systems; tropical or sidereal zodiac", "Choose your points, aspects and orbs", "Placements, aspects, houses, rulers and planetary condition"],
     shot: "/screenshots/chart-workspace.png",
-    href: "/app/charts/ch1",
-    cta: "Explore the Chart Workspace",
   },
   {
     id: "clients",
@@ -56,8 +53,6 @@ export const FEATURES: Feature[] = [
     points: ["One record per client, with partners and family as associated people", "Birth-time accuracy recorded with the data", "Import your existing client list from a spreadsheet"],
     detail: ["Status, tags and search", "Portal access for each client", "Export all of your practice data at any time"],
     shot: "/screenshots/client-profile.png",
-    href: "/app/clients/c1",
-    cta: "Explore Client Management",
   },
   {
     id: "observations",
@@ -71,9 +66,6 @@ export const FEATURES: Feature[] = [
     close: "What you learn today should strengthen what you understand tomorrow.",
     points: ["Autosave with full version history", "Tags for planets, aspects, houses and themes", "Search and filter across every client"],
     detail: ["Natal, relationship and timing observations kept separate", "Go from any observation to its chart or client", "Private to you, never shown to clients"],
-    shot: "/screenshots/observations.png",
-    href: "/app/observations",
-    cta: "Explore Observations",
   },
   {
     id: "ai",
@@ -86,11 +78,8 @@ export const FEATURES: Feature[] = [
     ],
     close: "The assistant helps you find and organize. You decide what it means.",
     points: ["Retrieves your own observations in context", "Facts, your notes and suggestions always labeled", "You decide what is kept"],
-    detail: ["In development: today’s responses are a preview"],
-    shot: "/screenshots/chart-workspace.png",
-    href: "/app/charts/ch1",
-    cta: "Preview Intelligent Assistance",
-    status: "In development",
+    detail: ["Not part of the beta yet: we’re building it with beta practitioners"],
+    status: "Coming Soon",
   },
   {
     id: "consultations",
@@ -104,9 +93,6 @@ export const FEATURES: Feature[] = [
     close: "Spend less time preparing your systems, and more time preparing for your clients.",
     points: ["Your own booking page: clients choose a session and a time, and their record, natal chart and appointment are created for you", "Preparation and session notes on every appointment", "Follow-up tasks created from the session", "Reminder emails to clients, if you want them"],
     detail: ["Month, week and day views", "A private feed for Google, Apple or Outlook calendars", "Every past consultation in the client’s history"],
-    shot: "/screenshots/calendar.png",
-    href: "/app/consultations",
-    cta: "Explore Consultations",
   },
   {
     id: "between",
@@ -121,8 +107,6 @@ export const FEATURES: Feature[] = [
     points: ["Assignments, journaling prompts, goals and follow-up activities", "Clients respond and mark work done in their portal", "You’re notified when they respond"],
     detail: ["Save drafts privately; share when you’re ready", "Link work to the consultation it came from", "Responses are encrypted and only visible to you and your client"],
     shot: "/screenshots/between-sessions.png",
-    href: "/app/clients/c1?tab=work",
-    cta: "Explore Between Sessions",
   },
   {
     id: "recording",
@@ -135,9 +119,6 @@ export const FEATURES: Feature[] = [
     ],
     points: ["Audio, webcam, screen, or screen and webcam", "Navigate the chart while you record", "Review, rename, save or deliver"],
     detail: ["Choose your microphone and camera", "Live microphone level", "Planned: transcription and captions"],
-    shot: "/screenshots/studio.png",
-    href: "/app/studio",
-    cta: "Explore the Recording Studio",
   },
   {
     id: "delivery",
@@ -151,9 +132,6 @@ export const FEATURES: Feature[] = [
     close: "Give clients one reliable place to return to the work you’ve shared.",
     points: ["PDF, audio, video or a link", "Personal message, download permission and expiry", "Client notified by email"],
     detail: ["Draft, ready and delivered queues", "See when a reading has been opened", "Files stored privately and served only to that client"],
-    shot: "/screenshots/delivery.png",
-    href: "/app/delivery",
-    cta: "Explore Reading Delivery",
   },
   {
     id: "portal",
@@ -168,7 +146,5 @@ export const FEATURES: Feature[] = [
     points: ["Your practice’s name and color on every page", "Audio, video and documents play in the browser", "Your private notes never appear"],
     detail: ["Reading library filtered by type", "Consultation history with shared materials", "Free for your clients"],
     shot: "/screenshots/portal.png",
-    href: "/portal",
-    cta: "Explore the Client Portal",
   },
 ];

@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { Wordmark } from "@/components/ui/misc";
+import { APP_URL } from "@/lib/site";
 
 const COLS = [
-  { title: "Product", links: [["Features", "/features"], ["How It Works", "/how-it-works"], ["Pricing", "/pricing"], ["Client Portal", "/portal"], ["Prototype guide", "/prototype"]] },
-  { title: "Company", links: [["About", "/about"], ["Contact", "/contact"], ["Help center", "/contact#help"]] },
-  { title: "Account", links: [["Sign in", "/auth/login"], ["Create account", "/auth/signup"], ["Accept invitation", "/auth/invite"]] },
+  { title: "Product", links: [["Features", "/features"], ["How It Works", "/how-it-works"], ["Pricing", "/pricing"]] },
+  { title: "Company", links: [["About", "/about"], ["Contact", "/contact"], ["Privacy", "/legal/privacy"], ["Terms", "/legal/terms"]] },
+  { title: "Account", links: [["Sign In", `${APP_URL}/auth/login`], ["Join the Beta", "/request-access"], ["Client Portal", `${APP_URL}/auth/login`]] },
 ];
 
 export function SiteFooter() {
@@ -21,7 +22,7 @@ export function SiteFooter() {
             <p className="eyebrow mb-3">{c.title}</p>
             <ul className="space-y-2">
               {c.links.map(([l, h]) => (
-                <li key={h}>
+                <li key={l}>
                   <Link href={h!} className="text-[13.5px] text-ink-3 hover:text-accent">
                     {l}
                   </Link>

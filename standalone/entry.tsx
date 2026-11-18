@@ -14,7 +14,6 @@ import HowItWorks from "@/app/(marketing)/how-it-works/page";
 import Pricing from "@/app/(marketing)/pricing/page";
 import About from "@/app/(marketing)/about/page";
 import Contact from "@/app/(marketing)/contact/page";
-import Prototype from "@/app/(marketing)/prototype/page";
 import Privacy from "@/app/(marketing)/legal/privacy/page";
 import Terms from "@/app/(marketing)/legal/terms/page";
 
@@ -60,7 +59,6 @@ const ROUTES: [string, Layout, Page][] = [
   ["/pricing", MarketingLayout, Pricing],
   ["/about", MarketingLayout, About],
   ["/contact", MarketingLayout, Contact],
-  ["/prototype", MarketingLayout, Prototype],
   ["/legal/privacy", MarketingLayout, Privacy],
   ["/legal/terms", MarketingLayout, Terms],
   ["/auth/login", AuthLayout, Login],
@@ -110,7 +108,7 @@ function NotFound() {
   return (
     <div style={{ padding: 48, textAlign: "center" }}>
       <p className="font-serif text-3xl">Page not found</p>
-      <a href="/prototype" className="mt-4 inline-block text-accent underline">Back to the prototype guide</a>
+      <a href="/app" className="mt-4 inline-block text-accent underline">Back to the workspace</a>
     </div>
   );
 }
@@ -120,7 +118,7 @@ class Boundary extends React.Component<{ children: React.ReactNode; k: string },
   static getDerivedStateFromError(err: Error) { return { err }; }
   componentDidUpdate(prev: { k: string }) { if (prev.k !== this.props.k && this.state.err) this.setState({ err: null }); }
   render() {
-    if (this.state.err) return <div style={{ padding: 48 }}><p className="font-serif text-2xl">Something went wrong on this screen.</p><p className="mt-2 text-muted">{this.state.err.message}</p><a href="/prototype" className="mt-4 inline-block text-accent underline">Back to the prototype guide</a></div>;
+    if (this.state.err) return <div style={{ padding: 48 }}><p className="font-serif text-2xl">Something went wrong on this screen.</p><p className="mt-2 text-muted">{this.state.err.message}</p><a href="/app" className="mt-4 inline-block text-accent underline">Back to the workspace</a></div>;
     return this.props.children;
   }
 }
@@ -172,8 +170,8 @@ document.addEventListener("click", (e) => {
 window.confirm = () => true;
 
 const startHash = location.hash.replace(/^#/, "");
-const START: Record<string, string> = { home: "/", app: "/app", portal: "/portal", guide: "/prototype" };
-initRouter(START[startHash] ?? "/prototype");
+const START: Record<string, string> = { home: "/", app: "/app", portal: "/portal", guide: "/app" };
+initRouter(START[startHash] ?? "/app");
 
 createRoot(document.getElementById("root")!).render(
   <>

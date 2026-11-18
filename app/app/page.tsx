@@ -44,7 +44,7 @@ const ACT_ICON: Record<Activity["kind"], { i: React.ElementType; c: string }> = 
 
 function greeting() {
   const h = new Date().getHours();
-  return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+  return h < 12 ? "Good Morning" : h < 18 ? "Good Afternoon" : "Good Evening";
 }
 
 export default function DashboardPage() {
@@ -52,7 +52,7 @@ export default function DashboardPage() {
   const s = useStore();
   const name = (id?: string) => personName(s.people.find((p) => p.id === id));
   const [taskView, setTaskView] = React.useState<"overdue" | "upcoming" | "follow">("overdue");
-  const [hello, setHello] = React.useState("Good morning");
+  const [hello, setHello] = React.useState("Good Morning");
   React.useEffect(() => setHello(greeting()), []);
 
   const activeClients = s.clients.filter((c) => c.status !== "archived");

@@ -16,6 +16,7 @@ import { NotificationIcon } from "./notification-icon";
 import { SaveStatus } from "./server-gate";
 import { signOut } from "@/lib/sync";
 import { DATA_MODE } from "@/lib/utils";
+import { SITE_URL } from "@/lib/site";
 
 export function Topbar({ onMenu }: { onMenu: () => void }) {
   const router = useRouter();
@@ -111,9 +112,9 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
           </DropdownTrigger>
           <DropdownContent className="w-60">
             <DropdownLabel>Help</DropdownLabel>
-            <DropdownItem onSelect={() => router.push("/contact#help")}><BookOpen /> Help Center</DropdownItem>
-            <DropdownItem onSelect={() => router.push("/prototype")}><Compass /> Prototype Guide & Workflows</DropdownItem>
-            <DropdownItem onSelect={() => router.push("/contact")}><MessageCircle /> Contact Support</DropdownItem>
+            <DropdownItem onSelect={() => window.open(`${SITE_URL}/contact#help`, "_blank")}><BookOpen /> Help Center</DropdownItem>
+            <DropdownItem onSelect={() => window.open(`${SITE_URL}/how-it-works`, "_blank")}><Compass /> How It Works</DropdownItem>
+            <DropdownItem onSelect={() => window.open(`${SITE_URL}/contact`, "_blank")}><MessageCircle /> Contact Support</DropdownItem>
             <DropdownSeparator />
             <div className="flex items-center justify-between px-2.5 py-2 text-[12.5px] text-muted">
               <span className="flex items-center gap-2"><Keyboard className="size-4" /> Search</span>

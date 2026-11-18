@@ -7,6 +7,7 @@ import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ButtonLink } from "@/components/ui/button";
 import { Wordmark } from "@/components/ui/misc";
+import { APP_URL } from "@/lib/site";
 
 const LINKS = [
   { href: "/features", label: "Features" },
@@ -41,11 +42,11 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="ml-auto hidden items-center gap-2 md:flex">
-          <ButtonLink href="/auth/login" variant="ghost" size="sm">
+          <ButtonLink href={`${APP_URL}/auth/login`} variant="ghost" size="sm">
             Sign In
           </ButtonLink>
-          <ButtonLink href="/auth/signup" size="sm">
-            Get Started
+          <ButtonLink href="/request-access" size="sm">
+            Join the Beta
           </ButtonLink>
         </div>
         <button className="ml-auto rounded-md p-2 md:hidden" onClick={() => setOpen((o) => !o)} aria-label="Menu" aria-expanded={open}>
@@ -64,10 +65,10 @@ export function SiteHeader() {
               Contact
             </Link>
             <div className="mt-3 grid grid-cols-2 gap-2 pb-2">
-              <ButtonLink href="/auth/login" variant="secondary">
+              <ButtonLink href={`${APP_URL}/auth/login`} variant="secondary">
                 Sign In
               </ButtonLink>
-              <ButtonLink href="/auth/signup">Get Started</ButtonLink>
+              <ButtonLink href="/request-access">Join the Beta</ButtonLink>
             </div>
           </nav>
         </div>
