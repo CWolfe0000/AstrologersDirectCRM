@@ -3,6 +3,7 @@
 import * as React from "react";
 import { ASPECTS, BODIES, RULERS, SIGNS, bodyIn, degInSign, dignityOf, fmtDeg, fmtOrb, ordinal, signOf, type Aspect, type AspectId, type BodyId, type ChartView, aspectVerb } from "@/lib/astro";
 import { cn } from "@/lib/utils";
+import { rulershipReport, type Rulership } from "@/lib/astro/rulership";
 import { Segmented } from "@/components/ui/tabs";
 
 const th = "px-2 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted";
@@ -169,6 +170,67 @@ export function AspectsTable({
         </table>
       )}
       <p className="mt-3 text-[11.5px] text-muted">Hover a row to highlight the aspect line on the wheel. Click a planet on the wheel to filter.</p>
+    </div>
+  );
+}
+
+/** Solar Fire–style rulership summary and table, then the house cusps. */
+export function RulershipTable({ view, rulership }: { view: ChartView; rulership: Rulership }) {
+  const r = rulershipReport(view.inner, rulership);
+  const list = (ids: BodyId[]) => (ids.length ? <span className="inline-flex flex-wrap items-center gap-1.5">{ids.map((id) => <Glyph key={id} id={id} />)}</span> : <span className="text-muted">None</span>);
+  const cell = "border-b border-line/60 px-1.5 py-1.5 text-[12.5px]";
+  const rth = "px-1.5 py-2 text-left text-[10.5px] font-semibold uppercase tracking-wide text-muted";
+  return (
+    <div className="space-y-5">
+      <dl className="grid grid-cols-1 overflow-hidden rounded-lg border border-line text-[12.5px] sm:grid-cols-2">
+        {(
+          [
+            ["In Rulership", list(r.inRulership)],
+            ["In Exaltation", list(r.inExaltation)],
+            ["Accidental Dignity", list(r.accidental)],
+            ["Final Dispositor", r.final ? <Glyph id={r.final} /> : <span className="text-muted">None</span>],
+            ["In Detriment", list(r.inDetriment)],
+            ["In Fall", list(r.inFall)],
+            ["In Mutual Reception", r.mutual.length ? <span className="inline-flex flex-wrap gap-2">{r.mutual.map(([a, b]) => <span key={a + b}><Glyph id={a} /> ↔ <Glyph id={b} /></span>)}</span> : <span className="text-muted">None</span>],
+          ] as const
+        ).map(([k, v], i) => (
+          <div key={k} className={cn("flex items-center gap-2 border-line px-3 py-2", i % 2 === 0 ? "bg-canvas/60" : "", "border-b")}>
+            <dt className="shrink-0 text-ink-3">{k}:</dt>
+            <dd>{v}</dd>
+          </div>
+        ))}
+      </dl>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="border-b border-line">
+            <tr>
+              <th className={rth}>Point</th>
+              <th className={rth}>Sign</th>
+              <th className={rth}>House</th>
+              <th className={rth}>Rules</th>
+              <th className={rth}>Dispositor</th>
+              <th className={rth}>In House</th>
+            </tr>
+          </thead>
+          <tbody>
+            {r.rows.map((x) => (
+              <tr key={x.id}>
+                <td className={cell}><Glyph id={x.id} /></td>
+                <td className={cell}><span className="glyph text-[15px]" title={SIGNS[x.sign]!.name}>{SIGNS[x.sign]!.glyph}</span></td>
+                <td className={cn(cell, "tabular-nums")}>{x.house}</td>
+                <td className={cn(cell, "tabular-nums")}>{x.rules.length ? x.rules.map((h) => (h.intercepted ? `(${h.house})` : String(h.house))).join(", ") : "–"}</td>
+                <td className={cell}><Glyph id={x.dispositor} /></td>
+                <td className={cn(cell, "tabular-nums")}>{x.dispositorHouse ?? "–"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="mt-2 text-[11.5px] text-muted">{rulership === "modern" ? "Modern" : "Traditional"} rulership (change it in the chart controls). Houses in parentheses hold an intercepted sign the planet rules.</p>
+      </div>
+      <div>
+        <p className="mb-1 text-[12px] font-semibold text-ink">House Cusps</p>
+        <HousesTable view={view} />
+      </div>
     </div>
   );
 }

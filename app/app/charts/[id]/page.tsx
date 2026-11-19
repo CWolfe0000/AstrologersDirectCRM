@@ -21,7 +21,7 @@ import { HoraryPanel } from "@/components/workspace/horary-panel";
 import { ElectionPanel } from "@/components/workspace/election-panel";
 import { ChartActionsMenu } from "@/components/chart/chart-actions";
 import { ChartControls } from "@/components/workspace/chart-controls";
-import { AspectsTable, ConditionTable, HousesTable, PlacementsTable, RingTag } from "@/components/workspace/analysis-tables";
+import { AspectsTable, ConditionTable, PlacementsTable, RingTag, RulershipTable } from "@/components/workspace/analysis-tables";
 import { AspectGrid, OverlaysTable } from "@/components/workspace/synastry-tables";
 import { WorkspaceObservations } from "@/components/workspace/workspace-observations";
 import { AiAssistant } from "@/components/workspace/ai-assistant";
@@ -196,7 +196,8 @@ function Workspace() {
               <span key={k} onMouseEnter={() => setHoverAspect(k)} onMouseLeave={() => setHoverAspect(null)} className="inline-flex cursor-default items-center gap-1 rounded-md border border-line bg-canvas/50 px-2 py-1 text-[12px] text-ink-3">
                 <span className="glyph">{ASPECTS[a.type].glyph}</span>
                 <span className={cn("glyph", other.ring === "outer" && "text-accent")}>{BODIES[other.id].glyph}</span>
-                {BODIES[other.id].name} <span className="text-muted">{fmtOrb(a.orb)}</span>
+                {view.outer && <RingTag label={other.ring === "outer" ? labels.outer : labels.inner} outer={other.ring === "outer"} />}
+          {BODIES[other.id].name} <span className="text-muted">{fmtOrb(a.orb)}</span>
               </span>
             );
           })}
@@ -411,7 +412,7 @@ function Workspace() {
                       }}
                     />
                   ) : (
-                    <HousesTable view={view} />
+                    <RulershipTable view={view} rulership={s.rulership ?? "traditional"} />
                   )}
                 </TabsContent>
                 <TabsContent value="condition">
