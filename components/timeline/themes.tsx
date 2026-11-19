@@ -18,21 +18,21 @@ const THEMES: Record<ThemeId, { title: string; color: string; about: string; rul
     color: "#824B59",
     about: "Solar arcs involving the partnership significators: the times relationships tend to begin, commit, change or end.",
     rule: "Any aspect (conjunctions and oppositions only when the Ascendant–Descendant axis is the only one involved).",
-    none: "No solar arc or progression involves the partnership significators in this range.",
+    none: "No direction, slow transit or eclipse involves the partnership significators in this range.",
   },
   career: {
     title: "Career Success",
     color: "#5E7A62",
-    about: "Helpful solar arcs involving the career significators.",
+    about: "Helpful solar arcs involving the career significators, and slow transits and eclipses on the Midheaven.",
     rule: "Trines and sextiles, and any aspect when Jupiter, Venus or the Sun is the directed planet.",
-    none: "No helpful solar arc or progression involves the career significators in this range.",
+    none: "No helpful direction, and no slow transit or eclipse on the Midheaven, in this range.",
   },
   accident: {
     title: "Accident-Prone Periods",
     color: "#9A6A1F",
     about: "Hard solar arcs involving the body and vitality points. A prompt for extra care, not a forecast that something will happen.",
     rule: "Hard aspects only, with Mars, Saturn, Uranus or Pluto directed, or to natal Mars or Uranus.",
-    none: "No hard solar arc or progression of this kind in this range.",
+    none: "No hard direction, slow transit or eclipse of this kind in this range.",
   },
 };
 
@@ -90,6 +90,7 @@ function Promise({ r }: { r: ThemeResult }) {
   );
 }
 
+const KIND: Record<ThemePeriod["kind"], string> = { "solar-arc": "Solar Arc", "progression-angle": "Progression to an Angle", progression: "Progression", "transit-angle": "Transit to an Angle", "eclipse-angle": "Eclipse on an Angle" };
 const TRIGGERS_SHOWN = 6;
 const PERIODS_SHOWN = 4;
 const dateLink = "underline decoration-line-strong underline-offset-2 hover:text-accent";
@@ -97,7 +98,6 @@ const dateLink = "underline decoration-line-strong underline-offset-2 hover:text
 /** One period: the solar arc it rests on, then the transits and eclipses that set it off. */
 function Period({ m, p, d, onOpenContact, onAsOf }: { m: ActivationModel; p: ThemePeriod; d: number; onOpenContact: (c: TimelineContact) => void; onAsOf: (date: string) => void }) {
   const [all, setAll] = React.useState(false);
-  const arc = p.anchor.technique === "solar-arc";
   const keys = React.useMemo(() => anchorKeywords(m.natal, p.anchor), [m, p]);
   const timing = p.triggers.filter((t) => t.slow);
   // When there are many, keep the slow planets' exact hits, then the heaviest, still in date order.
@@ -106,13 +106,13 @@ function Period({ m, p, d, onOpenContact, onAsOf }: { m: ActivationModel; p: The
   return (
     <li className="border-t border-line pt-2.5 text-[12.5px]">
       <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <Badge tone={p.primary ? "accent" : "outline"}>{arc ? "Solar Arc" : p.primary ? "Progression to an Angle" : "Progression"}</Badge>
+        <Badge tone={p.primary ? "accent" : p.kind === "progression" ? "outline" : "info"}>{KIND[p.kind]}</Badge>
         {d >= p.start && d <= p.end && <Badge tone="outline">Now Selected</Badge>}
       </p>
       <button type="button" onClick={() => onOpenContact(p.anchor)} className="mt-1 text-left text-[13.5px] font-semibold text-ink hover:text-accent"><Glyphs c={p.anchor} size={14} /> {contactLabel(p.anchor)}</button>
       <p className="mt-0.5 text-muted">
-        In Orb {p.startOpen ? "Since Before " : ""}{fmtShort(dayIso(m, p.start))} – {p.endOpen ? "Beyond " : ""}{fmt(dayIso(m, p.end))}
-        {p.exact ? <> · Exact <button type="button" className={dateLink} onClick={() => onAsOf(p.exact!.slice(0, 10))}>{fmt(p.exact)}</button></> : " · Exact Outside This Range"}
+        {p.kind === "eclipse-angle" ? "Counted" : "In Orb"} {p.startOpen ? "Since Before " : ""}{fmtShort(dayIso(m, p.start))} – {p.endOpen ? "Beyond " : ""}{fmt(dayIso(m, p.end))}
+        {p.exacts.length ? <> · {p.kind === "eclipse-angle" ? "Eclipse" : "Exact"} {p.exacts.slice(0, 5).map((u, i) => <React.Fragment key={u}>{i > 0 && ", "}<button type="button" className={dateLink} onClick={() => onAsOf(u.slice(0, 10))}>{fmt(u)}</button></React.Fragment>)}</> : p.kind === "transit-angle" ? " · Not Exact in This Range" : " · Exact Outside This Range"}
       </p>
       {p.natalAspect && <p className="mt-0.5 text-ink-3">Repeats the natal {p.natalAspect} of {BODIES[p.anchor.source as TargetId].name} and {BODIES[p.anchor.target].name}.</p>}
       {keys.length > 0 && (
@@ -191,7 +191,7 @@ export function LifeThemes({ m, d, triggers, onOpenContact, onAsOf }: { m: Activ
         })}
       </div>
       <p className="text-[12px] leading-relaxed text-muted">
-        Each theme starts from the natal promise: the birth chart's own testimony on the topic, from the dignity and house of the significators, the planets in the house and their natal aspects. A solar arc that repeats a natal aspect between its two points is listed first. A period is the time a solar arc involving one of the significators (as the point aimed at, or as the planet directed) is in orb. A progression (other than the Moon's) to the Ascendant or Midheaven counts the same way; other progressions rank after them. The four strongest are shown first: those exact in the range, involving the topic's ruler or an angle, or repeating a natal aspect. The keywords under each are the planet, its rulerships and house, the aspect, and the natal point's sign and house. Triggers are the transits and eclipses to the two natal points of that solar arc while it is in orb, {triggers === "hard" ? "by conjunction, square or opposition only" : "by every aspect in use"} (a setting under Bodies, Aspects &amp; Orbs), with the planets and orbs set for this timeline, whatever the significance filter. Exact hits from Saturn, Uranus, Neptune and Pluto are in bold and given as the likely timing. {m.natal.hasHouses ? "" : "House rulers, house placements and the angles need a known birth time, so only the planets are used here. "}These are counting aids with provisional rules, not predictions.
+        Each theme starts from the natal promise: the birth chart's own testimony on the topic, from the dignity and house of the significators, the planets in the house and their natal aspects. A solar arc that repeats a natal aspect between its two points is listed first. A period is the time a solar arc involving one of the significators (as the point aimed at, or as the planet directed) is in orb. A progression (other than the Moon's) to the Ascendant or Midheaven counts the same way; Slow transits (Jupiter to Pluto, by conjunction, square or opposition) and eclipses (by conjunction or opposition) on the Midheaven for career, and on the Ascendant for partnership and accidents, also stand as periods of their own; on the career card they mark turning points, favourable or not. Other progressions rank last. The four strongest are shown first: those exact in the range, involving the topic's ruler or an angle, or repeating a natal aspect. The keywords under each are the planet, its rulerships and house, the aspect, and the natal point's sign and house. Triggers are the transits and eclipses to the two natal points of that solar arc while it is in orb, {triggers === "hard" ? "by conjunction, square or opposition only" : "by every aspect in use"} (a setting under Bodies, Aspects &amp; Orbs), with the planets and orbs set for this timeline, whatever the significance filter. Exact hits from Saturn, Uranus, Neptune and Pluto are in bold and given as the likely timing. {m.natal.hasHouses ? "" : "House rulers, house placements and the angles need a known birth time, so only the planets are used here. "}These are counting aids with provisional rules, not predictions.
       </p>
     </div>
   );

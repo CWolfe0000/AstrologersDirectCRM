@@ -138,7 +138,30 @@ describe("life themes", () => {
     expect(k[2]!.text).toContain("in Libra (partnership, fairness, law) · in the 7th (partners, contracts, open enemies)");
   });
 
-  it("no periods without a direction to the significators", () => {
+  it("slow transits and eclipses on an angle stand as periods of their own", () => {
+    const sat = contact("sat", "transit", "saturn", "square", "mc", 20, 40);
+    sat.windows.push({ ...sat.windows[0]!, start: day(90), end: day(110), exacts: [{ utc: day(100), pass: 2, retrograde: true }], closest: day(100) });
+    const m = activationModel(timeline([
+      contact("jup", "transit", "jupiter", "conjunction", "mc", 10, 40),
+      sat,
+      eclipse("ecl", "mc", 30),
+      contact("mars", "transit", "mars", "conjunction", "mc", 28, 32), // fast: a trigger, not a period
+      contact("soft", "transit", "jupiter", "trine", "mc", 150, 170), // soft: neither
+    ]), "all");
+    const r = themeResult(m, "career");
+    expect(r.periods.map((p) => [p.anchor.id, p.kind])).toEqual([["jup", "transit-angle"], ["sat", "transit-angle"], ["ecl", "eclipse-angle"]]);
+    // Saturn's two passes are one period.
+    expect([r.periods[1]!.start, r.periods[1]!.end, r.periods[1]!.exacts.length]).toEqual([20, 110, 2]);
+    expect(r.periods[0]!.triggers.map((t) => t.contact.id)).toEqual(["sat", "ecl", "mars"]);
+    expect([r.periods[2]!.start, r.periods[2]!.end]).toEqual([30, 58]);
+    // The Midheaven belongs to career only; the Ascendant axis counts for marriage by conjunction or opposition.
+    expect(themeResult(m, "marriage").periods).toEqual([]);
+    const asc = activationModel(timeline([contact("a", "transit", "saturn", "opposition", "asc", 10, 40), contact("b", "transit", "saturn", "square", "asc", 60, 90)]), "all");
+    expect(themeResult(asc, "marriage").periods.map((p) => p.anchor.id)).toEqual(["a"]);
+    expect(themeResult(asc, "accident").periods.map((p) => p.anchor.id)).toEqual(["a", "b"]);
+  });
+
+  it("no periods without a direction or an angle event", () => {
     const r = themeResult(activationModel(timeline([contact("t", "transit", "jupiter", "trine", "mc", 10, 40)]), "all"), "career");
     expect(r.periods).toEqual([]);
   });

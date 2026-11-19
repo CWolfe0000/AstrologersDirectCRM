@@ -34,6 +34,15 @@
  * repeats a natal aspect between its two points comes before the others, as
  * it brings out something the birth chart already holds.
  *
+ * Slow transits and eclipses on the angles also stand as periods of their own,
+ * with no direction behind them, because they proved to mark events alone (an
+ * eclipse and Jupiter on the Midheaven, leaving employment): Jupiter to Pluto
+ * by conjunction, square or opposition, and eclipses by conjunction or
+ * opposition, to the Midheaven for career (turning points, favourable or
+ * not), to the Ascendant–Descendant axis by conjunction or opposition for
+ * marriage, and to the Ascendant from Saturn, Uranus or Pluto, or an eclipse,
+ * for accidents. A planet's whole passage, every pass, is one period.
+ *
  * Triggers are the transits and eclipses, by hard aspect (conjunction, square,
  * opposition) unless the practice's setting allows every aspect, to the two
  * natal points of the anchor (the point aimed at, and the natal place of the
@@ -69,15 +78,18 @@ export interface ThemeTrigger {
 export interface ThemePeriod {
   /** The solar arc (or progression) the period rests on. */
   anchor: TimelineContact;
-  /** A solar arc, or a progression to an angle; false for the other progressions used to fill in. */
+  /** What the period rests on. */
+  kind: "solar-arc" | "progression-angle" | "progression" | "transit-angle" | "eclipse-angle";
+  /** A solar arc, or a progression to an angle. */
   primary: boolean;
   /** Day indexes within the timeline: the anchor's time in orb. */
   start: number;
   end: number;
   startOpen: boolean;
   endOpen: boolean;
-  /** When the anchor is exact, if that falls in the range. */
+  /** When the anchor is exact, if that falls in the range: the first time, and every time. */
   exact: string | null;
+  exacts: string[];
   /** The natal aspect between the anchor's two points, when there is one: the direction repeats a natal promise. */
   natalAspect: AspectId | null;
   /** The natal points triggers are looked for on. */
@@ -102,6 +114,8 @@ export interface ThemeResult {
   periods: ThemePeriod[];
 }
 
+export type ThemeTriggers = "hard" | "all";
+const TRIGGER_HARD = new Set(["conjunction", "square", "opposition"]);
 const HARD = new Set(["conjunction", "square", "opposition", "semisquare", "sesquiquadrate", "quincunx"]);
 const SOFT = new Set(["trine", "sextile"]);
 const HARSH_MOVERS = new Set(["mars", "saturn", "uranus", "pluto"]);
@@ -137,6 +151,21 @@ const SLOW = new Set(["saturn", "uranus", "neptune", "pluto"]);
 /** A solar arc, or a progression (not the Moon's) to the Ascendant or Midheaven. */
 export const isPrimary = (c: TimelineContact) => c.technique === "solar-arc" || (c.technique === "progressed" && c.source !== "moon" && (c.target === "asc" || c.target === "mc"));
 
+const ANGLE_MOVERS = new Set(["jupiter", "saturn", "uranus", "neptune", "pluto"]);
+/**
+ * A slow transit or an eclipse on an angle, standing as a period with no direction behind it:
+ * the Midheaven for career, the Ascendant–Descendant axis for marriage, the Ascendant for accidents.
+ */
+function angleEvent(theme: ThemeId, c: TimelineContact) {
+  if (c.target !== "asc" && c.target !== "mc") return false;
+  const axis = c.aspect === "conjunction" || c.aspect === "opposition";
+  if (c.technique === "eclipse") { if (!axis) return false; }
+  else if (c.technique !== "transit" || !ANGLE_MOVERS.has(c.source) || !TRIGGER_HARD.has(c.aspect)) return false;
+  if (theme === "career") return c.target === "mc";
+  if (theme === "marriage") return c.target === "asc" && axis;
+  return c.target === "asc" && (c.technique === "eclipse" || HARSH_MOVERS.has(c.source));
+}
+
 /** Whether a solar arc or progression anchors a period of this theme. */
 function anchors(theme: ThemeId, c: TimelineContact, sigs: Set<TargetId>) {
   if (c.technique !== "solar-arc" && c.technique !== "progressed") return false;
@@ -147,8 +176,6 @@ function anchors(theme: ThemeId, c: TimelineContact, sigs: Set<TargetId>) {
   return HARD.has(c.aspect) && (HARSH_MOVERS.has(c.source) || c.target === "mars" || c.target === "uranus");
 }
 
-export type ThemeTriggers = "hard" | "all";
-const TRIGGER_HARD = new Set(["conjunction", "square", "opposition"]);
 
 export function themeResult(m: ActivationModel, id: ThemeId, triggerAspects: ThemeTriggers = "hard"): ThemeResult {
   const n = m.nDays;
@@ -163,43 +190,59 @@ export function themeResult(m: ActivationModel, id: ThemeId, triggerAspects: The
 
   const all: ThemePeriod[] = [];
   const arcs = new Set(m.tl.contacts.filter((c) => c.technique === "solar-arc").map((c) => `${c.source}|${c.aspect}|${c.target}`));
+  /** A period for an anchor in orb from ws to we, with the transits and eclipses to its points in that time. */
+  const build = (anchor: TimelineContact, kind: ThemePeriod["kind"], points: TargetId[], ws: number, we: number, startOpen: boolean, endOpen: boolean, exacts: string[]): ThemePeriod => {
+    const start = di(ws), end = di(we);
+    const triggers: ThemeTrigger[] = [];
+    const sum = new Float32Array(end - start + 1);
+    for (const c of triggersAll) {
+      if (c === anchor || !points.includes(c.target)) continue;
+      let dates: string[] = [], exact = true;
+      if (c.events) dates = c.events.filter((e) => parse(e.utc) >= ws && parse(e.utc) <= we).map((e) => e.utc);
+      else {
+        const inside = c.windows.filter((x) => parse(x.end) >= ws && parse(x.start) <= we);
+        dates = inside.flatMap((x) => x.exacts.map((e) => e.utc)).filter((u) => parse(u) >= ws && parse(u) <= we);
+        if (dates.length === 0 && inside.length > 0) {
+          const near = inside.map((x) => x.closest).filter((u) => parse(u) >= ws && parse(u) <= we);
+          dates = near.slice(0, 1);
+          exact = false;
+        }
+      }
+      if (dates.length === 0) continue;
+      triggers.push({ contact: c, dates, exact, slow: exact && SLOW.has(c.source) });
+      const s = m.series.get(c.id)!;
+      for (let d = start; d <= end; d++) sum[d - start] += s[d] ?? 0;
+    }
+    triggers.sort((x, y) => parse(x.dates[0]!) - parse(y.dates[0]!));
+    let peak: number | null = null;
+    if (triggers.length) {
+      let best = 0;
+      for (let i = 1; i < sum.length; i++) if (sum[i]! > sum[best]!) best = i;
+      peak = start + best;
+    }
+    const primary = kind === "solar-arc" || kind === "progression-angle";
+    const natalAspect = (primary && anchor.source !== anchor.target ? m.natal.natalAspect(anchor.source as TargetId, anchor.target) : null) as AspectId | null;
+    return { anchor, kind, primary, start, end, startOpen, endOpen, exact: exacts[0] ?? null, exacts, natalAspect, points, triggers, peak };
+  };
+
   for (const anchor of m.tl.contacts) {
+    if (angleEvent(id, anchor)) {
+      if (anchor.events) {
+        // Each eclipse on the angle is its own period, for the four weeks it is counted.
+        for (const e of anchor.events) all.push(build(anchor, "eclipse-angle", [anchor.target], parse(e.utc), parse(e.utc) + 28 * DAY, false, parse(e.utc) + 28 * DAY > from + n * DAY, [e.utc]));
+      } else if (anchor.windows.length) {
+        // One period for the whole passage: every pass over the angle, direct and retrograde.
+        const first = anchor.windows[0]!, last = anchor.windows[anchor.windows.length - 1]!;
+        all.push(build(anchor, "transit-angle", [anchor.target], parse(first.start), parse(last.end), first.startOpen, last.endOpen, anchor.windows.flatMap((w) => w.exacts.map((x) => x.utc))));
+      }
+      continue;
+    }
     if (!anchors(id, anchor, sigSet)) continue;
     if (anchor.technique === "progressed" && anchor.source === "sun" && arcs.has(`sun|${anchor.aspect}|${anchor.target}`)) continue;
     const primary = isPrimary(anchor);
+    const kind: ThemePeriod["kind"] = anchor.technique === "solar-arc" ? "solar-arc" : primary ? "progression-angle" : "progression";
     const points = [anchor.target, ...(primary && m.natal.byId.has(anchor.source as TargetId) && anchor.source !== anchor.target ? [anchor.source as TargetId] : [])];
-    for (const w of anchor.windows) {
-      const ws = parse(w.start), we = parse(w.end);
-      const start = di(ws), end = di(we);
-      const triggers: ThemeTrigger[] = [];
-      const sum = new Float32Array(end - start + 1);
-      for (const c of triggersAll) {
-        if (!points.includes(c.target)) continue;
-        let dates: string[] = [], exact = true;
-        if (c.events) dates = c.events.filter((e) => parse(e.utc) >= ws && parse(e.utc) <= we).map((e) => e.utc);
-        else {
-          const inside = c.windows.filter((x) => parse(x.end) >= ws && parse(x.start) <= we);
-          dates = inside.flatMap((x) => x.exacts.map((e) => e.utc)).filter((u) => parse(u) >= ws && parse(u) <= we);
-          if (dates.length === 0 && inside.length > 0) {
-            const near = inside.map((x) => x.closest).filter((u) => parse(u) >= ws && parse(u) <= we);
-            dates = near.slice(0, 1);
-            exact = false;
-          }
-        }
-        if (dates.length === 0) continue;
-        triggers.push({ contact: c, dates, exact, slow: exact && SLOW.has(c.source) });
-        const s = m.series.get(c.id)!;
-        for (let d = start; d <= end; d++) sum[d - start] += s[d] ?? 0;
-      }
-      triggers.sort((a, b) => parse(a.dates[0]!) - parse(b.dates[0]!));
-      let peak: number | null = null;
-      if (triggers.length) {
-        let best = 0;
-        for (let i = 1; i < sum.length; i++) if (sum[i]! > sum[best]!) best = i;
-        peak = start + best;
-      }
-      all.push({ anchor, primary, start, end, startOpen: w.startOpen, endOpen: w.endOpen, exact: w.exacts[0]?.utc ?? null, natalAspect: (primary && anchor.source !== anchor.target ? m.natal.natalAspect(anchor.source as TargetId, anchor.target) : null) as AspectId | null, points, triggers, peak });
-    }
+    for (const w of anchor.windows) all.push(build(anchor, kind, points, parse(w.start), parse(w.end), w.startOpen, w.endOpen, w.exacts.map((x) => x.utc)));
   }
   result.anchorCount = all.length;
   // Rank: solar arcs and progressions to angles first; then exact in the range, a direction involving the
@@ -207,7 +250,7 @@ export function themeResult(m: ActivationModel, id: ThemeId, triggerAspects: The
   // and one that repeats a natal aspect; then the number of triggers.
   const principal = new Set(sigs.filter((x) => !x.why.startsWith("In the")).map((x) => x.id));
   const score = (p: ThemePeriod) =>
-    (p.primary ? 8 : 0) + (p.exact ? 3 : 0) + ([p.anchor.target, ...(p.primary ? [p.anchor.source as TargetId] : [])].some((x) => principal.has(x)) ? 2 : 0) + (p.natalAspect ? 1 : 0);
+    (p.primary ? 8 : p.kind === "transit-angle" ? 6 : p.kind === "eclipse-angle" ? 4 : 0) + (p.exact ? 3 : 0) + ([p.anchor.target, ...(p.primary ? [p.anchor.source as TargetId] : [])].some((x) => principal.has(x)) ? 2 : 0) + (p.natalAspect ? 1 : 0);
   result.periods = all.sort((a, b) => score(b) - score(a) || b.triggers.length - a.triggers.length);
 
   const counted = new Set<string>();

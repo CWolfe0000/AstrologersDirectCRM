@@ -74,9 +74,15 @@ function pointKeys(n: NatalModel, id: TargetId, place: boolean) {
 export function anchorKeywords(n: NatalModel, c: TimelineContact): KeywordLine[] {
   const src = c.source as TargetId;
   const prefix = c.technique === "solar-arc" ? "Solar Arc" : c.technique === "progressed" ? "Progressed" : "Transiting";
+  if (c.technique === "eclipse")
+    return [
+      { label: c.source === "new-moon" ? "Solar Eclipse" : "Lunar Eclipse", text: c.source === "new-moon" ? "a door opens or closes, a new chapter, something seeded" : "a culmination, something revealed or ended, a relationship in the light" },
+      { label: c.aspect.charAt(0).toUpperCase() + c.aspect.slice(1), text: ASPECT_KEYS[c.aspect] ?? "" },
+      { label: `Natal ${BODIES[c.target].name}`, text: pointKeys(n, c.target, true) },
+    ];
   return [
     { label: `${prefix} ${BODIES[src]?.name ?? c.source}`, text: n.byId.has(src) || PLANET_KEYS[src] ? pointKeys(n, src, false) : "" },
-    { label: BODIES[src] ? c.aspect.charAt(0).toUpperCase() + c.aspect.slice(1) : c.aspect, text: ASPECT_KEYS[c.aspect] ?? "" },
+    { label: c.aspect.charAt(0).toUpperCase() + c.aspect.slice(1), text: ASPECT_KEYS[c.aspect] ?? "" },
     { label: `Natal ${BODIES[c.target].name}`, text: pointKeys(n, c.target, true) },
   ].filter((l) => l.text);
 }
