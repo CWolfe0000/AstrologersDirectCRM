@@ -10,6 +10,10 @@ import "server-only";
  *   - solar-arc angles (angle + arc) to the planets                orb 1°
  *   - progressed angles (RAMC + arc) to the planets                orb 1°
  *   - the progressed Moon to the angles                            orb 1°
+ *   - primary directions: planets (with their latitude) to the four
+ *     angles, direct and converse, under the pole of the birthplace
+ *     (Placidus semi-arc), plus zodiacal squares to the angles; Naibod's
+ *     key, 0°59′08″ of right ascension per year                     orb 1° (a year)
  *
  * Only conjunctions, oppositions and squares count. Each hit scores technique
  * weight × aspect weight × how relevant that angle is to the event (marriage →
@@ -20,7 +24,7 @@ import "server-only";
  */
 import type { BirthData, BodyId, ChartSettings, HouseSystem } from "@/lib/astro/types";
 import { zonedToUtc } from "@/lib/timezones";
-import { bodiesAt, housesAt, housesFromRamc, obliquityAt } from "./swiss";
+import { bodiesAt, equatorialAt, housesAt, housesFromRamc, obliquityAt } from "./swiss";
 
 const DAY = 86_400_000;
 const YEAR = 365.2422 * DAY;
@@ -58,10 +62,36 @@ const TECH = {
   "sa-angle": { label: "Solar Arc Angle", w: 1.2, orb: 1 },
   "prog-angle": { label: "Progressed Angle", w: 1, orb: 1 },
   "prog-moon": { label: "Progressed Moon", w: 0.8, orb: 1 },
+  primary: { label: "Primary Direction", w: 1.2, orb: 1 },
 } as const;
 type Tech = keyof typeof TECH;
 
 const n180 = (x: number) => ((((x + 180) % 360) + 360) % 360) - 180;
+const RAD = Math.PI / 180;
+/** Naibod's key: the Sun's mean daily motion in right ascension, as degrees per year of life. */
+export const NAIBOD = 0.985647;
+
+/**
+ * Primary-direction arcs from a point (right ascension, declination) to the
+ * four angles, under the birthplace latitude. A positive arc is direct (the
+ * point reaches the angle by the turning of the sky after birth), negative is
+ * converse. Points that never rise or set at this latitude only reach the MC/IC.
+ */
+export function primaryArcs(ra: number, dec: number, ramc: number, lat: number): Record<Angle, number | null> {
+  const x = Math.tan(dec * RAD) * Math.tan(lat * RAD);
+  const ad = Math.abs(x) <= 1 ? Math.asin(x) / RAD : null; // ascensional difference
+  return {
+    mc: n180(ra - ramc),
+    ic: n180(ra - ramc - 180),
+    asc: ad === null ? null : n180(ra - ad - (ramc + 90)), // oblique ascension against the Ascendant's
+    dsc: ad === null ? null : n180(ra + ad - (ramc - 90)), // oblique descension against the Descendant's
+  };
+}
+/** Right ascension and declination of a point on the ecliptic (no latitude). */
+function eclToEq(lon: number, eps: number) {
+  const l = lon * RAD, e = eps * RAD;
+  return { ra: ((Math.atan2(Math.sin(l) * Math.cos(e), Math.cos(l)) / RAD) + 360) % 360, dec: Math.asin(Math.sin(e) * Math.sin(l)) / RAD };
+}
 
 export interface RectifyEvent {
   date: string;
@@ -137,6 +167,9 @@ export function rectify(birth: BirthData, events: RectifyEvent[], from: string, 
     if (ascSigns?.length && !ascSigns.includes(Math.floor(h.asc / 30))) continue;
     const natal = bodiesAt(utc, { zodiac: s.zodiac, bodies: NATAL });
     const eps = obliquityAt(utc);
+    // For primary directions: true equatorial positions, and tropical longitudes for the square points.
+    const eq = Object.fromEntries(equatorialAt(utc, NATAL).bodies.map((x) => [x.id, x]));
+    const trop = s.zodiac === "tropical" ? natal : bodiesAt(utc, { zodiac: "tropical", bodies: NATAL });
     const angles: Record<Angle, number> = { asc: h.asc, mc: h.mc, dsc: (h.asc + 180) % 360, ic: (h.mc + 180) % 360 };
     const hits: Hit[] = [];
     events.forEach((ev, i) => {
@@ -173,6 +206,26 @@ export function rectify(birth: BirthData, events: RectifyEvent[], from: string, 
         ["prog-angle", "Progressed Ascendant", pr.asc, "asc"],
         ["prog-angle", "Progressed Midheaven", pr.mc, "mc"],
       ];
+      // Primary directions.
+      const need = (ageMs / YEAR) * NAIBOD;
+      const prim = (name: string, ra: number, dec: number, aspect: (typeof ASPECTS)[number], only?: Angle[]) => {
+        const arcs = primaryArcs(ra, dec, h.ramc, birth.lat);
+        for (const ang of (only ?? (["asc", "mc", "dsc", "ic"] as Angle[]))) {
+          const a = arcs[ang];
+          if (a === null) continue;
+          const orb = Math.abs(Math.abs(a) - need);
+          if (orb <= TECH.primary.orb) add("primary", `${a < 0 ? "Converse " : ""}Primary Direction of ${name}`, angleNames[ang], { name: aspect.name, w: aspect.w }, orb, ang);
+        }
+      };
+      for (const b of NATAL) {
+        const p = eq[b];
+        if (p) prim(NAME(b), p.ra, p.dec, ASPECTS[0]);
+        // Zodiacal squares: the points 90° either side, to the Ascendant and Midheaven (the opposite angles repeat them).
+        for (const d of [90, 270]) {
+          const q = eclToEq((trop[b]!.lon + d) % 360, eps);
+          prim(NAME(b), q.ra, q.dec, ASPECTS[2], ["asc", "mc"]);
+        }
+      }
       for (const [technique, fromName, lon, ang] of moving) {
         for (const b of NATAL) {
           const c = contact(lon, natal[b]!.lon, TECH[technique].orb);

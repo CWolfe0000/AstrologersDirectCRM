@@ -140,13 +140,13 @@ export default function RectifyPage() {
 
       <div className="mb-5 rounded-lg border border-line bg-canvas-2 px-4 py-3 text-[12.5px] text-muted">
         <p className="mb-0.5 font-semibold text-ink">How Reliable Is This?</p>
-        <p>We tested this on 10 people with birth-certificate times (Astro-Databank, rated AA) and four to seven well-dated events each. Judging the rising sign correctly narrowed the search from four hours to about two and a half. Within that span, the event scoring did not narrow it further: its top candidate was within 30 minutes of the true time for 1 of the 10, no better than chance. Judge the rising sign first, treat the event ranking as a starting point, and weigh the contacts listed for each candidate yourself.</p>
+        <p>We tested this on 10 people with birth-certificate times (Astro-Databank, rated AA) and four to seven well-dated events each, searching two hours either side. Using every technique here, primary directions included, the top candidate was within 30 minutes of the true time for 1 of the 10, which is no better than chance. Where you can judge the rising sign correctly, that alone narrows the search to about two and a half hours. Treat the ranking as a starting point and weigh the contacts listed for each candidate yourself.</p>
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[420px_minmax(0,1fr)]">
         <div className="space-y-5">
           <Card>
-            <CardHeader title="Step 1: Rising Sign" description="Judge the rising sign from appearance and manner. Choosing one limits the search to the times it rises on the birth date." />
+            <CardHeader title="Step 1: Rising Sign (Optional)" description="If you’ve met the client, judge the rising sign from appearance and manner; choosing one limits the search to the times it rises. Skip this for clients you haven’t seen, such as online orders." />
             <CardBody className="space-y-2 pt-0">
               {!spans ? (
                 <p className="flex items-center gap-2 text-[12.5px] text-muted"><Loader2 className="size-4 animate-spin" /> Finding rising times…</p>
@@ -316,6 +316,7 @@ export default function RectifyPage() {
                         <BHead>What Is Checked at Each Event</BHead>
                         <BTable head={["Technique", "Weight", "Orb"]} rows={Object.values(result.weights.techniques).map((t) => [t.label, t.w, `${t.orb}°`])} />
                         <p>Transits use Jupiter, Saturn, Uranus, Neptune, Pluto and the North Node at noon UTC on the event date. Progressions are one day after birth for each year of life; the solar arc is the progressed Sun minus the natal Sun. Progressed angles come from the natal RAMC plus the arc. Natal points: the Sun through Pluto and the North Node.</p>
+                        <p>Primary directions turn the sky after birth: a planet (with its latitude) reaches an angle when its right ascension meets the Midheaven or IC, or its oblique ascension or descension meets the Ascendant or Descendant under the birthplace latitude (the Placidus semi-arc method). Squares use the zodiacal points 90° from each planet. The arc becomes years by Naibod’s key, 0°59′08″ per year; converse directions run the sky backward. A 1° orb is about a year.</p>
                       </div>
                       <div className="space-y-1">
                         <BHead>Aspect Weights</BHead>
