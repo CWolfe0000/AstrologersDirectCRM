@@ -22,6 +22,11 @@
  *   Uranus. Hard aspects only, and only when Mars, Saturn, Uranus or Pluto is
  *   directed, or natal Mars or Uranus is the target.
  *
+ * Everything rests on the natal promise (lib/astro/promise): each theme
+ * carries the natal chart's own testimony on the topic, and a direction that
+ * repeats a natal aspect between its two points comes before the others, as
+ * it brings out something the birth chart already holds.
+ *
  * Triggers are the transits and eclipses, by any aspect in use, to the two
  * natal points of the anchor (the point aimed at, and the natal place of the
  * directed planet) while the anchor is in orb. Like the density score, this is
@@ -29,6 +34,8 @@
  */
 import type { BodyId } from "./index";
 import type { ActivationModel } from "./activation";
+import { natalPromise, type NatalPromise } from "./promise";
+import type { AspectId } from "./types";
 import type { TargetId, TimelineContact } from "./timeline";
 
 const DAY = 86_400_000;
@@ -56,6 +63,8 @@ export interface ThemePeriod {
   endOpen: boolean;
   /** When the anchor is exact, if that falls in the range. */
   exact: string | null;
+  /** The natal aspect between the anchor's two points, when there is one: the direction repeats a natal promise. */
+  natalAspect: AspectId | null;
   /** The natal points triggers are looked for on. */
   points: TargetId[];
   /** Transits and eclipses to those points, in date order. */
@@ -67,6 +76,8 @@ export interface ThemePeriod {
 export interface ThemeResult {
   id: ThemeId;
   significators: Significator[];
+  /** What the natal chart itself says about the topic. */
+  promise: NatalPromise;
   /** Per day: anchors in orb (solar arcs counted double) plus their triggers; and the maximum. */
   series: Float32Array;
   max: number;
@@ -123,7 +134,7 @@ export function themeResult(m: ActivationModel, id: ThemeId): ThemeResult {
   const sigs = significators(m, id);
   const sigSet = new Set(sigs.map((s) => s.id));
   const series = new Float32Array(n);
-  const result: ThemeResult = { id, significators: sigs, series, max: 0, anchorCount: 0, periods: [] };
+  const result: ThemeResult = { id, significators: sigs, promise: natalPromise(m.natal, id), series, max: 0, anchorCount: 0, periods: [] };
   if (!n) return result;
   const di = (ms: number) => Math.max(0, Math.min(n - 1, Math.floor((ms - from) / DAY)));
   const triggersAll = m.tl.contacts.filter((c) => c.technique === "transit" || c.technique === "eclipse");
@@ -162,15 +173,15 @@ export function themeResult(m: ActivationModel, id: ThemeId): ThemeResult {
         for (let i = 1; i < sum.length; i++) if (sum[i]! > sum[best]!) best = i;
         peak = start + best;
       }
-      all.push({ anchor, start, end, startOpen: w.startOpen, endOpen: w.endOpen, exact: w.exacts[0]?.utc ?? null, points, triggers, peak });
+      all.push({ anchor, start, end, startOpen: w.startOpen, endOpen: w.endOpen, exact: w.exacts[0]?.utc ?? null, natalAspect: (anchor.technique === "solar-arc" && anchor.source !== anchor.target ? m.natal.natalAspect(anchor.source as TargetId, anchor.target) : null) as AspectId | null, points, triggers, peak });
     }
   }
   result.anchorCount = all.length;
   const arcFirst = (p: ThemePeriod) => Number(p.anchor.technique === "solar-arc");
   result.periods = all
-    .sort((a, b) => arcFirst(b) - arcFirst(a) || Number(!!b.exact) - Number(!!a.exact) || b.triggers.length - a.triggers.length)
+    .sort((a, b) => arcFirst(b) - arcFirst(a) || Number(!!b.natalAspect) - Number(!!a.natalAspect) || Number(!!b.exact) - Number(!!a.exact) || b.triggers.length - a.triggers.length)
     .slice(0, 4)
-    .sort((a, b) => arcFirst(b) - arcFirst(a) || a.start - b.start);
+    .sort((a, b) => arcFirst(b) - arcFirst(a) || Number(!!b.natalAspect) - Number(!!a.natalAspect) || a.start - b.start);
 
   const counted = new Set<string>();
   for (const p of result.periods) {

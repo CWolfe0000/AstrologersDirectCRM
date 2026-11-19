@@ -4,7 +4,8 @@ import * as React from "react";
 import { BODIES } from "@/lib/astro";
 import type { ActivationModel } from "@/lib/astro/activation";
 import { themeAnalysis, type ThemeId, type ThemePeriod, type ThemeResult } from "@/lib/astro/themes";
-import type { TimelineContact } from "@/lib/astro/timeline";
+import type { PromiseLevel } from "@/lib/astro/promise";
+import type { TargetId, TimelineContact } from "@/lib/astro/timeline";
 import { Badge } from "@/components/ui/badge";
 import { Glyphs, contactLabel, fmt, fmtShort } from "./labels";
 import { dayIso } from "./activation";
@@ -50,6 +51,43 @@ function Strip({ r, d, color, label }: { r: ThemeResult; d: number; color: strin
   );
 }
 
+const LEVELS: Record<ThemeId, Record<PromiseLevel, { label: string; tone: "sage" | "warn" | "outline"; note?: string }>> = (() => {
+  const topic = {
+    strong: { label: "Well Promised", tone: "sage" as const },
+    mixed: { label: "Mixed Promise", tone: "outline" as const },
+    weak: { label: "Weakly Promised", tone: "warn" as const, note: "The birth chart gives this topic little support, so the periods below may pass quietly or bring difficulty." },
+    none: { label: "Little Testimony", tone: "outline" as const, note: "The birth chart says little either way, so the periods below have less to bring out." },
+  };
+  return {
+    marriage: topic,
+    career: topic,
+    accident: {
+      strong: { label: "Marked in the Birth Chart", tone: "warn" },
+      mixed: { label: "Some Natal Indication", tone: "outline" },
+      weak: { label: "Some Natal Indication", tone: "outline" },
+      none: { label: "Little Natal Indication", tone: "sage", note: "The birth chart does not mark this out, so the periods below carry less weight." },
+    },
+  };
+})();
+
+/** What the natal chart says about the topic: the ground the periods stand on. */
+function Promise({ r }: { r: ThemeResult }) {
+  const l = LEVELS[r.id][r.promise.level];
+  return (
+    <div className="rounded-lg bg-canvas-2 px-3 py-2.5 text-[12.5px]">
+      <p className="flex flex-wrap items-center gap-2 text-[11.5px] font-semibold text-ink">Natal Promise <Badge tone={l.tone}>{l.label}</Badge></p>
+      {r.promise.testimonies.length > 0 && (
+        <ul className="mt-1.5 space-y-0.5 text-ink-3">
+          {r.promise.testimonies.map((t) => (
+            <li key={t.text} className="flex gap-1.5"><span aria-hidden className={t.tone === "support" ? "text-sage-dark" : "text-warn"}>{t.tone === "support" ? "+" : "−"}</span><span><span className="sr-only">{t.tone === "support" ? "Supports: " : r.id === "accident" ? "Indicates: " : "Challenges: "}</span>{t.text}</span></li>
+          ))}
+        </ul>
+      )}
+      {l.note && <p className="mt-1.5 text-muted">{l.note}</p>}
+    </div>
+  );
+}
+
 const TRIGGERS_SHOWN = 6;
 const dateLink = "underline decoration-line-strong underline-offset-2 hover:text-accent";
 
@@ -71,6 +109,7 @@ function Period({ m, p, d, onOpenContact, onAsOf }: { m: ActivationModel; p: The
         In Orb {p.startOpen ? "Since Before " : ""}{fmtShort(dayIso(m, p.start))} – {p.endOpen ? "Beyond " : ""}{fmt(dayIso(m, p.end))}
         {p.exact ? <> · Exact <button type="button" className={dateLink} onClick={() => onAsOf(p.exact!.slice(0, 10))}>{fmt(p.exact)}</button></> : " · Exact Outside This Range"}
       </p>
+      {p.natalAspect && <p className="mt-0.5 text-ink-3">Repeats the natal {p.natalAspect} of {BODIES[p.anchor.source as TargetId].name} and {BODIES[p.anchor.target].name}.</p>}
       <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-muted">Triggers on Natal {p.points.map((id) => BODIES[id].name).join(" and ")}</p>
       {p.triggers.length === 0 ? (
         <p className="mt-1 text-muted">No transits or eclipses to {p.points.length > 1 ? "these points" : "this point"} while it is in orb in this range.</p>
@@ -111,6 +150,7 @@ export function LifeThemes({ m, d, onOpenContact, onAsOf }: { m: ActivationModel
                 <h3 className="font-serif text-[20px] leading-snug text-ink">{t.title}</h3>
                 <p className="mt-1 text-[12.5px] text-muted">{t.about}</p>
               </div>
+              <Promise r={r} />
               <Strip r={r} d={d} color={t.color} label={`${t.title}: ${r.periods.length} ${r.periods.length === 1 ? "period" : "periods"} in this range`} />
               {r.periods.length === 0 ? (
                 <p className="text-[13px] text-muted">{t.none}</p>
@@ -128,7 +168,7 @@ export function LifeThemes({ m, d, onOpenContact, onAsOf }: { m: ActivationModel
         })}
       </div>
       <p className="text-[12px] leading-relaxed text-muted">
-        A period is the time a solar arc involving one of the significators (as the point aimed at, or as the planet directed) is in orb. Solar arcs come first; a secondary progression to a significator is shown only when fewer than four solar arcs qualify. Triggers are the transits and eclipses to the two natal points of that solar arc while it is in orb, using the planets, aspects and orbs set for this timeline, whatever the significance filter. {m.natal.hasHouses ? "" : "House rulers, house placements and the angles need a known birth time, so only the planets are used here. "}These are counting aids with provisional rules, not predictions.
+        Each theme starts from the natal promise: the birth chart's own testimony on the topic, from the dignity and house of the significators, the planets in the house and their natal aspects. A solar arc that repeats a natal aspect between its two points is listed first. A period is the time a solar arc involving one of the significators (as the point aimed at, or as the planet directed) is in orb. Solar arcs come first; a secondary progression to a significator is shown only when fewer than four solar arcs qualify. Triggers are the transits and eclipses to the two natal points of that solar arc while it is in orb, using the planets, aspects and orbs set for this timeline, whatever the significance filter. {m.natal.hasHouses ? "" : "House rulers, house placements and the angles need a known birth time, so only the planets are used here. "}These are counting aids with provisional rules, not predictions.
       </p>
     </div>
   );

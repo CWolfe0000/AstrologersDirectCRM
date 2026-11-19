@@ -83,6 +83,34 @@ describe("life themes", () => {
     expect([122, 123]).toContain(r.periods[0]!.peak);
   });
 
+  it("natal promise: testimony from the significators' dignity, house and natal aspects", () => {
+    // Venus rules the 7th from 5° Libra (domicile, in the 7th); Jupiter is in the 7th and conjunct Venus.
+    const m = activationModel(timeline([]), "all");
+    const r = themeResult(m, "marriage").promise;
+    expect(r.level).toBe("strong");
+    expect(r.testimonies.map((t) => t.text)).toEqual([
+      "Venus, ruler of the 7th, is in its domicile",
+      "Venus, ruler of the 7th, is angular in the 7th House",
+      "Jupiter conjunct Venus, ruler of the 7th",
+      "Mars, ruler of the 1st, sextile Venus, ruler of the 7th",
+      "Venus in the 7th House",
+      "Jupiter in the 7th House",
+    ]);
+    // Mars at 10° Leo squares the Moon at 10° Taurus: one indication; Venus and Jupiter sextile Mars, the Ascendant ruler, protect.
+    const a = themeResult(m, "accident").promise;
+    expect(a.level).toBe("mixed");
+    expect(a.testimonies.filter((t) => t.tone === "challenge").map((t) => t.text)).toEqual(["Mars square the Moon"]);
+  });
+
+  it("a solar arc that repeats a natal aspect comes first", () => {
+    const m = activationModel(timeline([
+      contact("plain", "solar-arc", "moon", "sextile", "venus", 10, 100),
+      contact("echo", "solar-arc", "jupiter", "sextile", "venus", 60, 150), // natal Jupiter is conjunct Venus
+    ]), "all");
+    const r = themeResult(m, "marriage");
+    expect(r.periods.map((p) => [p.anchor.id, p.natalAspect])).toEqual([["echo", "conjunction"], ["plain", null]]);
+  });
+
   it("no periods without a direction to the significators", () => {
     const r = themeResult(activationModel(timeline([contact("t", "transit", "jupiter", "trine", "mc", 10, 40)]), "all"), "career");
     expect(r.periods).toEqual([]);
