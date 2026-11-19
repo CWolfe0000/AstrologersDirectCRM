@@ -277,7 +277,7 @@ function Timeline() {
                   <h2 id="tl-act" className="font-serif text-[22px] text-ink">Client Activation</h2>
                   <p className="text-[12.5px] text-muted">As of {fmt(asOf)} · {sig === "major" ? "Major Cycles Only" : sig === "moderate" ? "Major & Moderate Influences" : "All Contacts"}</p>
                 </div>
-                <ActivationOverview m={model} d={d} lastSession={lastSession ? { date: lastSession.start.slice(0, 10), type: lastSession.type } : null} onOpenContact={setDetail} onPoint={setPointSheet} onHouse={setHouseSheet} />
+                <ActivationOverview m={model} d={d} onOpenContact={setDetail} onPoint={setPointSheet} onHouse={setHouseSheet} />
               </section>
               <section aria-labelledby="tl-an" className="space-y-3">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">

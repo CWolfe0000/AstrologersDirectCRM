@@ -6,7 +6,7 @@ import { ArrowDownRight, ArrowRight, ArrowUpRight, Layers, NotebookPen, Sparkles
 import { BODIES, fmtDeg, ordinal, signOf } from "@/lib/astro";
 import type { TargetId, TimelineContact } from "@/lib/astro/timeline";
 import {
-  HOUSE_TOPICS, activeOn, changesAt, changesSince, clusterThemes, clusterTitle, clustersAt, heightened, lifecycleOf, rankHouses, rankPoints, scale,
+  HOUSE_TOPICS, activeOn, changesAt, clusterThemes, clusterTitle, clustersAt, heightened, lifecycleOf, rankHouses, rankPoints, scale,
   type ActivationModel, type Change, type Cluster,
 } from "@/lib/astro/activation";
 import { useStore } from "@/lib/store";
@@ -14,7 +14,6 @@ import { cn } from "@/lib/utils";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Segmented } from "@/components/ui/tabs";
 import { Sheet } from "@/components/ui/dialog";
 import { DAY, Glyphs, contactLabel, fmt, fmtShort } from "./labels";
 
@@ -47,7 +46,7 @@ export function rulesOf(m: ActivationModel, id: TargetId) {
 // ---------------------------------------------------------------------------
 // Overview: planets, houses, what's changing
 
-export function ActivationOverview({ m, d, lastSession, onOpenContact, onPoint, onHouse }: { m: ActivationModel; d: number; lastSession: { date: string; type: string } | null; onOpenContact: (c: TimelineContact) => void; onPoint: (id: TargetId) => void; onHouse: (h: number) => void }) {
+export function ActivationOverview({ m, d, onOpenContact, onPoint, onHouse }: { m: ActivationModel; d: number; onOpenContact: (c: TimelineContact) => void; onPoint: (id: TargetId) => void; onHouse: (h: number) => void }) {
   const points = rankPoints(m, d);
   const houses = rankHouses(m, d);
   return (
@@ -105,17 +104,13 @@ export function ActivationOverview({ m, d, lastSession, onOpenContact, onPoint, 
         </CardBody>
       </Card>
 
-      <WhatsChanging m={m} d={d} lastSession={lastSession} onOpenContact={onOpenContact} />
+      <WhatsChanging m={m} d={d} onOpenContact={onOpenContact} />
     </div>
   );
 }
 
-function WhatsChanging({ m, d, lastSession, onOpenContact }: { m: ActivationModel; d: number; lastSession: { date: string; type: string } | null; onOpenContact: (c: TimelineContact) => void }) {
-  const [mode, setMode] = React.useState<"now" | "since">("now");
-  const lastIdx = lastSession ? Math.floor((Date.parse(`${lastSession.date}T00:00:00Z`) - Date.parse(m.tl.from)) / DAY) : null;
-  const canSince = lastIdx !== null && lastIdx >= 0 && lastIdx < d;
+function WhatsChanging({ m, d, onOpenContact }: { m: ActivationModel; d: number; onOpenContact: (c: TimelineContact) => void }) {
   const now = React.useMemo(() => changesAt(m, d), [m, d]);
-  const since = React.useMemo(() => (canSince ? changesSince(m, lastIdx!, d) : null), [m, d, canSince, lastIdx]);
   const col = (title: string, tone: string, items: { c: TimelineContact; note: string }[]) => (
     <div>
       <p className={cn("mb-1 flex justify-between text-[11.5px] font-semibold uppercase tracking-wide", tone)}>
@@ -145,23 +140,12 @@ function WhatsChanging({ m, d, lastSession, onOpenContact }: { m: ActivationMode
     <Card className="lg:col-span-2 xl:col-span-1">
       <CardHeader
         title="What’s Changing"
-        description={mode === "now" ? "What’s building, fading and about to begin, from the As Of date." : `Since the last consultation${lastSession ? `, ${lastSession.type}, on ${fmt(lastSession.date)}` : ""}.`}
-        action={canSince ? <Segmented size="sm" value={mode} onChange={setMode} options={[{ value: "now", label: "From This Date" }, { value: "since", label: "Since Last Session" }]} /> : undefined}
+        description="What’s building, fading and about to begin, from the As Of date."
       />
       <CardBody className="space-y-3 pt-0">
-        {mode === "now" || !since ? (
-          <>
-            {col("Intensifying", "text-accent", now.intensifying.map((x) => ({ c: x.contact, note: changeNote(x, "i") })))}
-            {col("Separating", "text-sage-dark", now.separating.map((x) => ({ c: x.contact, note: changeNote(x, "s") })))}
-            {col("Emerging", "text-warn", now.emerging.map((x) => ({ c: x.contact, note: changeNote(x, "e") })))}
-          </>
-        ) : (
-          <>
-            {col("New Since Then", "text-accent", since.started.map((c) => ({ c, note: "Now In Orb" })))}
-            {col("Ended Since Then", "text-sage-dark", since.ended.map((c) => ({ c, note: "No Longer In Orb" })))}
-            {col("Still Active", "text-warn", since.continuing.map((c) => ({ c, note: lifecycleOf(c, atMs(m, d))?.phase ?? "In Orb" })))}
-          </>
-        )}
+        {col("Intensifying", "text-accent", now.intensifying.map((x) => ({ c: x.contact, note: changeNote(x, "i") })))}
+        {col("Separating", "text-sage-dark", now.separating.map((x) => ({ c: x.contact, note: changeNote(x, "s") })))}
+        {col("Emerging", "text-warn", now.emerging.map((x) => ({ c: x.contact, note: changeNote(x, "e") })))}
       </CardBody>
     </Card>
   );

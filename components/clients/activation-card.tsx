@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Loader2, Waves } from "lucide-react";
 import { BODIES, DEFAULT_TIMELINE, ordinal } from "@/lib/astro";
 import { fetchTimeline, type TimelineResponse } from "@/lib/astro/timeline-client";
-import { HOUSE_TOPICS, activationModel, changesSince, dayIndex, lifecycleOf, nextExact, rankHouses, rankPoints } from "@/lib/astro/activation";
+import { HOUSE_TOPICS, activationModel, dayIndex, lifecycleOf, nextExact, rankHouses, rankPoints } from "@/lib/astro/activation";
 import type { Person } from "@/lib/data/types";
 import { useStore } from "@/lib/store";
 import { TODAY } from "@/lib/utils";
@@ -21,12 +21,11 @@ export function ActivationCard({ clientId, person }: { clientId: string; person:
   const defaults = useStore((s) => s.defaults);
   const consultations = useStore((s) => s.consultations);
   const sessions = React.useMemo(() => consultations.filter((k) => k.clientId === clientId && k.status !== "cancelled").sort((a, b) => (a.start < b.start ? -1 : 1)), [consultations, clientId]);
-  const last = sessions.filter((k) => k.start.slice(0, 10) < TODAY).pop() ?? null;
   const next = sessions.find((k) => k.status === "scheduled" && Date.parse(k.start) > Date.now()) ?? null;
   const [data, setData] = React.useState<TimelineResponse | null | "error">(null);
 
-  const back = new Date(Date.parse(`${TODAY}T00:00:00Z`) - 60 * DAY).toISOString().slice(0, 10);
-  const from = last && last.start.slice(0, 10) < back && last.start.slice(0, 10) > new Date(Date.parse(`${TODAY}T00:00:00Z`) - 700 * DAY).toISOString().slice(0, 10) ? last.start.slice(0, 10) : back;
+  // Today to a year ahead.
+  const from = TODAY;
   const to = new Date(Date.parse(`${TODAY}T00:00:00Z`) + 365 * DAY).toISOString().slice(0, 10);
   const opts = defaults.timeline ?? DEFAULT_TIMELINE;
   const key = person.birth?.date ? JSON.stringify([person.birth, defaults.zodiac, defaults.houseSystem, from, to, opts]) : null;
@@ -62,25 +61,22 @@ export function ActivationCard({ clientId, person }: { clientId: string; person:
         ) : !model ? (
           <p className="flex items-center gap-2 text-[13px] text-muted"><Loader2 className="size-4 animate-spin" /> Calculating…</p>
         ) : (
-          <Summary model={model} lastDate={last?.start.slice(0, 10) ?? null} clientId={clientId} />
+          <Summary model={model} clientId={clientId} />
         )}
       </CardBody>
     </Card>
   );
 }
 
-function Summary({ model: m, lastDate, clientId }: { model: ReturnType<typeof activationModel>; lastDate: string | null; clientId: string }) {
+function Summary({ model: m, clientId }: { model: ReturnType<typeof activationModel>; clientId: string }) {
   const d = Math.max(0, Math.min(m.nDays - 1, dayIndex(m.tl, TODAY)));
   const at = Date.parse(`${TODAY}T12:00:00Z`);
   const points = rankPoints(m, d).filter((p) => p.score > 0).slice(0, 3);
   const houses = m.natal.hasHouses ? rankHouses(m, d).sort((a, b) => b.score - a.score).filter((h) => h.score > 0).slice(0, 3) : [];
-  const fromIdx = lastDate ? Math.max(0, dayIndex(m.tl, lastDate)) : Math.max(0, d - 60);
-  const since = changesSince(m, fromIdx, d);
   const nx = nextExact(m, at);
   const bg = m.tl.contacts.filter((c) => c.layer === "background" && (m.series.get(c.id)![d] ?? 0) > 0).sort((a, b) => m.series.get(b.id)![d]! - m.series.get(a.id)![d]!)[0];
   const href = `/app/timeline?client=${clientId}`;
   const pill = "inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-0.5 text-[12.5px] text-ink hover:bg-canvas-2";
-  const names = (cs: typeof since.started) => (cs.length ? `${cs.slice(0, 2).map(contactLabel).join(", ")}${cs.length > 2 ? ` +${cs.length - 2}` : ""}` : null);
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -104,13 +100,11 @@ function Summary({ model: m, lastDate, clientId }: { model: ReturnType<typeof ac
         )}
       </div>
       <div className="space-y-1 text-[12.5px]">
-        <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted">Since the Last Session{lastDate ? ` (${fmtShort(lastDate)})` : ""}</p>
-        <p><span className="text-muted">New:</span> {names(since.started) ?? "Nothing New"}</p>
-        <p><span className="text-muted">Ended:</span> {names(since.ended) ?? "Nothing Has Ended"}</p>
+        <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted">Coming Up</p>
         {nx && <p><span className="text-muted">Next Exact:</span> {contactLabel(nx.contact)} · {fmtShort(new Date(nx.t).toISOString())} <span className="text-muted">({Math.round((nx.t - at) / DAY)} Days)</span></p>}
         {bg && <p><span className="text-muted">Background:</span> {contactLabel(bg)} <span className="text-muted">Until {fmtShort(new Date(lifecycleOf(bg, at)!.last).toISOString())}</span></p>}
       </div>
-      <p className="text-[11.5px] text-muted">Major and moderate influences. Scores run from 0 to 100, where 100 is the strongest activation from the last session to a year ahead.</p>
+      <p className="text-[11.5px] text-muted">Major and moderate influences. Scores run from 0 to 100, where 100 is the strongest activation in the year ahead.</p>
     </>
   );
 }
