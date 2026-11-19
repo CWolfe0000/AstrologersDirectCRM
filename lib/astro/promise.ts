@@ -3,7 +3,8 @@
  * timing. Directions and transits can only bring out what the natal chart
  * holds, so each life theme is read against this first.
  *
- * Testimonies, for marriage (7th house, Venus) and career (10th house, Sun):
+ * Testimonies, for marriage (7th house, Venus), career (10th house, Sun),
+ * money (2nd house, Jupiter) and home (4th house, Moon):
  * - the house ruler's essential dignity (domicile or exaltation supports;
  *   detriment or fall challenges) and its house (angular supports; the 6th,
  *   8th and 12th challenge);
@@ -65,7 +66,8 @@ export function natalPromise(n: NatalModel, theme: ThemeId): NatalPromise {
       if (a && EASY.includes(a)) add("support", `${name(b)} ${verb[a]} ${toLabel}`);
     }
     for (const b of ["mars", "saturn"] as BodyId[]) {
-      const a = b !== to ? n.natalAspect(b, to) : null;
+      // A malefic that rules the Ascendant is the person, not an affliction: its tie to the ruler is read below.
+      const a = b !== to && b !== n.chartRuler ? n.natalAspect(b, to) : null;
       if (a && HARD.includes(a)) add("challenge", `${name(b)} ${verb[a]} ${toLabel}`);
     }
   };
@@ -99,8 +101,8 @@ export function natalPromise(n: NatalModel, theme: ThemeId): NatalPromise {
     return { level: indications >= 3 ? "strong" : indications >= 1 ? "mixed" : "none", testimonies: out };
   }
 
-  const house = theme === "marriage" ? 7 : 10;
-  const natural: BodyId = theme === "marriage" ? "venus" : "sun";
+  const house = { marriage: 7, career: 10, money: 2, home: 4 }[theme];
+  const natural = ({ marriage: "venus", career: "sun", money: "jupiter", home: "moon" } as const)[theme] as BodyId;
   const ruler = n.houseRulers(house)[0];
   if (ruler && at(ruler)) {
     const p = at(ruler)!, label = `${name(ruler)}, ruler of the ${ordinal(house)}`;
@@ -122,7 +124,8 @@ export function natalPromise(n: NatalModel, theme: ThemeId): NatalPromise {
   }
   for (const id of n.occupants(house)) {
     if (id === "venus" || id === "jupiter") add("support", `${name(id)} in the ${ordinal(house)} House`);
-    if (id === "mars" || id === "saturn") add("challenge", `${name(id)} in the ${ordinal(house)} House`);
+    if ((id === "mars" || id === "saturn") && id !== n.chartRuler) add("challenge", `${name(id)} in the ${ordinal(house)} House`);
+    if (id === n.chartRuler) add("support", `${name(id)}, ruler of the 1st, is in the ${ordinal(house)} House`);
   }
   const s = out.filter((t) => t.tone === "support").length, c = out.length - s;
   return { level: out.length === 0 ? "none" : s >= c + 2 ? "strong" : c >= s + 2 ? "weak" : "mixed", testimonies: out };

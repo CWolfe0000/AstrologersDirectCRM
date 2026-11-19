@@ -3,7 +3,7 @@
 import * as React from "react";
 import { BODIES } from "@/lib/astro";
 import type { ActivationModel } from "@/lib/astro/activation";
-import { themeAnalysis, type ThemeId, type ThemePeriod, type ThemeResult, type ThemeTriggers } from "@/lib/astro/themes";
+import { themeAnalysis, type ThemeId, type ThemePeriod, type ThemeResult, type ThemeTone, type ThemeTriggers } from "@/lib/astro/themes";
 import { anchorKeywords } from "@/lib/astro/keywords";
 import type { PromiseLevel } from "@/lib/astro/promise";
 import { cn } from "@/lib/utils";
@@ -16,25 +16,40 @@ const THEMES: Record<ThemeId, { title: string; color: string; about: string; rul
   marriage: {
     title: "Marriage & Partnership",
     color: "#824B59",
-    about: "Solar arcs involving the partnership significators: the times relationships tend to begin, commit, change or end.",
+    about: "Directions involving the partnership significators: the times relationships tend to begin, commit, change or end.",
     rule: "Any aspect (conjunctions and oppositions only when the Ascendant–Descendant axis is the only one involved).",
     none: "No direction, slow transit or eclipse involves the partnership significators in this range.",
   },
   career: {
-    title: "Career Success",
+    title: "Career",
     color: "#5E7A62",
-    about: "Helpful solar arcs involving the career significators, and slow transits and eclipses on the Midheaven.",
-    rule: "Trines and sextiles, and any aspect when Jupiter, Venus or the Sun is the directed planet.",
-    none: "No helpful direction, and no slow transit or eclipse on the Midheaven, in this range.",
+    about: "Directions involving the career significators, and slow transits and eclipses on the Midheaven. Each is marked as helpful, pressure or a turning point.",
+    rule: "Any aspect, whichever point is at the other end.",
+    none: "No direction involves the career significators, and no slow transit or eclipse is on the Midheaven, in this range.",
+  },
+  money: {
+    title: "Money",
+    color: "#4D5A70",
+    about: "Directions involving the significators of income and of other people's money: earnings, gains, debts and losses.",
+    rule: "Any aspect.",
+    none: "No direction involves the money significators in this range.",
+  },
+  home: {
+    title: "Home & Relocation",
+    color: "#6E4F6E",
+    about: "Directions involving the significators of home, family and distance, and slow transits and eclipses on the IC: moves, property and changes in the household.",
+    rule: "Any aspect (conjunctions and oppositions only when the Midheaven–IC axis is the only one involved).",
+    none: "No direction involves the home significators, and no slow transit or eclipse is on the IC, in this range.",
   },
   accident: {
     title: "Accident-Prone Periods",
     color: "#9A6A1F",
-    about: "Hard solar arcs involving the body and vitality points. A prompt for extra care, not a forecast that something will happen.",
+    about: "Hard directions involving the body and vitality points. A prompt for extra care, not a forecast that something will happen.",
     rule: "Hard aspects only, with Mars, Saturn, Uranus or Pluto directed, or to natal Mars or Uranus.",
     none: "No hard direction, slow transit or eclipse of this kind in this range.",
   },
 };
+const TONE: Record<ThemeTone, { label: string; tone: "sage" | "warn" | "outline" }> = { helpful: { label: "Helpful", tone: "sage" }, pressure: { label: "Pressure", tone: "warn" }, turning: { label: "Turning Point", tone: "outline" } };
 
 /** The theme's intensity over the range, with its periods shaded and the selected date marked. */
 function Strip({ r, d, color, label }: { r: ThemeResult; d: number; color: string; label: string }) {
@@ -63,6 +78,8 @@ const LEVELS: Record<ThemeId, Record<PromiseLevel, { label: string; tone: "sage"
   return {
     marriage: topic,
     career: topic,
+    money: topic,
+    home: topic,
     accident: {
       strong: { label: "Marked in the Birth Chart", tone: "warn" },
       mixed: { label: "Some Natal Indication", tone: "outline" },
@@ -107,6 +124,7 @@ function Period({ m, p, d, onOpenContact, onAsOf }: { m: ActivationModel; p: The
     <li className="border-t border-line pt-2.5 text-[12.5px]">
       <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
         <Badge tone={p.primary ? "accent" : p.kind === "progression" ? "outline" : "info"}>{KIND[p.kind]}</Badge>
+        {p.tone && <Badge tone={TONE[p.tone].tone}>{TONE[p.tone].label}</Badge>}
         {d >= p.start && d <= p.end && <Badge tone="outline">Now Selected</Badge>}
       </p>
       <button type="button" onClick={() => onOpenContact(p.anchor)} className="mt-1 text-left text-[13.5px] font-semibold text-ink hover:text-accent"><Glyphs c={p.anchor} size={14} /> {contactLabel(p.anchor)}</button>
@@ -154,13 +172,13 @@ function Period({ m, p, d, onOpenContact, onAsOf }: { m: ActivationModel; p: The
   );
 }
 
-/** Marriage, career and accident-prone periods across the timeline's range. */
+/** Marriage, career, money, home and accident-prone periods across the timeline's range. */
 export function LifeThemes({ m, d, triggers, onOpenContact, onAsOf }: { m: ActivationModel; d: number; triggers: ThemeTriggers; onOpenContact: (c: TimelineContact) => void; onAsOf: (date: string) => void }) {
   const results = React.useMemo(() => themeAnalysis(m, triggers), [m, triggers]);
   const [open, setOpen] = React.useState<Partial<Record<ThemeId, boolean>>>({});
   return (
     <div className="space-y-2">
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {results.map((r) => {
           const t = THEMES[r.id];
           return (
@@ -191,7 +209,7 @@ export function LifeThemes({ m, d, triggers, onOpenContact, onAsOf }: { m: Activ
         })}
       </div>
       <p className="text-[12px] leading-relaxed text-muted">
-        Each theme starts from the natal promise: the birth chart's own testimony on the topic, from the dignity and house of the significators, the planets in the house and their natal aspects. A solar arc that repeats a natal aspect between its two points is listed first. A period is the time a solar arc involving one of the significators (as the point aimed at, or as the planet directed) is in orb. A progression (other than the Moon's) to the Ascendant or Midheaven counts the same way; Slow transits (Jupiter to Pluto, by conjunction, square or opposition) and eclipses (by conjunction or opposition) on the Midheaven for career, and on the Ascendant for partnership and accidents, also stand as periods of their own; on the career card they mark turning points, favourable or not. Other progressions rank last. The four strongest are shown first: those exact in the range, involving the topic's ruler or an angle, or repeating a natal aspect. The keywords under each are the planet, its rulerships and house, the aspect, and the natal point's sign and house. Triggers are the transits and eclipses to the two natal points of that solar arc while it is in orb, {triggers === "hard" ? "by conjunction, square or opposition only" : "by every aspect in use"} (a setting under Bodies, Aspects &amp; Orbs), with the planets and orbs set for this timeline, whatever the significance filter. Exact hits from Saturn, Uranus, Neptune and Pluto are in bold and given as the likely timing. {m.natal.hasHouses ? "" : "House rulers, house placements and the angles need a known birth time, so only the planets are used here. "}These are counting aids with provisional rules, not predictions.
+        Each theme starts from the natal promise: the birth chart's own testimony on the topic, from the dignity and house of the significators, the planets in the house and their natal aspects. A solar arc that repeats a natal aspect between its two points is listed first. A period is the time a solar arc involving one of the significators (as the point aimed at, or as the planet directed) is in orb. A progression (other than the Moon's) to the Ascendant or Midheaven counts the same way; Slow transits (Jupiter to Pluto, by conjunction, square or opposition) and eclipses (by conjunction or opposition) also stand as periods of their own: on the Midheaven for career, on the IC for home, and on the Ascendant for partnership and accidents. Career, money and home can go either way, so each of their periods is marked helpful (a trine, a sextile, or a conjunction from Jupiter, Venus or the Sun), pressure (a hard aspect, or a conjunction from Mars, Saturn, Uranus, Neptune or Pluto) or a turning point; on those three cards, trines from transiting Jupiter and Saturn count as triggers whatever the trigger setting. Other progressions rank last. The four strongest are shown first: those exact in the range, involving the topic's ruler or an angle, or repeating a natal aspect. The keywords under each are the planet, its rulerships and house, the aspect, and the natal point's sign and house. Triggers are the transits and eclipses to the two natal points of that solar arc while it is in orb, {triggers === "hard" ? "by conjunction, square or opposition only" : "by every aspect in use"} (a setting under Bodies, Aspects &amp; Orbs), with the planets and orbs set for this timeline, whatever the significance filter. Exact hits from Saturn, Uranus, Neptune and Pluto are in bold and given as the likely timing. {m.natal.hasHouses ? "" : "House rulers, house placements and the angles need a known birth time, so only the planets are used here. "}These are counting aids with provisional rules, not predictions.
       </p>
     </div>
   );

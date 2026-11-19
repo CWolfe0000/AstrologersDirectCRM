@@ -22,9 +22,18 @@
  * - Marriage and partnership: Venus, the ruler of the 7th, planets in the 7th,
  *   Juno, and the Ascendant–Descendant axis (conjunctions and oppositions
  *   only, when the axis is the only significator involved). Any aspect.
- * - Career success: the Midheaven, the ruler of the 10th, planets in the 10th
- *   and the Sun. Trines and sextiles, and any aspect involving Jupiter, Venus
- *   or the Sun as the directed planet.
+ * - Career: the Midheaven, the ruler of the 10th, planets in the 10th and the
+ *   Sun. Any aspect, whichever point is at the other end (the 10th ruler
+ *   squaring a 7th-house planet is a career matter as much as a partnership one).
+ * - Money: the rulers of the 2nd and 8th, planets in them, Jupiter and Venus.
+ * - Home and relocation: the Moon, the rulers of the 4th and 9th, planets in
+ *   them, and the IC (conjunctions and oppositions to the Midheaven).
+ *   Career, money and home can go either way, so each of their periods has a
+ *   tone: helpful (trine, sextile, or a conjunction from Jupiter, Venus or the
+ *   Sun), pressure (hard aspects, or a conjunction from Mars, Saturn, Uranus,
+ *   Neptune or Pluto) or a turning point. On these three, trines from
+ *   transiting Jupiter and Saturn count as triggers even when triggers are
+ *   set to hard aspects, because gains proved to arrive on them.
  * - Accident-prone: the Ascendant, the chart ruler, Sun, Moon, Mars and
  *   Uranus. Hard aspects only, and only when Mars, Saturn, Uranus or Pluto is
  *   directed, or natal Mars or Uranus is the target.
@@ -59,7 +68,9 @@ import type { AspectId } from "./types";
 import type { TargetId, TimelineContact } from "./timeline";
 
 const DAY = 86_400_000;
-export type ThemeId = "marriage" | "career" | "accident";
+export type ThemeId = "marriage" | "career" | "money" | "home" | "accident";
+/** How a period bears on a topic that can go either way: by soft aspect or a benefic's conjunction; by hard aspect; or a conjunction or eclipse that simply marks a turn. */
+export type ThemeTone = "helpful" | "pressure" | "turning";
 
 export interface Significator {
   id: TargetId;
@@ -80,6 +91,8 @@ export interface ThemePeriod {
   anchor: TimelineContact;
   /** What the period rests on. */
   kind: "solar-arc" | "progression-angle" | "progression" | "transit-angle" | "eclipse-angle";
+  /** Career, money and home only: whether the period helps, presses or simply turns. */
+  tone: ThemeTone | null;
   /** A solar arc, or a progression to an angle. */
   primary: boolean;
   /** Day indexes within the timeline: the anchor's time in orb. */
@@ -139,6 +152,20 @@ function significators(m: ActivationModel, theme: ThemeId): Significator[] {
     add(n.houseRulers(10)[0], "Ruler of the 10th");
     n.occupants(10).forEach((id) => add(id, "In the 10th"));
     add("sun", "Sun");
+  } else if (theme === "money") {
+    add(n.houseRulers(2)[0], "Ruler of the 2nd");
+    n.occupants(2).forEach((id) => add(id, "In the 2nd"));
+    add(n.houseRulers(8)[0], "Ruler of the 8th");
+    n.occupants(8).forEach((id) => add(id, "In the 8th"));
+    add("jupiter", "Jupiter");
+    add("venus", "Venus");
+  } else if (theme === "home") {
+    add("moon", "Moon");
+    add(n.houseRulers(4)[0], "Ruler of the 4th");
+    n.occupants(4).forEach((id) => add(id, "In the 4th"));
+    add(n.houseRulers(9)[0], "Ruler of the 9th");
+    n.occupants(9).forEach((id) => add(id, "In the 9th"));
+    add("mc", "IC Axis");
   } else {
     add("asc", "Ascendant");
     add(n.chartRuler, "Chart Ruler");
@@ -151,6 +178,15 @@ const SLOW = new Set(["saturn", "uranus", "neptune", "pluto"]);
 /** A solar arc, or a progression (not the Moon's) to the Ascendant or Midheaven. */
 export const isPrimary = (c: TimelineContact) => c.technique === "solar-arc" || (c.technique === "progressed" && c.source !== "moon" && (c.target === "asc" || c.target === "mc"));
 
+/** Themes that can go either way: their periods carry a tone, and trines from Jupiter and Saturn count as triggers. */
+const TWO_SIDED = new Set<ThemeId>(["career", "money", "home"]);
+export function toneOf(c: TimelineContact): ThemeTone {
+  if (c.technique === "eclipse") return "turning";
+  if (SOFT.has(c.aspect)) return "helpful";
+  if (c.aspect === "conjunction") return HELPFUL_MOVERS.has(c.source) ? "helpful" : HARSH_MOVERS.has(c.source) || c.source === "neptune" ? "pressure" : "turning";
+  return "pressure";
+}
+
 const ANGLE_MOVERS = new Set(["jupiter", "saturn", "uranus", "neptune", "pluto"]);
 /**
  * A slow transit or an eclipse on an angle, standing as a period with no direction behind it:
@@ -162,6 +198,8 @@ function angleEvent(theme: ThemeId, c: TimelineContact) {
   if (c.technique === "eclipse") { if (!axis) return false; }
   else if (c.technique !== "transit" || !ANGLE_MOVERS.has(c.source) || !TRIGGER_HARD.has(c.aspect)) return false;
   if (theme === "career") return c.target === "mc";
+  if (theme === "home") return c.target === "mc" && c.aspect === "opposition"; // on the IC
+  if (theme === "money") return false;
   if (theme === "marriage") return c.target === "asc" && axis;
   return c.target === "asc" && (c.technique === "eclipse" || HARSH_MOVERS.has(c.source));
 }
@@ -172,7 +210,8 @@ function anchors(theme: ThemeId, c: TimelineContact, sigs: Set<TargetId>) {
   const involved = [c.target, ...(isPrimary(c) ? [c.source as TargetId] : [])].filter((id) => sigs.has(id));
   if (involved.length === 0) return false;
   if (theme === "marriage") return involved.some((id) => id !== "asc") || c.aspect === "conjunction" || c.aspect === "opposition";
-  if (theme === "career") return SOFT.has(c.aspect) || HELPFUL_MOVERS.has(c.source);
+  if (theme === "career" || theme === "money") return true;
+  if (theme === "home") return involved.some((id) => id !== "mc") || c.aspect === "conjunction" || c.aspect === "opposition";
   return HARD.has(c.aspect) && (HARSH_MOVERS.has(c.source) || c.target === "mars" || c.target === "uranus");
 }
 
@@ -186,7 +225,8 @@ export function themeResult(m: ActivationModel, id: ThemeId, triggerAspects: The
   const result: ThemeResult = { id, significators: sigs, promise: natalPromise(m.natal, id), series, max: 0, anchorCount: 0, periods: [] };
   if (!n) return result;
   const di = (ms: number) => Math.max(0, Math.min(n - 1, Math.floor((ms - from) / DAY)));
-  const triggersAll = m.tl.contacts.filter((c) => (c.technique === "transit" || c.technique === "eclipse") && (triggerAspects === "all" || TRIGGER_HARD.has(c.aspect)));
+  const twoSided = TWO_SIDED.has(id);
+  const triggersAll = m.tl.contacts.filter((c) => (c.technique === "transit" || c.technique === "eclipse") && (triggerAspects === "all" || TRIGGER_HARD.has(c.aspect) || (twoSided && c.aspect === "trine" && (c.source === "jupiter" || c.source === "saturn"))));
 
   const all: ThemePeriod[] = [];
   const arcs = new Set(m.tl.contacts.filter((c) => c.technique === "solar-arc").map((c) => `${c.source}|${c.aspect}|${c.target}`));
@@ -222,7 +262,7 @@ export function themeResult(m: ActivationModel, id: ThemeId, triggerAspects: The
     }
     const primary = kind === "solar-arc" || kind === "progression-angle";
     const natalAspect = (primary && anchor.source !== anchor.target ? m.natal.natalAspect(anchor.source as TargetId, anchor.target) : null) as AspectId | null;
-    return { anchor, kind, primary, start, end, startOpen, endOpen, exact: exacts[0] ?? null, exacts, natalAspect, points, triggers, peak };
+    return { anchor, kind, tone: twoSided ? toneOf(anchor) : null, primary, start, end, startOpen, endOpen, exact: exacts[0] ?? null, exacts, natalAspect, points, triggers, peak };
   };
 
   for (const anchor of m.tl.contacts) {
@@ -269,5 +309,5 @@ export function themeResult(m: ActivationModel, id: ThemeId, triggerAspects: The
   return result;
 }
 
-export const THEME_IDS: ThemeId[] = ["marriage", "career", "accident"];
+export const THEME_IDS: ThemeId[] = ["marriage", "career", "money", "home", "accident"];
 export const themeAnalysis = (m: ActivationModel, triggerAspects: ThemeTriggers = "hard") => THEME_IDS.map((id) => themeResult(m, id, triggerAspects));

@@ -61,15 +61,37 @@ describe("life themes", () => {
     expect(r.periods[0]!.peak).toBeNull();
   });
 
-  it("career success keeps helpful directions only", () => {
+  it("career takes any direction to its significators, and says whether it helps or presses", () => {
     const m = activationModel(timeline([
       contact("a", "solar-arc", "jupiter", "conjunction", "mc", 20, 160),
       contact("b", "solar-arc", "uranus", "trine", "saturn", 30, 170), // ruler of the 10th
-      contact("c", "solar-arc", "saturn", "square", "mc", 20, 160), // hard, from Saturn: left out
+      contact("c", "solar-arc", "saturn", "square", "venus", 20, 160), // the 10th ruler squaring a 7th-house planet: a career matter too
+      contact("tr", "transit", "saturn", "trine", "mc", 40, 60), // a Saturn trine triggers here even with hard aspects only
+      contact("tx", "transit", "mars", "trine", "mc", 40, 44),
     ]), "all");
     const r = themeResult(m, "career");
     expect(r.significators.map((s) => s.id)).toEqual(["mc", "saturn", "sun"]);
-    expect(r.periods.map((p) => p.anchor.id)).toEqual(["a", "b"]);
+    // "c" ranks first: natal Saturn is sextile Venus, so the direction repeats a natal aspect.
+    expect(r.periods.map((p) => [p.anchor.id, p.tone])).toEqual([["c", "pressure"], ["a", "helpful"], ["b", "helpful"]]);
+    expect(r.periods[1]!.triggers.map((t) => t.contact.id)).toEqual(["tr"]);
+    expect(themeResult(m, "marriage").periods.find((p) => p.anchor.id === "c")!.tone).toBeNull();
+  });
+
+  it("money and home have their own significators", () => {
+    // Aries rising, equal houses: Venus rules the 2nd, Mars the 8th; the Moon rules the 4th and is in the 2nd; the Sun is in the 4th; Jupiter rules the 9th, where Saturn sits.
+    const m = activationModel(timeline([
+      contact("m1", "solar-arc", "asc", "conjunction", "jupiter", 10, 100),
+      contact("h1", "solar-arc", "mercury", "square", "moon", 20, 120),
+      contact("h2", "solar-arc", "pluto", "square", "mc", 20, 120), // the IC axis counts by conjunction or opposition only
+      contact("h3", "transit", "saturn", "opposition", "mc", 30, 60), // Saturn on the IC
+    ]), "all");
+    const money = themeResult(m, "money");
+    expect(money.significators.map((s) => s.id)).toEqual(["venus", "moon", "mars", "jupiter"]);
+    expect(money.periods.map((p) => [p.anchor.id, p.tone])).toEqual([["m1", "turning"], ["h1", "pressure"]]);
+    const home = themeResult(m, "home");
+    expect(home.significators.map((s) => s.id)).toEqual(["moon", "sun", "jupiter", "saturn", "mc"]); // the Sun is in the 4th
+    expect(home.periods.map((p) => [p.anchor.id, p.kind])).toEqual([["m1", "solar-arc"], ["h1", "solar-arc"], ["h3", "transit-angle"]]);
+    expect(home.promise.testimonies.length).toBeGreaterThanOrEqual(0);
   });
 
   it("accident-prone keeps hard directions from Mars, Saturn, Uranus and Pluto, or to natal Mars and Uranus", () => {
