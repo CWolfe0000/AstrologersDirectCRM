@@ -64,3 +64,23 @@ describe("time lords", () => {
     expect(Math.round((lb.start - l1[0]!.start) / DAY)).toBe(211 * 30);
   });
 });
+
+import { cycleAround } from "@/lib/astro/activation";
+describe("contact cycles", () => {
+  const w = (start: string, end: string, exacts: string[] = [], o: { startOpen?: boolean; endOpen?: boolean } = {}) => ({ start: `${start}T00:00:00Z`, end: `${end}T00:00:00Z`, startOpen: !!o.startOpen, endOpen: !!o.endOpen, exacts: exacts.map((u, i) => ({ utc: `${u}T00:00:00Z`, pass: i + 1, retrograde: false })), minOrb: exacts.length ? 0 : 0.5, closest: `${start}T00:00:00Z`, stations: [] });
+  it("keeps every pass of a retrograde cycle, joining a pass split between two calculations", () => {
+    // Pluto trine natal Mars: Feb–May 2025, Jun 2025–Feb 2026, Aug–Dec 2026; a later, separate cycle in 2040.
+    const ws = [
+      w("2025-02-10", "2025-05-04", ["2025-03-20"]),
+      w("2025-06-04", "2025-11-18", ["2025-07-24"], { endOpen: true }),
+      w("2025-11-18", "2026-02-20", ["2025-12-28"], { startOpen: true }),
+      w("2026-08-20", "2026-12-02"),
+      w("2040-01-01", "2040-03-01", ["2040-02-01"]),
+    ];
+    const c = cycleAround(ws, Date.parse("2026-11-18T12:00:00Z"));
+    expect(c).toHaveLength(3);
+    expect(c[0]!.start).toBe("2025-02-10T00:00:00Z");
+    expect(c[1]!.exacts.map((x) => x.pass)).toEqual([1, 2]);
+    expect(c[2]!.end).toBe("2026-12-02T00:00:00Z");
+  });
+});

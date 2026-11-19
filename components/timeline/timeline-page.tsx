@@ -9,7 +9,7 @@ import { fetchTimeline, type TimelineResponse } from "@/lib/astro/timeline-clien
 import type { ConvergenceWindow, TargetId, TimelineContact, TimelineTechnique } from "@/lib/astro/timeline";
 import { sameTimeline, TimelineOptionsEditor } from "./timeline-options";
 import { TECH, pointName, pointGlyph, sourceName, Glyphs, contactLabel, DAY, fmt, fmtShort, fmtTime, fmtRange, addMonths } from "./labels";
-import { activationModel, dayIndex, passesSignificance, type Significance } from "@/lib/astro/activation";
+import { activationModel, cycleAround, dayIndex, passesSignificance, type Significance } from "@/lib/astro/activation";
 import { ActivationOverview, BackgroundInfluences, ClientContext, ConvergenceAnalysis, HouseSheet, LifecycleSection, PointSheet, useConfigurationNote } from "./activation";
 import { BACKGROUND_CHOICES, DEFAULT_BACKGROUND } from "./timeline-options";
 import type { ChartRecord } from "@/lib/data/types";
@@ -796,8 +796,10 @@ function useFullContact(c: TimelineContact, personId: string, asOf: string, opts
   const [full, setFull] = React.useState<TimelineContact | null | "loading">(c.events ? null : "loading");
   React.useEffect(() => {
     if (c.events || !person?.birth) return setFull(null);
-    const from = new Date(Date.parse(`${asOf}T00:00:00Z`) - 540 * DAY).toISOString().slice(0, 10);
-    const to = new Date(Date.parse(`${asOf}T00:00:00Z`) + 540 * DAY).toISOString().slice(0, 10);
+    // Three years back and three years ahead (two calculations, each within the three-year limit).
+    const at = Date.parse(`${asOf}T00:00:00Z`);
+    const day = (n: number) => new Date(at + n * DAY).toISOString().slice(0, 10);
+    const ranges: [string, string][] = [[day(-1090), day(0)], [day(0), day(1090)]];
     const src = c.source as BodyId;
     const options = {
       transits: c.technique === "transit",
@@ -812,10 +814,15 @@ function useFullContact(c: TimelineContact, personId: string, asOf: string, opts
       transitOrbs: opts.transitOrbs,
       backgroundBodies: opts.backgroundBodies ?? DEFAULT_BACKGROUND,
     };
-    const key = JSON.stringify([person.birth, defaults.zodiac, defaults.houseSystem, from, to, options]);
+    const key = JSON.stringify([person.birth, defaults.zodiac, defaults.houseSystem, ranges, options]);
     let p = lifecycleCache.get(key);
     if (!p) {
-      p = fetchTimeline(person.birth, { ...defaults, timeline: undefined }, from, to, options).then((r) => r.timeline.contacts.find((x) => x.id === c.id) ?? null);
+      p = Promise.all(ranges.map(([from, to]) => fetchTimeline(person.birth, { ...defaults, timeline: undefined }, from, to, options))).then((rs) => {
+        const parts = rs.map((r) => r.timeline.contacts.find((x) => x.id === c.id)).filter(Boolean) as TimelineContact[];
+        if (!parts.length) return null;
+        // Keep the cycle around the As Of date: passes less than a year apart.
+        return { ...parts[0]!, windows: cycleAround(parts.flatMap((x) => x.windows), at + DAY / 2) };
+      });
       lifecycleCache.set(key, p);
     }
     let live = true;

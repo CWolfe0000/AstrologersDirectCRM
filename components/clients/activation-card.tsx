@@ -52,9 +52,8 @@ export function ActivationCard({ clientId, person }: { clientId: string; person:
   return (
     <Card>
       <CardHeader
-        title="Current Activation"
+        title={<>Current Activations <span className="ml-1.5 text-[12.5px] font-normal text-muted">As of {fmt(TODAY)}{next ? ` · next session ${fmtShort(next.start.slice(0, 10))}` : ""}</span></>}
         icon={<Waves />}
-        description={`As of ${fmt(TODAY)}${next ? ` · next session ${fmtShort(next.start.slice(0, 10))}` : ""}`}
         action={<Link href={`/app/timeline?client=${clientId}`} className="text-[12.5px] font-medium text-accent hover:underline">Open Timeline</Link>}
       />
       <CardBody className="space-y-4 pt-0">

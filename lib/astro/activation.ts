@@ -221,6 +221,39 @@ export interface Lifecycle {
   passEnd: number | null;
 }
 
+/**
+ * One cycle of a contact: its passes through orb that are less than a year
+ * apart (retrograde loops), around a moment. Windows from two adjoining
+ * calculations are joined where one ends exactly as the next begins.
+ */
+export function cycleAround(windows: TimelineContact["windows"], at: number, gapDays = 400): TimelineContact["windows"] {
+  const sorted = [...windows].sort((x, y) => parse(x.start) - parse(y.start));
+  const joined: TimelineContact["windows"] = [];
+  for (const w of sorted) {
+    const last = joined[joined.length - 1];
+    if (last && last.endOpen && w.startOpen && Math.abs(parse(w.start) - parse(last.end)) < DAY) {
+      joined[joined.length - 1] = {
+        ...last,
+        end: w.end,
+        endOpen: w.endOpen,
+        exacts: [...last.exacts, ...w.exacts].map((x, i) => ({ ...x, pass: i + 1 })),
+        stations: [...last.stations, ...w.stations],
+        minOrb: Math.min(last.minOrb, w.minOrb),
+        closest: last.minOrb <= w.minOrb ? last.closest : w.closest,
+      };
+    } else joined.push(w);
+  }
+  const groups: TimelineContact["windows"][] = [];
+  for (const w of joined) {
+    const g = groups[groups.length - 1];
+    if (g && parse(w.start) - parse(g[g.length - 1]!.end) < gapDays * DAY) g.push(w);
+    else groups.push([w]);
+  }
+  if (!groups.length) return [];
+  const dist = (g: TimelineContact["windows"]) => (at < parse(g[0]!.start) ? parse(g[0]!.start) - at : at > parse(g[g.length - 1]!.end) ? at - parse(g[g.length - 1]!.end) : 0);
+  return groups.reduce((best, g) => (dist(g) < dist(best) ? g : best));
+}
+
 export function lifecycleOf(c: TimelineContact, at: number): Lifecycle | null {
   if (c.events || c.windows.length === 0) return null;
   const w0 = c.windows[0]!, wn = c.windows[c.windows.length - 1]!;

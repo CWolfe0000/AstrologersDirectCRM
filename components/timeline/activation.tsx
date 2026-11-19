@@ -431,6 +431,15 @@ export function BackgroundInfluences({ m, d, onOpenContact }: { m: ActivationMod
 // ---------------------------------------------------------------------------
 // Lifecycle, inside the contact sheet
 
+/** "1 year, 6 months" / "5 months" / "12 days". */
+const fmtSpan = (ms: number) => {
+  const d = Math.round(ms / DAY);
+  if (d < 60) return `${d} days`;
+  const months = Math.round(d / 30.44);
+  const y = Math.floor(months / 12), m = months % 12;
+  return [y && `${y} year${y > 1 ? "s" : ""}`, m && `${m} month${m > 1 ? "s" : ""}`].filter(Boolean).join(", ") + ` (${d} days)`;
+};
+
 export function LifecycleSection({ c, at, full }: { c: TimelineContact; at: number; full: TimelineContact | null | "loading" }) {
   const src = full && full !== "loading" ? full : c;
   const L = lifecycleOf(src, at);
@@ -451,11 +460,11 @@ export function LifecycleSection({ c, at, full }: { c: TimelineContact; at: numb
         <dt className="text-muted">Final Exit From Orb</dt>
         <dd>{t(L.last)}{L.lastOpen ? " or later" : ""}{L.last > at && <span className="text-muted"> · {days(L.last)} days from then</span>}</dd>
         <dt className="text-muted">Whole Period</dt>
-        <dd>{Math.round((L.last - L.first) / DAY)} days{L.firstOpen || L.lastOpen ? "+" : ""} · {src.windows.length} pass{src.windows.length === 1 ? "" : "es"} through orb</dd>
+        <dd>{fmtSpan(L.last - L.first)}{L.firstOpen || L.lastOpen ? " or more" : ""} · {src.windows.length} pass{src.windows.length === 1 ? "" : "es"} through orb</dd>
         <dt className="text-muted">Layer</dt>
         <dd>{c.layer === "background" ? "Background influence" : "Short-term trigger"} · intensity weight {c.weight}</dd>
       </dl>
-      <p className="mt-1.5 text-[11.5px] text-muted">{full === "loading" ? "Looking beyond this range for the full lifecycle…" : full ? "Calculated up to 18 months either side of the As Of date." : "Within this range only."}</p>
+      <p className="mt-1.5 text-[11.5px] text-muted">{full === "loading" ? "Looking beyond this range for the full cycle…" : full ? "The whole cycle around the As Of date: passes less than a year apart, looking up to three years either way." : "Within this range only."}</p>
     </section>
   );
 }
