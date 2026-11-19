@@ -5,6 +5,7 @@ import tzlookup from "tz-lookup";
 import { AlertTriangle, CheckCircle2, FileUp, MapPin, Users } from "lucide-react";
 import { useStore, personName } from "@/lib/store";
 import { IMPORT_FIELDS, guessMapping, parseCoord, parseCsv, parseDate, parseTime, type ImportField } from "@/lib/csv";
+import { aafToTable, isAaf, parseAaf } from "@/lib/aaf";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
@@ -62,6 +63,7 @@ export function ImportClientsDialog({ open, onOpenChange }: { open: boolean; onO
   const [fixes, setFixes] = React.useState<Record<number, PlaceValue>>({});
   const [step, setStep] = React.useState<"file" | "map" | "review">("file");
   const [error, setError] = React.useState<string | null>(null);
+  const [aafProblems, setAafProblems] = React.useState<string[]>([]);
 
   const reset = () => {
     setFileName(null);
@@ -70,13 +72,28 @@ export function ImportClientsDialog({ open, onOpenChange }: { open: boolean; onO
     setFixes({});
     setStep("file");
     setError(null);
+    setAafProblems([]);
   };
 
   const onFile = async (f?: File) => {
     if (!f) return;
     setError(null);
     if (f.size > 5 * 1024 * 1024) return setError("That file is larger than 5 MB. Split it into smaller files.");
-    const rows = parseCsv(await f.text());
+    const text = await f.text();
+    if (isAaf(text)) {
+      // Chart files from Solar Fire, Astrodienst and other astrology programs.
+      const { charts, problems } = parseAaf(text);
+      if (charts.length === 0) return setError(problems[0] ?? "We couldn’t find any charts in that file.");
+      if (charts.length > LIMIT) return setError(`Import up to ${LIMIT} clients at a time.`);
+      const t = aafToTable(charts);
+      setFileName(f.name);
+      setTable(t);
+      setMapping(guessMapping(t[0]!));
+      setAafProblems(problems);
+      setStep("review");
+      return;
+    }
+    const rows = parseCsv(text);
     if (rows.length < 2) return setError("We couldn’t find any rows. Check that the first row has column names.");
     if (rows.length - 1 > LIMIT) return setError(`Import up to ${LIMIT} clients at a time.`);
     setFileName(f.name);
@@ -152,7 +169,7 @@ export function ImportClientsDialog({ open, onOpenChange }: { open: boolean; onO
       <DialogContent
         size="xl"
         title="Import Clients"
-        description="From a spreadsheet saved as CSV. Each imported client gets a natal chart."
+        description="From a spreadsheet saved as CSV, or charts exported from an astrology program as AAF. Each imported client gets a natal chart."
         footer={
           step === "file" ? (
             <Button variant="secondary" onClick={() => onOpenChange(false)}>Cancel</Button>
@@ -177,9 +194,10 @@ export function ImportClientsDialog({ open, onOpenChange }: { open: boolean; onO
               onDrop={(e) => { e.preventDefault(); void onFile(e.dataTransfer.files[0]); }}
             >
               <FileUp className="mb-2 size-6 text-muted" />
-              <p className="font-medium">Drop a CSV file here, or click to choose one</p>
-              <p className="mt-1 text-[12.5px] text-muted">From Excel, Numbers or Google Sheets: File → Download / Export → CSV. The first row should have column names.</p>
-              <input type="file" accept=".csv,text/csv" className="sr-only" onChange={(e) => void onFile(e.target.files?.[0])} />
+              <p className="font-medium">Drop a spreadsheet (CSV) or chart file (AAF) here, or click to choose one</p>
+              <p className="mt-1 text-[12.5px] text-muted">From Excel, Numbers or Google Sheets: File → Download / Export → CSV, with column names in the first row.</p>
+              <p className="mt-1 text-[12.5px] text-muted">From Solar Fire, Astrodienst or another astrology program: export your charts in AAF (Astrological Exchange Format).</p>
+              <input type="file" accept=".csv,text/csv,.aaf,.txt" className="sr-only" onChange={(e) => void onFile(e.target.files?.[0])} />
             </label>
             {error && <p className="mt-3 text-[13px] text-danger">{error}</p>}
             <p className="mt-4 text-[12.5px] text-muted">Useful columns: name (or first and last name), email, phone, birth date, birth time, birth place — or latitude and longitude, which are the most precise. Tags and notes are optional.</p>
@@ -214,6 +232,15 @@ export function ImportClientsDialog({ open, onOpenChange }: { open: boolean; onO
               {needsPlace.length > 0 && <Badge tone="warn"><MapPin className="size-3" /> {needsPlace.length} need a birthplace</Badge>}
               {skipped.length > 0 && <Badge tone="neutral"><AlertTriangle className="size-3" /> {skipped.length} will be left out</Badge>}
             </div>
+            {aafProblems.length > 0 && (
+              <div className="rounded-lg border border-line bg-canvas/60 p-3 text-[12.5px]">
+                <p className="font-medium text-ink">{aafProblems.length} {aafProblems.length === 1 ? "chart" : "charts"} in the file couldn’t be read:</p>
+                <ul className="mt-1 list-disc pl-5 text-muted">{aafProblems.slice(0, 8).map((x) => <li key={x}>{x}</li>)}</ul>
+              </div>
+            )}
+            {rows.some((r) => r.notes?.includes("Local time adjusted")) && (
+              <p className="text-[12.5px] text-muted">For births before standard time zones (or in years with unusual clock rules), the local time was adjusted so the exact moment from the file is kept. The original time is saved in each client’s notes.</p>
+            )}
             {needsPlace.length > 0 && (
               <div className="rounded-xl border border-[#F1E0C2] bg-warn-50/60 p-3">
                 <p className="mb-2 text-[13px] font-medium">Choose a birthplace for these clients, or leave them out</p>

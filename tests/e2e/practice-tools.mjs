@@ -74,6 +74,32 @@ for (const p of [kenji, ines, olu]) assert.ok(s.charts.some((c) => c.clientId ==
 assert.ok(s.clients.find((c) => c.id === kenji.id).tags.includes("Career"));
 assert.equal(s.people.filter((p) => p.firstName === "Broken").length, 0, "bad rows left out");
 
+step("AAF import: charts exported from Solar Fire / Astrodienst keep their exact moment");
+const aaf = path.join(dir, "charts.aaf");
+const jd = (iso) => (Date.parse(iso) / 86_400_000 + 2440587.5).toFixed(6);
+writeFileSync(aaf, [
+  `#A93:Moreau${stamp},Claire,f,5.11.1975g,23:10,Lyon,F`,
+  `#B93:${jd("1975-11-05T22:10:00Z")},45n45,4e51,1hE00,0`,
+  `#A93:Ulm${stamp},Old,*,14.3.1879g,11:30,Ulm,D`,
+  `#B93:${jd("1879-03-14T10:50:00Z")},48n24,10e00,0h40e,0`,
+].join("\n"));
+await page.getByRole("button", { name: /Import/ }).click();
+await page.getByRole("dialog").locator('input[type="file"]').setInputFiles(aaf);
+await dlg.getByText("2 ready").waitFor();
+await dlg.getByText(/local time was adjusted/).waitFor();
+await dlg.getByRole("button", { name: /Import 2 clients/ }).click();
+await page.getByText("Imported 2 clients").waitFor();
+await page.getByText("All changes saved").waitFor({ timeout: 15000 });
+s = await state();
+const claire = s.people.find((p) => p.lastName === `Moreau${stamp}`);
+assert.equal(claire.birth.date, "1975-11-05");
+assert.equal(claire.birth.time, "23:10");
+assert.equal(claire.birth.tz, "Europe/Paris");
+assert.equal(claire.birth.place, "Lyon, F");
+const old = s.people.find((p) => p.lastName === `Ulm${stamp}`);
+assert.equal(old.birth.tz, "Europe/Berlin");
+assert.ok(s.clients.find((c) => c.id === old.id).summary.includes("Local time adjusted"), "original time kept in notes");
+
 step("calendar feed: private link with names reduced, no notes; regenerating kills the old link");
 await page.goto(BASE + "/app/settings?section=notifications");
 await page.getByRole("button", { name: /Create calendar link/ }).click();
