@@ -121,6 +121,12 @@ const chart = z
           lat: z.number().min(-90).max(90),
           lon: z.number().min(-180).max(180),
           tz: str(80),
+          topicHouse: opt(z.number().int().min(1).max(12)),
+          aboutHouse: opt(z.number().int().min(1).max(12)),
+          judgment: opt(str(5000)),
+          outcome: opt(z.enum(["pending", "yes", "no", "partly"])),
+          outcomeNote: opt(str(5000)),
+          outcomeAt: opt(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)),
         })
         .strict(),
     ),

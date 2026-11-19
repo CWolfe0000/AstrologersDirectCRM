@@ -210,7 +210,12 @@ export function ChartsTab({ client }: { client: Client }) {
           <section key={g.title}>
             <div className="mb-3 flex items-baseline gap-3">
               <h3 className="font-serif text-[20px]">{g.title}</h3>
-              <span className="text-[12.5px] text-muted">{g.charts.length} {g.charts.length === 1 ? "chart" : "charts"}</span>
+              <span className="text-[12.5px] text-muted">{g.charts.length} {g.charts.length === 1 ? "Chart" : "Charts"}</span>
+              {g.title === "Horary" && g.charts.length > 0 && (() => {
+                const done = g.charts.filter((c) => c.horary?.outcome && c.horary.outcome !== "pending");
+                const n = (o: string) => done.filter((c) => c.horary!.outcome === o).length;
+                return <span className="text-[12.5px] text-muted">· {done.length} Outcome{done.length === 1 ? "" : "s"} Recorded{done.length ? ` (${n("yes")} Yes, ${n("no")} No, ${n("partly")} Partly)` : ""}</span>;
+              })()}
             </div>
             {g.charts.length === 0 ? (
               <div className="rounded-xl border border-dashed border-line-strong px-5 py-6 text-center text-[13px] text-muted">
@@ -236,6 +241,11 @@ function ChartCard({ chart, names }: { chart: ChartRecord; names: string[] }) {
     <Link href={`/app/charts/${chart.id}`} className="group block rounded-xl border border-line bg-surface p-4 shadow-card transition-colors hover:border-line-strong">
       <div className="mb-2 flex items-center justify-between">
         <ChartTypeBadge type={chart.type} />
+        {chart.horary?.outcome && chart.horary.outcome !== "pending" && (
+          <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-medium", chart.horary.outcome === "yes" ? "bg-sage-50 text-sage-dark" : chart.horary.outcome === "no" ? "bg-accent-50 text-accent" : "bg-warn-50 text-warn")}>
+            {chart.horary.outcome === "yes" ? "Yes" : chart.horary.outcome === "no" ? "No" : "Partly"}
+          </span>
+        )}
         {chart.favorite && <Pin className="size-3.5 text-accent" />}
       </div>
       <ChartThumb chart={chart} className="mx-auto max-w-[180px]" />

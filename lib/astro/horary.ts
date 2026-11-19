@@ -12,7 +12,6 @@ const ASPECT_AT: Record<number, string> = { 0: "conjunction", 60: "sextile", 90:
 const TRADITIONAL: BodyId[] = ["sun", "mercury", "venus", "mars", "jupiter", "saturn"];
 const NAMES: Partial<Record<BodyId, string>> = { sun: "the Sun", mercury: "Mercury", venus: "Venus", mars: "Mars", jupiter: "Jupiter", saturn: "Saturn" };
 const SIGNS = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
-const DAY_RULERS = ["the Sun", "the Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"];
 const norm = (x: number) => ((x % 360) + 360) % 360;
 const deg = (x: number) => `${Math.floor(x)}°${String(Math.floor((x % 1) * 60)).padStart(2, "0")}′`;
 
@@ -49,24 +48,22 @@ export function horaryConsiderations(points: ChartPoints, localAt: string): Cons
     const next = moonNextAspect(points);
     const moonSign = SIGNS[Math.floor(norm(moon.lon) / 30)]!;
     if (next)
-      out.push({ id: "moon-course", title: "Moon not void of course", detail: `The Moon’s next aspect is a ${next.aspect} to ${NAMES[next.body]}, in about ${next.days < 1 ? `${Math.max(1, Math.round(next.days * 24))} hours` : `${Math.round(next.days * 10) / 10} days`}, before it leaves ${moonSign}.`, tone: "clear" });
+      out.push({ id: "moon-course", title: "Moon Not Void of Course", detail: `The Moon’s next aspect is a ${next.aspect} to ${NAMES[next.body]}, in about ${next.days < 1 ? `${Math.max(1, Math.round(next.days * 24))} hours` : `${Math.round(next.days * 10) / 10} days`}, before it leaves ${moonSign}.`, tone: "clear" });
     else
-      out.push({ id: "moon-voc", title: "Moon void of course", detail: `The Moon makes no further Ptolemaic aspect to the traditional planets before it leaves ${moonSign}. Traditionally, nothing will come of the matter (with exceptions, e.g. the Moon in Taurus, Cancer, Sagittarius or Pisces).`, tone: "caution" });
+      out.push({ id: "moon-voc", title: "Moon Void of Course", detail: `The Moon makes no further Ptolemaic aspect to the traditional planets before it leaves ${moonSign}. Traditionally, nothing will come of the matter (with exceptions, e.g. the Moon in Taurus, Cancer, Sagittarius or Pisces).`, tone: "caution" });
     const ml = norm(moon.lon);
     if (ml >= 195 && ml < 225)
-      out.push({ id: "via-combusta", title: "Moon in the Via Combusta", detail: `The Moon is at ${deg(ml % 30)} ${moonSign}, between 15° Libra and 15° Scorpio. Traditionally a sign of an unstable or troubled matter; judge with caution.`, tone: "caution" });
+      out.push({ id: "via-combusta", title: "Moon In the Via Combusta", detail: `The Moon is at ${deg(ml % 30)} ${moonSign}, between 15° Libra and 15° Scorpio. Traditionally a sign of an unstable or troubled matter; judge with caution.`, tone: "caution" });
   }
 
   const saturn = points.bodies.find((b) => b.id === "saturn");
   if (saturn && (saturn.house === 1 || saturn.house === 7))
     out.push({
       id: `saturn-${saturn.house}`,
-      title: `Saturn in the ${saturn.house === 1 ? "1st" : "7th"} house`,
+      title: `Saturn In the ${saturn.house === 1 ? "1st" : "7th"} House`,
       detail: saturn.house === 1 ? "Traditionally, the querent may be troubled, or the matter seldom goes well." : "Traditionally, a warning that the astrologer’s judgment may err; take extra care.",
       tone: "caution",
     });
 
-  const day = new Date(`${localAt.slice(0, 10)}T12:00:00Z`).getUTCDay();
-  out.push({ id: "day-ruler", title: "Day ruler", detail: `Asked on a ${["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][day]}, ruled by ${DAY_RULERS[day]} (by calendar date; the traditional day begins at sunrise).`, tone: "info" });
   return out;
 }

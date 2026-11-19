@@ -3,14 +3,15 @@
 import { AlertTriangle, CheckCircle2, Info } from "lucide-react";
 import { horaryConsiderations } from "@/lib/astro/horary";
 import type { ChartView } from "@/lib/astro";
-import type { HoraryData } from "@/lib/data/types";
+import type { ChartRecord, HoraryData } from "@/lib/data/types";
+import { HoraryJudgment } from "./horary-judgment";
 import { cn, fmtClock, fmtDate } from "@/lib/utils";
 
 const ICON = { caution: AlertTriangle, clear: CheckCircle2, info: Info } as const;
 const TONE = { caution: "text-warn", clear: "text-sage-dark", info: "text-muted" } as const;
 
 /** The question, when and where it was asked, and the traditional considerations before judgment. */
-export function HoraryPanel({ horary, view, className }: { horary: HoraryData; view: ChartView; className?: string }) {
+export function HoraryPanel({ horary, view, className, chart, onSave }: { horary: HoraryData; view: ChartView; className?: string; chart?: ChartRecord; onSave?: (h: HoraryData) => void }) {
   const items = horaryConsiderations(view.inner, horary.at);
   const cautions = items.filter((i) => i.tone === "caution").length;
   return (
@@ -41,6 +42,7 @@ export function HoraryPanel({ horary, view, className }: { horary: HoraryData; v
         </ul>
         <p className="mt-3 text-[11.5px] text-muted">Traditional cautions (after Bonatti and Lilly) to weigh in your judgment, not verdicts.</p>
       </div>
+      {chart && onSave && <HoraryJudgment chart={chart} horary={horary} view={view} onSave={onSave} />}
     </div>
   );
 }

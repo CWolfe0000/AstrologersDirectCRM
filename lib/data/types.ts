@@ -54,6 +54,14 @@ export interface HoraryData {
   lat: number;
   lon: number;
   tz: string;
+  /** What the question is about (a house topic) and whose matter it is: the quesited is the topic's house counted from that person's house. */
+  topicHouse?: number;
+  aboutHouse?: number;
+  /** The astrologer's judgment, and what actually happened. */
+  judgment?: string;
+  outcome?: "pending" | "yes" | "no" | "partly";
+  outcomeNote?: string;
+  outcomeAt?: string;
 }
 
 export interface ChartRecord {

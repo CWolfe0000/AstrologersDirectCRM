@@ -328,7 +328,7 @@ function Workspace() {
 
         {/* CENTER: wheel */}
         <section className="min-w-0">
-          {chart.type === "horary" && chart.horary && <HoraryPanel horary={chart.horary} view={view} className="mb-4" />}
+          {chart.type === "horary" && chart.horary && <HoraryPanel horary={chart.horary} view={view} className="mb-4" chart={chart} onSave={(h) => updateChart(chart.id, { horary: h })} />}
           {chart.type === "election" && chart.election && <ElectionPanel election={chart.election} view={view} client={people.find((p) => p.id === chart.clientId)} className="mb-4" />}
           <div className="ws-wheel relative rounded-xl border border-line bg-surface p-3 shadow-card sm:p-5">
             <Button variant="secondary" size="sm" className="ws-noprint absolute right-3 top-3 z-10 sm:right-4 sm:top-4" onClick={() => setExpanded(true)} aria-label="Expand chart wheel" title="Expand">

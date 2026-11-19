@@ -142,7 +142,8 @@ function NewChart() {
       returnPlace: isReturn && returnPlace ? returnPlace : undefined,
       election: isElection && election ? { ...election, purpose: electionPurpose.trim() } : undefined,
       horary: isHorary && askedPlace ? { question: question.trim() || "…", at: `${askedDate}T${askedTime}`, ...askedPlace } : undefined,
-      settings: { houseSystem, zodiac },
+      // Horary: traditional rulers and the five Ptolemaic aspects (Lilly’s moieties are used in the judgment).
+      settings: isHorary ? { houseSystem, zodiac, rulership: "traditional", aspects: ["conjunction", "sextile", "square", "trine", "opposition"] } : { houseSystem, zodiac },
       createdAt: "",
       updatedAt: "",
     }),

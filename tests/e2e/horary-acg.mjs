@@ -53,12 +53,34 @@ await page.getByRole("button", { name: /Save & Open Workspace/i }).click();
 await page.waitForURL(/\/app\/charts\/(?!new)/);
 await page.getByText("Considerations Before Judgment").waitFor({ timeout: 20000 });
 await page.getByText("“Will I get the job I interviewed for?”").waitFor();
-await page.getByText(/Asked on a Tuesday, ruled by Mars/).waitFor();
+await page.getByText(/on a day ruled by Mars/).waitFor();
+
+step("judgment: significators, perfection, strength, radicality; then the log");
+await page.getByLabel("The Question Is About").selectOption("10");
+await page.getByText(/Quesited: the 10th House/).waitFor();
+await page.getByText("Following the planets forward…").waitFor({ state: "detached", timeout: 30000 });
+await page.getByText(/Ruler of the Ascendant/).waitFor();
+await page.getByText(/Asked in the hour of/).waitFor();
+assert.ok(await page.getByRole("cell", { name: /Moon/ }).count(), "strength table lists the Moon");
+await page.getByLabel("Whose Matter").selectOption("7");
+await page.getByText(/Quesited: the 4th House \(the 10th from the 7th\)/).waitFor();
+await page.getByLabel("Whose Matter").selectOption("1");
+await page.getByLabel("Your Judgment").fill("Yes, within weeks: the Moon applies to the 10th ruler.");
+await page.getByLabel("Outcome").selectOption("yes");
+await page.getByRole("button", { name: "Save", exact: true }).click();
+if (SHOTS) { await page.waitForTimeout(500); await page.locator("text=Considerations Before Judgment").locator("..").locator("..").screenshot({ path: `${SHOTS}/horary-judgment.png` }); }
 if (SHOTS) await page.screenshot({ path: `${SHOTS}/horary.png`, fullPage: true });
 await page.getByText("All changes saved").waitFor({ timeout: 15000 });
 let s = await state();
 const h = s.charts.find((c) => c.type === "horary");
 assert.deepEqual({ q: h.horary.question, at: h.horary.at, tz: h.horary.tz, p: h.personIds }, { q: "Will I get the job I interviewed for?", at: "2026-11-10T14:20", tz: "Europe/Paris", p: ["c1"] });
+assert.equal(h.horary.topicHouse, 10);
+assert.equal(h.horary.outcome, "yes");
+assert.match(h.horary.judgment, /within weeks/);
+assert.ok(h.horary.outcomeAt, "outcome date recorded");
+assert.deepEqual(h.settings.aspects, ["conjunction", "sextile", "square", "trine", "opposition"], "Ptolemaic aspects for horary");
+await page.goto(BASE + "/app/clients/c1?tab=charts");
+await page.getByText(/1 Outcome Recorded \(1 Yes, 0 No, 0 Partly\)/).waitFor();
 
 step("create an astrocartography map");
 await page.goto(BASE + "/app/charts/new?client=c1");

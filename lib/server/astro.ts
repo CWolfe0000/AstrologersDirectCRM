@@ -92,3 +92,25 @@ export async function solarReturnChart(birth: BirthData, year: number, s: ChartS
   const bodies = Object.fromEntries(r.points.map((x) => [x.id, { lon: x.lon, speed: x.speed }]));
   return { bodies: toPoints(bodies, r.cusps, s.bodies), cusps: r.cusps, asc: r.asc, mc: r.mc, utc: r.utc };
 }
+
+/**
+ * Horary: the seven traditional planets' motion from a moment, every 6 hours
+ * for 30 days then daily to 400 days, for perfection, stations and timing.
+ */
+export function motionFrom(utc: string, s: Pick<ChartSettings, "zodiac">) {
+  const start = Date.parse(utc);
+  const ids: BodyId[] = ["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn"];
+  const t: number[] = [];
+  const lon = Object.fromEntries(ids.map((id) => [id, [] as number[]])) as Record<string, number[]>;
+  const speed = Object.fromEntries(ids.map((id) => [id, [] as number[]])) as Record<string, number[]>;
+  const H = 3_600_000;
+  for (let ms = 0; ms <= 400 * 24 * H; ms += ms < 30 * 24 * H ? 6 * H : 24 * H) {
+    const b = bodiesAt(new Date(start + ms).toISOString(), { zodiac: s.zodiac, bodies: ids });
+    t.push(start + ms);
+    for (const id of ids) {
+      lon[id]!.push(Math.round(b[id]!.lon * 1e4) / 1e4);
+      speed[id]!.push(Math.round(b[id]!.speed * 1e5) / 1e5);
+    }
+  }
+  return { t, lon, speed };
+}
