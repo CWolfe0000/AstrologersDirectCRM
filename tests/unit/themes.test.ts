@@ -20,51 +20,71 @@ function timeline(contacts: TimelineContact[]): TimelineResult {
   };
 }
 
+const eclipse = (id: string, target: TimelineContact["target"], at: number): TimelineContact => ({
+  id, technique: "eclipse", source: "new-moon", aspect: "conjunction", target, targetHouse: null, weight: 1, layer: "trigger", durationDays: 28,
+  windows: [], events: [{ utc: day(at), kind: "new", lon: 0, eclipse: "total solar eclipse", orb: 1 }],
+});
+
 describe("life themes", () => {
-  it("marriage: significators, and a period where two techniques meet on them", () => {
+  it("marriage: a solar arc anchors the period; transits and eclipses to its points are the triggers", () => {
     const m = activationModel(timeline([
-      contact("a", "transit", "jupiter", "trine", "venus", 50, 80),
-      contact("b", "solar-arc", "sun", "conjunction", "jupiter", 40, 90), // Jupiter is in the 7th
-      contact("c", "transit", "saturn", "square", "asc", 55, 75), // only conjunctions and oppositions to the Ascendant count
-      contact("d", "transit", "saturn", "square", "moon", 55, 75), // not a significator
-      contact("e", "transit", "jupiter", "sextile", "venus", 150, 160), // alone: not a convergence
+      contact("arc", "solar-arc", "mc", "conjunction", "venus", 40, 160),
+      contact("t1", "transit", "jupiter", "trine", "venus", 50, 80), // on the arc's target
+      contact("t2", "transit", "saturn", "square", "mc", 100, 120), // on the natal place of the directed point
+      contact("t3", "transit", "saturn", "square", "moon", 55, 75), // another point: not a trigger
+      contact("t4", "transit", "mars", "square", "venus", 170, 180), // after the arc has left orb
+      eclipse("e1", "venus", 90),
+      contact("prog", "progressed", "moon", "square", "venus", 10, 30), // progressions come after solar arcs
+      contact("axis", "solar-arc", "saturn", "square", "asc", 0, 199), // the axis counts by conjunction or opposition only
     ]), "all");
     const r = themeResult(m, "marriage");
     expect(r.significators.map((s) => s.id)).toEqual(["venus", "jupiter", "asc"]);
-    expect(r.contactCount).toBe(3);
-    expect(r.periods).toHaveLength(1);
+    expect(r.periods.map((p) => p.anchor.id)).toEqual(["arc", "prog"]);
     const p = r.periods[0]!;
-    expect(p.contacts.map((c) => c.id).sort()).toEqual(["a", "b"]);
-    expect(p.techniques.sort()).toEqual(["solar-arc", "transit"]);
-    expect(p.start).toBeGreaterThanOrEqual(50);
-    expect(p.end).toBeLessThanOrEqual(80);
-    expect([64, 65]).toContain(p.peak);
+    expect([p.start, p.end]).toEqual([40, 160]);
+    expect(p.exact).toBe(day(100));
+    expect(p.points).toEqual(["venus", "mc"]);
+    expect(p.triggers.map((t) => t.contact.id)).toEqual(["t1", "e1", "t2"]);
+    expect(p.triggers[1]!.dates).toEqual([day(90)]);
+    expect(p.peak).toBeGreaterThanOrEqual(50);
+    expect(p.peak).toBeLessThanOrEqual(120);
   });
 
-  it("career success counts helpful contacts only", () => {
+  it("a directed significator anchors a period too", () => {
+    // Solar arc Venus to the natal Moon: Venus is the marriage significator being directed.
+    const r = themeResult(activationModel(timeline([contact("arc", "solar-arc", "venus", "trine", "moon", 10, 100)]), "all"), "marriage");
+    expect(r.periods).toHaveLength(1);
+    expect(r.periods[0]!.points).toEqual(["moon", "venus"]);
+    expect(r.periods[0]!.peak).toBeNull();
+  });
+
+  it("career success keeps helpful directions only", () => {
     const m = activationModel(timeline([
-      contact("a", "transit", "jupiter", "conjunction", "mc", 20, 60),
-      contact("b", "transit", "uranus", "trine", "saturn", 30, 70), // ruler of the 10th
-      contact("c", "transit", "saturn", "square", "mc", 20, 60), // hard, from Saturn: left out
+      contact("a", "solar-arc", "jupiter", "conjunction", "mc", 20, 160),
+      contact("b", "solar-arc", "uranus", "trine", "saturn", 30, 170), // ruler of the 10th
+      contact("c", "solar-arc", "saturn", "square", "mc", 20, 160), // hard, from Saturn: left out
     ]), "all");
     const r = themeResult(m, "career");
     expect(r.significators.map((s) => s.id)).toEqual(["mc", "saturn", "sun"]);
-    expect(r.periods[0]!.contacts.map((c) => c.id).sort()).toEqual(["a", "b"]);
+    expect(r.periods.map((p) => p.anchor.id)).toEqual(["a", "b"]);
   });
 
-  it("accident-prone counts hard aspects from Mars, Saturn, Uranus and Pluto, or to natal Mars and Uranus", () => {
+  it("accident-prone keeps hard directions from Mars, Saturn, Uranus and Pluto, or to natal Mars and Uranus", () => {
     const m = activationModel(timeline([
-      contact("a", "transit", "uranus", "square", "asc", 100, 140),
-      contact("b", "transit", "jupiter", "opposition", "mars", 110, 130), // to natal Mars (also the chart ruler)
-      contact("c", "transit", "mars", "trine", "sun", 100, 140), // soft: left out
-      contact("d", "transit", "jupiter", "square", "sun", 100, 140), // hard, but neither a harsh mover nor Mars/Uranus
+      contact("a", "solar-arc", "uranus", "square", "asc", 100, 190),
+      contact("b", "solar-arc", "jupiter", "opposition", "mars", 110, 190),
+      contact("c", "solar-arc", "mars", "trine", "sun", 100, 140), // soft: left out
+      contact("d", "solar-arc", "jupiter", "square", "sun", 100, 140), // hard, but neither a harsh planet nor Mars/Uranus
+      contact("t", "transit", "mars", "conjunction", "asc", 120, 126),
     ]), "all");
     const r = themeResult(m, "accident");
-    expect(r.contactCount).toBe(2);
-    expect(r.periods[0]!.contacts.map((c) => c.id).sort()).toEqual(["a", "b"]);
+    expect(r.periods.map((p) => p.anchor.id)).toEqual(["a", "b"]);
+    expect(r.periods[0]!.triggers.map((t) => t.contact.id)).toEqual(["t"]);
+    expect([122, 123]).toContain(r.periods[0]!.peak);
   });
 
-  it("no periods when nothing converges", () => {
-    expect(themeResult(activationModel(timeline([]), "all"), "career").periods).toEqual([]);
+  it("no periods without a direction to the significators", () => {
+    const r = themeResult(activationModel(timeline([contact("t", "transit", "jupiter", "trine", "mc", 10, 40)]), "all"), "career");
+    expect(r.periods).toEqual([]);
   });
 });

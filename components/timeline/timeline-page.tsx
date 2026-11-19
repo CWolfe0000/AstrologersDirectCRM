@@ -290,7 +290,7 @@ function Timeline() {
               <section aria-labelledby="tl-themes" className="space-y-3">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <h2 id="tl-themes" className="font-serif text-[22px] text-ink">Life Themes</h2>
-                  <p className="text-[12.5px] text-muted">Where contacts converge on the significators of one topic, across the whole range.</p>
+                  <p className="text-[12.5px] text-muted">Solar arcs to the significators of one topic, and the transits and eclipses that trigger them.</p>
                 </div>
                 <LifeThemes m={model} d={d} onOpenContact={setDetail} onAsOf={moveAsOf} />
               </section>
