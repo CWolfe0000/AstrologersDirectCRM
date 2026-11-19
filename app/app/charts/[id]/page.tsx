@@ -27,6 +27,8 @@ import { WorkspaceObservations } from "@/components/workspace/workspace-observat
 import { AiAssistant } from "@/components/workspace/ai-assistant";
 import { ringLabels } from "@/components/workspace/ring-labels";
 import { useHydrated } from "@/components/workspace/use-hydrated";
+import { TraditionalPanel } from "@/components/workspace/traditional-panel";
+import { zonedToUtc } from "@/lib/timezones";
 
 const PRINT_CSS = `@media print {
   @page { margin: 14mm; }
@@ -143,6 +145,9 @@ function Workspace() {
   const subjects = chart.personIds.map((pid) => people.find((p) => p.id === pid)).filter(Boolean);
   const dirty = Object.keys(overrides).length > 0 || (refDate ?? "") !== (chart.refDate ?? "");
   const s = view.settings;
+  // Natal charts with a known birth time get the traditional techniques (time lords need the birth moment).
+  const natalSubject = chart.type === "natal" ? subjects[0] : undefined;
+  const natalBirthUtc = natalSubject && natalSubject.birth.timeAccuracy !== "unknown" ? zonedToUtc(`${natalSubject.birth.date}T${natalSubject.birth.time}:00`, natalSubject.birth.tz || "UTC").toISOString() : null;
 
   const controls = (
     <ChartControls
@@ -392,7 +397,7 @@ function Workspace() {
                 <TabsTrigger value="aspects" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">Aspects</TabsTrigger>
                 <TabsTrigger value="grid" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">Grid</TabsTrigger>
                 <TabsTrigger value="houses" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">{chart.type === "synastry" ? "Overlays" : "Houses"}</TabsTrigger>
-                <TabsTrigger value="condition" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">Condition</TabsTrigger>
+                <TabsTrigger value="condition" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">{natalBirthUtc ? "Traditional" : "Condition"}</TabsTrigger>
                 <TabsTrigger value="observations" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">
                   Notes{obsCount > 0 && <span className="text-[10.5px] text-accent">{obsCount}</span>}
                 </TabsTrigger>
@@ -424,7 +429,7 @@ function Workspace() {
                   )}
                 </TabsContent>
                 <TabsContent value="condition">
-                  <ConditionTable view={view} />
+                  {natalBirthUtc ? <TraditionalPanel view={view} birthUtc={natalBirthUtc} /> : <ConditionTable view={view} />}
                 </TabsContent>
                 <TabsContent value="observations">
                   <WorkspaceObservations chart={chart} editing={editing} setEditing={setEditing} draft={noteDraft} />
