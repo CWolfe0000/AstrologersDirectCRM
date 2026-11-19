@@ -6,6 +6,8 @@ import { ageOn, dignityTable, firdaria, isDayChart, lots, profection, releasingL
 import { lengthOfLife, obliquity, vitalSector, type ReleaserId } from "@/lib/astro/length-of-life";
 import { cn, TODAY } from "@/lib/utils";
 import { Segmented } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const fmt = (ms: number) => new Date(ms).toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric", year: "numeric" });
 const G = ({ id }: { id: BodyId | "southnode" }) => <span className="glyph text-[15px]" title={BODIES[id as BodyId]?.name}>{BODIES[id as BodyId]?.glyph}</span>;
@@ -17,21 +19,45 @@ const RELEASER: Record<ReleaserId, string> = { sun: "Sun", moon: "Moon", asc: "A
 const pos = (lon: number) => `${Math.floor(lon % 30)}° ${signName(Math.floor(lon / 30))}`;
 const yrs = (n: number) => `${Math.round(n * 10) / 10} years`;
 
-/** Length of life: releaser and giver of years, and Valens' vital sector. Closed until the practitioner opens it. */
-function LengthOfLife({ view, birthUtc, lat }: { view: ChartView; birthUtc: string; lat?: number }) {
+/**
+ * Length of life. Nothing is calculated or shown until the practitioner presses
+ * Calculate and confirms; the result is not kept when they leave the chart.
+ */
+function LengthOfLife(props: { view: ChartView; birthUtc: string; lat?: number }) {
+  const [asking, setAsking] = React.useState(false);
+  const [shown, setShown] = React.useState(false);
+  return (
+    <section className="rounded-lg border border-line">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5">
+        <h3 className="text-[13px] font-semibold text-ink">Length of Life</h3>
+        {shown ? <Button variant="ghost" size="sm" onClick={() => setShown(false)}>Hide</Button> : <Button variant="secondary" size="sm" onClick={() => setAsking(true)}>Calculate</Button>}
+      </div>
+      {shown ? <LengthOfLifeResult {...props} /> : <p className="border-t border-line px-3 py-2.5 text-[12.5px] text-muted">The traditional calculations for an age at death (hyleg and alcocoden, and Valens' vital sector). Not calculated until you ask for it.</p>}
+      <Dialog open={asking} onOpenChange={setAsking}>
+        <DialogContent
+          size="sm"
+          title="Are you sure?"
+          description="This calculates an age at death for this chart."
+          footer={<>
+            <Button variant="secondary" onClick={() => setAsking(false)}>Cancel</Button>
+            <Button onClick={() => { setAsking(false); setShown(true); }}>Yes, Calculate</Button>
+          </>}
+        >
+          <p className="text-[13.5px] text-ink-3">The figure will appear on this screen, where anyone looking at it with you can see it. It is a historical technique and has not been shown to predict how long anyone lives.</p>
+        </DialogContent>
+      </Dialog>
+    </section>
+  );
+}
+
+function LengthOfLifeResult({ view, birthUtc, lat }: { view: ChartView; birthUtc: string; lat?: number }) {
   const p = view.inner;
   const r = React.useMemo(() => lengthOfLife(p), [p]);
-  if (!r) return null;
+  if (!r) return <p className="border-t border-line px-3 py-2.5 text-[12.5px] text-muted">This chart does not have the points the calculation needs.</p>;
   const tropical = view.settings.zodiac === "tropical";
   const sector = tropical && lat !== undefined ? vitalSector(p, r.releaser.lon, lat, obliquity(birthUtc)) : null;
   const g = r.giver;
   return (
-    <details className="group rounded-lg border border-line">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2.5 text-[13px] font-semibold text-ink [&::-webkit-details-marker]:hidden">
-        Length of Life
-        <span className="text-[11.5px] font-normal text-muted group-open:hidden">Show</span>
-        <span className="hidden text-[11.5px] font-normal text-muted group-open:inline">Hide</span>
-      </summary>
       <div className="space-y-4 border-t border-line px-3 py-3">
         <p className="rounded-lg bg-warn-50 px-3 py-2 text-[12.5px] text-ink-3">
           A historical technique, shown so the working can be studied. The ancient authors disagree with each other, the two methods below rarely agree, and neither has been shown to predict how long anyone lives.
@@ -78,7 +104,6 @@ function LengthOfLife({ view, birthUtc, lat }: { view: ChartView; birthUtc: stri
           <p className="mt-1.5 text-[11.5px] text-muted">From the releaser forward to the first body, square or opposition of Mars or Saturn, and no further than 90°. The arc becomes years by its rising time at the birth latitude: one degree of oblique ascension is one year.</p>
         </div>
       </div>
-    </details>
   );
 }
 
@@ -206,7 +231,7 @@ export function TraditionalPanel({ view, birthUtc, lat }: { view: ChartView; bir
         <p className="mt-1.5 text-[11.5px] text-muted">Minor years of each sign's ruler (Capricorn 27, Aquarius 30), 360-day years; level 2 in 30-day months, with Valens' loosing of the bond after twelve signs.</p>
       </section>
 
-      <LengthOfLife view={view} birthUtc={birthUtc} lat={lat} />
+      <LengthOfLife key={birthUtc} view={view} birthUtc={birthUtc} lat={lat} />
     </div>
   );
 }
