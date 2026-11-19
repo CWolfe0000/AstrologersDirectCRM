@@ -27,7 +27,7 @@ const sign = (lon: number) => Math.floor((((lon % 360) + 360) % 360) / 30);
 const deg = (lon: number) => (((lon % 360) + 360) % 360) % 30;
 
 export const DOMICILE: Planet7[] = ["mars", "venus", "mercury", "moon", "sun", "mercury", "venus", "mars", "jupiter", "saturn", "saturn", "jupiter"];
-const EXALT: Partial<Record<number, Planet7>> = { 0: "sun", 1: "moon", 5: "mercury", 11: "venus", 9: "mars", 3: "jupiter", 6: "saturn" };
+export const EXALT: Partial<Record<number, Planet7>> = { 0: "sun", 1: "moon", 5: "mercury", 11: "venus", 9: "mars", 3: "jupiter", 6: "saturn" };
 /** Dorothean triplicity rulers by element (fire, earth, air, water): day, night, participating. */
 const TRIPLICITY: [Planet7, Planet7, Planet7][] = [
   ["sun", "jupiter", "saturn"],

@@ -429,7 +429,7 @@ function Workspace() {
                   )}
                 </TabsContent>
                 <TabsContent value="condition">
-                  {natalBirthUtc ? <TraditionalPanel view={view} birthUtc={natalBirthUtc} /> : <ConditionTable view={view} />}
+                  {natalBirthUtc ? <TraditionalPanel view={view} birthUtc={natalBirthUtc} lat={natalSubject?.birth.lat} /> : <ConditionTable view={view} />}
                 </TabsContent>
                 <TabsContent value="observations">
                   <WorkspaceObservations chart={chart} editing={editing} setEditing={setEditing} draft={noteDraft} />

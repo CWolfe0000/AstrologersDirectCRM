@@ -3,6 +3,7 @@
 import * as React from "react";
 import { BODIES, ordinal, type BodyId, type ChartView } from "@/lib/astro";
 import { ageOn, dignityTable, firdaria, isDayChart, lots, profection, releasingL1, releasingL2, signName, type Planet7 } from "@/lib/astro/traditional";
+import { lengthOfLife, obliquity, vitalSector, type ReleaserId } from "@/lib/astro/length-of-life";
 import { cn, TODAY } from "@/lib/utils";
 import { Segmented } from "@/components/ui/tabs";
 
@@ -12,8 +13,77 @@ const h3 = "mb-2 text-[13px] font-semibold text-ink";
 const th = "px-1.5 py-1.5 text-left text-[10.5px] font-semibold uppercase tracking-wide text-muted";
 const td = "border-b border-line/60 px-1.5 py-1.5 text-[12.5px]";
 
-/** Traditional techniques for a natal chart: dignities, profections, firdaria, zodiacal releasing. */
-export function TraditionalPanel({ view, birthUtc }: { view: ChartView; birthUtc: string }) {
+const RELEASER: Record<ReleaserId, string> = { sun: "Sun", moon: "Moon", asc: "Ascendant", fortune: "Lot of Fortune" };
+const pos = (lon: number) => `${Math.floor(lon % 30)}° ${signName(Math.floor(lon / 30))}`;
+const yrs = (n: number) => `${Math.round(n * 10) / 10} years`;
+
+/** Length of life: releaser and giver of years, and Valens' vital sector. Closed until the practitioner opens it. */
+function LengthOfLife({ view, birthUtc, lat }: { view: ChartView; birthUtc: string; lat?: number }) {
+  const p = view.inner;
+  const r = React.useMemo(() => lengthOfLife(p), [p]);
+  if (!r) return null;
+  const tropical = view.settings.zodiac === "tropical";
+  const sector = tropical && lat !== undefined ? vitalSector(p, r.releaser.lon, lat, obliquity(birthUtc)) : null;
+  const g = r.giver;
+  return (
+    <details className="group rounded-lg border border-line">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2.5 text-[13px] font-semibold text-ink [&::-webkit-details-marker]:hidden">
+        Length of Life
+        <span className="text-[11.5px] font-normal text-muted group-open:hidden">Show</span>
+        <span className="hidden text-[11.5px] font-normal text-muted group-open:inline">Hide</span>
+      </summary>
+      <div className="space-y-4 border-t border-line px-3 py-3">
+        <p className="rounded-lg bg-warn-50 px-3 py-2 text-[12.5px] text-ink-3">
+          A historical technique, shown so the working can be studied. The ancient authors disagree with each other, the two methods below rarely agree, and neither has been shown to predict how long anyone lives.
+        </p>
+
+        <div>
+          <p className="mb-1 text-[11.5px] font-semibold uppercase tracking-wide text-muted">Releaser and Giver of Years</p>
+          <ul className="mb-2 text-[12px]">
+            {r.candidates.map((c) => (
+              <li key={c.id} className={cn("flex justify-between gap-3 border-b border-line/60 py-1", c === r.releaser && "font-semibold text-accent")}>
+                <span>{RELEASER[c.id]} <span className="font-normal text-muted">{pos(c.lon)}, {ordinal(c.house)} House</span></span>
+                <span className="text-right font-normal text-muted">{!c.placed ? "Not in a releasing place" : c.giver ? `Giver: ${BODIES[c.giver].name}` : "No planet with dignity aspects it"}</span>
+              </li>
+            ))}
+          </ul>
+          {g && r.years !== null ? (
+            <div className="rounded-lg border border-line px-3 py-2 text-[13px]">
+              <p>
+                Releaser (hyleg): <b className="font-medium">{RELEASER[r.releaser.id]}</b>. Giver of years (alcocoden): <b className="font-medium"><G id={g.id} /> {BODIES[g.id].name}</b>, which holds {g.dignities.join(", ").toLowerCase()} at that degree and {g.aspect === "Conjunction" ? "is in the same sign" : `aspects it by ${g.aspect.toLowerCase()}`}.
+              </p>
+              <ul className="mt-1.5 text-[12.5px] tabular-nums">
+                <li className="flex justify-between"><span>{BODIES[g.id].name} in the {ordinal(g.house)} House: {g.grant} years</span><span>{g.years}</span></li>
+                {r.changes.map((c) => (
+                  <li key={c.id} className="flex justify-between"><span>{BODIES[c.id].name}, {c.aspect.toLowerCase()} to {BODIES[g.id].name}</span><span>{c.years > 0 ? `+${c.years}` : `−${-c.years}`}</span></li>
+                ))}
+                <li className="mt-1 flex justify-between border-t border-line pt-1 font-semibold"><span>Total</span><span>{yrs(r.years)}</span></li>
+              </ul>
+            </div>
+          ) : (
+            <p className="rounded-lg border border-line px-3 py-2 text-[13px]">No planet with dignity at a releaser's degree aspects it, so this method gives no figure for this chart.</p>
+          )}
+          <p className="mt-1.5 text-[11.5px] text-muted">Releaser: by day Sun then Moon, by night Moon then Sun, then the Ascendant after a new moon or the Lot of Fortune after a full moon, then the other; a luminary or the Lot must be in the 1st, 7th, 9th, 10th or 11th house. Giver: the planet with most dignity at the releaser's degree that aspects it by sign (ties go to the term ruler). Greater years if the giver is angular, middle if succedent, lesser if cadent. Venus and Jupiter aspecting the giver by sign add their lesser years; Mars and Saturn conjunct, square or opposite take theirs away.</p>
+        </div>
+
+        <div>
+          <p className="mb-1 text-[11.5px] font-semibold uppercase tracking-wide text-muted">Vital Sector (Valens)</p>
+          {sector ? (
+            <div className="rounded-lg border border-line px-3 py-2 text-[13px]">
+              From the {RELEASER[r.releaser.id]} at {pos(r.releaser.lon)} to {pos(sector.endLon)}, {sector.cut ? <>the {sector.cut.aspect === "Body" ? "body" : sector.cut.aspect.toLowerCase()} of <G id={sector.cut.id} /> {BODIES[sector.cut.id].name}</> : "a full quadrant with no ray of Mars or Saturn in the way"}: {Math.round(sector.arc * 10) / 10}° of the zodiac, rising in <b className="font-medium">{yrs(sector.years)}</b>.
+            </div>
+          ) : (
+            <p className="rounded-lg border border-line px-3 py-2 text-[13px]">{!tropical ? "Rising times are calculated for the tropical zodiac only." : "Rising times cannot be calculated at this birth latitude."}</p>
+          )}
+          <p className="mt-1.5 text-[11.5px] text-muted">From the releaser forward to the first body, square or opposition of Mars or Saturn, and no further than 90°. The arc becomes years by its rising time at the birth latitude: one degree of oblique ascension is one year.</p>
+        </div>
+      </div>
+    </details>
+  );
+}
+
+/** Traditional techniques for a natal chart: dignities, profections, firdaria, zodiacal releasing, length of life. */
+export function TraditionalPanel({ view, birthUtc, lat }: { view: ChartView; birthUtc: string; lat?: number }) {
   const p = view.inner;
   const now = Date.parse(`${TODAY}T12:00:00Z`);
   const day = isDayChart(p);
@@ -135,6 +205,8 @@ export function TraditionalPanel({ view, birthUtc }: { view: ChartView; birthUtc
         )}
         <p className="mt-1.5 text-[11.5px] text-muted">Minor years of each sign's ruler (Capricorn 27, Aquarius 30), 360-day years; level 2 in 30-day months, with Valens' loosing of the bond after twelve signs.</p>
       </section>
+
+      <LengthOfLife view={view} birthUtc={birthUtc} lat={lat} />
     </div>
   );
 }
