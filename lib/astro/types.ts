@@ -45,6 +45,8 @@ export interface TimelineDefaults {
   transitOrbs: Partial<Record<BodyId, number>>;
   /** Transiting planets counted as long-term background rather than short-term triggers (default Uranus, Neptune, Pluto). */
   backgroundBodies?: BodyId[];
+  /** Life Themes: which transits and eclipses count as triggers. "hard" (default): conjunction, square, opposition. "all": every aspect in use. */
+  themeTriggers?: "hard" | "all";
 }
 
 export interface ChartSettings {

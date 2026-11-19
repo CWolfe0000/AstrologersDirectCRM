@@ -3,7 +3,7 @@
 import * as React from "react";
 import { BODIES } from "@/lib/astro";
 import type { ActivationModel } from "@/lib/astro/activation";
-import { themeAnalysis, type ThemeId, type ThemePeriod, type ThemeResult } from "@/lib/astro/themes";
+import { themeAnalysis, type ThemeId, type ThemePeriod, type ThemeResult, type ThemeTriggers } from "@/lib/astro/themes";
 import type { PromiseLevel } from "@/lib/astro/promise";
 import type { TargetId, TimelineContact } from "@/lib/astro/timeline";
 import { Badge } from "@/components/ui/badge";
@@ -137,8 +137,8 @@ function Period({ m, p, d, onOpenContact, onAsOf }: { m: ActivationModel; p: The
 }
 
 /** Marriage, career and accident-prone periods across the timeline's range. */
-export function LifeThemes({ m, d, onOpenContact, onAsOf }: { m: ActivationModel; d: number; onOpenContact: (c: TimelineContact) => void; onAsOf: (date: string) => void }) {
-  const results = React.useMemo(() => themeAnalysis(m), [m]);
+export function LifeThemes({ m, d, triggers, onOpenContact, onAsOf }: { m: ActivationModel; d: number; triggers: ThemeTriggers; onOpenContact: (c: TimelineContact) => void; onAsOf: (date: string) => void }) {
+  const results = React.useMemo(() => themeAnalysis(m, triggers), [m, triggers]);
   return (
     <div className="space-y-2">
       <div className="grid gap-4 lg:grid-cols-3">
@@ -168,7 +168,7 @@ export function LifeThemes({ m, d, onOpenContact, onAsOf }: { m: ActivationModel
         })}
       </div>
       <p className="text-[12px] leading-relaxed text-muted">
-        Each theme starts from the natal promise: the birth chart's own testimony on the topic, from the dignity and house of the significators, the planets in the house and their natal aspects. A solar arc that repeats a natal aspect between its two points is listed first. A period is the time a solar arc involving one of the significators (as the point aimed at, or as the planet directed) is in orb. Solar arcs come first; a secondary progression to a significator is shown only when fewer than four solar arcs qualify. Triggers are the transits and eclipses to the two natal points of that solar arc while it is in orb, using the planets, aspects and orbs set for this timeline, whatever the significance filter. {m.natal.hasHouses ? "" : "House rulers, house placements and the angles need a known birth time, so only the planets are used here. "}These are counting aids with provisional rules, not predictions.
+        Each theme starts from the natal promise: the birth chart's own testimony on the topic, from the dignity and house of the significators, the planets in the house and their natal aspects. A solar arc that repeats a natal aspect between its two points is listed first. A period is the time a solar arc involving one of the significators (as the point aimed at, or as the planet directed) is in orb. Solar arcs come first; a secondary progression to a significator is shown only when fewer than four solar arcs qualify. Triggers are the transits and eclipses to the two natal points of that solar arc while it is in orb, {triggers === "hard" ? "by conjunction, square or opposition only" : "by every aspect in use"} (a setting under Bodies, Aspects &amp; Orbs), with the planets and orbs set for this timeline, whatever the significance filter. {m.natal.hasHouses ? "" : "House rulers, house placements and the angles need a known birth time, so only the planets are used here. "}These are counting aids with provisional rules, not predictions.
       </p>
     </div>
   );

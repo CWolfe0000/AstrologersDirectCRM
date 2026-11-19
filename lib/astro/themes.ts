@@ -27,7 +27,8 @@
  * repeats a natal aspect between its two points comes before the others, as
  * it brings out something the birth chart already holds.
  *
- * Triggers are the transits and eclipses, by any aspect in use, to the two
+ * Triggers are the transits and eclipses, by hard aspect (conjunction, square,
+ * opposition) unless the practice's setting allows every aspect, to the two
  * natal points of the anchor (the point aimed at, and the natal place of the
  * directed planet) while the anchor is in orb. Like the density score, this is
  * a counting aid with provisional rules.
@@ -128,7 +129,10 @@ function anchors(theme: ThemeId, c: TimelineContact, sigs: Set<TargetId>) {
   return HARD.has(c.aspect) && (HARSH_MOVERS.has(c.source) || c.target === "mars" || c.target === "uranus");
 }
 
-export function themeResult(m: ActivationModel, id: ThemeId): ThemeResult {
+export type ThemeTriggers = "hard" | "all";
+const TRIGGER_HARD = new Set(["conjunction", "square", "opposition"]);
+
+export function themeResult(m: ActivationModel, id: ThemeId, triggerAspects: ThemeTriggers = "hard"): ThemeResult {
   const n = m.nDays;
   const from = parse(m.tl.from);
   const sigs = significators(m, id);
@@ -137,7 +141,7 @@ export function themeResult(m: ActivationModel, id: ThemeId): ThemeResult {
   const result: ThemeResult = { id, significators: sigs, promise: natalPromise(m.natal, id), series, max: 0, anchorCount: 0, periods: [] };
   if (!n) return result;
   const di = (ms: number) => Math.max(0, Math.min(n - 1, Math.floor((ms - from) / DAY)));
-  const triggersAll = m.tl.contacts.filter((c) => c.technique === "transit" || c.technique === "eclipse");
+  const triggersAll = m.tl.contacts.filter((c) => (c.technique === "transit" || c.technique === "eclipse") && (triggerAspects === "all" || TRIGGER_HARD.has(c.aspect)));
 
   const all: ThemePeriod[] = [];
   for (const anchor of m.tl.contacts) {
@@ -200,4 +204,4 @@ export function themeResult(m: ActivationModel, id: ThemeId): ThemeResult {
 }
 
 export const THEME_IDS: ThemeId[] = ["marriage", "career", "accident"];
-export const themeAnalysis = (m: ActivationModel) => THEME_IDS.map((id) => themeResult(m, id));
+export const themeAnalysis = (m: ActivationModel, triggerAspects: ThemeTriggers = "hard") => THEME_IDS.map((id) => themeResult(m, id, triggerAspects));

@@ -44,9 +44,11 @@ describe("life themes", () => {
     expect([p.start, p.end]).toEqual([40, 160]);
     expect(p.exact).toBe(day(100));
     expect(p.points).toEqual(["venus", "mc"]);
-    expect(p.triggers.map((t) => t.contact.id)).toEqual(["t1", "e1", "t2"]);
-    expect(p.triggers[1]!.dates).toEqual([day(90)]);
-    expect(p.peak).toBeGreaterThanOrEqual(50);
+    // Hard aspects only by default: the Jupiter trine is left out unless every aspect is allowed.
+    expect(p.triggers.map((t) => t.contact.id)).toEqual(["e1", "t2"]);
+    expect(p.triggers[0]!.dates).toEqual([day(90)]);
+    expect(themeResult(m, "marriage", "all").periods[0]!.triggers.map((t) => t.contact.id)).toEqual(["t1", "e1", "t2"]);
+    expect(p.peak).toBeGreaterThanOrEqual(90);
     expect(p.peak).toBeLessThanOrEqual(120);
   });
 

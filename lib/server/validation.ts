@@ -40,6 +40,7 @@ export const timelineDefaultsSchema = z
     orbs: z.object({ transit: orbDeg, directed: orbDeg, lunation: orbDeg, eclipse: orbDeg }).strict(),
     transitOrbs: z.record(bodyId, orbDeg),
     backgroundBodies: z.array(bodyId).max(14).optional(),
+    themeTriggers: z.enum(["hard", "all"]).optional(),
   })
   .strict();
 

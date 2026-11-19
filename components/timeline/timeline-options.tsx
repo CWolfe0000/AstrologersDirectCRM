@@ -33,6 +33,7 @@ export function sameTimeline(a: TimelineDefaults, b: TimelineDefaults) {
       aspects: [...t.aspects].sort(),
       transitOrbs: Object.fromEntries(Object.entries(t.transitOrbs).sort()),
       backgroundBodies: [...(t.backgroundBodies ?? DEFAULT_BACKGROUND)].sort(),
+      themeTriggers: t.themeTriggers ?? "hard",
     });
   return norm(a) === norm(b);
 }
@@ -181,6 +182,22 @@ export function TimelineOptionsEditor({ value, onChange, compact }: { value: Tim
           ))}
         </div>
         <p className="mt-2 text-[11.5px] leading-snug text-muted">Progressions use the Sun through Mars and the Moon. Solar arcs direct every natal point, including the angles. Lunations and eclipses use conjunction, opposition and square.</p>
+      </section>
+
+      <section>
+        <p className={heading}>Life Themes triggers</p>
+        <p className="mt-0.5 text-[11.5px] text-muted">Which transits count as triggers of a solar arc in Life Themes. Hard aspects are the conjunction, square and opposition.</p>
+        <div className="mt-2">
+          <Segmented
+            size="sm"
+            value={value.themeTriggers ?? "hard"}
+            onChange={(v) => onChange({ ...value, themeTriggers: v })}
+            options={[
+              { value: "hard", label: "Hard aspects only" },
+              { value: "all", label: "All aspects in use" },
+            ]}
+          />
+        </div>
       </section>
     </div>
   );

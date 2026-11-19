@@ -82,7 +82,9 @@ function Timeline() {
   const [state, setState] = React.useState<{ data: TimelineResponse | null; loading: boolean; error: string | null }>({ data: null, loading: false, error: null });
 
   const rangeError = end < start ? "The end date is before the start date." : (Date.parse(end) - Date.parse(start)) / DAY > 3 * 366 ? "Choose a range of up to three years." : null;
-  const key = person?.birth && !rangeError ? JSON.stringify([person.birth, { ...defaults, timeline: undefined }, start, end, opts]) : null;
+  // The Life Themes trigger setting only changes how the result is read, so it is kept out of the calculation.
+  const calcOpts = React.useMemo(() => ({ ...opts, themeTriggers: undefined }), [opts]);
+  const key = person?.birth && !rangeError ? JSON.stringify([person.birth, { ...defaults, timeline: undefined }, start, end, calcOpts]) : null;
 
   React.useEffect(() => {
     if (!hydrated || !premium || !key || !person?.birth) return;
@@ -91,7 +93,7 @@ function Timeline() {
     const t = setTimeout(() => {
       let p = resultCache.get(key);
       if (!p) {
-        p = fetchTimeline(person.birth!, { ...defaults, timeline: undefined }, start, end, opts);
+        p = fetchTimeline(person.birth!, { ...defaults, timeline: undefined }, start, end, calcOpts);
         resultCache.set(key, p);
         if (resultCache.size > 20) resultCache.delete(resultCache.keys().next().value!);
       }
@@ -292,7 +294,7 @@ function Timeline() {
                   <h2 id="tl-themes" className="font-serif text-[22px] text-ink">Life Themes</h2>
                   <p className="text-[12.5px] text-muted">Solar arcs to the significators of one topic, and the transits and eclipses that trigger them.</p>
                 </div>
-                <LifeThemes m={model} d={d} onOpenContact={setDetail} onAsOf={moveAsOf} />
+                <LifeThemes m={model} d={d} triggers={opts.themeTriggers ?? "hard"} onOpenContact={setDetail} onAsOf={moveAsOf} />
               </section>
             </ClientContext.Provider>
           )}
