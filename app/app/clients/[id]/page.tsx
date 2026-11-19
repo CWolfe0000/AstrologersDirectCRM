@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useParams, useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Pencil, CalendarPlus, CircleDot, NotebookPen, Mail, Phone, Cake, Clock, MapPin, AlertTriangle, MoreHorizontal, Archive, ArchiveRestore, Mic, Send, KeyRound, ListPlus, Eye, Waves } from "lucide-react";
 import { useStore, personName } from "@/lib/store";
@@ -105,6 +106,8 @@ function Profile() {
                   ) : (
                     <Badge tone="warn" className="ml-1" title="Angles and house placements are uncertain"><AlertTriangle className="size-3" /> {b.timeAccuracy === "approximate" ? "Approximate" : "Unknown"}</Badge>
                   )}
+                  {b.rectifiedFrom && <Badge tone="outline" className="ml-1" title={`Rectified${b.rectifiedAt ? ` on ${fmtDate(b.rectifiedAt)}` : ""}; previously ${b.rectifiedFrom}`}>Rectified</Badge>}
+                  <Link href={`/app/clients/${client.id}/rectify`} className="ml-1.5 text-[12px] font-medium text-accent hover:underline">Rectify</Link>
                 </span>
                 <span className="flex min-w-0 items-center gap-1.5"><MapPin className="size-3.5 shrink-0 text-muted" /> <span className="truncate">{b.place}</span></span>
               </div>

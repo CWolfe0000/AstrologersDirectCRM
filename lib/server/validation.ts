@@ -21,6 +21,8 @@ export const birthSchema = z
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     time: z.string().regex(/^\d{2}:\d{2}$/),
     timeAccuracy: z.enum(["exact", "approximate", "unknown"]),
+    rectifiedFrom: z.string().max(40).optional(),
+    rectifiedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
     place: str(200),
     lat: z.number().min(-90).max(90),
     lon: z.number().min(-180).max(180),
@@ -67,6 +69,7 @@ const person = z
     clientId: opt(id),
     relationship: opt(str(80)),
     notes: opt(str(5000)),
+    lifeEvents: opt(z.array(z.object({ id: str(40), date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), type: str(20), note: opt(str(300)) }).strict()).max(60)),
   })
   .strict();
 

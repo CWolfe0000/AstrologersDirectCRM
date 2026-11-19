@@ -74,6 +74,7 @@ jobs:
           node tests/e2e/chart-people.mjs
           node tests/e2e/horary-acg.mjs
           node tests/e2e/elect.mjs
+          node tests/e2e/rectify.mjs
           node tests/e2e/booking.mjs
           node tests/e2e/pwa.mjs
           node tests/e2e/a11y.mjs

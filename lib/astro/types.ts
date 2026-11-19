@@ -25,6 +25,9 @@ export interface BirthData {
   date: string; // YYYY-MM-DD
   time: string; // HH:mm (local)
   timeAccuracy: "exact" | "approximate" | "unknown";
+  /** Set when the time was rectified: the time on record before, and the date it was changed. */
+  rectifiedFrom?: string;
+  rectifiedAt?: string;
   place: string;
   lat: number;
   lon: number;

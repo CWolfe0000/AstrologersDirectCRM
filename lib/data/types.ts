@@ -12,6 +12,8 @@ export interface Person {
   clientId?: string;
   relationship?: string; // "Partner", "Mother", …
   notes?: string;
+  /** Dated life events, for rectification. */
+  lifeEvents?: { id: string; date: string; type: string; note?: string }[];
 }
 
 export interface Client {
