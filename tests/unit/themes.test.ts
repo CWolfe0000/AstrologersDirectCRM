@@ -127,6 +127,27 @@ describe("life themes", () => {
     expect(a.testimonies.filter((t) => t.tone === "challenge").map((t) => t.text)).toEqual(["Mars square the Moon"]);
   });
 
+  it("money: the natal promise is judged by dimension, with the working shown", () => {
+    const m = activationModel(timeline([]), "all");
+    const f = themeResult(m, "money").promise.financial!;
+    expect(f.day).toBe(false); // the Sun is in the 4th
+    expect(f.dimensions.map((d) => d.id)).toEqual(["earning", "gains", "enterprise", "speculation", "others", "property", "preservation", "scale"]);
+    expect(f.secondRuler).toBe("Venus, ruler of the 2nd, is in the 7th: earnings through clients, contracts or partnerships");
+    // Venus at 5° Libra in the 7th, by night, conjunct Jupiter: domicile 5 + 7th house 4 + benefic of the sect 2 + Jupiter 2.
+    const venus = f.planets.find((p) => p.id === "venus")!;
+    expect(venus.roles).toEqual(["Ruler of the 2nd", "Ruler of the 7th"]);
+    expect(venus.notes.map((x) => x.points)).toEqual([5, 4, 2, 2]);
+    expect(venus).toMatchObject({ net: 13, level: "strong" });
+    // Night formula: Ascendant + Sun − Moon = 0° Gemini, in the 3rd.
+    expect(f.fortune[0]).toContain("Lot of Fortune at 0° Gemini, in the 3rd House");
+    expect(f.circuit).toHaveLength(5);
+    // Saturn rules both the 10th and 11th here.
+    expect(f.circuit[1]).toMatchObject({ tied: true, text: "Rulers of the 10th and 11th (career and gains): the same planet, Saturn" });
+    // Without a birth time there are no houses, so the simple reading is used.
+    const noTime = activationModel({ ...timeline([]), cusps: null }, "all");
+    expect(themeResult(noTime, "money").promise.financial).toBeUndefined();
+  });
+
   it("a solar arc that repeats a natal aspect comes first", () => {
     const m = activationModel(timeline([
       contact("plain", "solar-arc", "moon", "sextile", "venus", 10, 100),

@@ -30,6 +30,7 @@ import type { NatalModel } from "./activation";
 import { DOMICILE, EXALT } from "./traditional";
 import type { TargetId } from "./timeline";
 import type { ThemeId } from "./themes";
+import { financialPromise, type FinancialPromise } from "./wealth";
 
 export interface Testimony {
   text: string;
@@ -39,6 +40,8 @@ export type PromiseLevel = "strong" | "mixed" | "weak" | "none";
 export interface NatalPromise {
   level: PromiseLevel;
   testimonies: Testimony[];
+  /** Money only, when the birth time is known: the promise by dimension, in place of a single verdict. */
+  financial?: FinancialPromise;
 }
 
 const signIdx = (lon: number) => Math.floor((((lon % 360) + 360) % 360) / 30);
@@ -128,5 +131,7 @@ export function natalPromise(n: NatalModel, theme: ThemeId): NatalPromise {
     if (id === n.chartRuler) add("support", `${name(id)}, ruler of the 1st, is in the ${ordinal(house)} House`);
   }
   const s = out.filter((t) => t.tone === "support").length, c = out.length - s;
+  const financial = theme === "money" ? financialPromise(n) : null;
+  if (financial) return { level: "mixed", testimonies: [], financial };
   return { level: out.length === 0 ? "none" : s >= c + 2 ? "strong" : c >= s + 2 ? "weak" : "mixed", testimonies: out };
 }
