@@ -79,7 +79,7 @@ export function VerifyEmailBanner() {
   const [sent, setSent] = React.useState(false);
   if (DATA_MODE === "demo" || !user || user.emailVerified || user.role !== "owner" || hidden) return null;
   return (
-    <div className="flex items-center gap-3 border-b border-[#F1E0C2] bg-warn-50 px-4 py-2 text-[13px] text-[#7C5A22] md:px-6 lg:px-8">
+    <div className="flex items-center gap-3 border-b border-[#F1E0C2] bg-warn-50 px-4 py-2 text-[13px] text-[#7C5A22] print:hidden md:px-6 lg:px-8">
       <MailWarning className="size-4 shrink-0" />
       <span className="flex-1">
         Please confirm your email address ({user.email}).{" "}

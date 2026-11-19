@@ -253,7 +253,7 @@ export function RulershipTable({ view, rulership }: { view: ChartView; rulership
             ))}
           </tbody>
         </table>
-        <p className="mt-2 text-[11.5px] text-muted">{rulership === "modern" ? "Modern" : "Traditional"} rulership (change it in the chart controls). Houses in parentheses hold an intercepted sign the planet rules.</p>
+        <p className="print-note mt-2 text-[11.5px] text-muted">{rulership === "modern" ? "Modern" : "Traditional"} rulership (change it in the chart controls). Houses in parentheses hold an intercepted sign the planet rules.</p>
       </div>
       <div>
         <p className="mb-1 text-[12px] font-semibold text-ink">House Cusps</p>

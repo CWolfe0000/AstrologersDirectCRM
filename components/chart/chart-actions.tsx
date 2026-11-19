@@ -51,8 +51,8 @@ export function ChartActionsMenu({ chart, svg, inWorkspace }: { chart: ChartReco
         <DropdownItem onSelect={() => downloadPng(getSvg(), chart.title).then((ok) => toast(ok ? "Chart exported" : "Export failed", ok ? "PNG downloaded." : undefined, ok ? "success" : "error"))}>
           <Download /> Export as PNG
         </DropdownItem>
-        <DropdownItem onSelect={() => (inWorkspace ? window.print() : router.push(`/app/charts/${chart.id}?print=1`))}>
-          <Printer /> Print
+        <DropdownItem onSelect={() => router.push(`/app/charts/${chart.id}/print`)}>
+          <Printer /> Print or Save as PDF
         </DropdownItem>
       </DropdownContent>
     </Dropdown>
