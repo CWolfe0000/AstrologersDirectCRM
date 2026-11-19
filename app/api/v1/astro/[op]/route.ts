@@ -3,7 +3,7 @@ import { handler, HttpError, json, readJson, requireUser } from "@/lib/server/ht
 import { birthSchema, settingsSchema } from "@/lib/server/validation";
 import { acgChart, davisonChart, motionFrom, natalChart, returnChart, positionsAt, progressedChart, solarArcChart, solarReturnChart } from "@/lib/server/astro";
 import { SWISS_INFO } from "@/lib/server/swiss";
-import { EVENT_TYPES, moonSpans, rectify, risingSpans, type EventType } from "@/lib/server/rectify";
+import { CIRCUMSTANCES, EVENT_TYPES, moonSpans, type Circumstance, rectify, risingSpans, type EventType } from "@/lib/server/rectify";
 import { findElections } from "@/lib/server/elect";
 import { ELECTION_CHECKS, type ElectionCheck } from "@/lib/astro/elect";
 import { requirePremium } from "@/lib/server/plan";
@@ -32,7 +32,8 @@ const Bodies = {
   motion: z.object({ utc: z.string().max(40), settings: z.object({ zodiac: z.enum(["tropical", "sidereal-lahiri", "sidereal-fagan-bradley"]) }).passthrough() }),
   rectify: z.object({
     birth: birthSchema,
-    events: z.array(z.object({ date, type: z.enum(Object.keys(EVENT_TYPES) as [EventType, ...EventType[]]), note: z.string().max(300).optional() })).min(1).max(40),
+    events: z.array(z.object({ date, type: z.enum(Object.keys(EVENT_TYPES) as [EventType, ...EventType[]]), note: z.string().max(300).optional() })).max(40),
+    circumstances: z.array(z.enum(Object.keys(CIRCUMSTANCES) as [Circumstance, ...Circumstance[]])).max(12).optional(),
     from: z.string().regex(/^\d{2}:\d{2}$/),
     to: z.string().regex(/^\d{2}:\d{2}$/),
     stepMin: z.union([z.literal(1), z.literal(2), z.literal(4), z.literal(5)]),
@@ -87,7 +88,8 @@ export const POST = handler(async (req: Request, ctx: { params: Promise<{ op: st
         return json({ engine: SWISS_INFO, motion: motionFrom(b.utc, b.settings) });
       case "rectify": {
         if (b.from > b.to) throw new HttpError(422, "The window’s end is before its start.");
-        const out = rectify(b.birth, b.events, b.from, b.to, b.stepMin, b.settings, b.ascSigns, b.moonSigns);
+        if (!(b.events as unknown[]).length && !(b.circumstances as unknown[] | undefined)?.length) throw new HttpError(422, "Add at least one life event or birth circumstance.");
+        const out = rectify(b.birth, b.events, b.from, b.to, b.stepMin, b.settings, b.ascSigns, b.moonSigns, b.circumstances);
         if (!out.curve.length) throw new HttpError(422, "No time in this window has the chosen Moon and rising signs.");
         return json({ engine: SWISS_INFO, rectify: out });
       }

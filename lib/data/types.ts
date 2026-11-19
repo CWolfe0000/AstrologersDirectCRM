@@ -13,6 +13,7 @@ export interface Person {
   relationship?: string; // "Partner", "Mother", …
   notes?: string;
   /** Dated life events, for rectification. */
+  birthCircumstances?: string[];
   lifeEvents?: { id: string; date: string; type: string; note?: string }[];
 }
 

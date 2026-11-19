@@ -79,11 +79,25 @@ for (let i = 1; i < ms.length; i++) assert.equal(mins(ms[i].from), mins(ms[i - 1
   assert.ok(r2.curve.every((x) => x.time >= ms[1].from && x.time <= ms[1].to));
 }
 
+step("birth circumstances: a planet on the Ascendant is rewarded at that time only");
+{
+  // Find when natal Mars is exactly on the Ascendant on the test date, then search around it with only "C-Section".
+  const day = (await post("/api/v1/astro/rectify", { birth, events: [], circumstances: ["c-section"], from: "00:00", to: "23:58", stepMin: 2, settings: { zodiac: "tropical", houseSystem: "placidus" } })).body.rectify;
+  const best = day.top[0];
+  const h = best.hits.find((x) => x.circumstance === "c-section");
+  assert.ok(h && h.orb < 1, JSON.stringify(best.hits));
+  assert.ok(/Mars|Pluto|Uranus/.test(h.from));
+  // Scores fall away within about 20 minutes (5° of Ascendant).
+  const far = day.curve.find((x) => Math.abs(mins(x.time) - mins(best.time)) === 60);
+  assert.ok(!far || far.score < best.score);
+}
+
 step("UI: rising sign chosen, events saved, search run, time applied");
 await page.goto(BASE + "/app/clients/c1/rectify");
 await page.getByRole("button", { name: /Rising.*\(Recorded Time\)/ }).click();
 assert.equal(await page.getByRole("button", { name: /Rising.*\(Recorded Time\)/ }).getAttribute("aria-pressed"), "true");
 await page.getByText(/Only times with .* rising are tested/).waitFor();
+await page.getByLabel(/C-Section/).check();
 for (const e of events.slice(0, 3)) {
   await page.getByLabel("Event date").fill(e.date);
   await page.getByLabel("Event type").selectOption(e.type);
@@ -99,6 +113,8 @@ await page.getByRole("button", { name: "Use This Time" }).first().click();
 await page.waitForTimeout(1500);
 const c1 = (await state()).people.find((p) => p.id === "c1");
 assert.equal(c1.lifeEvents.length, 3);
+assert.deepEqual(c1.birthCircumstances, ["c-section"]);
+await page.getByText("Birth Circumstances", { exact: true }).first().waitFor();
 assert.equal(c1.birth.time, chosen);
 assert.equal(c1.birth.timeAccuracy, "exact");
 assert.ok(c1.birth.rectifiedFrom && c1.birth.rectifiedAt);

@@ -47,6 +47,28 @@ export const EVENT_TYPES = {
 } as const;
 export type EventType = keyof typeof EVENT_TYPES;
 
+/**
+ * Birth circumstances and the planets traditionally seen close to the
+ * Ascendant (conjunct, opposite or square, within 5°) when they happen: the
+ * Ascendant describes the birth itself. Provisional, like the other weights.
+ */
+export const CIRCUMSTANCES = {
+  "c-section": { label: "C-Section", planets: ["mars", "pluto", "uranus"] },
+  induced: { label: "Induced Labor", planets: ["mars", "uranus"] },
+  instruments: { label: "Forceps or Vacuum", planets: ["mars", "pluto", "saturn"] },
+  premature: { label: "Premature", planets: ["uranus", "mars"] },
+  overdue: { label: "Overdue or Delayed", planets: ["saturn"] },
+  long: { label: "Long or Difficult Labor", planets: ["saturn", "pluto"] },
+  quick: { label: "Very Quick Birth", planets: ["uranus", "mars"] },
+  anesthesia: { label: "Anesthesia, Epidural or Medication", planets: ["neptune"] },
+  breech: { label: "Breech or Unusual Position", planets: ["uranus", "saturn"] },
+  breathing: { label: "Cord Around the Neck or Breathing Difficulty", planets: ["saturn", "pluto"] },
+  easy: { label: "Easy, Smooth Birth", planets: ["jupiter", "venus"] },
+  large: { label: "Large Baby", planets: ["jupiter"] },
+} as const satisfies Record<string, { label: string; planets: BodyId[] }>;
+export type Circumstance = keyof typeof CIRCUMSTANCES;
+const CIRC_ORB = 5;
+
 type Angle = "asc" | "mc" | "dsc" | "ic";
 // Hard aspects only: conjunctions (and oppositions, i.e. conjunctions to the opposite angle) and squares.
 const ASPECTS = [
@@ -63,6 +85,7 @@ const TECH = {
   "prog-angle": { label: "Progressed Angle", w: 1, orb: 1 },
   "prog-moon": { label: "Progressed Moon", w: 0.8, orb: 1 },
   primary: { label: "Primary Direction", w: 1.2, orb: 1 },
+  "birth-asc": { label: "Birth Circumstance", w: 1, orb: CIRC_ORB },
 } as const;
 type Tech = keyof typeof TECH;
 
@@ -99,7 +122,8 @@ export interface RectifyEvent {
   note?: string;
 }
 export interface Hit {
-  event: number;
+  event: number; // index into events; -1 for a birth circumstance
+  circumstance?: Circumstance;
   technique: Tech;
   from: string; // moving point, e.g. "Saturn", "Solar Arc MC"
   to: string; // natal point, e.g. "Ascendant", "Venus"
@@ -158,7 +182,7 @@ function spansOf(signAt: (min: number) => number) {
   return spans;
 }
 
-export function rectify(birth: BirthData, events: RectifyEvent[], from: string, to: string, stepMin: number, s: Pick<ChartSettings, "zodiac" | "houseSystem">, ascSigns?: number[], moonSigns?: number[]) {
+export function rectify(birth: BirthData, events: RectifyEvent[], from: string, to: string, stepMin: number, s: Pick<ChartSettings, "zodiac" | "houseSystem">, ascSigns?: number[], moonSigns?: number[], circumstances: Circumstance[] = []) {
   const [fh, fm] = from.split(":").map(Number), [th, tm] = to.split(":").map(Number);
   const start = fh! * 60 + fm!, end = th! * 60 + tm!;
   // Transits at each event (noon UTC): the same for every candidate.
@@ -247,12 +271,21 @@ export function rectify(birth: BirthData, events: RectifyEvent[], from: string, 
         }
       }
     });
+    // Birth circumstances: the matching planets close to this candidate's Ascendant.
+    for (const c of circumstances) {
+      for (const b of CIRCUMSTANCES[c].planets) {
+        const k = contact(natal[b]!.lon, h.asc, CIRC_ORB);
+        if (k) hits.push({ event: -1, circumstance: c, technique: "birth-asc", from: `Natal ${NAME(b)}`, to: "Ascendant", aspect: k.aspect.name, orb: k.orb, points: Math.round(TECH["birth-asc"].w * k.aspect.w * (1 - k.orb / CIRC_ORB) * 100) / 100 });
+      }
+    }
     // Each event scores its best hit plus a quarter of its second: explaining many events tightly beats many loose contacts.
+    // Each birth circumstance scores its best hit.
     let score = 0;
     events.forEach((_, i) => {
       const pts = hits.filter((x) => x.event === i).map((x) => x.points).sort((a, b) => b - a);
       score += (pts[0] ?? 0) + 0.25 * (pts[1] ?? 0);
     });
+    for (const c of circumstances) score += Math.max(0, ...hits.filter((x) => x.circumstance === c).map((x) => x.points));
     candidates.push({ time, utc, asc: h.asc, mc: h.mc, score: Math.round(score * 100) / 100, hits });
   }
   const ranked = [...candidates].sort((a, b) => b.score - a.score);
@@ -268,6 +301,6 @@ export function rectify(birth: BirthData, events: RectifyEvent[], from: string, 
   return {
     curve: candidates.map((c) => ({ time: c.time, score: c.score, asc: Math.round(c.asc * 100) / 100, mc: Math.round(c.mc * 100) / 100 })),
     top,
-    weights: { techniques: TECH, aspects: ASPECTS.map((a) => ({ name: a.name, w: a.w })), events: EVENT_TYPES },
+    weights: { circumstances: CIRCUMSTANCES, circumstanceOrb: CIRC_ORB, techniques: TECH, aspects: ASPECTS.map((a) => ({ name: a.name, w: a.w })), events: EVENT_TYPES },
   };
 }

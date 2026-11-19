@@ -69,6 +69,7 @@ const person = z
     clientId: opt(id),
     relationship: opt(str(80)),
     notes: opt(str(5000)),
+    birthCircumstances: opt(z.array(str(20)).max(12)),
     lifeEvents: opt(z.array(z.object({ id: str(40), date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), type: str(20), note: opt(str(300)) }).strict()).max(60)),
   })
   .strict();

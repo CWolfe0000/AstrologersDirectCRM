@@ -60,7 +60,22 @@ const MOON: string[] = [
   "Sensitive; absorbs others’ moods. Needs retreat, imagination and compassion.",
 ];
 type Span = { sign: number; from: string; to: string };
-type Hit = { event: number; technique: string; from: string; to: string; aspect: string; orb: number; points: number };
+// Birth circumstances (the server's CIRCUMSTANCES): the planets expected close to the Ascendant.
+const CIRCS: { id: string; label: string; planets: string }[] = [
+  { id: "c-section", label: "C-Section", planets: "Mars, Pluto, Uranus" },
+  { id: "induced", label: "Induced Labor", planets: "Mars, Uranus" },
+  { id: "instruments", label: "Forceps or Vacuum", planets: "Mars, Pluto, Saturn" },
+  { id: "premature", label: "Premature", planets: "Uranus, Mars" },
+  { id: "overdue", label: "Overdue or Delayed", planets: "Saturn" },
+  { id: "long", label: "Long or Difficult Labor", planets: "Saturn, Pluto" },
+  { id: "quick", label: "Very Quick Birth", planets: "Uranus, Mars" },
+  { id: "anesthesia", label: "Anesthesia, Epidural or Medication", planets: "Neptune" },
+  { id: "breech", label: "Breech or Unusual Position", planets: "Uranus, Saturn" },
+  { id: "breathing", label: "Cord Around the Neck or Breathing Difficulty", planets: "Saturn, Pluto" },
+  { id: "easy", label: "Easy, Smooth Birth", planets: "Jupiter, Venus" },
+  { id: "large", label: "Large Baby", planets: "Jupiter" },
+];
+type Hit = { event: number; circumstance?: string; technique: string; from: string; to: string; aspect: string; orb: number; points: number };
 type Result = {
   curve: { time: string; score: number; asc: number; mc: number }[];
   top: { time: string; utc: string; asc: number; mc: number; score: number; hits: Hit[] }[];
@@ -86,6 +101,7 @@ export default function RectifyPage() {
   const [step, setStep] = React.useState(2);
   const [draft, setDraft] = React.useState({ date: "", type: "marriage", note: "" });
   const [result, setResult] = React.useState<Result | null>(null);
+  const [ranCircs, setRanCircs] = React.useState<string[]>([]);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [chosen, setChosen] = React.useState(0);
@@ -108,15 +124,18 @@ export default function RectifyPage() {
   const events = person.lifeEvents ?? [];
   const sorted = [...events].sort((x, y) => x.date.localeCompare(y.date));
   const setEvents = (list: typeof events) => updatePerson(person.id, { lifeEvents: list });
+  const circs = person.birthCircumstances ?? [];
+  const toggleCirc = (id: string) => updatePerson(person.id, { birthCircumstances: circs.includes(id) ? circs.filter((x) => x !== id) : [...circs, id] });
 
   const run = async () => {
     setBusy(true);
     setError(null);
     try {
       const r = await api<{ rectify: Result }>("/api/v1/astro/rectify", {
-        body: { birth: b, events: sorted.map((e) => ({ date: e.date, type: e.type })), from, to: to < from ? from : to, stepMin: step, settings: { zodiac: defaults.zodiac, houseSystem: defaults.houseSystem }, ascSigns: picked.length ? picked : undefined, moonSigns: pickedMoon.length ? pickedMoon : undefined },
+        body: { birth: b, events: sorted.map((e) => ({ date: e.date, type: e.type })), from, to: to < from ? from : to, stepMin: step, settings: { zodiac: defaults.zodiac, houseSystem: defaults.houseSystem }, ascSigns: picked.length ? picked : undefined, moonSigns: pickedMoon.length ? pickedMoon : undefined, circumstances: circs },
       });
       setResult(r.rectify);
+      setRanCircs(circs);
       setChosen(0);
     } catch (e) {
       setError((e as Error).message);
@@ -250,7 +269,21 @@ export default function RectifyPage() {
           </Card>
 
           <Card>
-            <CardHeader title="Step 3: Life Events" description="Dated events with known dates. Five or more spread across life give the clearest result." />
+            <CardHeader title="Step 3: Birth Circumstances (Optional)" description="What’s known about the birth itself. The Ascendant describes the birth, so each one looks for its planets within 5° of the candidate’s Ascendant (conjunct, opposite or square)." />
+            <CardBody className="pt-0">
+              <div className="grid gap-1.5 sm:grid-cols-2 xl:grid-cols-1">
+                {CIRCS.map((c) => (
+                  <label key={c.id} className="flex items-start gap-2 text-[12.5px]">
+                    <input type="checkbox" className="mt-0.5" checked={circs.includes(c.id)} onChange={() => toggleCirc(c.id)} />
+                    <span><span className="text-ink">{c.label}</span> <span className="text-muted">({c.planets})</span></span>
+                  </label>
+                ))}
+              </div>
+            </CardBody>
+          </Card>
+
+          <Card>
+            <CardHeader title="Step 4: Life Events" description="Dated events with known dates. Five or more spread across life give the clearest result." />
             <CardBody className="space-y-3 pt-0">
               <div className="grid grid-cols-[1fr_auto] gap-2">
                 <Input type="date" aria-label="Event date" value={draft.date} max={TODAY} min={b.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} />
@@ -289,7 +322,7 @@ export default function RectifyPage() {
           </Card>
 
           <Card>
-            <CardHeader title="Step 4: Search Window" description={`On ${fmtDate(b.date)}, local time at the birthplace.${pickedMoon.length ? ` Only times with the Moon in ${pickedMoon.map((x) => SIGNS[x]!.name).join(" or ")}${picked.length ? " and" : ""}` : picked.length ? " Only times with" : ""}${picked.length ? ` ${picked.map((x) => SIGNS[x]!.name).join(" or ")} rising` : ""}${picked.length || pickedMoon.length ? " are tested." : ""}`} />
+            <CardHeader title="Step 5: Search Window" description={`On ${fmtDate(b.date)}, local time at the birthplace.${pickedMoon.length ? ` Only times with the Moon in ${pickedMoon.map((x) => SIGNS[x]!.name).join(" or ")}${picked.length ? " and" : ""}` : picked.length ? " Only times with" : ""}${picked.length ? ` ${picked.map((x) => SIGNS[x]!.name).join(" or ")} rising` : ""}${picked.length || pickedMoon.length ? " are tested." : ""}`} />
             <CardBody className="space-y-3 pt-0">
               <div className="grid grid-cols-3 gap-2 text-[12.5px]">
                 <label><span className="mb-1 block text-muted">From</span><Input type="time" value={from} onChange={(e) => e.target.value && setFrom(e.target.value)} /></label>
@@ -304,7 +337,7 @@ export default function RectifyPage() {
                 <Button size="sm" variant="ghost" onClick={() => { setFrom("00:00"); setTo("23:59"); setStep(4); }}>Whole Day</Button>
                 {(picked.length > 0 || pickedMoon.length > 0) && <Button size="sm" variant="ghost" onClick={() => { setPicked([]); setPickedMoon([]); }}>Clear Signs</Button>}
               </div>
-              <Button onClick={run} disabled={busy || sorted.length === 0 || DATA_MODE !== "server"}>
+              <Button onClick={run} disabled={busy || (sorted.length === 0 && circs.length === 0) || DATA_MODE !== "server"}>
                 {busy ? <Loader2 className="animate-spin" /> : <Sparkles />} Test {Math.floor((toMin(to) - toMin(from)) / step) + 1} Candidate Times
               </Button>
               {sorted.length > 0 && sorted.length < 3 && <p className="text-[12px] text-warn">With fewer than three events the result is weak; add more if you can.</p>}
@@ -363,6 +396,23 @@ export default function RectifyPage() {
                 <Card>
                   <CardHeader title={`Candidate ${chosen + 1}: ${fmtClock(top.time)}`} description={`Ascendant ${fmtDeg(top.asc)} ${signOf(top.asc).name} · Midheaven ${fmtDeg(top.mc)} ${signOf(top.mc).name} · Score ${top.score.toFixed(1)}`} />
                   <CardBody className="space-y-3 pt-0">
+                    {ranCircs.length > 0 && (
+                      <div className="rounded-lg border border-line p-3">
+                        <p className="text-[13px] font-medium text-ink">Birth Circumstances</p>
+                        <ul className="mt-1 space-y-0.5 text-[12.5px] text-ink-3">
+                          {ranCircs.map((id) => {
+                            const c = CIRCS.find((x) => x.id === id);
+                            const hs = top.hits.filter((h) => h.circumstance === id).sort((x, y) => y.points - x.points);
+                            return (
+                              <li key={id}>
+                                <span className="font-medium">{c?.label ?? id}:</span>{" "}
+                                {hs.length ? hs.map((h) => `${h.from} ${h.aspect.charAt(0).toUpperCase() + h.aspect.slice(1)} ${h.to} (${h.orb.toFixed(2)}° Orb, ${h.points.toFixed(2)} Points)`).join("; ") : <span className="text-muted">None of {c?.planets ?? "its planets"} within 5° of the Ascendant.</span>}
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    )}
                     {sorted.map((e, i) => {
                       const hits = top.hits.filter((h) => h.event === i).sort((x, y) => y.points - x.points);
                       return (
@@ -385,6 +435,11 @@ export default function RectifyPage() {
                         <BTable head={["Technique", "Weight", "Orb"]} rows={Object.values(result.weights.techniques).map((t) => [t.label, t.w, `${t.orb}°`])} />
                         <p>Transits use Jupiter, Saturn, Uranus, Neptune, Pluto and the North Node at noon UTC on the event date. Progressions are one day after birth for each year of life; the solar arc is the progressed Sun minus the natal Sun. Progressed angles come from the natal RAMC plus the arc. Natal points: the Sun through Pluto and the North Node.</p>
                         <p>Primary directions turn the sky after birth: a planet (with its latitude) reaches an angle when its right ascension meets the Midheaven or IC, or its oblique ascension or descension meets the Ascendant or Descendant under the birthplace latitude (the Placidus semi-arc method). Squares use the zodiacal points 90° from each planet. The arc becomes years by Naibod’s key, 0°59′08″ per year; converse directions run the sky backward. A 1° orb is about a year.</p>
+                      </div>
+                      <div className="space-y-1">
+                        <BHead>Birth Circumstances</BHead>
+                        <BTable head={["Circumstance", "Planets Near the Ascendant"]} rows={CIRCS.map((c) => [c.label, c.planets])} />
+                        <p>Each chosen circumstance scores its closest matching planet within 5° of the candidate’s natal Ascendant: aspect weight × (1 − orb ÷ 5). Only conjunctions, oppositions and squares count. These pairings are traditional associations, not yet tested against births with known circumstances.</p>
                       </div>
                       <div className="space-y-1">
                         <BHead>Aspect Weights</BHead>
