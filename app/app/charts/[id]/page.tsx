@@ -28,6 +28,7 @@ import { AiAssistant } from "@/components/workspace/ai-assistant";
 import { ringLabels } from "@/components/workspace/ring-labels";
 import { useHydrated } from "@/components/workspace/use-hydrated";
 import { TraditionalPanel } from "@/components/workspace/traditional-panel";
+import { PromisePanel } from "@/components/workspace/promise-panel";
 import { zonedToUtc } from "@/lib/timezones";
 
 const PRINT_CSS = `@media print {
@@ -398,6 +399,7 @@ function Workspace() {
                 <TabsTrigger value="grid" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">Grid</TabsTrigger>
                 <TabsTrigger value="houses" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">{chart.type === "synastry" ? "Overlays" : "Houses"}</TabsTrigger>
                 <TabsTrigger value="condition" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">{natalBirthUtc ? "Traditional" : "Condition"}</TabsTrigger>
+                {natalBirthUtc && <TabsTrigger value="promise" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">Promise</TabsTrigger>}
                 <TabsTrigger value="observations" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">
                   Notes{obsCount > 0 && <span className="text-[10.5px] text-accent">{obsCount}</span>}
                 </TabsTrigger>
@@ -431,6 +433,11 @@ function Workspace() {
                 <TabsContent value="condition">
                   {natalBirthUtc ? <TraditionalPanel view={view} birthUtc={natalBirthUtc} lat={natalSubject?.birth.lat} /> : <ConditionTable view={view} />}
                 </TabsContent>
+                {natalBirthUtc && (
+                  <TabsContent value="promise">
+                    <PromisePanel view={view} />
+                  </TabsContent>
+                )}
                 <TabsContent value="observations">
                   <WorkspaceObservations chart={chart} editing={editing} setEditing={setEditing} draft={noteDraft} />
                 </TabsContent>

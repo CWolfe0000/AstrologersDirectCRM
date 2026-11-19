@@ -26,13 +26,14 @@
  * visibility and combustion; the Lots of Basis and of Substance, whose
  * formulas differ by source.
  */
-import { BODIES, SIGNS, ordinal } from "./index";
+import { SIGNS, ordinal } from "./index";
 import type { NatalModel } from "./activation";
 import { HOUSE_KEYS } from "./keywords";
-import { DOMICILE, EXALT, faceRuler, SEVEN, termRuler, triplicityRulers, type Planet7 } from "./traditional";
+import { conditionOf, houseOfLon, isSeven, nameOf as name, norm, promiseContext, signIdx, tie as tieOf, type Level } from "./natal-promise/condition";
+import { DOMICILE, SEVEN, type Planet7 } from "./traditional";
 import type { TargetId } from "./timeline";
 
-export type Level = "strong" | "mixed" | "weak";
+export type { Level };
 export interface PlanetCondition {
   id: Planet7;
   /** What it answers for in money matters: "Ruler of the 2nd", "Jupiter" … */
@@ -61,28 +62,19 @@ export interface FinancialPromise {
   fortune: string[];
 }
 
-const norm = (x: number) => ((x % 360) + 360) % 360;
-const signIdx = (lon: number) => Math.floor(norm(lon) / 30);
-const HOUSE_POINTS: Record<number, number> = { 1: 5, 10: 5, 4: 4, 7: 4, 11: 4, 2: 3, 5: 3, 9: 2, 3: 1, 6: -2, 8: -2, 12: -5 };
-const EASY = ["conjunction", "trine", "sextile"], HARD = ["conjunction", "square", "opposition"];
-const verb: Record<string, string> = { conjunction: "conjunct", trine: "trine", sextile: "sextile", square: "square", opposition: "opposite" };
-const name = (id: TargetId) => BODIES[id].name;
-const isSeven = (id: TargetId | null | undefined): id is Planet7 => !!id && (SEVEN as string[]).includes(id);
-
 const SECOND_RULER_IN = [
   "income follows your own initiative and person", "income stays close to its own source: what you earn, you hold", "income through sales, writing, trade and communication", "income tied to property, family or a home base",
   "income tied to speculation, creative work or children", "income through employment, service and daily work", "earnings through clients, contracts or partnerships", "personal finances intertwined with shared resources, debt or investments",
   "income through teaching, publishing, law or foreign connections", "income tied to career, status or professional accomplishment", "financial opportunities through networks, patrons or career gains", "money matters involving institutions, private work, hidden expenses or limited direct control",
 ];
 
-export function financialPromise(n: NatalModel): FinancialPromise | null {
-  const sun = n.byId.get("sun"), moon = n.byId.get("moon"), asc = n.byId.get("asc");
-  if (!n.cusps || !sun || !moon || !asc || !sun.house) return null;
-  const day = sun.house >= 7;
+export function financialPromise(n: NatalModel, speeds?: Partial<Record<TargetId, number>>): FinancialPromise | null {
+  const ctx = promiseContext(n, speeds);
+  if (!ctx) return null;
+  const { day } = ctx;
+  const sun = n.byId.get("sun")!, moon = n.byId.get("moon")!, asc = n.byId.get("asc")!;
   const at = (id: TargetId) => n.byId.get(id);
   const ruler = (h: number) => n.houseRulers(h)[0];
-  /** A receives B: B is in A's domicile or exaltation. */
-  const receives = (a: Planet7, b: Planet7) => { const p = at(b); return !!p && (DOMICILE[signIdx(p.lon)] === a || EXALT[signIdx(p.lon)] === a); };
 
   const roles = new Map<Planet7, string[]>();
   const role = (id: TargetId | null | undefined, r: string) => { if (isSeven(id) && at(id)) roles.set(id, [...(roles.get(id) ?? []), r]); };
@@ -91,38 +83,7 @@ export function financialPromise(n: NatalModel): FinancialPromise | null {
   for (const h of [2, 11, 8]) n.occupants(h).forEach((id) => role(id, `In the ${ordinal(h)}`));
   for (const id of ["jupiter", "venus", "saturn", "mercury", "mars"] as Planet7[]) if (!roles.has(id)) role(id, name(id));
 
-  const condition = (id: Planet7): PlanetCondition => {
-    const p = at(id)!;
-    const s = signIdx(p.lon);
-    const notes: PlanetCondition["notes"] = [];
-    const add = (points: number, text: string) => notes.push({ points, text });
-    let dignified = false;
-    if (DOMICILE[s] === id) { add(5, `in its domicile, ${SIGNS[s]!.name}`); dignified = true; }
-    if (EXALT[s] === id) { add(4, `exalted in ${SIGNS[s]!.name}`); dignified = true; }
-    if (triplicityRulers(p.lon)[day ? 0 : 1] === id) { add(3, "in its triplicity"); dignified = true; }
-    if (termRuler(p.lon) === id) { add(2, "in its own term"); dignified = true; }
-    if (faceRuler(p.lon) === id) { add(1, "in its own face"); dignified = true; }
-    let debilitated = false;
-    if (DOMICILE[(s + 6) % 12] === id) { add(-5, `in its detriment, ${SIGNS[s]!.name}`); debilitated = true; }
-    if (EXALT[(s + 6) % 12] === id) { add(-4, `in its fall, ${SIGNS[s]!.name}`); debilitated = true; }
-    // Peregrine is counted only where there is neither dignity nor debility, so a planet in detriment is not marked down twice.
-    if (!dignified && !debilitated) add(-5, "peregrine (no essential dignity)");
-    if (p.house) add(HOUSE_POINTS[p.house] ?? 0, `in the ${ordinal(p.house)} House`);
-    if ((id === "jupiter" && day) || (id === "venus" && !day)) add(2, "the benefic of the sect");
-    if ((id === "mars" && day) || (id === "saturn" && !day)) add(-2, "the malefic contrary to the sect");
-    for (const o of SEVEN) {
-      if (o === id) continue;
-      const a = n.natalAspect(o, id);
-      if (a && (o === "venus" || o === "jupiter") && EASY.includes(a)) add(2, `${verb[a]} ${name(o)}`);
-      if (a && (o === "mars" || o === "saturn") && HARD.includes(a)) {
-        const rec = receives(o, id) || receives(id, o);
-        add(rec ? -1 : -3, `${verb[a]} ${name(o)}${rec ? ", with reception" : ""}`);
-      }
-      if (DOMICILE[s] === o && at(o) && DOMICILE[signIdx(at(o)!.lon)] === id) add(5, `in mutual reception with ${name(o)}`);
-    }
-    const net = notes.reduce((x, y) => x + y.points, 0);
-    return { id, roles: roles.get(id)!, notes, net, level: net >= 6 ? "strong" : net <= -4 ? "weak" : "mixed" };
-  };
+  const condition = (id: Planet7): PlanetCondition => ({ ...conditionOf(ctx, id)!, roles: roles.get(id) ?? [] });
   const planets = [...roles.keys()].map(condition);
   const cond = new Map(planets.map((p) => [p.id, p]));
 
@@ -133,17 +94,7 @@ export function financialPromise(n: NatalModel): FinancialPromise | null {
   };
 
   // The circuit: are the rulers of income, career and gains tied to one another, and to the person?
-  const tie = (a: TargetId | null | undefined, b: TargetId | null | undefined): string | null => {
-    if (!isSeven(a) || !isSeven(b) || !at(a) || !at(b)) return null;
-    if (a === b) return `the same planet, ${name(a)}`;
-    const asp = n.natalAspect(a, b);
-    if (asp) return `${name(a)} ${verb[asp]} ${name(b)}`;
-    if (receives(a, b) && receives(b, a)) return `${name(a)} and ${name(b)} in mutual reception`;
-    for (const [x, y] of [[a, b], [b, a]] as const) if (at(x)!.house && ruler(at(x)!.house!) === y) return `${name(x)} is in the ${ordinal(at(x)!.house!)}, a house ${name(y)} rules`;
-    if (receives(a, b)) return `${name(a)} receives ${name(b)}`;
-    if (receives(b, a)) return `${name(b)} receives ${name(a)}`;
-    return null;
-  };
+  const tie = (a: TargetId | null | undefined, b: TargetId | null | undefined) => tieOf(n, a, b);
   const pairs: [number, number, string][] = [[2, 10, "income and career"], [10, 11, "career and gains"], [2, 11, "income and gains"], [1, 2, "the person and income"], [1, 10, "the person and career"]];
   const circuit = pairs.map(([x, y, label]) => {
     const t = tie(x === 1 ? n.chartRuler : ruler(x), ruler(y));
@@ -154,7 +105,7 @@ export function financialPromise(n: NatalModel): FinancialPromise | null {
   // Fortune and Spirit, by sect.
   const fortuneLon = norm(day ? asc.lon + moon.lon - sun.lon : asc.lon + sun.lon - moon.lon);
   const spiritLon = norm(day ? asc.lon + sun.lon - moon.lon : asc.lon + moon.lon - sun.lon);
-  const houseOf = (lon: number) => { for (let i = 0; i < 12; i++) if (norm(lon - n.cusps![i]!) < norm(n.cusps![(i + 1) % 12]! - n.cusps![i]!)) return i + 1; return 1; };
+  const houseOf = (lon: number) => houseOfLon(n, lon);
   const fs = signIdx(fortuneLon), fh = houseOf(fortuneLon), fr = DOMICILE[fs]!;
   const place = (lon: number) => `${Math.floor(norm(lon) % 30)}° ${SIGNS[signIdx(lon)]!.name}`;
   const lvl = (id: Planet7) => (at(id) ? condition(id).level : "mixed");
