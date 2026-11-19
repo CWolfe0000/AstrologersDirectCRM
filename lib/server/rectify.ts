@@ -31,8 +31,14 @@ export const EVENT_TYPES = {
   child: { label: "Birth of a Child", angles: { asc: 1, mc: 0.8, dsc: 0.6, ic: 1.2 } },
   career: { label: "Career Change, Promotion or Graduation", angles: { asc: 0.6, mc: 1.5, dsc: 0.6, ic: 0.8 } },
   move: { label: "Move or Change of Home", angles: { asc: 0.8, mc: 0.6, dsc: 0.6, ic: 1.5 } },
+  // 9th-house travel and a new start: the IC (home) still leads, with the Ascendant and Midheaven (the 9th sits just below it).
+  "long-move": { label: "Long-Distance Move or Emigration", angles: { asc: 1, mc: 1, dsc: 0.6, ic: 1.4 } },
   parent: { label: "Death or Illness of a Parent", angles: { asc: 0.6, mc: 1.3, dsc: 0.6, ic: 1.3 } },
   health: { label: "Accident, Surgery or Illness", angles: { asc: 1.5, mc: 0.6, dsc: 0.8, ic: 0.6 } },
+  // 7th house (lawsuits, open opponents) and 10th (authorities, judges).
+  legal: { label: "Legal Issue, Lawsuit or Court Case", angles: { asc: 0.8, mc: 1.2, dsc: 1.5, ic: 0.6 } },
+  // 12th-house confinement (it borders the Ascendant), the authorities (MC) and loss of home (IC).
+  incarceration: { label: "Incarceration or Confinement", angles: { asc: 1.3, mc: 1.2, dsc: 0.8, ic: 1 } },
   other: { label: "Other Major Event", angles: { asc: 1, mc: 1, dsc: 1, ic: 1 } },
 } as const;
 export type EventType = keyof typeof EVENT_TYPES;

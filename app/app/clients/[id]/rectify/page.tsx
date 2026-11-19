@@ -22,8 +22,11 @@ const EVENT_TYPES: { id: string; label: string }[] = [
   { id: "child", label: "Birth of a Child" },
   { id: "career", label: "Career Change, Promotion or Graduation" },
   { id: "move", label: "Move or Change of Home" },
+  { id: "long-move", label: "Long-Distance Move or Emigration" },
   { id: "parent", label: "Death or Illness of a Parent" },
   { id: "health", label: "Accident, Surgery or Illness" },
+  { id: "legal", label: "Legal Issue, Lawsuit or Court Case" },
+  { id: "incarceration", label: "Incarceration or Confinement" },
   { id: "other", label: "Other Major Event" },
 ];
 type Hit = { event: number; technique: string; from: string; to: string; aspect: string; orb: number; points: number };

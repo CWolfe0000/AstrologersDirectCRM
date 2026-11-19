@@ -37,6 +37,8 @@ const events = [
   { date: "1990-09-12", type: "move" }, { date: "1992-04-20", type: "career" }, { date: "1998-07-17", type: "marriage" },
   { date: "2001-06-25", type: "career" }, { date: "2022-10-30", type: "health" },
 ];
+const extra = [{ date: "2005-01-10", type: "legal" }, { date: "2008-05-02", type: "incarceration" }, { date: "2012-08-19", type: "long-move" }
+];
 const r = await post("/api/v1/astro/rectify", { birth, events, from: "05:42", to: "09:42", stepMin: 1, settings: { zodiac: "tropical", houseSystem: "placidus" } });
 assert.equal(r.status, 200, JSON.stringify(r.body));
 const { top, curve } = r.body.rectify;
@@ -45,6 +47,8 @@ console.log("  ", top.map((t) => `${t.time} ${t.score}`).join(" | "));
 assert.ok(Math.abs(mins(top[0].time) - mins("07:42")) <= 4, `best ${top[0].time}`);
 assert.equal(curve.length, 241);
 assert.ok(top[0].hits.every((h) => h.points >= 0 && h.orb <= 1));
+// The new event types are accepted.
+assert.equal((await post("/api/v1/astro/rectify", { birth, events: [...events, ...extra], from: "07:00", to: "08:00", stepMin: 5, settings: { zodiac: "tropical", houseSystem: "placidus" } })).status, 200);
 assert.equal((await post("/api/v1/astro/rectify", { birth, events: [], from: "05:42", to: "09:42", stepMin: 1, settings: { zodiac: "tropical", houseSystem: "placidus" } })).status, 422);
 
 step("UI: events saved, search run, time applied");
