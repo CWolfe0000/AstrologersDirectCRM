@@ -12,6 +12,7 @@ import { TECH, pointName, pointGlyph, sourceName, Glyphs, contactLabel, DAY, fmt
 import { activationModel, cycleAround, dayIndex, passesSignificance, type Significance } from "@/lib/astro/activation";
 import { ActivationOverview, BackgroundInfluences, ClientContext, ConvergenceAnalysis, HouseSheet, LifecycleSection, PointSheet, useConfigurationNote } from "./activation";
 import { BACKGROUND_CHOICES, DEFAULT_BACKGROUND } from "./timeline-options";
+import { LifeThemes } from "./themes";
 import type { ChartRecord } from "@/lib/data/types";
 import { useStore, personName } from "@/lib/store";
 import { cn, TODAY } from "@/lib/utils";
@@ -285,6 +286,13 @@ function Timeline() {
                   <p className="text-[12.5px] text-muted">Active contacts grouped by shared natal points, rulerships and natal aspects.</p>
                 </div>
                 <ConvergenceAnalysis m={model} d={d} onOpenContact={setDetail} onNote={addConfigNote} />
+              </section>
+              <section aria-labelledby="tl-themes" className="space-y-3">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <h2 id="tl-themes" className="font-serif text-[22px] text-ink">Life Themes</h2>
+                  <p className="text-[12.5px] text-muted">Where contacts converge on the significators of one topic, across the whole range.</p>
+                </div>
+                <LifeThemes m={model} d={d} onOpenContact={setDetail} onAsOf={moveAsOf} />
               </section>
             </ClientContext.Provider>
           )}
