@@ -61,6 +61,8 @@ await page.getByText(/Quesited: the 10th House/).waitFor();
 await page.getByText("Following the planets forward…").waitFor({ state: "detached", timeout: 30000 });
 await page.getByText(/Ruler of the Ascendant/).waitFor();
 await page.getByText(/Asked in the hour of/).waitFor();
+await page.getByText(/^Leans (Yes|No)|^Unclear/).first().waitFor();
+await page.getByText(/Confidence$/).first().waitFor();
 assert.ok(await page.getByRole("cell", { name: /Moon/ }).count(), "strength table lists the Moon");
 await page.getByLabel("Whose Matter").selectOption("7");
 await page.getByText(/Quesited: the 4th House \(the 10th from the 7th\)/).waitFor();

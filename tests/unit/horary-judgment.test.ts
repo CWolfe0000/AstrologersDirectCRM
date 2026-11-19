@@ -67,3 +67,31 @@ describe("horary judgment", () => {
     expect(hourAgreement("venus", 10).agrees).toBe(false);
   });
 });
+
+import { horaryVerdict, type Strength, type Testimony } from "@/lib/astro/horary-judgment";
+describe("horary verdict", () => {
+  const st = (planet: "venus" | "mars", essential: number, accidental = 0): Strength => ({ planet, essential, essentialNotes: [], accidental, accidentalNotes: [] });
+  const perf = (aspect: "trine" | "square" | "opposition", pair: "querent" | "moon" = "querent"): Testimony => ({ kind: "perfection", pair, aspect, tone: "for", text: `perfects a ${aspect}`, at: 1 });
+  it("a trine between the significators leans yes", () => {
+    const v = horaryVerdict([perf("trine")], [], [st("mars", 5)], "mars", true);
+    expect(v).toMatchObject({ lean: "yes", confidence: "Strong" });
+  });
+  it("square: with difficulty; opposition: with regret", () => {
+    expect(horaryVerdict([perf("square")], [], [], "mars", true).lean).toBe("yes-difficulty");
+    expect(horaryVerdict([perf("opposition")], [], [], "mars", true).lean).toBe("yes-regret");
+  });
+  it("prohibition denies the perfection", () => {
+    const v = horaryVerdict([perf("trine"), { kind: "prohibition", tone: "against", text: "Prohibition: Saturn first" }], [], [], "mars", true);
+    expect(v.lean).toBe("no");
+    expect(v.against).toContain("Prohibition: Saturn first");
+  });
+  it("the Moon, then translation, decide when there's no direct perfection", () => {
+    expect(horaryVerdict([{ kind: "none", pair: "querent", tone: "neutral", text: "" }, perf("trine", "moon")], [], [], "mars", true).deciding?.pair).toBe("moon");
+    expect(horaryVerdict([{ kind: "translation", aspect: "sextile", tone: "for", text: "translation" }], [], [], "mars", true).lean).toBe("yes");
+  });
+  it("separating means the matter has passed; cautions lower confidence, not the lean", () => {
+    expect(horaryVerdict([{ kind: "separating", pair: "querent", tone: "against", text: "" }], [], [], "mars", true).lean).toBe("passed");
+    const v = horaryVerdict([perf("trine")], ["Moon Void of Course", "Late Ascendant"], [], "mars", false);
+    expect(v).toMatchObject({ lean: "yes", confidence: "Tentative", score: -1 });
+  });
+});

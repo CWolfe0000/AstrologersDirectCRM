@@ -165,6 +165,11 @@ export interface Testimony {
   text: string;
   at?: number;
   tone: "for" | "against" | "neutral";
+  /** Which pair it concerns: the querent's significator or the Moon, with the quesited. */
+  pair?: "querent" | "moon";
+  aspect?: AspectName;
+  /** Reception: mutual, or which way it runs. */
+  reception?: "mutual" | "quesited-receives" | "querent-receives";
 }
 
 export function perfectionTestimonies(p: ChartPoints, m: Motion, A: Planet7, Q: Planet7): Testimony[] {
@@ -176,20 +181,21 @@ export function perfectionTestimonies(p: ChartPoints, m: Motion, A: Planet7, Q: 
   let direct: number | null = null;
 
   for (const [x, y, label] of pairs) {
+    const pair = x === A ? ("querent" as const) : ("moon" as const);
     const ev = aspectBetween(m, x, y);
     if (!ev) {
-      out.push({ kind: "none", text: `${label} and ${NAME[y]} (the quesited) are not in aspect within their moieties.`, tone: "neutral" });
+      out.push({ kind: "none", pair, text: `${label} and ${NAME[y]} (the quesited) are not in aspect within their moieties.`, tone: "neutral" });
       continue;
     }
     if (ev.applying && ev.perfectsAt) {
       if (x === A) direct = ev.perfectsAt;
-      out.push({ kind: "perfection", at: ev.perfectsAt, tone: ev.aspect === "square" || ev.aspect === "opposition" ? "neutral" : "for", text: `${label} applies to a ${ev.aspect} of ${NAME[y]}, ${ev.orb.toFixed(1)}° from exact; it perfects on ${fmt(ev.perfectsAt)} (in ${days(ev.perfectsAt)} days).${ev.aspect === "square" || ev.aspect === "opposition" ? " Perfection by a hard aspect: the matter comes about, but with difficulty." : ""}` });
+      out.push({ kind: "perfection", pair, aspect: ev.aspect, at: ev.perfectsAt, tone: ev.aspect === "square" || ev.aspect === "opposition" ? "neutral" : "for", text: `${label} applies to a ${ev.aspect} of ${NAME[y]}, ${ev.orb.toFixed(1)}° from exact; it perfects on ${fmt(ev.perfectsAt)} (in ${days(ev.perfectsAt)} days).${ev.aspect === "square" || ev.aspect === "opposition" ? " Perfection by a hard aspect: the matter comes about, but with difficulty." : ""}` });
     } else if (ev.applying && ev.refranation) {
-      out.push({ kind: "refranation", tone: "against", text: `Refranation: ${label} applies to a ${ev.aspect} of ${NAME[y]}, but ${NAME[ev.refranation]} turns ${m.speed[ev.refranation]![0]! > 0 ? "retrograde" : "direct"} before it perfects.` });
+      out.push({ kind: "refranation", pair, aspect: ev.aspect, tone: "against", text: `Refranation: ${label} applies to a ${ev.aspect} of ${NAME[y]}, but ${NAME[ev.refranation]} turns ${m.speed[ev.refranation]![0]! > 0 ? "retrograde" : "direct"} before it perfects.` });
     } else if (ev.applying) {
-      out.push({ kind: "none", tone: "neutral", text: `${label} applies to a ${ev.aspect} of ${NAME[y]} (${ev.orb.toFixed(1)}°), but it doesn’t perfect while they’re in orb.` });
+      out.push({ kind: "none", pair, aspect: ev.aspect, tone: "neutral", text: `${label} applies to a ${ev.aspect} of ${NAME[y]} (${ev.orb.toFixed(1)}°), but it doesn’t perfect while they’re in orb.` });
     } else {
-      out.push({ kind: "separating", tone: "against", text: `${label} is separating from a ${ev.aspect} of ${NAME[y]} (${ev.orb.toFixed(1)}° past exact): the matter has passed, or is moving away.` });
+      out.push({ kind: "separating", pair, aspect: ev.aspect, tone: "against", text: `${label} is separating from a ${ev.aspect} of ${NAME[y]} (${ev.orb.toFixed(1)}° past exact): the matter has passed, or is moving away.` });
     }
   }
 
@@ -214,7 +220,7 @@ export function perfectionTestimonies(p: ChartPoints, m: Motion, A: Planet7, Q: 
       if (!fast(A) || !fast(Q)) continue;
       for (const [from, to] of [[A, Q], [Q, A]] as const) {
         const sep = aspectBetween(m, L, from), app = aspectBetween(m, L, to);
-        if (sep && !sep.applying && app?.applying && app.perfectsAt) out.push({ kind: "translation", at: app.perfectsAt, tone: "for", text: `Translation of light: ${NAME[L]} separates from ${NAME[from]} and carries its light to ${NAME[to]}, perfecting a ${app.aspect} on ${fmt(app.perfectsAt)}.` });
+        if (sep && !sep.applying && app?.applying && app.perfectsAt) out.push({ kind: "translation", aspect: app.aspect, at: app.perfectsAt, tone: "for", text: `Translation of light: ${NAME[L]} separates from ${NAME[from]} and carries its light to ${NAME[to]}, perfecting a ${app.aspect} on ${fmt(app.perfectsAt)}.` });
       }
     }
     // Collection: both significators apply to a slower planet.
@@ -230,9 +236,9 @@ export function perfectionTestimonies(p: ChartPoints, m: Motion, A: Planet7, Q: 
   const sigA = signOf(p.bodies.find((b) => b.id === A)!.lon), sigQ = signOf(p.bodies.find((b) => b.id === Q)!.lon);
   const receives = (host: Planet7, s: number) => (DOMICILE[s] === host ? "domicile" : EXALT_SIGN[host] === s ? "exaltation" : null);
   const qReceivesA = receives(Q, sigA), aReceivesQ = receives(A, sigQ);
-  if (A !== Q && qReceivesA && aReceivesQ) out.push({ kind: "reception", tone: "for", text: `Mutual reception: ${NAME[A]} is in ${NAME[Q]}’s ${qReceivesA} and ${NAME[Q]} in ${NAME[A]}’s ${aReceivesQ}. They are disposed to help each other.` });
-  else if (A !== Q && qReceivesA) out.push({ kind: "reception", tone: "for", text: `${Name(Q)} receives ${NAME[A]} (by ${qReceivesA}): the quesited is well disposed toward the querent.` });
-  else if (A !== Q && aReceivesQ) out.push({ kind: "reception", tone: "neutral", text: `${Name(A)} receives ${NAME[Q]} (by ${aReceivesQ}): the querent wants the matter.` });
+  if (A !== Q && qReceivesA && aReceivesQ) out.push({ kind: "reception", reception: "mutual", tone: "for", text: `Mutual reception: ${NAME[A]} is in ${NAME[Q]}’s ${qReceivesA} and ${NAME[Q]} in ${NAME[A]}’s ${aReceivesQ}. They are disposed to help each other.` });
+  else if (A !== Q && qReceivesA) out.push({ kind: "reception", reception: "quesited-receives", tone: "for", text: `${Name(Q)} receives ${NAME[A]} (by ${qReceivesA}): the quesited is well disposed toward the querent.` });
+  else if (A !== Q && aReceivesQ) out.push({ kind: "reception", reception: "querent-receives", tone: "neutral", text: `${Name(A)} receives ${NAME[Q]} (by ${aReceivesQ}): the querent wants the matter.` });
   return out;
 }
 
@@ -348,3 +354,84 @@ export function hourAgreement(hourRuler: Planet7, ascLon: number) {
 }
 
 export { isDayChart };
+
+// ---------------------------------------------------------------------------
+// Verdict
+
+export type Lean = "yes" | "yes-difficulty" | "yes-regret" | "no" | "passed" | "unclear";
+export interface Verdict {
+  lean: Lean;
+  confidence: "Strong" | "Moderate" | "Tentative";
+  headline: string;
+  deciding: Testimony | null;
+  supports: string[];
+  against: string[];
+  cautions: string[];
+  /** The steps in order, for the breakdown. */
+  steps: string[];
+  score: number;
+}
+
+/**
+ * A rule-based lean, in the traditional order of weight: perfection decides
+ * (direct, then the Moon, then translation, then collection); prohibition,
+ * frustration or refranation deny it; the aspect qualifies it (square: with
+ * difficulty; opposition: with regret, or not lasting); no perfection is a no.
+ * Reception and a strong quesited significator raise confidence; each caution
+ * before judgment lowers it.
+ */
+export function horaryVerdict(t: Testimony[], cautions: string[], strengths: Strength[], quesited: Planet7, hourAgrees: boolean | null): Verdict {
+  const steps: string[] = [];
+  const blocks = t.filter((x) => x.kind === "prohibition" || x.kind === "frustration" || (x.kind === "refranation" && x.pair === "querent"));
+  const deciding =
+    t.find((x) => x.kind === "perfection" && x.pair === "querent") ??
+    t.find((x) => x.kind === "perfection" && x.pair === "moon") ??
+    t.find((x) => x.kind === "translation") ??
+    t.find((x) => x.kind === "collection") ??
+    null;
+  steps.push(deciding ? `1. Perfection found: ${deciding.kind === "perfection" ? `${deciding.pair === "querent" ? "the querent’s significator" : "the Moon"} perfects a ${deciding.aspect} with the quesited` : deciding.kind === "translation" ? "translation of light" : "collection of light"}.` : "1. No perfection between the significators, by direct aspect, the Moon, translation or collection.");
+  let lean: Lean;
+  if (deciding && blocks.length) {
+    lean = "no";
+    steps.push(`2. But it is blocked: ${blocks.map((b) => b.kind).join(", ")}. A blocked perfection denies the matter.`);
+  } else if (deciding) {
+    const a = deciding.aspect;
+    lean = a === "square" ? "yes-difficulty" : a === "opposition" ? "yes-regret" : "yes";
+    steps.push(`2. Nothing blocks it.${a === "square" ? " A square perfects the matter with difficulty or delay." : a === "opposition" ? " An opposition perfects it, but with regret, or it may not last." : a ? ` A ${a} perfects it readily.` : ""}`);
+  } else if (t.some((x) => x.kind === "separating" && x.pair === "querent")) {
+    lean = "passed";
+    steps.push("2. The significators are separating: the matter has already passed, or is moving away.");
+  } else {
+    lean = t.length ? "no" : "unclear";
+    steps.push(t.length ? "2. Without perfection, the matter doesn’t come about." : "2. Not enough testimony to lean either way.");
+  }
+  // Confidence: starts at 2; +1 for each support, −1 for each caution or weakness.
+  const supports: string[] = [];
+  const against: string[] = blocks.map((b) => b.text);
+  const minus: string[] = [...cautions];
+  const rec = t.find((x) => x.kind === "reception");
+  if (rec?.reception === "mutual" || rec?.reception === "quesited-receives") supports.push(rec.reception === "mutual" ? "Mutual reception between the significators" : "The quesited receives the querent");
+  const qs = strengths.find((x) => x.planet === quesited);
+  if (qs && qs.essential > 0) supports.push(`${Name(quesited)} (the quesited) is essentially dignified (+${qs.essential})`);
+  else if (qs && qs.essential + qs.accidental < -5) {
+    const w = `${Name(quesited)} (the quesited) is weak (${qs.essential + qs.accidental} in all)`;
+    minus.push(w);
+    against.push(w);
+  }
+  if (hourAgrees === false) {
+    minus.push("The hour’s ruler doesn’t agree with the Ascendant");
+    against.push("The hour’s ruler doesn’t agree with the Ascendant");
+  }
+  const score = 2 + supports.length - minus.length;
+  const confidence = score >= 3 ? "Strong" : score === 2 ? "Moderate" : "Tentative";
+  steps.push(`3. Confidence: 2${supports.length ? ` + ${supports.length} (${supports.join("; ")})` : ""}${minus.length ? ` − ${minus.length} (${minus.join("; ")})` : ""} = ${score} → ${confidence}. (3 or more is Strong, 2 Moderate, 1 or less Tentative.)`);
+  const HEAD: Record<Lean, string> = {
+    yes: "Leans Yes",
+    "yes-difficulty": "Leans Yes, With Difficulty",
+    "yes-regret": "Leans Yes, With Regret",
+    no: "Leans No",
+    passed: "Leans No: The Matter Has Passed",
+    unclear: "Unclear",
+  };
+  return { lean, confidence, headline: HEAD[lean], deciding, supports, against, cautions, steps, score };
+}

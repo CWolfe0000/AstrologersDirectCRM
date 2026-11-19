@@ -5,7 +5,8 @@ import { AlertTriangle, CheckCircle2, Clock, Loader2, Scale } from "lucide-react
 import { api } from "@/lib/api";
 import { BODIES, SIGNS, fmtDeg, ordinal, signOf, type ChartPoints, type ChartView } from "@/lib/astro";
 import { Breakdown, BHead, BTable } from "@/components/ui/breakdown";
-import { ABOUT, HORARY_TOPICS, MOIETY, NAME, Name, SEVEN, aspectBetween, aspectChecks, derivedHouse, hourAgreement, perfectionTestimonies, planetaryHour, significators, strengthOf, timingUnit, type Motion, type Testimony } from "@/lib/astro/horary-judgment";
+import { horaryConsiderations } from "@/lib/astro/horary";
+import { ABOUT, HORARY_TOPICS, MOIETY, NAME, Name, SEVEN, aspectBetween, aspectChecks, horaryVerdict, derivedHouse, hourAgreement, perfectionTestimonies, planetaryHour, significators, strengthOf, timingUnit, type Motion, type Testimony } from "@/lib/astro/horary-judgment";
 import type { Planet7 } from "@/lib/astro/traditional";
 import type { ChartRecord, HoraryData } from "@/lib/data/types";
 import { zonedToUtc } from "@/lib/timezones";
@@ -60,6 +61,13 @@ export function HoraryJudgment({ chart, horary, view, onSave }: { chart: ChartRe
     return b ? `${ordinal(b.house)} House` : "";
   };
   const strengths = [...new Set<Planet7>([sig.querent, "moon", sig.quesited])].map((pl) => strengthOf(p, pl));
+  const cautions = horaryConsiderations(p, horary.at).filter((c) => c.tone === "caution").map((c) => c.title);
+  const verdict = m && !sig.same ? horaryVerdict(testimonies, cautions, strengths, sig.quesited, agree ? agree.agrees : null) : null;
+  const timing = direct?.applying && direct.perfectsAt && applierBody ? (() => {
+    const u = timingUnit(applierBody.lon, applierBody.house);
+    const deg = Math.max(1, Math.round(direct.orb));
+    return `About ${deg} ${deg === 1 ? u.unit.replace(/s$/, "") : u.unit} (Lilly’s rule); the aspect perfects on ${fmtDate(direct.perfectsAt)}.`;
+  })() : verdict?.deciding?.at ? `The deciding aspect perfects on ${fmtDate(verdict.deciding.at)}.` : null;
 
   return (
     <div className="mt-4 space-y-5 border-t border-line pt-4">
@@ -82,6 +90,35 @@ export function HoraryJudgment({ chart, horary, view, onSave }: { chart: ChartRe
         <p className="mt-2 text-[12.5px] text-ink-3">
           Quesited: the <b className="font-medium">{ordinal(quesitedHouse)} House</b>{aboutHouse !== 1 ? ` (the ${ordinal(topicHouse)} from the ${ordinal(aboutHouse)})` : ""}.
         </p>
+      </section>
+
+      <section>
+        <p className={h3}>Verdict</p>
+        {motion === null ? (
+          <p className="flex items-center gap-2 text-[12.5px] text-muted"><Loader2 className="size-3.5 animate-spin" /> Weighing the testimonies…</p>
+        ) : !verdict ? (
+          <p className="text-[12.5px] text-muted">{sig.same ? "One planet signifies both; judge by the Moon and planets in the houses involved." : "The verdict needs the Swiss Ephemeris engine."}</p>
+        ) : (
+          <div className={cn("rounded-lg border p-3", verdict.lean.startsWith("yes") ? "border-sage-100 bg-sage-50/60" : verdict.lean === "unclear" ? "border-line bg-canvas/60" : "border-accent-100 bg-accent-50/50")}>
+            <p className="flex flex-wrap items-center gap-2">
+              <span className={cn("font-serif text-[22px] leading-tight", verdict.lean.startsWith("yes") ? "text-sage-dark" : verdict.lean === "unclear" ? "text-ink" : "text-accent")}>{verdict.headline}</span>
+              <span className="rounded-full border border-line bg-surface px-2 py-0.5 text-[11px] font-medium text-ink-3">{verdict.confidence} Confidence</span>
+            </p>
+            {verdict.deciding && <p className="mt-1.5 text-[12.5px] text-ink-3"><span className="font-medium text-ink">Deciding Testimony:</span> {verdict.deciding.text}</p>}
+            {timing && <p className="mt-1 text-[12.5px] text-ink-3"><span className="font-medium text-ink">Timing:</span> {timing}</p>}
+            {(verdict.supports.length > 0 || verdict.against.length > 0 || verdict.cautions.length > 0) && (
+              <div className="mt-2 grid gap-2 text-[12.5px] sm:grid-cols-2">
+                {verdict.supports.length > 0 && <div><p className="font-medium text-sage-dark">Supporting</p><ul className="list-disc pl-4 text-ink-3">{verdict.supports.map((x) => <li key={x}>{x}</li>)}</ul></div>}
+                {(verdict.against.length > 0 || verdict.cautions.length > 0) && <div><p className="font-medium text-accent">Against & Cautions</p><ul className="list-disc pl-4 text-ink-3">{[...verdict.against, ...verdict.cautions].map((x) => <li key={x}>{x}</li>)}</ul></div>}
+              </div>
+            )}
+            <Breakdown title="How the Verdict Was Reached" className="mt-2.5 bg-surface/70">
+              {verdict.steps.map((x) => <p key={x}>{x}</p>)}
+              <p className="text-muted">Order of weight: direct perfection between the significators, then the Moon to the quesited, then translation, then collection. Prohibition, frustration or refranation deny it. A square perfects with difficulty, an opposition with regret. Cautions before judgment lower confidence, not the lean.</p>
+            </Breakdown>
+            <p className="mt-2 text-[11.5px] text-muted">A rule-based lean from the testimonies below, not a judgment. Weigh it with the whole chart.</p>
+          </div>
+        )}
       </section>
 
       <section>
