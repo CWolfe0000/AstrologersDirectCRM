@@ -5,6 +5,7 @@ import { ASPECTS, BODIES, RULERS, SIGNS, bodyIn, degInSign, dignityOf, fmtDeg, f
 import { cn } from "@/lib/utils";
 import { rulershipReport, type Rulership } from "@/lib/astro/rulership";
 import { findPatterns } from "@/lib/astro/patterns";
+import { Breakdown } from "@/components/ui/breakdown";
 import { Segmented } from "@/components/ui/tabs";
 
 const th = "px-2 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted";
@@ -197,6 +198,23 @@ export function PatternsList({ view, onSelectBody }: { view: ChartView; onSelect
             </li>
           ))}
         </ul>
+      )}
+      {patterns.length > 0 && (
+        <Breakdown className="m-2">
+          {patterns.map((pt) => {
+            const asp = view.aspects.filter((a) => a.aRing === "inner" && a.bRing === "inner" && pt.points.includes(a.a) && pt.points.includes(a.b));
+            return (
+              <p key={pt.kind + pt.points.join()}>
+                <b className="font-medium">{pt.kind}</b>{pt.detail ? ` (${pt.detail})` : ""}:{" "}
+                {pt.kind === "Stellium"
+                  ? `${pt.points.map((id) => `${BODIES[id].name} ${fmtDeg(view.inner.bodies.find((b) => b.id === id)!.lon)} ${signOf(view.inner.bodies.find((b) => b.id === id)!.lon).name}`).join(", ")}.`
+                  : `${asp.map((a) => `${BODIES[a.a].name} ${aspectVerb(a.type)} ${BODIES[a.b].name} (${fmtOrb(a.orb)})`).join("; ")}.`}
+                {pt.apex ? ` Focal point: ${BODIES[pt.apex].name}.` : ""}
+              </p>
+            );
+          })}
+          <p className="text-muted">Patterns use the chart’s own aspects and orbs, among the planets, Chiron and the Node. A Grand Cross replaces the T-Squares inside it; stelliums need three planets in one sign or house.</p>
+        </Breakdown>
       )}
     </div>
   );

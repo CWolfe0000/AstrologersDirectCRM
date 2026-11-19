@@ -6,7 +6,7 @@ import { ArrowDownRight, ArrowRight, ArrowUpRight, Layers, NotebookPen, Sparkles
 import { BODIES, fmtDeg, ordinal, signOf } from "@/lib/astro";
 import type { TargetId, TimelineContact } from "@/lib/astro/timeline";
 import {
-  HOUSE_TOPICS, activeOn, changesAt, clusterThemes, clusterTitle, clustersAt, heightened, lifecycleOf, rankHouses, rankPoints, scale,
+  HOUSE_TOPICS, PLANET_THEMES, activeOn, changesAt, clusterThemes, clusterTitle, clustersAt, heightened, lifecycleOf, rankHouses, rankPoints, scale,
   type ActivationModel, type Change, type Cluster,
 } from "@/lib/astro/activation";
 import { useStore } from "@/lib/store";
@@ -15,6 +15,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/dialog";
+import { Breakdown, BHead, BTable } from "@/components/ui/breakdown";
 import { DAY, Glyphs, contactLabel, fmt, fmtShort } from "./labels";
 
 /** "solar arcs" → "Solar Arcs"; ["a", "b", "c"] → "a, b and c". */
@@ -105,6 +106,27 @@ export function ActivationOverview({ m, d, onOpenContact, onPoint, onHouse }: { 
       </Card>
 
       <WhatsChanging m={m} d={d} onOpenContact={onOpenContact} />
+      <Breakdown className="lg:col-span-2 xl:col-span-3">
+        <div className="space-y-1">
+          <BHead>Planet Scores on {fmt(dayIso(m, d))}</BHead>
+          <BTable
+            head={["Point", "Contacts", "Raw Intensity", "Score"]}
+            rows={points.slice(0, 10).map((p) => [`Natal ${BODIES[p.id].name}`, activeOn(m, d, (c) => c.target === p.id).length, p.value.toFixed(2), p.score])}
+          />
+          <p>Raw intensity = the sum of every contact the point receives that day (each contact: its weight × closeness to exact). Score = raw ÷ {m.pointMax.toFixed(2)} (the highest any point reaches in this range) × 100. Trend compares today with 14 days later (±12%).</p>
+        </div>
+        {m.natal.hasHouses && (
+          <div className="space-y-1">
+            <BHead>House Scores</BHead>
+            <BTable
+              head={["House", "Through", "Raw", "Score"]}
+              rows={houses.map((h) => [ordinal(h.house), m.houseParts(h.house, d).filter((x) => x.value > 0).map((x) => `${BODIES[x.id].name}${x.factor !== 1 ? " ×0.5" : ""}`).join(", ") || "–", h.value.toFixed(2), h.score])}
+            />
+            <p>Raw = contacts to planets in the house + to its traditional ruler + half to its modern ruler + (1st and 10th) to the Ascendant or Midheaven. Score = raw ÷ {m.houseMax.toFixed(2)} × 100.</p>
+          </div>
+        )}
+        <p>Only contacts kept by the Show filter count. Contact weights: Moon 0.3, Sun 0.6, Mercury and Venus 0.5, Mars 0.8, Jupiter 1.1, Saturn 1.5, Uranus and Neptune 1.6, Pluto 1.7, Node 0.7, Chiron 0.9; progressions and solar arcs 1.6 (progressed Moon 1.2); lunations 0.7, eclipses 1.4. Aspects: conjunction 1.3, opposition and square 1.2, trine 0.8, sextile 0.6. Provisional.</p>
+      </Breakdown>
     </div>
   );
 }
@@ -312,12 +334,12 @@ export function ConvergenceAnalysis({ m, d, onOpenContact, onNote }: { m: Activa
     );
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      {clusters.map((cl) => <ClusterCard key={cl.targets.join("+")} m={m} cl={cl} onOpenContact={onOpenContact} onNote={onNote} />)}
+      {clusters.map((cl) => <ClusterCard key={cl.targets.join("+")} m={m} d={d} cl={cl} onOpenContact={onOpenContact} onNote={onNote} />)}
     </div>
   );
 }
 
-function ClusterCard({ m, cl, onOpenContact, onNote }: { m: ActivationModel; cl: Cluster; onOpenContact: (c: TimelineContact) => void; onNote: (targets: TargetId[], title: string) => void }) {
+function ClusterCard({ m, d, cl, onOpenContact, onNote }: { m: ActivationModel; d: number; cl: Cluster; onOpenContact: (c: TimelineContact) => void; onNote: (targets: TargetId[], title: string) => void }) {
   const title = clusterTitle(cl);
   return (
     <article className="flex min-w-0 flex-col gap-3 rounded-xl border border-line bg-surface p-4 shadow-card">
@@ -361,6 +383,30 @@ function ClusterCard({ m, cl, onOpenContact, onNote }: { m: ActivationModel; cl:
       <p className="flex items-start gap-2 rounded-lg border border-dashed border-line-strong px-3 py-2 text-[12px] text-muted">
         <Sparkles className="mt-0.5 size-3.5 shrink-0" /> A combined AI interpretation of the whole configuration is planned. It will be labeled as an AI draft until you edit it.
       </p>
+      <Breakdown>
+        <div className="space-y-1">
+          <BHead>Contacts on {fmt(dayIso(m, d))}</BHead>
+          <BTable
+            head={["Contact", "Technique", "Layer", "Weight", "Intensity"]}
+            rows={cl.contacts.map((c) => [contactLabel(c), c.technique === "solar-arc" ? "Solar Arc" : c.technique.charAt(0).toUpperCase() + c.technique.slice(1), c.layer === "background" ? "Background" : "Trigger", c.weight.toFixed(2), (m.series.get(c.id)![d] ?? 0).toFixed(2)])}
+          />
+          <p>Intensity = weight × closeness to exact (1 when exact, 0.5 at the edge of orb). Weight = the moving planet’s weight × the aspect’s weight × 1.3 for the Sun, Moon, angles or chart ruler.</p>
+        </div>
+        <div className="space-y-1">
+          <BHead>Why These Points Are Grouped</BHead>
+          <p>Starting from the most strongly activated point ({BODIES[cl.targets[0]!].name}), any active point tied to it by a natal aspect (orb 6°, 8° with the Sun or Moon) or a rulership joins the group, up to four points.</p>
+        </div>
+        <div className="space-y-1">
+          <BHead>Houses and the Title</BHead>
+          <BTable head={["House", "Weight", "Meaning"]} rows={cl.houseWeights.map(([h, w]) => [ordinal(h), w, HOUSE_TOPICS[h - 1]!])} />
+          <p>Each point counts 2 for the house it occupies and 1 for each house it rules; the three heaviest houses give the title.</p>
+        </div>
+        <div className="space-y-1">
+          <BHead>Themes</BHead>
+          <p>{cl.targets.map((t) => `${BODIES[t].name}: ${PLANET_THEMES[t]}`).join(" · ")}. Activating planets use the same keyword list; the house meanings come from the table above.</p>
+        </div>
+        <p>Timing: the days around the As Of date when at least two of these contacts are in orb together ({cl.span[1] - cl.span[0] + 1} days).</p>
+      </Breakdown>
       <History ids={cl.targets} />
       <div>
         <Button size="sm" variant="secondary" onClick={() => onNote(cl.targets, title)}><NotebookPen /> Add Note to This Configuration</Button>

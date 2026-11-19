@@ -11,6 +11,7 @@ import { useStore } from "@/lib/store";
 import { TODAY } from "@/lib/utils";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { usePremium } from "@/components/plan/premium";
+import { Breakdown, BTable } from "@/components/ui/breakdown";
 import { contactLabel, DAY, fmt, fmtShort } from "@/components/timeline/labels";
 
 const cache = new Map<string, Promise<TimelineResponse>>();
@@ -105,6 +106,10 @@ function Summary({ model: m, clientId }: { model: ReturnType<typeof activationMo
         {bg && <p><span className="text-muted">Background:</span> {contactLabel(bg)} <span className="text-muted">Until {fmtShort(new Date(lifecycleOf(bg, at)!.last).toISOString())}</span></p>}
       </div>
       <p className="text-[11.5px] text-muted">Major and moderate influences. Scores run from 0 to 100, where 100 is the strongest activation in the year ahead.</p>
+      <Breakdown title="Technical Breakdown">
+        <BTable head={["Point", "Raw Intensity", "Score"]} rows={rankPoints(m, d).slice(0, 5).map((p) => [`Natal ${BODIES[p.id].name}`, p.value.toFixed(2), p.score])} />
+        <p>Raw intensity = the sum of today’s contacts to the point (each: weight × closeness to exact). Score = raw ÷ {m.pointMax.toFixed(2)} (the highest any point reaches in the next year) × 100. Houses add contacts to the planets in them, their ruler (modern ruler at half) and, for the 1st and 10th, the angle. The Timeline shows each contact and its numbers.</p>
+      </Breakdown>
     </>
   );
 }

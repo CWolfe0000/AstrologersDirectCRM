@@ -3,8 +3,9 @@
 import * as React from "react";
 import { AlertTriangle, CheckCircle2, Clock, Loader2, Scale } from "lucide-react";
 import { api } from "@/lib/api";
-import { BODIES, ordinal, type ChartView } from "@/lib/astro";
-import { ABOUT, HORARY_TOPICS, NAME, Name, aspectBetween, derivedHouse, hourAgreement, perfectionTestimonies, planetaryHour, significators, strengthOf, timingUnit, type Motion, type Testimony } from "@/lib/astro/horary-judgment";
+import { BODIES, SIGNS, fmtDeg, ordinal, signOf, type ChartPoints, type ChartView } from "@/lib/astro";
+import { Breakdown, BHead, BTable } from "@/components/ui/breakdown";
+import { ABOUT, HORARY_TOPICS, MOIETY, NAME, Name, SEVEN, aspectBetween, aspectChecks, derivedHouse, hourAgreement, perfectionTestimonies, planetaryHour, significators, strengthOf, timingUnit, type Motion, type Testimony } from "@/lib/astro/horary-judgment";
 import type { Planet7 } from "@/lib/astro/traditional";
 import type { ChartRecord, HoraryData } from "@/lib/data/types";
 import { zonedToUtc } from "@/lib/timezones";
@@ -170,6 +171,8 @@ export function HoraryJudgment({ chart, horary, view, onSave }: { chart: ChartRe
         <p className="mt-1.5 text-[11.5px] text-muted">Planetary hours run from local sunrise to sunset and sunset to sunrise, in Chaldean order.</p>
       </section>
 
+      <HoraryBreakdown p={p} m={m} horary={horary} sig={sig} quesitedHouse={quesitedHouse} hour={hour} agree={agree} utc={utc} />
+
       <section className="rounded-lg border border-line p-3">
         <p className={h3}>Judgment & Outcome</p>
         <label className="block text-[12.5px]">
@@ -197,5 +200,75 @@ export function HoraryJudgment({ chart, horary, view, onSave }: { chart: ChartRe
         </div>
       </section>
     </div>
+  );
+}
+
+/** Everything the judgment above is built from: positions, the aspects checked, the hour and the rules applied. */
+function HoraryBreakdown({ p, m, horary, sig, quesitedHouse, hour, agree, utc }: {
+  p: ChartPoints;
+  m: Motion | null;
+  horary: HoraryData;
+  sig: ReturnType<typeof significators>;
+  quesitedHouse: number;
+  hour: ReturnType<typeof planetaryHour>;
+  agree: ReturnType<typeof hourAgreement> | null;
+  utc: string;
+}) {
+  const local = (ms: number) => new Date(ms).toLocaleTimeString("en-US", { timeZone: horary.tz || "UTC", hour: "numeric", minute: "2-digit" });
+  const cusp = p.cusps[quesitedHouse - 1]!;
+  const pairs: [Planet7, Planet7][] = sig.same ? [] : [[sig.querent, sig.quesited], ...(sig.querent !== "moon" && sig.quesited !== "moon" ? [["moon", sig.quesited] as [Planet7, Planet7]] : [])];
+  const seq = hour ? Array.from({ length: hour.index + 1 }, (_, k) => SEVEN[(SEVEN.indexOf(hour.dayRuler) + k) % 7]!) : [];
+  return (
+    <Breakdown>
+      <div className="space-y-1">
+        <BHead>Significators</BHead>
+        <p>Ascendant {fmtDeg(p.asc)} {signOf(p.asc).name} → ruled by {NAME[sig.querent]} (traditional rulership) = the querent. The Moon is always co-significator of the querent.</p>
+        <p>{ordinal(quesitedHouse)} House cusp {fmtDeg(cusp)} {signOf(cusp).name} → ruled by {NAME[sig.quesited]} = the quesited.{horary.aboutHouse && horary.aboutHouse !== 1 ? ` (${ordinal(horary.topicHouse ?? 7)} counted from the ${ordinal(horary.aboutHouse)}: (${horary.aboutHouse} − 1) + ${horary.topicHouse ?? 7} = ${quesitedHouse}.)` : ""}</p>
+      </div>
+      <div className="space-y-1">
+        <BHead>Positions at {new Date(utc).toISOString().slice(0, 16).replace("T", " ")} UTC</BHead>
+        <BTable
+          head={["Planet", "Position", "House", "Speed / Day", "Moiety"]}
+          rows={SEVEN.map((pl) => {
+            const b = p.bodies.find((x) => x.id === pl)!;
+            return [`${BODIES[pl].glyph} ${Name(pl)}`, `${fmtDeg(b.lon)} ${signOf(b.lon).name}`, b.house, `${b.speed < 0 ? "−" : ""}${Math.abs(b.speed).toFixed(3)}°${b.speed < 0 ? " ℞" : ""}`, `${MOIETY[pl]}°`];
+          })}
+        />
+      </div>
+      {m && pairs.map(([a, b]) => {
+        const ev = aspectBetween(m, a, b);
+        return (
+          <div key={a + b} className="space-y-1">
+            <BHead>{Name(a)} and {NAME[b]}: aspects checked</BHead>
+            <BTable
+              head={["Aspect", "Separation", "From Exact", "Orb Limit", "In Orb"]}
+              rows={aspectChecks(m, a, b).map((c) => [c.aspect.charAt(0).toUpperCase() + c.aspect.slice(1), `${c.separation.toFixed(2)}°`, `${c.off.toFixed(2)}°`, `${c.limit}° (${MOIETY[a]} + ${MOIETY[b]})`, c.inOrb ? "Yes" : "No"])}
+            />
+            {ev && (
+              <p>
+                Closest: {ev.aspect}, {ev.orb.toFixed(2)}° from exact, {ev.applying ? `applying (${NAME[ev.applier]} is faster)` : "separating"}.
+                {ev.perfectsAt ? ` Followed forward in the ephemeris, it perfects at ${new Date(ev.perfectsAt).toISOString().slice(0, 16).replace("T", " ")} UTC.` : ev.refranation ? ` ${Name(ev.refranation)} stations before the aspect perfects (refranation).` : ev.applying ? " It doesn’t perfect while the planets stay within orb." : ""}
+              </p>
+            )}
+          </div>
+        );
+      })}
+      <div className="space-y-1">
+        <BHead>Timing Rule (Lilly)</BHead>
+        <BTable head={["Sign", "Angular", "Succedent", "Cadent"]} rows={[["Cardinal", "Days", "Weeks", "Months"], ["Mutable", "Weeks", "Months", "Months"], ["Fixed", "Months", "Years", "Years"]]} />
+        <p>One unit per degree to perfection, from the applying significator’s sign and house.</p>
+      </div>
+      {hour && (
+        <div className="space-y-1">
+          <BHead>Planetary Hour</BHead>
+          <p>
+            {hour.night ? "Night" : "Day"} from {local(hour.periodStart)} to {local(hour.periodEnd)} local time ({hour.night ? "sunset to sunrise" : "sunrise to sunset"}, NOAA calculation), divided into 12 hours of {Math.round(hour.hourLength / 60_000)} minutes.
+            The question at {horary.at.slice(11, 16)} falls in hour {hour.index + 1} of 24 counted from sunrise. The day is ruled by {NAME[hour.dayRuler]}; counting hours in Chaldean order from it: {seq.map((x) => Name(x)).join(" → ")}.
+          </p>
+          {agree && <p>Agreement: {agree.how} Tests, in order: the same planet rules the hour and the Ascendant; the hour’s ruler is a triplicity ruler of the Ascendant; the hour’s ruler has the Ascendant sign’s nature.</p>}
+        </div>
+      )}
+      <p className="text-[11.5px] text-muted">Sign of the Ascendant: {SIGNS[Math.floor(p.asc / 30)]!.name}. Positions from Swiss Ephemeris; aspects use the five Ptolemaic aspects.</p>
+    </Breakdown>
   );
 }

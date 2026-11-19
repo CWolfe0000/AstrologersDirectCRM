@@ -112,3 +112,14 @@ Before any of this is labeled "verified" in the app:
 
 1. Fill in `tests/fixtures/reference-charts.template.json` with charts calculated in software you trust (Solar Fire, Astro Gold, Kepler, astro.com, etc.). Include the method settings used for each.
 2. Once the Sky adapter exists, `tests/reference-charts.test.ts` compares our results against those values, within one arcminute for planets and two for angles.
+
+## Rule: every interpretation shows its working
+
+Any screen that draws a conclusion from the chart — a score, a ranking, a grouping,
+a pattern, a judgment, a theme — must offer a **Technical Breakdown** on the same
+page (the `Breakdown` component in `components/ui/breakdown.tsx`, collapsed by
+default). It shows the positions, numbers, orbs, thresholds and the rule applied,
+so the astrologer can check every step. Current breakdowns: horary considerations
+and judgment, Client Activation scores, Convergence Analysis cards, Busiest
+Periods, aspect patterns, the Traditional tab, electional scores and the profile's
+Current Activations card.

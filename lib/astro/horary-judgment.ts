@@ -150,6 +150,16 @@ export function aspectBetween(m: Motion, a: Planet7, b: Planet7, orbLimit = MOIE
   return best;
 }
 
+/** Every Ptolemaic aspect checked between two planets now: distance from exact against their combined moieties. */
+export function aspectChecks(m: Motion, a: Planet7, b: Planet7) {
+  const limit = MOIETY[a] + MOIETY[b];
+  const sep = Math.abs(n180(m.lon[a]![0]! - m.lon[b]![0]!));
+  return ASPECTS.map((asp) => {
+    const off = Math.abs(sep - asp.angle);
+    return { aspect: asp.name, angle: asp.angle, separation: sep, off, limit, inOrb: off <= limit };
+  });
+}
+
 export interface Testimony {
   kind: "perfection" | "translation" | "collection" | "prohibition" | "frustration" | "refranation" | "separating" | "none" | "reception";
   text: string;
@@ -323,7 +333,7 @@ export function planetaryHour(utcMs: number, localDate: string, lat: number, lon
   const len = (end - start) / 12;
   const k = Math.min(11, Math.floor((utcMs - start) / len)) + (night ? 12 : 0);
   const ruler = SEVEN[(SEVEN.indexOf(dayRuler) + k) % 7]!;
-  return { dayRuler, ruler, hour: (k % 12) + 1, night, start: start + (k % 12) * len, end: start + ((k % 12) + 1) * len };
+  return { dayRuler, ruler, hour: (k % 12) + 1, night, start: start + (k % 12) * len, end: start + ((k % 12) + 1) * len, periodStart: start, periodEnd: end, hourLength: len, index: k };
 }
 
 /** Lilly: the chart is radical when the hour's ruler and the Ascendant agree: same planet, same triplicity, or same nature. */

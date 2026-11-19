@@ -5,6 +5,7 @@ import { BODIES, ordinal, type BodyId, type ChartView } from "@/lib/astro";
 import { ageOn, dignityTable, firdaria, isDayChart, lots, profection, releasingL1, releasingL2, signName, type Planet7 } from "@/lib/astro/traditional";
 import { cn, TODAY } from "@/lib/utils";
 import { Segmented } from "@/components/ui/tabs";
+import { Breakdown } from "@/components/ui/breakdown";
 
 const fmt = (ms: number) => new Date(ms).toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric", year: "numeric" });
 const G = ({ id }: { id: BodyId | "southnode" }) => <span className="glyph text-[15px]" title={BODIES[id as BodyId]?.name}>{BODIES[id as BodyId]?.glyph}</span>;
@@ -135,6 +136,24 @@ export function TraditionalPanel({ view, birthUtc }: { view: ChartView; birthUtc
         )}
         <p className="mt-1.5 text-[11.5px] text-muted">Minor years of each sign's ruler (Capricorn 27, Aquarius 30), 360-day years; level 2 in 30-day months, with Valens' loosing of the bond after twelve signs.</p>
       </section>
+
+      <Breakdown>
+        {(() => {
+          const sun = p.bodies.find((b) => b.id === "sun")!, moon = p.bodies.find((b) => b.id === "moon")!;
+          const d = (x: number) => `${x.toFixed(2)}°`;
+          return (
+            <>
+              <p><b className="font-medium">Sect:</b> the Sun is in the {ordinal(sun.house)} House, {day ? "above" : "below"} the horizon (houses 7–12 are above), so this is a {day ? "day" : "night"} chart.</p>
+              <p><b className="font-medium">Lot of Fortune</b> = Ascendant + {day ? "Moon − Sun" : "Sun − Moon"} = {d(p.asc)} + {day ? `${d(moon.lon)} − ${d(sun.lon)}` : `${d(sun.lon)} − ${d(moon.lon)}`} = {d(lotLons.fortune)} ({signName(Math.floor(lotLons.fortune / 30))}).</p>
+              <p><b className="font-medium">Lot of Spirit</b> = Ascendant + {day ? "Sun − Moon" : "Moon − Sun"} = {d(lotLons.spirit)} ({signName(Math.floor(lotLons.spirit / 30))}).</p>
+              <p><b className="font-medium">Profection:</b> Ascendant sign {signName(Math.floor(p.asc / 30))} + {age} years ({age} mod 12 = {age % 12} signs) = {signName((Math.floor(p.asc / 30) + age) % 12)}, the {ordinal((age % 12) + 1)} House; its traditional ruler is the Lord of the Year. Age counts completed years from {fmt(Date.parse(birthUtc))}.</p>
+              <p><b className="font-medium">Firdaria:</b> {day ? "day" : "night"} charts start with {day ? "the Sun" : "the Moon"}; periods of {day ? "Sun 10, Venus 8, Mercury 13, Moon 9, Saturn 11, Jupiter 12, Mars 7" : "Moon 9, Saturn 11, Jupiter 12, Mars 7, Sun 10, Venus 8, Mercury 13"}, North Node 3, South Node 2 years (75 in all), from the birth moment. Each planetary period splits into seven equal parts.</p>
+              <p><b className="font-medium">Zodiacal releasing:</b> level 1 starts at the lot’s sign and lasts its ruler’s minor years (Saturn 30, Jupiter 12, Mars 15, Sun 19, Venus 8, Mercury 20, Moon 25; Capricorn 27) in 360-day years; level 2 uses the same numbers as 30-day months.</p>
+              <p><b className="font-medium">Dignity points</b> per planet are shown in the table above; hover a row for the dignities counted.</p>
+            </>
+          );
+        })()}
+      </Breakdown>
     </div>
   );
 }

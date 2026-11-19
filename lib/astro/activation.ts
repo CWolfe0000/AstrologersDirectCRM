@@ -339,6 +339,8 @@ export interface Cluster {
   span: [number, number];
   /** Houses involved (where the points are, and what they rule), most involved first. */
   houses: number[];
+  /** How each house was weighted: 2 for each point in it, 1 for each point ruling it. */
+  houseWeights: [number, number][];
   total: number;
 }
 
@@ -392,6 +394,7 @@ export function clustersAt(m: ActivationModel, d: number, limit = 4): Cluster[] 
       techniques: [...new Set(cs.map((c) => TECH_NAME[c.technique]))],
       span: [a, b],
       houses: [...areas.entries()].sort((x, y) => y[1] - x[1]).map(([h]) => h),
+      houseWeights: [...areas.entries()].sort((x, y) => y[1] - x[1]),
       total: cs.reduce((acc, c) => acc + m.series.get(c.id)![d]!, 0),
     });
     if (out.length >= limit) break;

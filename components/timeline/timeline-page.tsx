@@ -12,6 +12,7 @@ import { TECH, pointName, pointGlyph, sourceName, Glyphs, contactLabel, DAY, fmt
 import { activationModel, cycleAround, dayIndex, passesSignificance, type Significance } from "@/lib/astro/activation";
 import { ActivationOverview, BackgroundInfluences, ClientContext, ConvergenceAnalysis, HouseSheet, LifecycleSection, PointSheet, useConfigurationNote } from "./activation";
 import { BACKGROUND_CHOICES, DEFAULT_BACKGROUND } from "./timeline-options";
+import { Breakdown, BTable } from "@/components/ui/breakdown";
 import type { ChartRecord } from "@/lib/data/types";
 import { useStore, personName } from "@/lib/store";
 import { cn, TODAY } from "@/lib/utils";
@@ -499,6 +500,7 @@ function Convergences({ tl, focus, onFocus, onOpen, onAsOf }: { tl: NonNullable<
     <section aria-labelledby="tl-conv">
       <h2 id="tl-conv" className="mb-1 text-[15px] font-semibold text-ink">Busiest Periods</h2>
       <p className="mb-2.5 text-[12.5px] text-muted">Found and ranked by short-term activity, so a long transit can’t make a whole stretch look busy.</p>
+      <PeriodsBreakdown tl={tl} />
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {tl.convergences.map((w) => {
           const active = focus?.start === w.start;
@@ -570,6 +572,25 @@ function Convergences({ tl, focus, onFocus, onOpen, onAsOf }: { tl: NonNullable<
         })}
       </div>
     </section>
+  );
+}
+
+function PeriodsBreakdown({ tl }: { tl: NonNullable<TimelineResponse["timeline"]> }) {
+  const tr = tl.days.map((d) => d.trigger ?? 0);
+  const mean = tr.reduce((a, b) => a + b, 0) / Math.max(1, tr.length);
+  const sd = Math.sqrt(tr.reduce((a, b) => a + (b - mean) ** 2, 0) / Math.max(1, tr.length));
+  const hot = tl.days.filter((d) => (d.trigger ?? 0) > mean + 0.75 * sd && (d.triggerCount ?? 0) >= 2).length;
+  return (
+    <Breakdown className="mb-3">
+      <p>
+        Each day’s short-term intensity is the sum of its trigger contacts (weight × closeness to exact). Over this range the mean is {mean.toFixed(2)} and the standard deviation {sd.toFixed(2)}, so a day counts as busy above {(mean + 0.75 * sd).toFixed(2)} with at least two triggers in orb ({hot} of {tl.days.length} days). Busy days less than a week apart are joined; runs shorter than three days are dropped; the six with the highest peak are shown.
+      </p>
+      <BTable
+        head={["Period", "Peak Day", "Peak Intensity", "In Orb at Peak", "Triggers at Peak", "Exact Hits"]}
+        rows={tl.convergences.map((w) => [fmtRange(w.start, w.end), fmtShort(w.peak), w.peakScore.toFixed(2), w.peakCount, w.peakTriggers, w.exactCount])}
+      />
+      <p>Background planets: {(tl.backgroundBodies ?? []).map((b) => BODIES[b].name).join(", ") || "none"} (plus progressions and solar arcs). Their contacts are listed with each period but don’t make a period busy.</p>
+    </Breakdown>
   );
 }
 

@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { Check, X } from "lucide-react";
-import { ELECTION_EVENTS, scoreElection, type ElectionCheck } from "@/lib/astro/elect";
+import { ELECTION_CHECKS, ELECTION_EVENTS, scoreElection, type ElectionCheck } from "@/lib/astro/elect";
+import { Breakdown, BTable } from "@/components/ui/breakdown";
 import { natalPoints, type ChartView } from "@/lib/astro";
 import type { ChartPoints } from "@/lib/astro/types";
 import type { ElectionData, Person } from "@/lib/data/types";
@@ -43,6 +44,19 @@ export function ElectionPanel({ election, view, client, className }: { election:
         ))}
       </ul>
       <p className="mt-3 text-[11.5px] text-muted">Traditional elective rules, weighted to rank candidate times. Your judgment decides.</p>
+      {(() => {
+        const rows = r.results.map((x) => {
+          const rule = ELECTION_CHECKS[x.id as ElectionCheck];
+          return { x, pts: x.ok ? rule.pass : rule.fail, lo: Math.min(rule.pass, rule.fail), hi: Math.max(rule.pass, rule.fail) };
+        });
+        const min = rows.reduce((a, b) => a + b.lo, 0), max = rows.reduce((a, b) => a + b.hi, 0);
+        return (
+          <Breakdown className="mt-3">
+            <BTable head={["Rule", "Result", "Points", "Range"]} rows={rows.map(({ x, pts, lo, hi }) => [x.label + (x.required ? " (required)" : ""), x.ok ? "Passes" : "Fails", pts > 0 ? `+${pts}` : pts, `${lo} to ${hi}`])} />
+            <p>Score {r.score} on a scale from {min} to {max}: ({r.score} − {min}) ÷ ({max} − {min}) × 100 = {r.excluded ? `${max > min ? Math.round(((r.score - min) / (max - min)) * 100) : 100}, but a required rule fails, so the moment is ruled out` : r.percent}.</p>
+          </Breakdown>
+        );
+      })()}
     </div>
   );
 }
