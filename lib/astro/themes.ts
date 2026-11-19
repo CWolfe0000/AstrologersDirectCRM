@@ -3,11 +3,18 @@
  * and what sets it off. Built on the activation model, and always on every
  * contact in the range (the significance filter does not apply).
  *
- * A period is anchored on a solar arc: the time a solar arc involving one of
- * the theme's significators is in orb. Solar arcs come first because they tend
- * to coincide with a planet's meaning showing up in events. A secondary
- * progression is used as an anchor only when fewer than four solar arcs
- * qualify. Up to four periods are kept, solar arcs first.
+ * A period is anchored on a direction: the time a solar arc involving one of
+ * the theme's significators is in orb, or a secondary progression (other than
+ * the Moon's) to the Ascendant or Midheaven. Solar arcs come first because
+ * they tend to coincide with a planet's meaning showing up in events;
+ * progressions to the angles stand beside them because they proved to time
+ * events just as well (a progressed 7th ruler on the Ascendant, a marriage).
+ * Other progressions rank after them.
+ * The progressed Sun is left out where the same solar arc is present, as the
+ * two are one motion. Periods are ranked: these anchors first, then those exact
+ * in the range, those involving the topic's ruler, natural significator or
+ * angle (over a planet that merely sits in the house), and those repeating a
+ * natal aspect. The interface shows the first four and can show the rest.
  *
  * An anchor qualifies when a significator is the natal point it aims at, or
  * (solar arcs only) the planet being directed, and the theme's rule holds:
@@ -30,7 +37,10 @@
  * Triggers are the transits and eclipses, by hard aspect (conjunction, square,
  * opposition) unless the practice's setting allows every aspect, to the two
  * natal points of the anchor (the point aimed at, and the natal place of the
- * directed planet) while the anchor is in orb. Like the density score, this is
+ * directed planet) while the anchor is in orb. Exact hits from Saturn, Uranus,
+ * Neptune and Pluto are marked as the timing: checked against real events,
+ * the slow planet's exact date gave the month, where the date the triggers
+ * were strongest together did not. Like the density score, this is
  * a counting aid with provisional rules.
  */
 import type { BodyId } from "./index";
@@ -52,11 +62,15 @@ export interface ThemeTrigger {
   /** Exact hits (or the eclipses) while the anchor is in orb; when there are none, the closest approach. */
   dates: string[];
   exact: boolean;
+  /** An exact hit from Saturn, Uranus, Neptune or Pluto: the closest guide to when. */
+  slow: boolean;
 }
 
 export interface ThemePeriod {
   /** The solar arc (or progression) the period rests on. */
   anchor: TimelineContact;
+  /** A solar arc, or a progression to an angle; false for the other progressions used to fill in. */
+  primary: boolean;
   /** Day indexes within the timeline: the anchor's time in orb. */
   start: number;
   end: number;
@@ -82,8 +96,9 @@ export interface ThemeResult {
   /** Per day: anchors in orb (solar arcs counted double) plus their triggers; and the maximum. */
   series: Float32Array;
   max: number;
-  /** Qualifying anchors in the range, before the limit of four. */
+  /** Qualifying anchors in the range. */
   anchorCount: number;
+  /** Every period, strongest first. */
   periods: ThemePeriod[];
 }
 
@@ -118,11 +133,14 @@ function significators(m: ActivationModel, theme: ThemeId): Significator[] {
   return out;
 }
 
+const SLOW = new Set(["saturn", "uranus", "neptune", "pluto"]);
+/** A solar arc, or a progression (not the Moon's) to the Ascendant or Midheaven. */
+export const isPrimary = (c: TimelineContact) => c.technique === "solar-arc" || (c.technique === "progressed" && c.source !== "moon" && (c.target === "asc" || c.target === "mc"));
+
 /** Whether a solar arc or progression anchors a period of this theme. */
 function anchors(theme: ThemeId, c: TimelineContact, sigs: Set<TargetId>) {
-  const arc = c.technique === "solar-arc";
-  if (!arc && c.technique !== "progressed") return false;
-  const involved = [c.target, ...(arc ? [c.source as TargetId] : [])].filter((id) => sigs.has(id));
+  if (c.technique !== "solar-arc" && c.technique !== "progressed") return false;
+  const involved = [c.target, ...(isPrimary(c) ? [c.source as TargetId] : [])].filter((id) => sigs.has(id));
   if (involved.length === 0) return false;
   if (theme === "marriage") return involved.some((id) => id !== "asc") || c.aspect === "conjunction" || c.aspect === "opposition";
   if (theme === "career") return SOFT.has(c.aspect) || HELPFUL_MOVERS.has(c.source);
@@ -144,9 +162,12 @@ export function themeResult(m: ActivationModel, id: ThemeId, triggerAspects: The
   const triggersAll = m.tl.contacts.filter((c) => (c.technique === "transit" || c.technique === "eclipse") && (triggerAspects === "all" || TRIGGER_HARD.has(c.aspect)));
 
   const all: ThemePeriod[] = [];
+  const arcs = new Set(m.tl.contacts.filter((c) => c.technique === "solar-arc").map((c) => `${c.source}|${c.aspect}|${c.target}`));
   for (const anchor of m.tl.contacts) {
     if (!anchors(id, anchor, sigSet)) continue;
-    const points = [anchor.target, ...(anchor.technique === "solar-arc" && m.natal.byId.has(anchor.source as TargetId) && anchor.source !== anchor.target ? [anchor.source as TargetId] : [])];
+    if (anchor.technique === "progressed" && anchor.source === "sun" && arcs.has(`sun|${anchor.aspect}|${anchor.target}`)) continue;
+    const primary = isPrimary(anchor);
+    const points = [anchor.target, ...(primary && m.natal.byId.has(anchor.source as TargetId) && anchor.source !== anchor.target ? [anchor.source as TargetId] : [])];
     for (const w of anchor.windows) {
       const ws = parse(w.start), we = parse(w.end);
       const start = di(ws), end = di(we);
@@ -166,7 +187,7 @@ export function themeResult(m: ActivationModel, id: ThemeId, triggerAspects: The
           }
         }
         if (dates.length === 0) continue;
-        triggers.push({ contact: c, dates, exact });
+        triggers.push({ contact: c, dates, exact, slow: exact && SLOW.has(c.source) });
         const s = m.series.get(c.id)!;
         for (let d = start; d <= end; d++) sum[d - start] += s[d] ?? 0;
       }
@@ -177,15 +198,17 @@ export function themeResult(m: ActivationModel, id: ThemeId, triggerAspects: The
         for (let i = 1; i < sum.length; i++) if (sum[i]! > sum[best]!) best = i;
         peak = start + best;
       }
-      all.push({ anchor, start, end, startOpen: w.startOpen, endOpen: w.endOpen, exact: w.exacts[0]?.utc ?? null, natalAspect: (anchor.technique === "solar-arc" && anchor.source !== anchor.target ? m.natal.natalAspect(anchor.source as TargetId, anchor.target) : null) as AspectId | null, points, triggers, peak });
+      all.push({ anchor, primary, start, end, startOpen: w.startOpen, endOpen: w.endOpen, exact: w.exacts[0]?.utc ?? null, natalAspect: (primary && anchor.source !== anchor.target ? m.natal.natalAspect(anchor.source as TargetId, anchor.target) : null) as AspectId | null, points, triggers, peak });
     }
   }
   result.anchorCount = all.length;
-  const arcFirst = (p: ThemePeriod) => Number(p.anchor.technique === "solar-arc");
-  result.periods = all
-    .sort((a, b) => arcFirst(b) - arcFirst(a) || Number(!!b.natalAspect) - Number(!!a.natalAspect) || Number(!!b.exact) - Number(!!a.exact) || b.triggers.length - a.triggers.length)
-    .slice(0, 4)
-    .sort((a, b) => arcFirst(b) - arcFirst(a) || Number(!!b.natalAspect) - Number(!!a.natalAspect) || a.start - b.start);
+  // Rank: solar arcs and progressions to angles first; then exact in the range, a direction involving the
+  // topic's ruler, natural significator or angle (rather than only a planet that happens to be in the house),
+  // and one that repeats a natal aspect; then the number of triggers.
+  const principal = new Set(sigs.filter((x) => !x.why.startsWith("In the")).map((x) => x.id));
+  const score = (p: ThemePeriod) =>
+    (p.primary ? 8 : 0) + (p.exact ? 3 : 0) + ([p.anchor.target, ...(p.primary ? [p.anchor.source as TargetId] : [])].some((x) => principal.has(x)) ? 2 : 0) + (p.natalAspect ? 1 : 0);
+  result.periods = all.sort((a, b) => score(b) - score(a) || b.triggers.length - a.triggers.length);
 
   const counted = new Set<string>();
   for (const p of result.periods) {
@@ -196,7 +219,7 @@ export function themeResult(m: ActivationModel, id: ThemeId, triggerAspects: The
       const s = m.series.get(c.id)!;
       for (let d = a; d <= b; d++) series[d] += (s[d] ?? 0) * k;
     };
-    add(p.anchor, p.anchor.technique === "solar-arc" ? 2 : 1, p.start, p.end);
+    add(p.anchor, p.primary ? 2 : 1, p.start, p.end);
     for (const t of p.triggers) add(t.contact, 1, p.start, p.end);
   }
   for (let d = 0; d < n; d++) if (series[d]! > result.max) result.max = series[d]!;

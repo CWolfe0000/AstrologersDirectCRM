@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { activationModel } from "@/lib/astro/activation";
+import { anchorKeywords } from "@/lib/astro/keywords";
 import { themeResult } from "@/lib/astro/themes";
 import type { TimelineContact, TimelineResult } from "@/lib/astro/timeline";
 
@@ -111,6 +112,30 @@ describe("life themes", () => {
     ]), "all");
     const r = themeResult(m, "marriage");
     expect(r.periods.map((p) => [p.anchor.id, p.natalAspect])).toEqual([["echo", "conjunction"], ["plain", null]]);
+  });
+
+  it("a progression to an angle anchors like a solar arc; slow planets' exact hits are the timing", () => {
+    // Progressed Venus (ruler of the 7th) reaches the Ascendant, with Pluto squaring the Ascendant.
+    const m = activationModel(timeline([
+      contact("pv", "progressed", "venus", "conjunction", "asc", 20, 180),
+      contact("pm", "progressed", "moon", "conjunction", "asc", 20, 50), // the progressed Moon is not a primary anchor
+      contact("ps", "progressed", "sun", "opposition", "asc", 20, 180),
+      contact("sa", "solar-arc", "sun", "opposition", "asc", 20, 180), // the same motion as the progressed Sun: kept once
+      contact("pl", "transit", "pluto", "square", "asc", 60, 120),
+      contact("ma", "transit", "mars", "square", "asc", 70, 76),
+    ]), "all");
+    const r = themeResult(m, "marriage");
+    expect(r.periods.map((p) => [p.anchor.id, p.primary])).toEqual([["pv", true], ["sa", true], ["pm", false]]);
+    expect(r.periods[0]!.points).toEqual(["asc", "venus"]);
+    expect(r.periods[0]!.triggers.map((t) => [t.contact.id, t.slow])).toEqual([["ma", false], ["pl", true]]);
+  });
+
+  it("keywords: planet, rulerships and house, aspect, and the natal point's sign and house", () => {
+    const m = activationModel(timeline([]), "all");
+    const k = anchorKeywords(m.natal, contact("x", "solar-arc", "mars", "square", "venus", 0, 10));
+    expect(k.map((l) => l.label)).toEqual(["Solar Arc Mars", "Square", "Natal Venus"]);
+    expect(k[0]!.text).toBe("action, conflict, cutting, heat, speed · rules the 1st (self, body, appearance) and 8th (the partner's money, debt, shared resources, crisis) · natally in the 5th (children, romance, creative work, speculation)");
+    expect(k[2]!.text).toContain("in Libra (partnership, fairness, law) · in the 7th (partners, contracts, open enemies)");
   });
 
   it("no periods without a direction to the significators", () => {

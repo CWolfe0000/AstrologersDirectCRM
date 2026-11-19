@@ -4,7 +4,9 @@ import * as React from "react";
 import { BODIES } from "@/lib/astro";
 import type { ActivationModel } from "@/lib/astro/activation";
 import { themeAnalysis, type ThemeId, type ThemePeriod, type ThemeResult, type ThemeTriggers } from "@/lib/astro/themes";
+import { anchorKeywords } from "@/lib/astro/keywords";
 import type { PromiseLevel } from "@/lib/astro/promise";
+import { cn } from "@/lib/utils";
 import type { TargetId, TimelineContact } from "@/lib/astro/timeline";
 import { Badge } from "@/components/ui/badge";
 import { Glyphs, contactLabel, fmt, fmtShort } from "./labels";
@@ -89,19 +91,22 @@ function Promise({ r }: { r: ThemeResult }) {
 }
 
 const TRIGGERS_SHOWN = 6;
+const PERIODS_SHOWN = 4;
 const dateLink = "underline decoration-line-strong underline-offset-2 hover:text-accent";
 
 /** One period: the solar arc it rests on, then the transits and eclipses that set it off. */
 function Period({ m, p, d, onOpenContact, onAsOf }: { m: ActivationModel; p: ThemePeriod; d: number; onOpenContact: (c: TimelineContact) => void; onAsOf: (date: string) => void }) {
   const [all, setAll] = React.useState(false);
   const arc = p.anchor.technique === "solar-arc";
-  // When there are many, keep the heaviest (slow planets, eclipses), still in date order.
-  const keep = all || p.triggers.length <= TRIGGERS_SHOWN ? null : new Set([...p.triggers].sort((a, b) => b.contact.weight - a.contact.weight).slice(0, TRIGGERS_SHOWN));
+  const keys = React.useMemo(() => anchorKeywords(m.natal, p.anchor), [m, p]);
+  const timing = p.triggers.filter((t) => t.slow);
+  // When there are many, keep the slow planets' exact hits, then the heaviest, still in date order.
+  const keep = all || p.triggers.length <= TRIGGERS_SHOWN ? null : new Set([...p.triggers].sort((a, b) => Number(b.slow) - Number(a.slow) || b.contact.weight - a.contact.weight).slice(0, TRIGGERS_SHOWN));
   const shown = keep ? p.triggers.filter((t) => keep.has(t)) : p.triggers;
   return (
     <li className="border-t border-line pt-2.5 text-[12.5px]">
       <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <Badge tone={arc ? "accent" : "outline"}>{arc ? "Solar Arc" : "Progression"}</Badge>
+        <Badge tone={p.primary ? "accent" : "outline"}>{arc ? "Solar Arc" : p.primary ? "Progression to an Angle" : "Progression"}</Badge>
         {d >= p.start && d <= p.end && <Badge tone="outline">Now Selected</Badge>}
       </p>
       <button type="button" onClick={() => onOpenContact(p.anchor)} className="mt-1 text-left text-[13.5px] font-semibold text-ink hover:text-accent"><Glyphs c={p.anchor} size={14} /> {contactLabel(p.anchor)}</button>
@@ -110,6 +115,12 @@ function Period({ m, p, d, onOpenContact, onAsOf }: { m: ActivationModel; p: The
         {p.exact ? <> · Exact <button type="button" className={dateLink} onClick={() => onAsOf(p.exact!.slice(0, 10))}>{fmt(p.exact)}</button></> : " · Exact Outside This Range"}
       </p>
       {p.natalAspect && <p className="mt-0.5 text-ink-3">Repeats the natal {p.natalAspect} of {BODIES[p.anchor.source as TargetId].name} and {BODIES[p.anchor.target].name}.</p>}
+      {keys.length > 0 && (
+        <dl className="mt-2 space-y-0.5 rounded-lg bg-canvas-2 px-2.5 py-2 text-[12px] text-ink-3">
+          <dt className="sr-only">Keywords</dt>
+          {keys.map((k) => <dd key={k.label}><b className="font-medium text-ink">{k.label}:</b> {k.text}</dd>)}
+        </dl>
+      )}
       <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-muted">Triggers on Natal {p.points.map((id) => BODIES[id].name).join(" and ")}</p>
       {p.triggers.length === 0 ? (
         <p className="mt-1 text-muted">No transits or eclipses to {p.points.length > 1 ? "these points" : "this point"} while it is in orb in this range.</p>
@@ -117,7 +128,7 @@ function Period({ m, p, d, onOpenContact, onAsOf }: { m: ActivationModel; p: The
         <>
           <ul className="mt-1 space-y-1">
             {shown.map((t) => (
-              <li key={t.contact.id} className="flex flex-wrap items-baseline justify-between gap-x-2">
+              <li key={t.contact.id} className={cn("flex flex-wrap items-baseline justify-between gap-x-2", t.slow && "font-semibold")}>
                 <button type="button" onClick={() => onOpenContact(t.contact)} className="text-left text-ink hover:text-accent"><Glyphs c={t.contact} size={13} /> {contactLabel(t.contact)}</button>
                 <span className="text-[12px] tabular-nums text-muted">
                   {t.exact ? "" : "Closest "}
@@ -129,7 +140,14 @@ function Period({ m, p, d, onOpenContact, onAsOf }: { m: ActivationModel; p: The
             ))}
           </ul>
           {p.triggers.length > TRIGGERS_SHOWN && <button type="button" className="mt-1 text-[12px] text-muted hover:text-accent" onClick={() => setAll(!all)}>{all ? "Show Fewer" : `Show All ${p.triggers.length} Triggers`}</button>}
-          {p.peak !== null && p.triggers.length > 1 && <p className="mt-1.5 text-ink-3">Triggers are strongest together around <button type="button" className={dateLink} onClick={() => onAsOf(dayIso(m, p.peak!))}>{fmt(dayIso(m, p.peak))}</button>.</p>}
+          {timing.length > 0 && (
+            <p className="mt-1.5 text-ink-3">
+              Likely timing, from the slow planets' exact hits:{" "}
+              {timing.flatMap((t) => t.dates.map((u) => ({ u, c: t.contact }))).sort((a, b) => a.u.localeCompare(b.u)).slice(0, 6).map(({ u, c }, i) => (
+                <React.Fragment key={c.id + u}>{i > 0 && ", "}<button type="button" className={dateLink} onClick={() => onAsOf(u.slice(0, 10))}>{fmt(u)}</button> ({BODIES[c.source as TargetId].name})</React.Fragment>
+              ))}.
+            </p>
+          )}
         </>
       )}
     </li>
@@ -139,6 +157,7 @@ function Period({ m, p, d, onOpenContact, onAsOf }: { m: ActivationModel; p: The
 /** Marriage, career and accident-prone periods across the timeline's range. */
 export function LifeThemes({ m, d, triggers, onOpenContact, onAsOf }: { m: ActivationModel; d: number; triggers: ThemeTriggers; onOpenContact: (c: TimelineContact) => void; onAsOf: (date: string) => void }) {
   const results = React.useMemo(() => themeAnalysis(m, triggers), [m, triggers]);
+  const [open, setOpen] = React.useState<Partial<Record<ThemeId, boolean>>>({});
   return (
     <div className="space-y-2">
       <div className="grid gap-4 lg:grid-cols-3">
@@ -156,8 +175,12 @@ export function LifeThemes({ m, d, triggers, onOpenContact, onAsOf }: { m: Activ
                 <p className="text-[13px] text-muted">{t.none}</p>
               ) : (
                 <ul className="space-y-3">
-                  {r.periods.map((p) => <Period key={`${p.anchor.id}-${p.start}`} m={m} p={p} d={d} onOpenContact={onOpenContact} onAsOf={onAsOf} />)}
-                  {r.anchorCount > r.periods.length && <li className="border-t border-line pt-2.5 text-[12px] text-muted">+{r.anchorCount - r.periods.length} More {r.anchorCount - r.periods.length === 1 ? "Direction" : "Directions"} Not Shown</li>}
+                  {(open[r.id] ? r.periods : r.periods.slice(0, PERIODS_SHOWN)).slice().sort((a, b) => a.start - b.start).map((p) => <Period key={`${p.anchor.id}-${p.start}`} m={m} p={p} d={d} onOpenContact={onOpenContact} onAsOf={onAsOf} />)}
+                  {r.periods.length > PERIODS_SHOWN && (
+                    <li className="border-t border-line pt-2.5">
+                      <button type="button" className="text-[12px] text-muted hover:text-accent" onClick={() => setOpen((o) => ({ ...o, [r.id]: !o[r.id] }))}>{open[r.id] ? "Show the Strongest Four" : `Show ${r.periods.length - PERIODS_SHOWN} More ${r.periods.length - PERIODS_SHOWN === 1 ? "Direction" : "Directions"}`}</button>
+                    </li>
+                  )}
                 </ul>
               )}
               <p className="mt-auto border-t border-line pt-2.5 text-[11.5px] leading-relaxed text-muted">
@@ -168,7 +191,7 @@ export function LifeThemes({ m, d, triggers, onOpenContact, onAsOf }: { m: Activ
         })}
       </div>
       <p className="text-[12px] leading-relaxed text-muted">
-        Each theme starts from the natal promise: the birth chart's own testimony on the topic, from the dignity and house of the significators, the planets in the house and their natal aspects. A solar arc that repeats a natal aspect between its two points is listed first. A period is the time a solar arc involving one of the significators (as the point aimed at, or as the planet directed) is in orb. Solar arcs come first; a secondary progression to a significator is shown only when fewer than four solar arcs qualify. Triggers are the transits and eclipses to the two natal points of that solar arc while it is in orb, {triggers === "hard" ? "by conjunction, square or opposition only" : "by every aspect in use"} (a setting under Bodies, Aspects &amp; Orbs), with the planets and orbs set for this timeline, whatever the significance filter. {m.natal.hasHouses ? "" : "House rulers, house placements and the angles need a known birth time, so only the planets are used here. "}These are counting aids with provisional rules, not predictions.
+        Each theme starts from the natal promise: the birth chart's own testimony on the topic, from the dignity and house of the significators, the planets in the house and their natal aspects. A solar arc that repeats a natal aspect between its two points is listed first. A period is the time a solar arc involving one of the significators (as the point aimed at, or as the planet directed) is in orb. A progression (other than the Moon's) to the Ascendant or Midheaven counts the same way; other progressions rank after them. The four strongest are shown first: those exact in the range, involving the topic's ruler or an angle, or repeating a natal aspect. The keywords under each are the planet, its rulerships and house, the aspect, and the natal point's sign and house. Triggers are the transits and eclipses to the two natal points of that solar arc while it is in orb, {triggers === "hard" ? "by conjunction, square or opposition only" : "by every aspect in use"} (a setting under Bodies, Aspects &amp; Orbs), with the planets and orbs set for this timeline, whatever the significance filter. Exact hits from Saturn, Uranus, Neptune and Pluto are in bold and given as the likely timing. {m.natal.hasHouses ? "" : "House rulers, house placements and the angles need a known birth time, so only the planets are used here. "}These are counting aids with provisional rules, not predictions.
       </p>
     </div>
   );
