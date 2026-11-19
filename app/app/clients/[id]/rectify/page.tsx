@@ -44,6 +44,21 @@ const RISING: string[] = [
   "Friendly but detached, independent and unconventional. Often a distinctive or unusual look.",
   "Gentle, receptive and dreamy. Often soft features and large, expressive eyes.",
 ];
+// The Moon by sign: emotional nature and needs, which a client can describe without being seen.
+const MOON: string[] = [
+  "Quick, direct feelings; impatient. Needs independence and something to act on.",
+  "Steady and comfort-loving; slow to change. Needs security, routine and physical ease.",
+  "Restless; talks feelings through. Needs variety, news and conversation.",
+  "Deeply feeling and protective. Needs home, family and people close.",
+  "Warm, proud and generous. Needs appreciation and to be seen.",
+  "Practical; prone to worry. Needs order and to be useful.",
+  "Seeks harmony and avoids conflict. Needs partnership and fairness.",
+  "Intense and private; feelings run deep. Needs trust and loyalty.",
+  "Optimistic and restless. Needs freedom, travel and meaning.",
+  "Reserved and self-reliant. Needs control, structure and achievement.",
+  "Detached and independent. Needs space, friends and causes.",
+  "Sensitive; absorbs others’ moods. Needs retreat, imagination and compassion.",
+];
 type Span = { sign: number; from: string; to: string };
 type Hit = { event: number; technique: string; from: string; to: string; aspect: string; orb: number; points: number };
 type Result = {
@@ -75,13 +90,15 @@ export default function RectifyPage() {
   const [error, setError] = React.useState<string | null>(null);
   const [chosen, setChosen] = React.useState(0);
   const [spans, setSpans] = React.useState<Span[] | null>(null);
+  const [moonSpans, setMoonSpans] = React.useState<Span[] | null>(null);
   const [picked, setPicked] = React.useState<number[]>([]);
+  const [pickedMoon, setPickedMoon] = React.useState<number[]>([]);
   const birthKey = b ? JSON.stringify([b.date, b.lat, b.lon, b.tz, defaults.zodiac, defaults.houseSystem]) : "";
   React.useEffect(() => {
     if (!b || DATA_MODE !== "server") return;
     let live = true;
-    api<{ rising: Span[] }>("/api/v1/astro/rising", { body: { birth: b, settings: { zodiac: defaults.zodiac, houseSystem: defaults.houseSystem } } })
-      .then((r) => live && setSpans(r.rising), () => live && setSpans([]));
+    api<{ rising: Span[]; moon: Span[] }>("/api/v1/astro/rising", { body: { birth: b, settings: { zodiac: defaults.zodiac, houseSystem: defaults.houseSystem } } })
+      .then((r) => { if (live) { setSpans(r.rising); setMoonSpans(r.moon); } }, () => { if (live) { setSpans([]); setMoonSpans([]); } });
     return () => { live = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [birthKey]);
@@ -97,7 +114,7 @@ export default function RectifyPage() {
     setError(null);
     try {
       const r = await api<{ rectify: Result }>("/api/v1/astro/rectify", {
-        body: { birth: b, events: sorted.map((e) => ({ date: e.date, type: e.type })), from, to: to < from ? from : to, stepMin: step, settings: { zodiac: defaults.zodiac, houseSystem: defaults.houseSystem }, ascSigns: picked.length ? picked : undefined },
+        body: { birth: b, events: sorted.map((e) => ({ date: e.date, type: e.type })), from, to: to < from ? from : to, stepMin: step, settings: { zodiac: defaults.zodiac, houseSystem: defaults.houseSystem }, ascSigns: picked.length ? picked : undefined, moonSigns: pickedMoon.length ? pickedMoon : undefined },
       });
       setResult(r.rectify);
       setChosen(0);
@@ -113,16 +130,29 @@ export default function RectifyPage() {
   };
 
   // Choosing rising signs sets the window to the span(s) they rise.
+  // Choosing Moon and rising signs sets the window to the times both hold.
+  const fit = (asc: number[], moon: number[]) => {
+    if (!asc.length && !moon.length) return;
+    const day = [{ from: "00:00", to: "23:59" }];
+    const A = asc.length ? (spans ?? []).filter((x) => asc.includes(x.sign)) : day;
+    const M = moon.length ? (moonSpans ?? []).filter((x) => moon.includes(x.sign)) : day;
+    const both = A.flatMap((a) => M.map((m) => ({ from: a.from > m.from ? a.from : m.from, to: a.to < m.to ? a.to : m.to }))).filter((x) => x.from <= x.to);
+    if (!both.length) { toast("No Overlap", "The Moon is never in that sign while that sign rises on this date.", "error"); return; }
+    setFrom(both.map((x) => x.from).sort()[0]!);
+    setTo(both.map((x) => x.to).sort().at(-1)!);
+    setStep(2);
+  };
   const pick = (sign: number) => {
     const next = picked.includes(sign) ? picked.filter((x) => x !== sign) : [...picked, sign];
     setPicked(next);
-    const sel = (spans ?? []).filter((x) => next.includes(x.sign));
-    if (sel.length) {
-      setFrom(sel.map((x) => x.from).sort()[0]!);
-      setTo(sel.map((x) => x.to).sort().at(-1)!);
-      setStep(2);
-    }
+    fit(next, pickedMoon);
   };
+  const pickMoon = (sign: number) => {
+    const next = pickedMoon.includes(sign) ? pickedMoon.filter((x) => x !== sign) : [...pickedMoon, sign];
+    setPickedMoon(next);
+    fit(picked, next);
+  };
+  const recordedMoon = known && moonSpans ? moonSpans.find((x) => x.from <= b.time && b.time <= x.to) : undefined;
   const recordedSpan = known && spans ? spans.find((x) => x.from <= b.time && b.time <= x.to) : undefined;
 
   const maxScore = Math.max(1, ...(result?.curve.map((c) => c.score) ?? [1]));
@@ -146,7 +176,45 @@ export default function RectifyPage() {
       <div className="grid gap-5 xl:grid-cols-[420px_minmax(0,1fr)]">
         <div className="space-y-5">
           <Card>
-            <CardHeader title="Step 1: Rising Sign (Optional)" description="If you’ve met the client, judge the rising sign from appearance and manner; choosing one limits the search to the times it rises. Skip this for clients you haven’t seen, such as online orders." />
+            <CardHeader title="Step 1: Moon Sign" description="The Moon moves about 13° a day, so on some dates it changes sign. Judge the Moon sign from the client’s emotional nature and needs; this works for clients you haven’t met." />
+            <CardBody className="space-y-2 pt-0">
+              {!moonSpans ? (
+                <p className="flex items-center gap-2 text-[12.5px] text-muted"><Loader2 className="size-4 animate-spin" /> Finding the Moon’s sign…</p>
+              ) : moonSpans.length === 0 ? (
+                <p className="text-[12.5px] text-muted">The Moon’s sign couldn’t be calculated.</p>
+              ) : moonSpans.length === 1 ? (
+                <p className="text-[12.5px]"><span className="font-medium text-ink"><span className="glyph mr-1" aria-hidden>{SIGNS[moonSpans[0]!.sign]!.glyph}</span>Moon in {SIGNS[moonSpans[0]!.sign]!.name} All Day.</span> <span className="text-muted">It doesn’t narrow the time on this date. {MOON[moonSpans[0]!.sign]}</span></p>
+              ) : (
+                <>
+                  <ul className="divide-y divide-line rounded-lg border border-line">
+                    {moonSpans.map((x) => {
+                      const on = pickedMoon.includes(x.sign);
+                      return (
+                        <li key={`${x.sign}-${x.from}`}>
+                          <button type="button" aria-pressed={on} onClick={() => pickMoon(x.sign)} className={cn("w-full px-3 py-1.5 text-left text-[12.5px]", on ? "bg-accent/10" : "hover:bg-canvas-2")}>
+                            <span className="flex items-baseline justify-between gap-2">
+                              <span className={cn("font-medium", on ? "text-accent" : "text-ink")}><span className="glyph mr-1" aria-hidden>{SIGNS[x.sign]!.glyph}</span>Moon in {SIGNS[x.sign]!.name}{recordedMoon === x && <span className="ml-1.5 font-normal text-muted">(Recorded Time)</span>}</span>
+                              <span className="shrink-0 tabular-nums text-muted">{fmtClock(x.from)}–{fmtClock(x.to)}</span>
+                            </span>
+                            <span className="mt-0.5 block text-muted">{MOON[x.sign]}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <p className="text-[11.5px] text-muted">The Moon changes sign at {fmtClock(moonSpans[1]!.from)} on this date.</p>
+                </>
+              )}
+              {moonSpans && moonSpans.length > 0 && (
+                <Breakdown title="Moon Sign Guide">
+                  <BTable head={["Moon Sign", "Emotional Nature and Needs"]} rows={SIGNS.map((g, i) => [g.name, MOON[i]!])} />
+                </Breakdown>
+              )}
+            </CardBody>
+          </Card>
+
+          <Card>
+            <CardHeader title="Step 2: Rising Sign (Optional)" description="If you’ve met the client, judge the rising sign from appearance and manner; choosing one limits the search to the times it rises. Skip this for clients you haven’t seen, such as online orders." />
             <CardBody className="space-y-2 pt-0">
               {!spans ? (
                 <p className="flex items-center gap-2 text-[12.5px] text-muted"><Loader2 className="size-4 animate-spin" /> Finding rising times…</p>
@@ -182,7 +250,7 @@ export default function RectifyPage() {
           </Card>
 
           <Card>
-            <CardHeader title="Step 2: Life Events" description="Dated events with known dates. Five or more spread across life give the clearest result." />
+            <CardHeader title="Step 3: Life Events" description="Dated events with known dates. Five or more spread across life give the clearest result." />
             <CardBody className="space-y-3 pt-0">
               <div className="grid grid-cols-[1fr_auto] gap-2">
                 <Input type="date" aria-label="Event date" value={draft.date} max={TODAY} min={b.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} />
@@ -221,7 +289,7 @@ export default function RectifyPage() {
           </Card>
 
           <Card>
-            <CardHeader title="Step 3: Search Window" description={`On ${fmtDate(b.date)}, local time at the birthplace.${picked.length ? ` Only times with ${picked.map((x) => SIGNS[x]!.name).join(" or ")} rising are tested.` : ""}`} />
+            <CardHeader title="Step 4: Search Window" description={`On ${fmtDate(b.date)}, local time at the birthplace.${pickedMoon.length ? ` Only times with the Moon in ${pickedMoon.map((x) => SIGNS[x]!.name).join(" or ")}${picked.length ? " and" : ""}` : picked.length ? " Only times with" : ""}${picked.length ? ` ${picked.map((x) => SIGNS[x]!.name).join(" or ")} rising` : ""}${picked.length || pickedMoon.length ? " are tested." : ""}`} />
             <CardBody className="space-y-3 pt-0">
               <div className="grid grid-cols-3 gap-2 text-[12.5px]">
                 <label><span className="mb-1 block text-muted">From</span><Input type="time" value={from} onChange={(e) => e.target.value && setFrom(e.target.value)} /></label>
@@ -234,7 +302,7 @@ export default function RectifyPage() {
                 {known && <Button size="sm" variant="ghost" onClick={() => { setFrom(toTime(toMin(b.time) - 30)); setTo(toTime(toMin(b.time) + 30)); setStep(1); }}>±30 Minutes</Button>}
                 {known && <Button size="sm" variant="ghost" onClick={() => { setFrom(toTime(toMin(b.time) - 120)); setTo(toTime(toMin(b.time) + 120)); setStep(2); }}>±2 Hours</Button>}
                 <Button size="sm" variant="ghost" onClick={() => { setFrom("00:00"); setTo("23:59"); setStep(4); }}>Whole Day</Button>
-                {picked.length > 0 && <Button size="sm" variant="ghost" onClick={() => setPicked([])}>Clear Rising Sign</Button>}
+                {(picked.length > 0 || pickedMoon.length > 0) && <Button size="sm" variant="ghost" onClick={() => { setPicked([]); setPickedMoon([]); }}>Clear Signs</Button>}
               </div>
               <Button onClick={run} disabled={busy || sorted.length === 0 || DATA_MODE !== "server"}>
                 {busy ? <Loader2 className="animate-spin" /> : <Sparkles />} Test {Math.floor((toMin(to) - toMin(from)) / step) + 1} Candidate Times

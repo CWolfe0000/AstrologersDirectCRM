@@ -129,10 +129,18 @@ function contact(moving: number, fixed: number, orbMax: number) {
  * manner, which narrows the search to roughly the two hours it rises.
  */
 export function risingSpans(birth: BirthData, s: Pick<ChartSettings, "zodiac" | "houseSystem">) {
-  const signAt = (min: number) => {
-    const time = `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
-    return Math.floor(housesAt(zonedToUtc(`${birth.date}T${time}:00`, birth.tz || "UTC").toISOString(), birth.lat, birth.lon, s.houseSystem as HouseSystem, s.zodiac).asc / 30);
-  };
+  const utcOf = (min: number) => zonedToUtc(`${birth.date}T${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}:00`, birth.tz || "UTC").toISOString();
+  return spansOf((min) => Math.floor(housesAt(utcOf(min), birth.lat, birth.lon, s.houseSystem as HouseSystem, s.zodiac).asc / 30));
+}
+
+/** The Moon's sign through the birth date: one span, or two when it changes sign that day. */
+export function moonSpans(birth: BirthData, s: Pick<ChartSettings, "zodiac">) {
+  const utcOf = (min: number) => zonedToUtc(`${birth.date}T${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}:00`, birth.tz || "UTC").toISOString();
+  return spansOf((min) => Math.floor(bodiesAt(utcOf(min), { zodiac: s.zodiac, bodies: ["moon"] }).moon!.lon / 30));
+}
+
+/** Spans of the day (local minutes) over which signAt stays the same, found every 2 minutes and refined to the minute. */
+function spansOf(signAt: (min: number) => number) {
   const spans: { sign: number; from: string; to: string }[] = [];
   const hhmm = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
   let start = 0, cur = signAt(0), prev = 0;
@@ -150,7 +158,7 @@ export function risingSpans(birth: BirthData, s: Pick<ChartSettings, "zodiac" | 
   return spans;
 }
 
-export function rectify(birth: BirthData, events: RectifyEvent[], from: string, to: string, stepMin: number, s: Pick<ChartSettings, "zodiac" | "houseSystem">, ascSigns?: number[]) {
+export function rectify(birth: BirthData, events: RectifyEvent[], from: string, to: string, stepMin: number, s: Pick<ChartSettings, "zodiac" | "houseSystem">, ascSigns?: number[], moonSigns?: number[]) {
   const [fh, fm] = from.split(":").map(Number), [th, tm] = to.split(":").map(Number);
   const start = fh! * 60 + fm!, end = th! * 60 + tm!;
   // Transits at each event (noon UTC): the same for every candidate.
@@ -166,6 +174,8 @@ export function rectify(birth: BirthData, events: RectifyEvent[], from: string, 
     // Only times when the chosen rising sign(s) rise.
     if (ascSigns?.length && !ascSigns.includes(Math.floor(h.asc / 30))) continue;
     const natal = bodiesAt(utc, { zodiac: s.zodiac, bodies: NATAL });
+    // Only times when the Moon is in the chosen sign(s).
+    if (moonSigns?.length && !moonSigns.includes(Math.floor(natal.moon!.lon / 30))) continue;
     const eps = obliquityAt(utc);
     // For primary directions: true equatorial positions, and tropical longitudes for the square points.
     const eq = Object.fromEntries(equatorialAt(utc, NATAL).bodies.map((x) => [x.id, x]));

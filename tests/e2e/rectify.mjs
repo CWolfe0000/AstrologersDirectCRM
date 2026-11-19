@@ -62,10 +62,27 @@ const only = (await post("/api/v1/astro/rectify", { birth, events, from: "05:42"
 assert.ok(only.curve.every((x) => Math.floor(x.asc / 30) === own.sign));
 assert.ok(only.curve.length < 241);
 
+step("Moon sign: spans cover the day; a chosen Moon sign limits the search");
+// The Moon changes sign every two to three days: find a date in early 1990 when it does.
+let mb, ms;
+for (let d = 1; d <= 4; d++) {
+  mb = { ...birth, date: `1990-01-0${d}` };
+  ms = (await post("/api/v1/astro/rising", { birth: mb, settings: { zodiac: "tropical", houseSystem: "placidus" } })).body.moon;
+  if (ms.length > 1) break;
+}
+assert.equal(ms.length, 2);
+assert.equal(ms[0].from, "00:00");
+assert.equal(ms.at(-1).to, "23:59");
+for (let i = 1; i < ms.length; i++) assert.equal(mins(ms[i].from), mins(ms[i - 1].to) + 1);
+{
+  const r2 = (await post("/api/v1/astro/rectify", { birth: mb, events, from: "00:00", to: "23:58", stepMin: 2, settings: { zodiac: "tropical", houseSystem: "placidus" }, moonSigns: [ms[1].sign] })).body.rectify;
+  assert.ok(r2.curve.every((x) => x.time >= ms[1].from && x.time <= ms[1].to));
+}
+
 step("UI: rising sign chosen, events saved, search run, time applied");
 await page.goto(BASE + "/app/clients/c1/rectify");
-await page.getByRole("button", { name: /\(Recorded Time\)/ }).click();
-assert.equal(await page.getByRole("button", { name: /\(Recorded Time\)/ }).getAttribute("aria-pressed"), "true");
+await page.getByRole("button", { name: /Rising.*\(Recorded Time\)/ }).click();
+assert.equal(await page.getByRole("button", { name: /Rising.*\(Recorded Time\)/ }).getAttribute("aria-pressed"), "true");
 await page.getByText(/Only times with .* rising are tested/).waitFor();
 for (const e of events.slice(0, 3)) {
   await page.getByLabel("Event date").fill(e.date);
