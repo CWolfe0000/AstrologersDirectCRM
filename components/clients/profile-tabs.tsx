@@ -182,9 +182,9 @@ export function OverviewTab({ client, person, onTab }: { client: Client; person:
 // ——— Charts ———————————————————————————————————————————————————————————
 const CHART_GROUPS: { title: string; types: ChartRecord["type"][]; desc: string }[] = [
   { title: "Natal", types: ["natal"], desc: "Birth charts for the client and associated people" },
-  { title: "Transits & Timing", types: ["transits", "progressions", "solar-arc", "solar-return"], desc: "Saved timing charts" },
+  { title: "Transits & Timing", types: ["transits", "progressions", "solar-arc", "solar-return", "lunar-return", "planetary-return"], desc: "Saved timing charts and returns" },
   { title: "Synastry", types: ["synastry"], desc: "Relationship comparison bi-wheels" },
-  { title: "Composite", types: ["composite"], desc: "Midpoint composite charts" },
+  { title: "Composite & Davison", types: ["composite", "davison"], desc: "Relationship charts" },
   { title: "Horary", types: ["horary"], desc: "Charts for the moment a question was asked" },
   { title: "Elections", types: ["election"], desc: "Chosen times to begin something" },
   { title: "Astrocartography", types: ["astrocartography"], desc: "Planetary lines on the world map" },

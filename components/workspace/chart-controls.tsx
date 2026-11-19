@@ -108,7 +108,7 @@ export function ChartControls({
         </div>
         {meta.timing && (
           <label className="mt-3 block">
-            <span className="mb-1 block text-[12px] text-muted">{chart.type === "solar-return" ? "Return date" : "Reference date"}</span>
+            <span className="mb-1 block text-[12px] text-muted">{chart.type === "solar-return" ? "Return date" : chart.type === "lunar-return" || chart.type === "planetary-return" ? "Next return on or after" : "Reference date"}</span>
             <Input type="date" value={refDate ?? ""} onChange={(e) => e.target.value && onRefDate(e.target.value)} />
           </label>
         )}

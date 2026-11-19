@@ -30,7 +30,13 @@ export const SwissApiEngine: AstrologyEngine = {
   async acg(birth, settings) {
     return (await api<{ acg: import("./acg").AcgData }>("/api/v1/astro/acg", { body: { birth, settings } })).acg;
   },
-  async solarReturn(birth, year, settings) {
-    return (await api<Resp>("/api/v1/astro/solar-return", { body: { birth, year, settings } })).points;
+  async solarReturn(birth, year, settings, place) {
+    return (await api<Resp>("/api/v1/astro/solar-return", { body: { birth, year, settings, ...(place ? { place: { lat: place.lat, lon: place.lon } } : {}) } })).points;
+  },
+  async planetReturn(birth, body, from, settings, place) {
+    return (await api<Resp>("/api/v1/astro/return", { body: { birth, body, from, settings, ...(place ? { place: { lat: place.lat, lon: place.lon } } : {}) } })).points;
+  },
+  async davison(a, b, settings) {
+    return (await api<Resp>("/api/v1/astro/davison", { body: { a, b, settings } })).points;
   },
 };

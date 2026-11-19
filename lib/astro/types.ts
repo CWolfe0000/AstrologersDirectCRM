@@ -111,5 +111,9 @@ export interface AstrologyEngine {
   /** Solar arc directions for a target date. */
   solarArc(birth: BirthData, targetDate: string, settings: ChartSettings): Promise<ChartPoints>;
   /** Solar return for a year (engines without it fall back to a birthday chart). */
-  solarReturn?(birth: BirthData, year: number, settings: ChartSettings): Promise<ChartPoints>;
+  solarReturn?(birth: BirthData, year: number, settings: ChartSettings, place?: { lat: number; lon: number }): Promise<ChartPoints>;
+  /** A body's return on or after a date (lunar, Saturn, Jupiter …), at the birthplace or a chosen place. */
+  planetReturn?(birth: BirthData, body: string, from: string, settings: ChartSettings, place?: { lat: number; lon: number }): Promise<ChartPoints & { utc?: string }>;
+  /** The Davison relationship chart for two births. */
+  davison?(a: BirthData, b: BirthData, settings: ChartSettings): Promise<ChartPoints & { utc?: string }>;
 }

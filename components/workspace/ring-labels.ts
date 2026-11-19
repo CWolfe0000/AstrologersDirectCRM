@@ -14,7 +14,11 @@ export function ringLabels(chart: ChartRecord, people: Person[]) {
     case "composite":
       return { inner: "Composite", outer: "" };
     case "solar-return":
+    case "lunar-return":
+    case "planetary-return":
       return { inner: "Return", outer: "" };
+    case "davison":
+      return { inner: "Davison", outer: "" };
     default:
       return { inner: "Natal", outer: "" };
   }

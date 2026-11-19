@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Info } from "lucide-react";
 import { isPremiumChart } from "@/lib/plan";
 import { PremiumBadge, PremiumNote, usePremium } from "@/components/plan/premium";
-import { CHART_TYPES, HOUSE_SYSTEMS, ZODIACS, chartTypeMeta, type HouseSystem, type ZodiacType } from "@/lib/astro";
+import { BODIES, CHART_TYPES, HOUSE_SYSTEMS, ZODIACS, chartTypeMeta, type HouseSystem, type ZodiacType } from "@/lib/astro";
 import type { ChartRecord, ChartType, ElectionData } from "@/lib/data/types";
 import { useStore, personName } from "@/lib/store";
 import { cn, fmtClock, fmtDate, monthName, nowLocal, TODAY } from "@/lib/utils";
@@ -46,6 +46,9 @@ function NewChart() {
   const [personA, setPersonA] = React.useState(params.get("client") ?? "c1");
   const [personB, setPersonB] = React.useState(params.get("with") ?? "");
   const [refDate, setRefDate] = React.useState(TODAY);
+  // Returns: which planet, and where to cast it (blank = the birthplace).
+  const [returnBody, setReturnBody] = React.useState<NonNullable<ChartRecord["returnBody"]>>("saturn");
+  const [returnPlace, setReturnPlace] = React.useState<PlaceValue | null>(null);
   const [houseSystem, setHouseSystem] = React.useState<HouseSystem>(defaults.houseSystem);
   const [zodiac, setZodiac] = React.useState<ZodiacType>(defaults.zodiac);
   const [title, setTitle] = React.useState("");
@@ -62,6 +65,7 @@ function NewChart() {
   const [election, setElection] = React.useState<ElectionData | null>(null);
   const [electionPurpose, setElectionPurpose] = React.useState("");
   const isMap = type === "astrocartography";
+  const isReturn = type === "solar-return" || type === "lunar-return" || type === "planetary-return";
   // Horary is traditionally read with Regiomontanus houses.
   React.useEffect(() => {
     setHouseSystem(isHorary || isElection ? "regiomontanus" : defaults.houseSystem);
@@ -115,10 +119,13 @@ function NewChart() {
     }
     if (meta.people === 2 && b) return `${a.firstName} & ${b.firstName} — ${meta.short}`;
     if (type === "natal") return `${name(personA)} — Natal`;
-    if (type === "solar-return") return `${a.firstName} — Solar Return ${refDate.slice(0, 4)}`;
+    if (type === "solar-return") return `${a.firstName} — Solar Return ${refDate.slice(0, 4)}${returnPlace ? ` (${returnPlace.place.split(",")[0]})` : ""}`;
+    if (type === "lunar-return") return `${a.firstName} — Lunar Return ${monthName(+refDate.slice(5, 7) - 1)} ${refDate.slice(0, 4)}`;
+    if (type === "planetary-return") return `${a.firstName} — ${BODIES[returnBody].name} Return`;
+    if (type === "davison" && b) return `${a.firstName} & ${b.firstName} — Davison`;
     return `${a.firstName} — ${meta.short} ${monthName(+refDate.slice(5, 7) - 1)} ${refDate.slice(0, 4)}`;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [personA, personB, type, refDate, people, question, electionPurpose, election]);
+  }, [personA, personB, type, refDate, people, question, electionPurpose, election, returnBody, returnPlace]);
   React.useEffect(() => {
     if (!titleTouched) setTitle(autoTitle);
   }, [autoTitle, titleTouched]);
@@ -131,13 +138,15 @@ function NewChart() {
       personIds: meta.people === 2 ? [personA, personB].filter(Boolean) : [personA],
       clientId,
       refDate: meta.timing ? refDate : undefined,
+      returnBody: type === "planetary-return" ? returnBody : undefined,
+      returnPlace: isReturn && returnPlace ? returnPlace : undefined,
       election: isElection && election ? { ...election, purpose: electionPurpose.trim() } : undefined,
       horary: isHorary && askedPlace ? { question: question.trim() || "…", at: `${askedDate}T${askedTime}`, ...askedPlace } : undefined,
       settings: { houseSystem, zodiac },
       createdAt: "",
       updatedAt: "",
     }),
-    [title, type, personA, personB, clientId, refDate, houseSystem, zodiac, meta, isHorary, askedPlace, question, askedDate, askedTime, isElection, election, electionPurpose],
+    [title, type, personA, personB, clientId, refDate, houseSystem, zodiac, meta, isHorary, askedPlace, question, askedDate, askedTime, isElection, election, electionPurpose, returnBody, returnPlace, isReturn],
   );
   const view = useChartView((isHorary && !askedPlace) || (isElection && !election) ? undefined : draft);
   const valid =
@@ -249,9 +258,24 @@ function NewChart() {
                   </Select>
                 </Field>
               )}
+              {type === "planetary-return" && (
+                <Field label="Returning Planet">
+                  <Select value={returnBody} onChange={(e) => setReturnBody(e.target.value as typeof returnBody)}>
+                    {(["saturn", "jupiter", "mars", "venus", "mercury", "chiron", "node", "uranus"] as const).map((b) => <option key={b} value={b}>{BODIES[b].name}</option>)}
+                  </Select>
+                </Field>
+              )}
               {meta.timing && (
-                <Field label={type === "solar-return" ? "Return year (date within year)" : "Reference date"}>
+                <Field
+                  label={type === "solar-return" ? "Return year (date within year)" : isReturn ? "Next Return On or After" : "Reference date"}
+                  hint={type === "lunar-return" ? "The Moon returns about every 27 days." : type === "planetary-return" ? "Finds the first exact return from this date." : undefined}
+                >
                   <Input type="date" value={refDate} onChange={(e) => setRefDate(e.target.value)} />
+                </Field>
+              )}
+              {isReturn && (
+                <Field label="Cast For" optional hint="Leave blank for the birthplace, or choose where they’ll be for a relocated return." className="sm:col-span-2">
+                  <PlaceLookup value={returnPlace} onChange={setReturnPlace} id="return-place" />
                 </Field>
               )}
               {subject && !isHorary && !isElection && (

@@ -27,7 +27,7 @@ export interface Client {
   summary?: string;
 }
 
-export type ChartType = "natal" | "synastry" | "composite" | "transits" | "progressions" | "solar-arc" | "solar-return" | "horary" | "astrocartography" | "election";
+export type ChartType = "natal" | "synastry" | "composite" | "davison" | "transits" | "progressions" | "solar-arc" | "solar-return" | "lunar-return" | "planetary-return" | "horary" | "astrocartography" | "election";
 
 /** An elected moment: what it's for, when and where, and the rules it was chosen by. */
 export interface ElectionData {
@@ -70,6 +70,10 @@ export interface ChartRecord {
   horary?: HoraryData;
   /** Electional charts: the chosen moment and how it was chosen. personIds holds the client. */
   election?: ElectionData;
+  /** Planetary returns: the returning planet. */
+  returnBody?: "sun" | "moon" | "mercury" | "venus" | "mars" | "jupiter" | "saturn" | "uranus" | "chiron" | "node";
+  /** Returns cast for somewhere other than the birthplace (relocated returns). */
+  returnPlace?: { place: string; lat: number; lon: number; tz: string };
   settings?: Partial<ChartSettings>;
   createdAt: string;
   updatedAt: string;

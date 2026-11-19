@@ -240,7 +240,14 @@ function Workspace() {
                 <span className="font-medium text-ink-3">{personName(p)}</span> · {fmtDate(p!.birth.date)}, {fmtClock(p!.birth.time)} · {p!.birth.place.split(",")[0]}
               </span>
             ))}
-            {meta.timing && refDate && <span>Reference: {fmtDate(refDate)}</span>}
+            {meta.timing && refDate && !view.moment && <span>Reference: {fmtDate(refDate)}</span>}
+            {view.moment && (
+              <span>
+                {chart.type === "davison" ? "Cast for" : "Exact return"}{" "}
+                {new Date(view.moment).toLocaleString("en-US", { timeZone: chart.type === "davison" ? "UTC" : chart.returnPlace?.tz || subjects[0]?.birth.tz || "UTC", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short" })}
+                {chart.returnPlace ? ` · ${chart.returnPlace.place}` : ""}
+              </span>
+            )}
             {chart.type !== "astrocartography" && (
               <span>
                 {HOUSE_SYSTEMS.find((h) => h.id === s.houseSystem)?.name} · {ZODIACS.find((z) => z.id === s.zodiac)?.name}

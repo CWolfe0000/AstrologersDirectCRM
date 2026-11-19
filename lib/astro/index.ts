@@ -26,10 +26,13 @@ export const CHART_TYPES: { id: ChartType; name: string; short: string; people: 
   { id: "natal", name: "Natal", short: "Natal", people: 1, timing: false, description: "Birth chart for one person." },
   { id: "synastry", name: "Synastry", short: "Synastry", people: 2, timing: false, description: "Bi-wheel comparing two natal charts." },
   { id: "composite", name: "Midpoint Composite", short: "Composite", people: 2, timing: false, description: "Single chart of midpoints between two natal charts." },
+  { id: "davison", name: "Davison Relationship", short: "Davison", people: 2, timing: false, description: "A real chart for the midpoint in time and place between two births." },
   { id: "transits", name: "Transits", short: "Transits", people: 1, timing: true, description: "Current or future planetary positions against the natal chart." },
   { id: "progressions", name: "Secondary Progressions", short: "Progressions", people: 1, timing: true, description: "Day-for-a-year progressed positions." },
   { id: "solar-arc", name: "Solar Arc Directions", short: "Solar Arcs", people: 1, timing: true, description: "Natal chart directed by the solar arc." },
   { id: "solar-return", name: "Solar Return", short: "Solar Return", people: 1, timing: true, description: "Chart for the Sun's return to its natal position." },
+  { id: "lunar-return", name: "Lunar Return", short: "Lunar Return", people: 1, timing: true, description: "Chart for the Moon's monthly return to its natal position." },
+  { id: "planetary-return", name: "Planetary Return", short: "Planetary Return", people: 1, timing: true, description: "Saturn, Jupiter or another planet's return to its natal position." },
   { id: "horary", name: "Horary", short: "Horary", people: 1, timing: false, description: "Chart for the moment and place a question is asked." },
   { id: "election", name: "Electional", short: "Election", people: 1, timing: false, description: "Find the best time to begin something, then chart it." },
   { id: "astrocartography", name: "Astrocartography", short: "Astrocartography", people: 1, timing: false, description: "World map of where each planet rises, sets and culminates." },
@@ -52,6 +55,8 @@ export interface ChartView {
   outer?: ChartPoints;
   aspects: Aspect[];
   settings: ChartSettings;
+  /** Returns and Davison charts: the moment the chart is cast for (UTC). */
+  moment?: string;
 }
 
 function midpoint(a: number, b: number) {
@@ -158,12 +163,25 @@ export async function buildChart(chart: ChartRecord, people: Person[], overrides
     case "solar-return": {
       const yr = ref.slice(0, 4);
       inner = engine.solarReturn
-        ? await engine.solarReturn(pa.birth, Number(yr), settings)
+        ? await engine.solarReturn(pa.birth, Number(yr), settings, chart.returnPlace)
         : await engine.natal({ ...pa.birth, date: `${yr}${pa.birth.date.slice(4)}` }, settings);
       break;
     }
+    case "lunar-return":
+    case "planetary-return": {
+      if (!engine.planetReturn) throw new Error("Returns need the Swiss Ephemeris engine.");
+      inner = await engine.planetReturn(pa.birth, chart.type === "lunar-return" ? "moon" : chart.returnBody ?? "saturn", ref, settings, chart.returnPlace);
+      break;
+    }
+    case "davison": {
+      if (!pb) break;
+      if (!engine.davison) throw new Error("Davison charts need the Swiss Ephemeris engine.");
+      inner = await engine.davison(pa.birth, pb.birth, settings);
+      break;
+    }
   }
-  return { engine: engine.info, type: chart.type, inner, outer, aspects: computeAspects(inner, settings, outer, { outerAngles: chart.type === "synastry" }), settings };
+  const moment = (inner as ChartPoints & { utc?: string }).utc;
+  return { engine: engine.info, type: chart.type, inner, outer, aspects: computeAspects(inner, settings, outer, { outerAngles: chart.type === "synastry" }), settings, ...(moment ? { moment } : {}) };
 }
 
 /** Natal positions only — used for quick previews & thumbnails. */

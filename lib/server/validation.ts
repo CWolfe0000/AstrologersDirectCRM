@@ -90,10 +90,12 @@ const chart = z
   .object({
     id,
     title: str(200),
-    type: z.enum(["natal", "synastry", "composite", "transits", "progressions", "solar-arc", "solar-return", "horary", "astrocartography", "election"]),
+    type: z.enum(["natal", "synastry", "composite", "davison", "transits", "progressions", "solar-arc", "solar-return", "lunar-return", "planetary-return", "horary", "astrocartography", "election"]),
     personIds: z.array(id).min(1).max(2),
     clientId: id,
     refDate: opt(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)),
+    returnBody: opt(z.enum(["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "chiron", "node"])),
+    returnPlace: opt(z.object({ place: str(200), lat: z.number().min(-90).max(90), lon: z.number().min(-180).max(180), tz: str(80) }).strict()),
     election: opt(
       z
         .object({

@@ -3,6 +3,7 @@ import type { BirthData, BodyId, ChartPoints, ChartSettings, HouseSystem } from 
 import { houseOf } from "@/lib/astro/techniques/aspects";
 import { secondaryProgressions, solarArcDirections, solarReturn } from "@/lib/astro/techniques/directions";
 import { zonedToUtc } from "@/lib/timezones";
+import { davisonMoment, findReturn } from "@/lib/astro/techniques/returns";
 import { SWISS_BODIES, bodiesAt, equatorialAt, housesAt, swissEphemeris } from "./swiss";
 
 /** Birth data (local wall time + IANA zone) → UTC instant. */
@@ -32,11 +33,30 @@ function withChartPoints(bodies: Partial<Record<BodyId, { lon: number; speed: nu
   return out;
 }
 
-export function natalChart(birth: BirthData, s: ChartSettings): ChartPoints & { houseFallback: boolean } {
-  const utc = birthUtc(birth);
-  const h = housesAt(utc, birth.lat, birth.lon, s.houseSystem, s.zodiac);
+/** A full chart (houses, bodies and chart points) for a moment and place. */
+function chartAt(utc: string, lat: number, lon: number, s: ChartSettings): ChartPoints & { houseFallback: boolean } {
+  const h = housesAt(utc, lat, lon, s.houseSystem, s.zodiac);
   const bodies = withChartPoints(bodiesAt(utc, { zodiac: s.zodiac, bodies: wanted(s) }), h, s);
   return { bodies: toPoints(bodies, h.cusps, s.bodies), cusps: h.cusps, asc: h.asc, mc: h.mc, houseFallback: h.fallback };
+}
+
+export function natalChart(birth: BirthData, s: ChartSettings): ChartPoints & { houseFallback: boolean } {
+  return chartAt(birthUtc(birth), birth.lat, birth.lon, s);
+}
+
+/** A planet's return to its natal longitude, on or after a date, cast for the birthplace or a chosen place. */
+export async function returnChart(birth: BirthData, body: BodyId, from: string, s: ChartSettings, place?: { lat: number; lon: number }) {
+  const natal = bodiesAt(birthUtc(birth), { zodiac: s.zodiac, bodies: [body] })[body];
+  if (!natal) throw new RangeError("That body can’t be used for a return.");
+  const utc = await findReturn(swissEphemeris(s.zodiac), body, natal.lon, Date.parse(`${from}T00:00:00Z`));
+  const where = place ?? birth;
+  return { ...chartAt(utc, where.lat, where.lon, s), utc };
+}
+
+/** The Davison relationship chart: the midpoint in time and place between two births. */
+export function davisonChart(a: BirthData, b: BirthData, s: ChartSettings) {
+  const m = davisonMoment({ utc: birthUtc(a), lat: a.lat, lon: a.lon }, { utc: birthUtc(b), lat: b.lat, lon: b.lon });
+  return { ...chartAt(m.utc, m.lat, m.lon, s), utc: m.utc, place: { lat: m.lat, lon: m.lon } };
 }
 
 /** Astrocartography inputs for a birth: each body's RA/declination and the sidereal time. */
