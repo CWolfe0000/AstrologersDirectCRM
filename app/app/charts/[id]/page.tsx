@@ -28,6 +28,7 @@ import { AiAssistant } from "@/components/workspace/ai-assistant";
 import { ringLabels } from "@/components/workspace/ring-labels";
 import { useHydrated } from "@/components/workspace/use-hydrated";
 import { TraditionalPanel } from "@/components/workspace/traditional-panel";
+import { PromisePanel } from "@/components/workspace/promise-panel";
 import { zonedToUtc } from "@/lib/timezones";
 
 const PRINT_CSS = `@media print {
@@ -397,6 +398,7 @@ function Workspace() {
                 <TabsTrigger value="aspects" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">Aspects</TabsTrigger>
                 <TabsTrigger value="grid" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">Grid</TabsTrigger>
                 <TabsTrigger value="houses" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">{chart.type === "synastry" ? "Overlays" : "Houses"}</TabsTrigger>
+                {chart.type !== "synastry" && <TabsTrigger value="promise" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">Promise</TabsTrigger>}
                 <TabsTrigger value="condition" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">{natalBirthUtc ? "Traditional" : "Condition"}</TabsTrigger>
                 <TabsTrigger value="observations" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">
                   Notes{obsCount > 0 && <span className="text-[10.5px] text-accent">{obsCount}</span>}
@@ -428,6 +430,11 @@ function Workspace() {
                     <RulershipTable view={view} rulership={s.rulership ?? "traditional"} />
                   )}
                 </TabsContent>
+                {chart.type !== "synastry" && (
+                  <TabsContent value="promise">
+                    <PromisePanel view={view} houseSystem={s.houseSystem} />
+                  </TabsContent>
+                )}
                 <TabsContent value="condition">
                   {natalBirthUtc ? <TraditionalPanel view={view} birthUtc={natalBirthUtc} /> : <ConditionTable view={view} />}
                 </TabsContent>
