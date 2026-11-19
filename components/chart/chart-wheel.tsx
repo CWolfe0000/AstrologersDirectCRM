@@ -110,7 +110,7 @@ export function ChartWheel({ view, compact, className, selected, onSelect, highl
         <line x1={t1x} y1={t1y} x2={t2x} y2={t2y} stroke={color} strokeWidth={1.2} />
         {!compact && <line x1={t2x} y1={t2y} x2={lx} y2={ly} stroke={color} strokeOpacity={0.18} strokeWidth={0.8} />}
         {active && <circle cx={gx} cy={gy} r={compact ? 11 : 14} fill={ring === "outer" ? "#F6EEF0" : "#EFF3F0"} stroke={color} strokeOpacity={0.4} />}
-        <text x={gx} y={gy} textAnchor="middle" dominantBaseline="central" className="glyph" fontSize={compact ? 28 : 22} fill={color}>
+        <text x={gx} y={gy} textAnchor="middle" dominantBaseline="central" className={b.id === "vertex" ? undefined : "glyph"} fontWeight={b.id === "vertex" ? 600 : undefined} fontFamily={b.id === "vertex" ? "Inter Variable, Inter, sans-serif" : undefined} fontSize={b.id === "vertex" ? (compact ? 16 : 13) : compact ? 28 : 22} fill={color}>
           {BODIES[b.id].glyph}
         </text>
         {!compact && showDegrees && (

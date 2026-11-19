@@ -3,7 +3,7 @@ import type { BirthData, BodyId, ChartPoints, ChartSettings, HouseSystem } from 
 import { houseOf } from "@/lib/astro/techniques/aspects";
 import { secondaryProgressions, solarArcDirections, solarReturn } from "@/lib/astro/techniques/directions";
 import { zonedToUtc } from "@/lib/timezones";
-import { bodiesAt, equatorialAt, housesAt, swissEphemeris } from "./swiss";
+import { SWISS_BODIES, bodiesAt, equatorialAt, housesAt, swissEphemeris } from "./swiss";
 
 /** Birth data (local wall time + IANA zone) → UTC instant. */
 export function birthUtc(b: BirthData) {
@@ -17,10 +17,26 @@ function toPoints(bodies: Partial<Record<BodyId, { lon: number; speed: number }>
     .map((id) => ({ id, lon: bodies[id]!.lon, speed: bodies[id]!.speed, house: houseOf(bodies[id]!.lon, cusps) }));
 }
 
+/** The bodies to calculate: the usual planets plus any optional points the settings ask for. */
+const wanted = (s: ChartSettings) => [...new Set([...SWISS_BODIES, ...s.bodies])];
+
+/** Vertex and Part of Fortune: points that need the chart's houses. Fortune reverses by night (Sun below the horizon). */
+function withChartPoints(bodies: Partial<Record<BodyId, { lon: number; speed: number }>>, h: { cusps: number[]; asc: number; vertex: number }, s: ChartSettings) {
+  const out = { ...bodies };
+  if (s.bodies.includes("vertex")) out.vertex = { lon: h.vertex, speed: 0 };
+  if (s.bodies.includes("fortune") && bodies.sun && bodies.moon) {
+    const day = houseOf(bodies.sun.lon, h.cusps) >= 7;
+    const lon = day ? h.asc + bodies.moon.lon - bodies.sun.lon : h.asc + bodies.sun.lon - bodies.moon.lon;
+    out.fortune = { lon: ((lon % 360) + 360) % 360, speed: 0 };
+  }
+  return out;
+}
+
 export function natalChart(birth: BirthData, s: ChartSettings): ChartPoints & { houseFallback: boolean } {
   const utc = birthUtc(birth);
   const h = housesAt(utc, birth.lat, birth.lon, s.houseSystem, s.zodiac);
-  return { bodies: toPoints(bodiesAt(utc, { zodiac: s.zodiac }), h.cusps, s.bodies), cusps: h.cusps, asc: h.asc, mc: h.mc, houseFallback: h.fallback };
+  const bodies = withChartPoints(bodiesAt(utc, { zodiac: s.zodiac, bodies: wanted(s) }), h, s);
+  return { bodies: toPoints(bodies, h.cusps, s.bodies), cusps: h.cusps, asc: h.asc, mc: h.mc, houseFallback: h.fallback };
 }
 
 /** Astrocartography inputs for a birth: each body's RA/declination and the sidereal time. */
@@ -30,7 +46,7 @@ export function acgChart(birth: BirthData, bodies: BodyId[]) {
 
 /** Moving bodies at a moment, placed in a reference chart's houses (transit bi-wheels). */
 export function positionsAt(utc: string, s: ChartSettings, reference?: Pick<ChartPoints, "cusps" | "asc" | "mc">): ChartPoints {
-  const bodies = bodiesAt(utc, { zodiac: s.zodiac });
+  const bodies = bodiesAt(utc, { zodiac: s.zodiac, bodies: wanted(s).filter((b) => b !== "vertex" && b !== "fortune") });
   const cusps = reference?.cusps ?? Array.from({ length: 12 }, (_, i) => i * 30);
   return { bodies: toPoints(bodies, cusps, s.bodies), cusps, asc: reference?.asc ?? 0, mc: reference?.mc ?? 0 };
 }

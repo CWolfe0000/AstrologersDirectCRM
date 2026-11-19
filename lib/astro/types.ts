@@ -9,7 +9,8 @@
 
 export type BodyId =
   | "sun" | "moon" | "mercury" | "venus" | "mars" | "jupiter" | "saturn"
-  | "uranus" | "neptune" | "pluto" | "node" | "chiron" | "asc" | "mc";
+  | "uranus" | "neptune" | "pluto" | "node" | "chiron" | "asc" | "mc"
+  | "southnode" | "ceres" | "pallas" | "juno" | "vesta" | "lilith" | "vertex" | "fortune";
 
 export type SignId =
   | "aries" | "taurus" | "gemini" | "cancer" | "leo" | "virgo"

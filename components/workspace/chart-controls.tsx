@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bookmark, RotateCcw, Plus } from "lucide-react";
-import { ASPECTS, BODIES, HOUSE_SYSTEMS, PLANET_IDS, ZODIACS, chartTypeMeta, type AspectId, type BodyId, type ChartSettings, type HouseSystem, type ZodiacType } from "@/lib/astro";
+import { ASPECTS, BODIES, EXTRA_POINT_IDS, HOUSE_SYSTEMS, PLANET_IDS, ZODIACS, chartTypeMeta, type AspectId, type BodyId, type ChartSettings, type HouseSystem, type ZodiacType } from "@/lib/astro";
 import type { ChartRecord } from "@/lib/data/types";
 import { useStore, personName } from "@/lib/store";
 import { cn, fmtClock, fmtDate } from "@/lib/utils";
@@ -14,7 +14,7 @@ import { Checkbox, Input, Select } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 
 const ALL_ASPECTS = Object.keys(ASPECTS) as AspectId[];
-const POINTS: BodyId[] = [...PLANET_IDS];
+const POINTS: BodyId[] = [...PLANET_IDS, ...EXTRA_POINT_IDS];
 
 function Section({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) {
   return (
@@ -139,7 +139,7 @@ export function ChartControls({
               onChange={() => onChange({ bodies: toggle(settings.bodies, b) })}
               label={
                 <span className="flex items-center gap-1.5 text-[12.5px]">
-                  <span className="glyph w-4 text-center text-[14px]">{BODIES[b].glyph}</span>
+                  <span className={b === "vertex" ? "w-4 text-center text-[10px] font-semibold" : "glyph w-4 text-center text-[14px]"}>{BODIES[b].glyph}</span>
                   {BODIES[b].name}
                 </span>
               }

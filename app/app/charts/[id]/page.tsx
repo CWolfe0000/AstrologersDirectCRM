@@ -21,7 +21,7 @@ import { HoraryPanel } from "@/components/workspace/horary-panel";
 import { ElectionPanel } from "@/components/workspace/election-panel";
 import { ChartActionsMenu } from "@/components/chart/chart-actions";
 import { ChartControls } from "@/components/workspace/chart-controls";
-import { AspectsTable, ConditionTable, PlacementsTable, RingTag, RulershipTable } from "@/components/workspace/analysis-tables";
+import { AspectsTable, ConditionTable, PatternsList, PlacementsTable, RingTag, RulershipTable } from "@/components/workspace/analysis-tables";
 import { AspectGrid, OverlaysTable } from "@/components/workspace/synastry-tables";
 import { WorkspaceObservations } from "@/components/workspace/workspace-observations";
 import { AiAssistant } from "@/components/workspace/ai-assistant";
@@ -147,7 +147,7 @@ function Workspace() {
   const controls = (
     <ChartControls
       chart={chart}
-      settings={s}
+      settings={{ ...s, ...overrides, orbs: { ...s.orbs, ...(overrides.orbs ?? {}) } }}
       onChange={(patch) => setOverrides((o) => ({ ...o, ...patch }))}
       refDate={refDate}
       onRefDate={setRefDate}
@@ -396,6 +396,7 @@ function Workspace() {
                   <PlacementsTable view={view} labels={labels} selected={selected} onSelect={setSelected} />
                 </TabsContent>
                 <TabsContent value="aspects">
+                  {!view.outer && <PatternsList view={view} onSelectBody={setSelected} />}
                   <AspectsTable view={view} labels={labels} hovered={hoverAspect} onHover={setHoverAspect} selected={selected} onSelectBody={setSelected} />
                 </TabsContent>
                 <TabsContent value="grid">

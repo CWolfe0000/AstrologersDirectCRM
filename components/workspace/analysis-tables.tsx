@@ -4,6 +4,7 @@ import * as React from "react";
 import { ASPECTS, BODIES, RULERS, SIGNS, bodyIn, degInSign, dignityOf, fmtDeg, fmtOrb, ordinal, signOf, type Aspect, type AspectId, type BodyId, type ChartView, aspectVerb } from "@/lib/astro";
 import { cn } from "@/lib/utils";
 import { rulershipReport, type Rulership } from "@/lib/astro/rulership";
+import { findPatterns } from "@/lib/astro/patterns";
 import { Segmented } from "@/components/ui/tabs";
 
 const th = "px-2 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-muted";
@@ -170,6 +171,33 @@ export function AspectsTable({
         </table>
       )}
       <p className="mt-3 text-[11.5px] text-muted">Hover a row to highlight the aspect line on the wheel. Click a planet on the wheel to filter.</p>
+    </div>
+  );
+}
+
+/** Aspect patterns found in the chart; selecting one highlights its focal point on the wheel. */
+export function PatternsList({ view, onSelectBody }: { view: ChartView; onSelectBody: (k: string | null) => void }) {
+  const patterns = React.useMemo(() => findPatterns(view.inner, view.aspects), [view]);
+  return (
+    <div className="mb-4 rounded-lg border border-line">
+      <p className="border-b border-line px-3 py-2 text-[12px] font-semibold text-ink">Aspect Patterns</p>
+      {patterns.length === 0 ? (
+        <p className="px-3 py-2 text-[12.5px] text-muted">No major patterns with the current orbs.</p>
+      ) : (
+        <ul className="divide-y divide-line/70">
+          {patterns.map((pt) => (
+            <li key={pt.kind + pt.points.join()}>
+              <button type="button" onClick={() => onSelectBody(`inner:${pt.apex ?? pt.points[0]}`)} className="flex w-full flex-wrap items-center gap-x-2 gap-y-1 px-3 py-1.5 text-left text-[12.5px] hover:bg-canvas-2">
+                <span className="font-medium text-ink">{pt.kind}</span>
+                {pt.detail && <span className="text-muted">{pt.detail}</span>}
+                <span className="ml-auto inline-flex items-center gap-1.5">
+                  {pt.points.map((id) => <span key={id} title={BODIES[id].name} className={cn(pt.apex === id && "rounded-full bg-accent-50 px-1")}><Glyph id={id} /></span>)}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

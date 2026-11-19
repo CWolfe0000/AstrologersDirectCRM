@@ -43,8 +43,10 @@ const BODY_CODES: Partial<Record<BodyId, number>> = {
   sun: C.SE_SUN, moon: C.SE_MOON, mercury: C.SE_MERCURY, venus: C.SE_VENUS, mars: C.SE_MARS,
   jupiter: C.SE_JUPITER, saturn: C.SE_SATURN, uranus: C.SE_URANUS, neptune: C.SE_NEPTUNE, pluto: C.SE_PLUTO,
   node: C.SE_TRUE_NODE, chiron: C.SE_CHIRON,
+  ceres: C.SE_CERES, pallas: C.SE_PALLAS, juno: C.SE_JUNO, vesta: C.SE_VESTA, lilith: C.SE_MEAN_APOG,
 };
-export const SWISS_BODIES = Object.keys(BODY_CODES) as BodyId[];
+/** Calculated by default (the timeline samples these many times, so the optional asteroids aren't). */
+export const SWISS_BODIES: BodyId[] = ["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto", "node", "chiron"];
 
 const HOUSE_CODES: Record<HouseSystem, string> = {
   placidus: "P", koch: "K", porphyry: "O", regiomontanus: "R", campanus: "C", equal: "E", "whole-sign": "W",
@@ -79,6 +81,11 @@ export function bodiesAt(utc: string, opts: { zodiac?: ZodiacType; bodies?: Body
     if (r.flag < 0 || !(r.flag & C.SEFLG_SWIEPH)) throw new Error(`Swiss file-backed calculation unavailable for ${id}: ${r.error || r.flag}`);
     out[id] = { lon: r.data[0], speed: r.data[3] };
   }
+  // The South Node is always opposite the (true) North Node.
+  if ((opts.bodies ?? []).includes("southnode")) {
+    const n = out.node ?? (() => { const r = sw.calc_ut(jd, C.SE_TRUE_NODE, flags); return { lon: r.data[0], speed: r.data[3] }; })();
+    out.southnode = { lon: (n.lon + 180) % 360, speed: n.speed };
+  }
   return out;
 }
 
@@ -104,7 +111,7 @@ export function obliquityAt(utc: string) {
 
 function cuspsResult(r: { flag: number; error?: string; data: { houses: number[]; points: number[] } }, system: HouseSystem) {
   if (r.flag < 0) throw new RangeError(`${system} houses are undefined here: ${r.error}`);
-  return { cusps: r.data.houses.slice(0, 12), asc: r.data.points[0]!, mc: r.data.points[1]!, ramc: r.data.points[2]! };
+  return { cusps: r.data.houses.slice(0, 12), asc: r.data.points[0]!, mc: r.data.points[1]!, ramc: r.data.points[2]!, vertex: r.data.points[3]! };
 }
 
 /**

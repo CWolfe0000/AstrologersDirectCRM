@@ -4,7 +4,7 @@ import { birthSchema, settingsSchema } from "@/lib/server/validation";
 import { birthUtc, natalChart } from "@/lib/server/astro";
 import { jdToUtc, lunationsBetween, SWISS_INFO, swissEphemeris } from "@/lib/server/swiss";
 import { convergenceTimeline, TIMELINE_ASPECTS } from "@/lib/astro/timeline";
-import { PLANET_IDS } from "@/lib/astro/meta";
+import { ALL_POINT_IDS, PLANET_IDS } from "@/lib/astro/meta";
 import { requirePremium } from "@/lib/server/plan";
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -27,7 +27,7 @@ const schema = z.object({
       orbs: z.object({ transit: orb, directed: orb, lunation: orb, eclipse: orb }),
       transitOrbs: z.record(body, orb),
       backgroundBodies: z.array(body).max(14),
-      targets: z.array(z.enum(["asc", "mc", ...PLANET_IDS] as unknown as [string, ...string[]])).max(14),
+      targets: z.array(z.enum(ALL_POINT_IDS as unknown as [string, ...string[]])).max(24),
     })
     .partial()
     .strict()

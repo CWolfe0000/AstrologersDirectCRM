@@ -13,7 +13,7 @@ const html = z.string().max(200_000);
 const opt = <T extends z.ZodTypeAny>(t: T) => t.optional();
 const contentType = z.enum(ALLOWED_TYPES as [string, ...string[]]);
 
-const bodyId = z.enum(["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto", "node", "chiron", "asc", "mc"]);
+const bodyId = z.enum(["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto", "node", "chiron", "asc", "mc", "southnode", "ceres", "pallas", "juno", "vesta", "lilith", "vertex", "fortune"]);
 const aspectId = z.enum(["conjunction", "opposition", "trine", "square", "sextile", "quincunx", "semisextile", "semisquare", "sesquiquadrate"]);
 
 export const birthSchema = z
@@ -47,7 +47,7 @@ export const settingsSchema = z
   .object({
     houseSystem: z.enum(["placidus", "whole-sign", "koch", "equal", "porphyry", "regiomontanus", "campanus"]),
     zodiac: z.enum(["tropical", "sidereal-lahiri", "sidereal-fagan-bradley"]),
-    bodies: z.array(bodyId).max(14),
+    bodies: z.array(bodyId).max(24),
     aspects: z.array(aspectId).max(9),
     orbs: z.record(aspectId, z.number().min(0).max(20)),
     showAspectLines: z.boolean(),

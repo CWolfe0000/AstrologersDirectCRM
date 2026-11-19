@@ -33,9 +33,20 @@ export const BODIES: Record<BodyId, { name: string; glyph: string; short: string
   chiron: { name: "Chiron", glyph: "⚷", short: "Ch" },
   asc: { name: "Ascendant", glyph: "AC", short: "AC" },
   mc: { name: "Midheaven", glyph: "MC", short: "MC" },
+  southnode: { name: "South Node", glyph: "☋", short: "SN" },
+  ceres: { name: "Ceres", glyph: "⚳", short: "Ce" },
+  pallas: { name: "Pallas", glyph: "⚴", short: "Pa" },
+  juno: { name: "Juno", glyph: "⚵", short: "Jn" },
+  vesta: { name: "Vesta", glyph: "⚶", short: "Vs" },
+  lilith: { name: "Black Moon Lilith", glyph: "⚸", short: "Li" },
+  vertex: { name: "Vertex", glyph: "Vx", short: "Vx" },
+  fortune: { name: "Part of Fortune", glyph: "⊗", short: "PF" },
 };
 
 export const PLANET_IDS: BodyId[] = ["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto", "node", "chiron"];
+/** Optional points: off by default, turned on in Settings → Astrology or a chart's controls. */
+export const EXTRA_POINT_IDS: BodyId[] = ["southnode", "ceres", "pallas", "juno", "vesta", "lilith", "vertex", "fortune"];
+export const ALL_POINT_IDS: BodyId[] = [...PLANET_IDS, "asc", "mc", ...EXTRA_POINT_IDS];
 
 export const ASPECTS: Record<AspectId, { name: string; glyph: string; angle: number; nature: "neutral" | "hard" | "soft" | "minor"; defaultOrb: number }> = {
   conjunction: { name: "Conjunction", glyph: "☌", angle: 0, nature: "neutral", defaultOrb: 8 },

@@ -94,6 +94,8 @@ export function computeAspects(inner: ChartPoints, settings: ChartSettings, oute
     const angles = (x.id === "asc" || x.id === "mc") && (y.id === "asc" || y.id === "mc");
     // Within one chart, ASC–MC is always a fixed relation; between two people it is a real contact.
     if (angles && !(outer && opts.outerAngles)) return;
+    // The nodes are always opposite each other within one chart.
+    if (xr === yr && ((x.id === "node" && y.id === "southnode") || (x.id === "southnode" && y.id === "node"))) return;
     const s = sep(x.lon, y.lon);
     let best: { t: AspectId; orb: number } | null = null;
     for (const t of types) {

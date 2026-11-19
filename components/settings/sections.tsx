@@ -6,7 +6,7 @@ import { PREMIUM_FEATURES } from "@/lib/plan";
 import { PremiumBadge } from "@/components/plan/premium";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { ASPECTS, BODIES, DEFAULT_TIMELINE, HOUSE_SYSTEMS, PLANET_IDS, ZODIACS, type AspectId, type BodyId, type HouseSystem, type TimelineDefaults, type ZodiacType } from "@/lib/astro";
+import { ASPECTS, BODIES, DEFAULT_TIMELINE, EXTRA_POINT_IDS, HOUSE_SYSTEMS, PLANET_IDS, ZODIACS, type AspectId, type BodyId, type HouseSystem, type TimelineDefaults, type ZodiacType } from "@/lib/astro";
 import { sameTimeline, TimelineOptionsEditor } from "@/components/timeline/timeline-options";
 import { cn, DATA_MODE, fmtDate } from "@/lib/utils";
 import { PORTAL_ACCENTS } from "@/lib/brand";
@@ -204,9 +204,9 @@ export function AstrologySection() {
       </Card>
 
       <Card>
-        <CardHeader title="Planet & Point Visibility" description="Bodies shown on new charts and included in aspect calculations." />
+        <CardHeader title="Planet & Point Visibility" description="Bodies shown on new charts and included in aspect calculations. Asteroids, Lilith, the South Node, Vertex and Part of Fortune are off unless you turn them on." />
         <CardBody className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {PLANET_IDS.map((b) => (
+          {[...PLANET_IDS, ...EXTRA_POINT_IDS].map((b) => (
             <label key={b} className={cn("flex cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-[13px] transition-colors", d.bodies.includes(b) ? "border-accent-200 bg-accent-50/50" : "border-line")}>
               <Checkbox checked={d.bodies.includes(b)} onChange={() => toggleBody(b)} />
               <span className="glyph w-4 text-center text-[15px]">{BODIES[b].glyph}</span>

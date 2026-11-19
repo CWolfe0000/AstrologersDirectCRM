@@ -32,6 +32,9 @@ export const PLANET_THEMES: Record<TargetId, string> = {
   mars: "drive, anger and initiative", jupiter: "growth and opportunity", saturn: "structure, responsibility and limits", uranus: "change, disruption and independence",
   neptune: "ideals, uncertainty and imagination", pluto: "power, depth and transformation", node: "direction and growth", chiron: "old wounds and healing",
   asc: "self-presentation and the body", mc: "vocation and public life",
+  southnode: "the familiar and what is being released", ceres: "nurture, care and loss", pallas: "strategy and pattern-seeing",
+  juno: "commitment and partnership", vesta: "devotion and focus", lilith: "the instinctual and the rejected",
+  vertex: "fated encounters", fortune: "ease, well-being and resources",
 };
 
 /** Which contacts a significance level keeps. */
