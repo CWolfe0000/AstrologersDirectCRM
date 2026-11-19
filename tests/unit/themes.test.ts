@@ -139,10 +139,22 @@ describe("life themes", () => {
     expect(venus.notes.map((x) => x.points)).toEqual([5, 4, 2, 2]);
     expect(venus).toMatchObject({ net: 13, level: "strong" });
     // Night formula: Ascendant + Sun − Moon = 0° Gemini, in the 3rd.
-    expect(f.fortune[0]).toContain("Lot of Fortune at 0° Gemini, in the 3rd House");
+    expect(f.fortune[0]).toContain("Lot of Fortune at 0°00′ Gemini, in the 3rd House");
     expect(f.circuit).toHaveLength(5);
     // Saturn rules both the 10th and 11th here.
     expect(f.circuit[1]).toMatchObject({ tied: true, text: "Rulers of the 10th and 11th (career and gains): the same planet, Saturn" });
+    // Generation, access, control and retention are judged separately.
+    expect(f.functions.map((j) => j.id)).toEqual(["generation", "access", "control", "retention"]);
+    // Every rating carries its reason and its testimony; condition and relevance are stated apart.
+    const earning = f.dimensions[0]!;
+    expect(earning.why.length).toBeGreaterThan(10);
+    expect(earning.primary[0]!.text).toBe("Venus answers for income; its condition is strong");
+    // One configuration counts once: Saturn rules the 10th and 11th, so the 2nd–10th and 2nd–11th ties are the same Venus–Saturn tie.
+    const scale = f.dimensions.find((d) => d.id === "scale")!;
+    const venusSaturn = scale.supporting.filter((t) => t.text.includes("Venus sextile Saturn"));
+    expect(venusSaturn.map((t) => !!t.restates)).toEqual([false, true]);
+    // Valens' place of acquisition: the eleventh sign from Fortune (Gemini) is Aries.
+    expect(f.acquisition[0]).toContain("The eleventh sign from Fortune: Aries");
     // Without a birth time there are no houses, so the simple reading is used.
     const noTime = activationModel({ ...timeline([]), cusps: null }, "all");
     expect(themeResult(noTime, "money").promise.financial).toBeUndefined();

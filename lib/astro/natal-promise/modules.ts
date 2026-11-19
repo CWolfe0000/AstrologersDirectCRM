@@ -47,7 +47,7 @@ export const MODULES: ModuleDef[] = [
     midpoints: [["moon", "jupiter"], ["moon", "venus"], ["venus", "jupiter"], ["moon", "saturn"], ["moon", "pluto"], ["jupiter", "saturn"]],
     distinguish: "The wish for children, the experience and responsibilities of parenthood, relationships with children, and traditional testimony about family size.",
     caution: "Traditional fertility symbolism is not a medical assessment and does not establish the ability to conceive or a number of children." },
-  { id: "wealth", title: "Wealth & Financial Accumulation", houses: [2, 11, 8], naturals: ["jupiter", "venus", "mercury"], lots: ["fortune", "spirit", "substance", "basis"],
+  { id: "wealth", title: "Wealth & Financial Accumulation", houses: [2, 11, 8], naturals: ["jupiter", "venus", "mercury"], lots: ["fortune", "spirit", "basis"],
     midpoints: [["jupiter", "pluto"], ["jupiter", "saturn"], ["venus", "jupiter"], ["sun", "jupiter"], ["mercury", "jupiter"], ["mercury", "pluto"], ["venus", "pluto"], ["saturn", "pluto"], ["mc", "jupiter"], ["mc", "pluto"]],
     distinguish: "Earning, access to others' wealth, accumulation, and keeping what is acquired: four different things." },
   { id: "career", title: "Career & Public Achievement", houses: [10, 6, 11], naturals: ["sun", "saturn", "mercury"], lots: ["spirit"],
@@ -154,7 +154,7 @@ export function assess(ctx: PromiseContext, def: ModuleDef): Assessment {
     if (lon === null) continue;
     const r = DOMICILE[signIdx(lon)]!, c = conditionOf(ctx, r);
     supporting.push({
-      layer: "supporting", tradition: "traditional", tone: c ? TONE[c.level] : "neutral", detail: `${lot.source}. ${ctx.day ? lot.day : lot.night}.${c ? ` ${nameOf(r)}: ${detailOf(c)}` : ""}`,
+      layer: "supporting", tradition: "traditional", tone: c ? TONE[c.level] : "neutral", detail: `${lot.formula}. ${lot.sect}. ${lot.verification.status === "verified" ? "" : `Formula ${lot.verification.status}. `}${c ? `${nameOf(r)}: ${detailOf(c)}` : ""}`,
       text: `${lot.name} (${lot.source}): ${place(lon)}, ${ordinal(houseOfLon(n, lon))} House; its ruler ${nameOf(r)} is ${c ? WORD[c.level] : "not judged"}`,
     });
   }

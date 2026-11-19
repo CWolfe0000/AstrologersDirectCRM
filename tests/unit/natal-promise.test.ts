@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { natalModel } from "@/lib/astro/activation";
 import { conditionOf, promiseContext, tie } from "@/lib/astro/natal-promise/condition";
-import { lotById } from "@/lib/astro/natal-promise/lots";
+import { acquisition, lotById, lotRecord, LOTS } from "@/lib/astro/natal-promise/lots";
 import { midpointOf, pictures } from "@/lib/astro/natal-promise/midpoints";
 import { assess, MODULES } from "@/lib/astro/natal-promise/modules";
 import type { TargetId } from "@/lib/astro/timeline";
@@ -52,6 +52,36 @@ describe("lots keep their source and formula", () => {
   });
 });
 
+describe("lot records and verification", () => {
+  const ctx = promiseContext(model())!;
+  it("an unresolved Lot is not calculated, and an alternative tradition is labelled", () => {
+    expect(lotById("substance-paulus").lon(ctx)).toBeNull();
+    expect(lotById("substance-paulus").verification.status).toBe("unresolved");
+    expect(lotById("substance-medieval").alternativeTo).toBe("substance-paulus");
+    // Ruler of the 2nd (Venus, 185) → cusp of the 2nd (30): 0 + 30 − 185.
+    expect(lotById("substance-medieval").lon(ctx)).toBe(205);
+    expect(LOTS.every((l) => l.source && l.formula && l.sect && l.purpose && l.verification.note)).toBe(true);
+    expect(LOTS.some((l) => l.verification.status === "verified")).toBe(false);
+  });
+  it("Basis keeps its other readings beside it", () => {
+    const r = lotRecord(ctx, lotById("basis"));
+    expect(r.def.verification.status).toBe("unresolved");
+    // Fortune 60, Spirit 300. By night Spirit → Fortune: 0 + 60 − 300 = 120; Ascendant + Fortune − Spirit = 120.
+    expect(r.readings.map((x) => x.lon)).toEqual([120, 120]);
+  });
+  it("a record holds house, ruler and aspects", () => {
+    const r = lotRecord(ctx, lotById("fortune")); // 0° Gemini
+    expect(r).toMatchObject({ lon: 60, house: 3, ruler: "mercury" });
+    expect(r.aspects.find((a) => a.planet === "venus")).toMatchObject({ aspect: "trine" }); // Libra to Gemini
+  });
+  it("the place of acquisition is the eleventh sign from Fortune", () => {
+    const a = acquisition(ctx)!;
+    expect(a.sign).toBe(0); // Aries, from Gemini
+    expect(a.ruler).toBe("mars");
+    expect(a.benefics.map((b) => [b.planet, b.aspect])).toEqual([["venus", "opposite"], ["jupiter", "opposite"]]);
+  });
+});
+
 describe("midpoints", () => {
   it("shorter arc, and pictures on the 45° dial", () => {
     expect(midpointOf(350, 20)).toBe(5);
@@ -74,7 +104,7 @@ describe("modules", () => {
     expect(a.primary[0]!.text).toBe("Venus (ruler of the 7th, in the 7th, natural significator) at 5°00′ Libra, 7th House: strong");
     expect(a.primary[0]!.detail).toContain("in its domicile, Libra (+5)");
     expect(a.supporting.map((e) => e.text)).toContain("Rulers of the 1st and 7th: Mars sextile Venus");
-    expect(a.supporting.some((e) => e.text.startsWith("Lot of Marriage (men) (Dorotheus, Carmen II)"))).toBe(true);
+    expect(a.supporting.some((e) => e.text.startsWith("Lot of Marriage (men) (Dorotheus, Carmen Astrologicum II)"))).toBe(true);
     expect(a.strongest[0]).toContain("Venus");
     expect(a.monitor).toContain("Venus");
     expect(a).not.toHaveProperty("score");

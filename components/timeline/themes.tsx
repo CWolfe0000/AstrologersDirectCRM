@@ -6,7 +6,7 @@ import type { ActivationModel } from "@/lib/astro/activation";
 import { themeAnalysis, type ThemeId, type ThemePeriod, type ThemeResult, type ThemeTone, type ThemeTriggers } from "@/lib/astro/themes";
 import { anchorKeywords } from "@/lib/astro/keywords";
 import type { PromiseLevel } from "@/lib/astro/promise";
-import type { FinancialPromise } from "@/lib/astro/wealth";
+import { FinancialPromiseView } from "@/components/workspace/financial-promise";
 import { cn } from "@/lib/utils";
 import type { TargetId, TimelineContact } from "@/lib/astro/timeline";
 import { Badge } from "@/components/ui/badge";
@@ -91,47 +91,8 @@ const LEVELS: Record<ThemeId, Record<PromiseLevel, { label: string; tone: "sage"
 })();
 
 /** What the natal chart says about the topic: the ground the periods stand on. */
-const LEVEL_WORD = { strong: { label: "Strong", tone: "sage" }, mixed: { label: "Mixed", tone: "outline" }, weak: { label: "Weak", tone: "warn" } } as const;
-
-/** Money: the natal promise by dimension, with the working behind it. */
-function FinancialPromiseBlock({ f }: { f: FinancialPromise }) {
-  const sub = "mt-2 text-[11px] font-semibold uppercase tracking-wide text-muted";
-  return (
-    <div className="rounded-lg bg-canvas-2 px-3 py-2.5 text-[12.5px]">
-      <p className="flex flex-wrap items-center gap-2 text-[11.5px] font-semibold text-ink">Natal Promise <Badge tone="outline">By Dimension · {f.dimensions.filter((d) => d.level === "strong").length} Strong, {f.dimensions.filter((d) => d.level === "weak").length} Weak of {f.dimensions.length}</Badge></p>
-      <ul className="mt-1.5 space-y-1">
-        {f.dimensions.map((d) => (
-          <li key={d.id} className="flex items-baseline justify-between gap-2" title={d.about}>
-            <span className="text-ink">{d.title} <span className="text-[11.5px] text-muted">{d.planets.map((p) => BODIES[p].name).join(", ")}</span></span>
-            <Badge tone={LEVEL_WORD[d.level].tone}>{LEVEL_WORD[d.level].label}</Badge>
-          </li>
-        ))}
-      </ul>
-      {f.secondRuler && <p className="mt-2 text-ink-3">{f.secondRuler}.</p>}
-      <p className={sub}>Financial Circuit</p>
-      <ul className="mt-0.5 space-y-0.5 text-ink-3">
-        {f.circuit.map((c) => <li key={c.text} className="flex gap-1.5"><span aria-hidden className={c.tied ? "text-sage-dark" : "text-muted"}>{c.tied ? "+" : "·"}</span>{c.text}</li>)}
-      </ul>
-      <p className={sub}>Fortune & Spirit</p>
-      <ul className="mt-0.5 space-y-0.5 text-ink-3">{f.fortune.map((x) => <li key={x}>{x}</li>)}</ul>
-      <details className="mt-2">
-        <summary className="cursor-pointer text-[12px] text-muted hover:text-accent">Condition of Each Significator</summary>
-        <ul className="mt-1 space-y-1.5 text-ink-3">
-          {f.planets.map((p) => (
-            <li key={p.id}>
-              <b className="font-medium text-ink">{BODIES[p.id].name}</b> <span className="text-[11.5px] text-muted">{p.roles.join(", ")}</span> <Badge tone={LEVEL_WORD[p.level].tone}>{LEVEL_WORD[p.level].label} ({p.net > 0 ? "+" : ""}{p.net})</Badge>
-              <br />{p.notes.map((x) => `${x.text} (${x.points > 0 ? "+" : ""}${x.points})`).join("; ")}
-            </li>
-          ))}
-        </ul>
-      </details>
-      <p className="mt-2 text-[11.5px] text-muted">{f.day ? "Day" : "Night"} chart. Earning, access to wealth, accumulation and keeping it are judged separately, from the natal chart alone. Speed, retrogradation and combustion are not considered.</p>
-    </div>
-  );
-}
-
 function Promise({ r }: { r: ThemeResult }) {
-  if (r.promise.financial) return <FinancialPromiseBlock f={r.promise.financial} />;
+  if (r.promise.financial) return <div className="rounded-lg bg-canvas-2 px-3 py-2.5"><FinancialPromiseView f={r.promise.financial} /></div>;
   const l = LEVELS[r.id][r.promise.level];
   return (
     <div className="rounded-lg bg-canvas-2 px-3 py-2.5 text-[12.5px]">

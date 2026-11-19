@@ -4,7 +4,9 @@ import * as React from "react";
 import type { ChartView } from "@/lib/astro";
 import { natalModel } from "@/lib/astro/activation";
 import { place, promiseContext } from "@/lib/astro/natal-promise/condition";
-import { LOTS } from "@/lib/astro/natal-promise/lots";
+import { BODIES, ordinal } from "@/lib/astro";
+import { LOTS, lotRecord, type Verification } from "@/lib/astro/natal-promise/lots";
+import { FinancialPromiseView } from "./financial-promise";
 import { MIDPOINT_ORB } from "@/lib/astro/natal-promise/midpoints";
 import { assessAll, type Assessment, type Evidence } from "@/lib/astro/natal-promise/modules";
 import type { TargetId } from "@/lib/astro/timeline";
@@ -15,7 +17,7 @@ import { Checkbox } from "@/components/ui/input";
 
 const sub = "mb-1 mt-3 text-[11px] font-semibold uppercase tracking-wide text-muted";
 const MARK = { support: ["+", "text-sage-dark", "Supports: "], challenge: ["−", "text-warn", "Against: "], neutral: ["·", "text-muted", ""] } as const;
-const LEVEL = { strong: { label: "Strong", tone: "sage" }, mixed: { label: "Mixed", tone: "outline" }, weak: { label: "Weak", tone: "warn" } } as const;
+const VERIFY: Record<Verification, { label: string; tone: "sage" | "outline" | "warn" }> = { verified: { label: "Verified", tone: "sage" }, secondary: { label: "Secondary Sources Only", tone: "outline" }, unverified: { label: "Unverified", tone: "warn" }, unresolved: { label: "Unresolved", tone: "warn" } };
 
 function Rows({ items, working }: { items: Evidence[]; working: boolean }) {
   return (
@@ -45,17 +47,7 @@ function Module({ a, working, wealth }: { a: Assessment; working: boolean; wealt
       <div className="border-t border-line px-3 pb-3">
         <p className="mt-2 text-[12px] text-muted">Keep apart: {a.def.distinguish}</p>
         {a.def.caution && <p className="mt-1.5 rounded-lg bg-warn-50 px-2.5 py-1.5 text-[12px] text-ink-3">{a.def.caution}</p>}
-        {a.def.id === "wealth" && wealth && (
-          <>
-            <p className={sub}>By Dimension</p>
-            <ul className="space-y-1 text-[12.5px]">
-              {wealth.dimensions.map((d) => (
-                <li key={d.id} className="flex items-baseline justify-between gap-2" title={d.about}><span className="text-ink">{d.title}</span><Badge tone={LEVEL[d.level].tone}>{LEVEL[d.level].label}</Badge></li>
-              ))}
-            </ul>
-            {wealth.secondRuler && <p className="mt-1.5 text-[12.5px] text-ink-3">{wealth.secondRuler}.</p>}
-          </>
-        )}
+        {a.def.id === "wealth" && wealth && <div className="mt-3 rounded-lg bg-canvas-2 px-3 py-2.5"><FinancialPromiseView f={wealth} heading={false} /></div>}
         <p className={sub}>Primary Testimony</p>
         {a.primary.length ? <Rows items={a.primary} working={working} /> : <p className="text-[12.5px] text-muted">None that supports or stands neutral.</p>}
         <p className={sub}>Supporting Testimony</p>
@@ -104,17 +96,30 @@ export function PromisePanel({ view }: { view: ChartView }) {
       <div className="space-y-2">{data.modules.map((a) => <Module key={a.def.id} a={a} working={working} wealth={data.wealth} />)}</div>
 
       <details className="rounded-lg border border-line">
-        <summary className="cursor-pointer list-none px-3 py-2.5 text-[13px] font-semibold text-ink [&::-webkit-details-marker]:hidden">Lots: Sources and Formulas</summary>
-        <div className="overflow-x-auto border-t border-line px-3 py-2">
-          <table className="w-full min-w-[420px] text-[12px]">
-            <thead><tr className="text-left text-[10.5px] uppercase tracking-wide text-muted"><th className="py-1 pr-2 font-semibold">Lot</th><th className="py-1 pr-2 font-semibold">Source</th><th className="py-1 pr-2 font-semibold">Formula Used</th><th className="py-1 font-semibold">Position</th></tr></thead>
-            <tbody>
-              {LOTS.map((l) => { const lon = l.lon(ctx); return (
-                <tr key={l.id} className="border-t border-line/60 align-top"><td className="py-1 pr-2 text-ink">{l.name}</td><td className="py-1 pr-2 text-ink-3">{l.source}</td><td className="py-1 pr-2 text-ink-3">{ctx.day ? l.day : l.night}</td><td className="whitespace-nowrap py-1 tabular-nums text-ink-3">{lon === null ? "–" : place(lon)}</td></tr>
-              ); })}
-            </tbody>
-          </table>
-          <p className="mt-1.5 text-[11.5px] text-muted">“A → B from the Ascendant” is Ascendant + B − A. Formulas are as commonly reported from each source; check them against the edition you follow. Both men's and women's marriage Lots are shown, as the chart does not record which applies.</p>
+        <summary className="cursor-pointer list-none px-3 py-2.5 text-[13px] font-semibold text-ink [&::-webkit-details-marker]:hidden">Lots: Sources, Formulas and Verification</summary>
+        <div className="space-y-3 border-t border-line px-3 py-3">
+          <p className="rounded-lg bg-warn-50 px-2.5 py-1.5 text-[12px] text-ink-3">No formula here has yet been checked against a primary text or scholarly translation. Each Lot shows how far it has been verified; an unresolved Lot is not calculated, and an alternative from another tradition is shown for comparison only and used in no judgment.</p>
+          {LOTS.map((def) => {
+            const r = lotRecord(ctx, def);
+            const v = VERIFY[def.verification.status];
+            return (
+              <div key={def.id} className="text-[12.5px]">
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-1"><b className="font-semibold text-ink">{def.name}</b><Badge tone={v.tone}>{v.label}</Badge>{def.alternativeTo && <Badge tone="outline">Alternative Tradition</Badge>}</p>
+                <dl className="mt-1 grid grid-cols-[84px_1fr] gap-x-2 gap-y-0.5 text-ink-3">
+                  <dt className="text-muted">Source</dt><dd>{def.source}</dd>
+                  <dt className="text-muted">Formula</dt><dd>{def.formula}</dd>
+                  <dt className="text-muted">Sect Rule</dt><dd>{def.sect}</dd>
+                  <dt className="text-muted">Function</dt><dd>{def.purpose}</dd>
+                  <dt className="text-muted">Position</dt><dd>{r.lon === null ? "Not calculated" : `${place(r.lon)}, ${ordinal(r.house!)} House`}</dd>
+                  {r.ruler && <><dt className="text-muted">Ruler</dt><dd>{BODIES[r.ruler].name}{r.rulerCondition ? `, condition ${r.rulerCondition.level === "mixed" ? "middling" : r.rulerCondition.level}` : ""}</dd></>}
+                  {r.lon !== null && <><dt className="text-muted">Aspects</dt><dd>{r.aspects.length ? r.aspects.map((x) => `${BODIES[x.planet].name} ${x.aspect}${x.close ? " (within 3°)" : ""}`).join("; ") : "None by sign from the seven planets"}</dd></>}
+                  {r.readings.length > 0 && <><dt className="text-muted">Other Readings</dt><dd>{r.readings.map((x) => `${x.label}: ${x.lon === null ? "–" : place(x.lon)}`).join("; ")}</dd></>}
+                  <dt className="text-muted">Verification</dt><dd>{def.verification.note}</dd>
+                </dl>
+              </div>
+            );
+          })}
+          <p className="text-[11.5px] text-muted">“A → B from the Ascendant” is Ascendant + B − A. Aspects to a Lot are by sign. Both men's and women's marriage Lots are shown, as the chart does not record which applies.</p>
         </div>
       </details>
 
