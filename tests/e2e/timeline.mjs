@@ -121,6 +121,18 @@ await page.waitForURL(/\/app\/charts\/[^?]+\?date=\d{4}-\d{2}-\d{2}/);
 const date = new URL(page.url()).searchParams.get("date");
 assert.equal(await page.locator('input[type="date"]').first().inputValue(), date);
 
+step("multi-wheel: rings, stepping and playing through time");
+await page.goto(BASE + "/app/timeline/wheel?client=c1&date=2026-11-18");
+await page.getByRole("heading", { name: "Contacts to the Natal Chart" }).waitFor();
+await page.getByRole("button", { name: "Solar Arc", exact: true }).click();
+await page.getByText(/^Solar Arc /).first().waitFor({ timeout: 30000 });
+await page.getByRole("button", { name: "Forward one month" }).click();
+await page.waitForFunction(() => document.querySelector('input[type="date"]').value === "2026-12-18");
+await page.getByRole("button", { name: "Play" }).click();
+await page.waitForFunction(() => document.querySelector('input[type="date"]').value > "2027-01-18", null, { timeout: 30000 });
+await page.getByRole("button", { name: "Pause" }).click();
+assert.equal(await page.getByText(/^Progressed (Uranus|Neptune|Pluto) /).count(), 0, "no progressed outer planets");
+
 assert.deepEqual(errors, []);
 await browser.close();
 console.log("✓ timeline");

@@ -152,7 +152,12 @@ function Timeline() {
       <PageHeader
         title="Convergence Timeline"
         description="Transits, progressions, solar arcs and lunations to the natal chart over a period, and the stretches where they pile up."
-        actions={<EngineNotice />}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <EngineNotice />
+            <Link href={`/app/timeline/wheel?client=${clientId}&date=${asOf}`} className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-line-strong bg-surface px-3 text-[13px] font-medium text-ink hover:bg-canvas-2"><CircleDot className="size-4" /> Multi-Wheel</Link>
+          </div>
+        }
       />
 
       {/* Controls */}
