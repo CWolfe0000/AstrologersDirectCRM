@@ -54,12 +54,11 @@ describe("lots keep their source and formula", () => {
 
 describe("lot records and verification", () => {
   const ctx = promiseContext(model())!;
-  it("an unresolved Lot is not calculated, and an alternative tradition is labelled", () => {
-    expect(lotById("substance-paulus").lon(ctx)).toBeNull();
-    expect(lotById("substance-paulus").verification.status).toBe("unresolved");
-    expect(lotById("substance-medieval").alternativeTo).toBe("substance-paulus");
-    // Ruler of the 2nd (Venus, 185) → cusp of the 2nd (30): 0 + 30 − 185.
-    expect(lotById("substance-medieval").lon(ctx)).toBe(205);
+  it("every Lot carries its source, formula, sect rule, function and verification", () => {
+    // Substance: the medieval formula, adopted by the practice. Ruler of the 2nd (Venus, 185) → cusp of the 2nd (30): 0 + 30 − 185.
+    expect(lotById("substance").lon(ctx)).toBe(205);
+    expect(lotById("substance").source).toContain("Medieval");
+    expect(lotById("substance").verification.note).toContain("not from Paulus");
     expect(LOTS.every((l) => l.source && l.formula && l.sect && l.purpose && l.verification.note)).toBe(true);
     expect(LOTS.some((l) => l.verification.status === "verified")).toBe(false);
   });

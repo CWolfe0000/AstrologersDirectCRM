@@ -21,7 +21,7 @@ import { DOMICILE, SEVEN, type Planet7 } from "../traditional";
 import type { TargetId } from "../timeline";
 import { conditionOf, houseOfLon, nameOf, norm, sep, signIdx, type Condition, type PromiseContext } from "./condition";
 
-export type LotId = "fortune" | "spirit" | "exaltation" | "basis" | "substance-paulus" | "substance-medieval" | "marriage-dorotheus-m" | "marriage-dorotheus-f" | "marriage-valens-m" | "marriage-valens-f" | "children";
+export type LotId = "fortune" | "spirit" | "exaltation" | "basis" | "substance" | "marriage-dorotheus-m" | "marriage-dorotheus-f" | "marriage-valens-m" | "marriage-valens-f" | "children";
 export type Verification = "verified" | "secondary" | "unverified" | "unresolved";
 
 export interface LotDef {
@@ -73,11 +73,8 @@ export const LOTS: LotDef[] = [
     ],
     lon: (ctx) => { const f = fortune(ctx), s = spirit(ctx), asc = L(ctx, "asc"); if (f === null || s === null || asc === undefined) return null; const d = norm(s - f); return norm(asc + (d > 180 ? 360 - d : d)); },
   },
-  { id: "substance-paulus", name: "Lot of Substance", source: "Paulus Alexandrinus, Introductory Matters (as specified by the practice)", formula: "Not established", sect: "Not established", purpose: "Financial resources",
-    verification: { status: "unresolved", note: "Not calculated. Every account found of Paulus lists the seven Hermetic Lots (Fortune, Spirit, Eros, Necessity, Courage, Victory, Nemesis) and the Lots of the Father, Mother, Siblings, Children and Marriage; none lists a Lot of Substance. Paulus gives possessions and livelihood to the Lot of Fortune itself. Unless the text shows otherwise, a Lot of Substance belongs to the medieval tradition, below." },
-    lon: () => null },
-  { id: "substance-medieval", name: "Lot of Substance (medieval)", source: "Medieval Arabic and Latin (al-Biruni; Bonatti)", formula: "Ruler of the 2nd → cusp of the 2nd from the Ascendant", sect: "The same by day and by night", purpose: "Financial resources",
-    alternativeTo: "substance-paulus", verification: { status: "unverified", note: `A different tradition from the one specified; shown for comparison only and used in no judgment. ${FROM_MEMORY}` },
+  { id: "substance", name: "Lot of Substance", source: "Medieval Arabic and Latin (al-Biruni; Bonatti)", formula: "Ruler of the 2nd → cusp of the 2nd from the Ascendant", sect: "The same by day and by night", purpose: "Financial resources",
+    verification: { status: "unverified", note: "Adopted by the practice as the Lot of Substance. The formula is from memory of the medieval sources and has not been checked against them. It is not from Paulus: every account found of Introductory Matters lists the seven Hermetic Lots and those of the Father, Mother, Siblings, Children and Marriage, with possessions and livelihood given to Fortune itself." },
     lon: (ctx) => { const r = ctx.n.houseRulers(2)[0]; return arc(ctx, r ? L(ctx, r) : undefined, ctx.n.cusps?.[1], false); } },
   { id: "marriage-dorotheus-m", name: "Lot of Marriage (men)", source: "Dorotheus, Carmen Astrologicum II", formula: "Saturn → Venus from the Ascendant", sect: "Taken the same by day and by night here; whether Dorotheus reverses it by night is disputed", purpose: "Marriage, in a man's chart", verification: { status: "secondary", note: "An excerpt of Pingree's translation counts from Saturn to Venus and adds the Ascendant, and from Venus to Saturn in a woman's nativity. Modern readers disagree on whether it reverses by night. The passage was not read in full." }, lon: (ctx) => arc(ctx, L(ctx, "saturn"), L(ctx, "venus"), false) },
   { id: "marriage-dorotheus-f", name: "Lot of Marriage (women)", source: "Dorotheus, Carmen Astrologicum II", formula: "Venus → Saturn from the Ascendant", sect: "Taken the same by day and by night here; whether Dorotheus reverses it by night is disputed", purpose: "Marriage, in a woman's chart", verification: { status: "secondary", note: "An excerpt of Pingree's translation counts from Saturn to Venus and adds the Ascendant, and from Venus to Saturn in a woman's nativity. Modern readers disagree on whether it reverses by night. The passage was not read in full." }, lon: (ctx) => arc(ctx, L(ctx, "venus"), L(ctx, "saturn"), false) },

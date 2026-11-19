@@ -62,7 +62,7 @@ export function FinancialPromiseView({ f, heading = true }: { f: FinancialPromis
       <ul className="mt-0.5 space-y-0.5 text-ink-3">
         {f.circuit.map((c) => <li key={c.text} className="flex gap-1.5"><span aria-hidden className={c.tied ? "text-sage-dark" : "text-muted"}>{c.tied ? "+" : "·"}</span>{c.text}</li>)}
       </ul>
-      <p className={sub}>Fortune & Spirit</p>
+      <p className={sub}>Fortune, Spirit & Substance</p>
       <ul className="mt-0.5 space-y-0.5 text-ink-3">{f.fortune.map((x) => <li key={x}>{x}</li>)}</ul>
       <p className={sub}>Place of Acquisition <span className="font-normal normal-case tracking-normal">(Valens)</span></p>
       <ul className="mt-0.5 space-y-0.5 text-ink-3">{f.acquisition.map((x) => <li key={x}>{x}</li>)}</ul>

@@ -120,7 +120,7 @@ export function financialPromise(n: NatalModel, speeds?: Partial<Record<TargetId
   for (const id of ["jupiter", "venus", "saturn", "mercury", "mars"] as Planet7[]) if (!roles.has(id)) role(id, name(id));
   const planets: PlanetCondition[] = [...roles.keys()].map((id) => ({ ...cond(id), roles: roles.get(id)! }));
 
-  const fortuneRec = lotRecord(ctx, lotById("fortune")), spiritRec = lotRecord(ctx, lotById("spirit"));
+  const fortuneRec = lotRecord(ctx, lotById("fortune")), spiritRec = lotRecord(ctx, lotById("spirit")), substanceRec = lotRecord(ctx, lotById("substance"));
   const acq = acquisition(ctx);
   const fr = fortuneRec.ruler;
 
@@ -183,7 +183,12 @@ export function financialPromise(n: NatalModel, speeds?: Partial<Record<TargetId
   const r2 = ruler(2), r2house = isSeven(r2) ? at(r2)?.house : undefined;
   const contrary: Planet7 = day ? "mars" : "saturn";
   const fortuneTestimony = (add: Parameters<NonNullable<Spec["extra"]>>[0]) => {
-    if (fr && fortuneRec.rulerCondition) add(fortuneRec.rulerCondition.level === "strong" ? "for" : fortuneRec.rulerCondition.level === "weak" ? "against" : "neutral", `${name(fr)}, ruler of the Lot of Fortune, is ${WORD[fortuneRec.rulerCondition.level]}`, `fortune-ruler:${fr}`);
+    if (fr && fortuneRec.rulerCondition) add(fortuneRec.rulerCondition.level === "strong" ? "for" : fortuneRec.rulerCondition.level === "weak" ? "against" : "neutral", `${name(fr)}, ruler of the Lot of Fortune, is ${WORD[fortuneRec.rulerCondition.level]}`, `lot-ruler:${fr}`);
+  };
+  /** The Lot of Substance through its ruler; the same planet ruling Fortune as well counts once. */
+  const substanceTestimony = (add: Parameters<NonNullable<Spec["extra"]>>[0]) => {
+    const r = substanceRec.ruler, c = substanceRec.rulerCondition;
+    if (r && c) add(c.level === "strong" ? "for" : c.level === "weak" ? "against" : "neutral", `${name(r)}, ruler of the Lot of Substance, is ${WORD[c.level]}`, `lot-ruler:${r}`);
   };
   const acquisitionTestimony = (add: Parameters<NonNullable<Spec["extra"]>>[0]) => {
     if (!acq) return;
@@ -226,6 +231,7 @@ export function financialPromise(n: NatalModel, speeds?: Partial<Record<TargetId
       id: "scale", title: "Large-Scale Wealth", about: "Repeated, independent ties among the financial rulers, the benefics, the angles and Fortune", primary: [], ties: [[2, 10], [10, 11], [2, 11]],
       extra: (add) => {
         fortuneTestimony(add);
+        substanceTestimony(add);
         acquisitionTestimony(add);
         for (const b of ["jupiter", "venus"] as Planet7[]) if (at(b)?.house && [1, 4, 7, 10].includes(at(b)!.house!)) add("for", `${name(b)} is angular, in the ${ordinal(at(b)!.house!)}`, `angular:${b}`);
       },
@@ -244,6 +250,7 @@ export function financialPromise(n: NatalModel, speeds?: Partial<Record<TargetId
     `Its ruler, ${name(fr!)}, is ${fortuneRec.rulerCondition ? WORD[fortuneRec.rulerCondition.level] : "not in this chart's points"}${at(fr!)?.house ? `, in the ${ordinal(at(fr!)!.house!)} House` : ""}`,
     benefics.length ? `${benefics.map((b) => `${name(b.planet)} (${b.aspect})`).join(" and ")} ${benefics.length > 1 ? "aspect" : "aspects"} Fortune by sign` : "Neither Venus nor Jupiter aspects Fortune by sign",
     ...(spiritRec.lon === null ? [] : [`Lot of Spirit at ${place(spiritRec.lon)}, in the ${ordinal(spiritRec.house!)} House (${HOUSE_KEYS[spiritRec.house! - 1]})`]),
+    ...(substanceRec.lon === null ? [] : [`Lot of Substance (medieval formula) at ${place(substanceRec.lon)}, in the ${ordinal(substanceRec.house!)} House; its ruler, ${name(substanceRec.ruler!)}, is ${substanceRec.rulerCondition ? WORD[substanceRec.rulerCondition.level] : "not in this chart's points"}`]),
   ];
   const acquisitionLines = !acq ? [] : [
     `The eleventh sign from Fortune: ${SIGNS[acq.sign]!.name}${acq.occupants.length ? `, holding ${acq.occupants.map(name).join(" and ")}` : ", with no planet in it"}`,

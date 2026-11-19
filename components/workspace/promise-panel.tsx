@@ -98,7 +98,7 @@ export function PromisePanel({ view }: { view: ChartView }) {
       <details className="rounded-lg border border-line">
         <summary className="cursor-pointer list-none px-3 py-2.5 text-[13px] font-semibold text-ink [&::-webkit-details-marker]:hidden">Lots: Sources, Formulas and Verification</summary>
         <div className="space-y-3 border-t border-line px-3 py-3">
-          <p className="rounded-lg bg-warn-50 px-2.5 py-1.5 text-[12px] text-ink-3">No formula here has been read in a primary text or a full translation; several are supported by excerpts of translations or by agreeing modern sources, and each Lot says which. An unresolved Lot is not calculated, and an alternative from another tradition is shown for comparison only and used in no judgment.</p>
+          <p className="rounded-lg bg-warn-50 px-2.5 py-1.5 text-[12px] text-ink-3">No formula here has been read in a primary text or a full translation; several are supported by excerpts of translations or by agreeing modern sources, and each Lot says which. Where sources differ, the other readings are shown beside the one in use.</p>
           {LOTS.map((def) => {
             const r = lotRecord(ctx, def);
             const v = VERIFY[def.verification.status];
