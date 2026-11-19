@@ -51,8 +51,22 @@ assert.ok(top[0].hits.every((h) => h.points >= 0 && h.orb <= 1));
 assert.equal((await post("/api/v1/astro/rectify", { birth, events: [...events, ...extra], from: "07:00", to: "08:00", stepMin: 5, settings: { zodiac: "tropical", houseSystem: "placidus" } })).status, 200);
 assert.equal((await post("/api/v1/astro/rectify", { birth, events: [], from: "05:42", to: "09:42", stepMin: 1, settings: { zodiac: "tropical", houseSystem: "placidus" } })).status, 422);
 
-step("UI: events saved, search run, time applied");
+step("rising signs: the day is covered; a chosen sign limits the search");
+const rising = (await post("/api/v1/astro/rising", { birth, settings: { zodiac: "tropical", houseSystem: "placidus" } })).body.rising;
+assert.equal(rising[0].from, "00:00");
+assert.equal(rising.at(-1).to, "23:59");
+assert.ok(rising.length >= 12 && rising.length <= 14);
+for (let i = 1; i < rising.length; i++) assert.equal(mins(rising[i].from), mins(rising[i - 1].to) + 1);
+const own = rising.find((x) => x.from <= "07:42" && "07:42" <= x.to);
+const only = (await post("/api/v1/astro/rectify", { birth, events, from: "05:42", to: "09:42", stepMin: 1, settings: { zodiac: "tropical", houseSystem: "placidus" }, ascSigns: [own.sign] })).body.rectify;
+assert.ok(only.curve.every((x) => Math.floor(x.asc / 30) === own.sign));
+assert.ok(only.curve.length < 241);
+
+step("UI: rising sign chosen, events saved, search run, time applied");
 await page.goto(BASE + "/app/clients/c1/rectify");
+await page.getByRole("button", { name: /\(Recorded Time\)/ }).click();
+assert.equal(await page.getByRole("button", { name: /\(Recorded Time\)/ }).getAttribute("aria-pressed"), "true");
+await page.getByText(/Only times with .* rising are tested/).waitFor();
 for (const e of events.slice(0, 3)) {
   await page.getByLabel("Event date").fill(e.date);
   await page.getByLabel("Event type").selectOption(e.type);

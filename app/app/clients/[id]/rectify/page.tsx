@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
 import { api } from "@/lib/api";
-import { fmtDeg, signOf } from "@/lib/astro";
+import { fmtDeg, signOf, SIGNS } from "@/lib/astro";
 import { useStore, personName } from "@/lib/store";
 import { cn, DATA_MODE, fmtClock, fmtDate, TODAY } from "@/lib/utils";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
@@ -29,6 +29,22 @@ const EVENT_TYPES: { id: string; label: string }[] = [
   { id: "incarceration", label: "Incarceration or Confinement" },
   { id: "other", label: "Other Major Event" },
 ];
+// Traditional rising-sign descriptions: how the Ascendant tends to show in looks and manner.
+const RISING: string[] = [
+  "Brisk, direct and quick to act. Often an athletic build, a strong brow or a mark on the head or face.",
+  "Calm, steady and unhurried. Often a strong neck and shoulders, a solid build and a pleasant voice.",
+  "Lively, talkative and restless. Often slim and youthful, with expressive hands and quick eyes.",
+  "Sensitive, protective and reserved at first. Often a round face, soft features and changeable moods.",
+  "Warm, confident and noticeable. Often an upright bearing, a striking head of hair and a sense of presence.",
+  "Modest, observant and precise. Often neat and slender, looking younger than their age.",
+  "Charming, gracious and diplomatic. Often balanced, pleasing features and care for appearance.",
+  "Intense, private and watchful. Often a penetrating gaze and strong features.",
+  "Open, enthusiastic and restless. Often tall or long-limbed, with a ready laugh.",
+  "Serious, composed and reserved. Often an angular frame; looks older when young and younger when older.",
+  "Friendly but detached, independent and unconventional. Often a distinctive or unusual look.",
+  "Gentle, receptive and dreamy. Often soft features and large, expressive eyes.",
+];
+type Span = { sign: number; from: string; to: string };
 type Hit = { event: number; technique: string; from: string; to: string; aspect: string; orb: number; points: number };
 type Result = {
   curve: { time: string; score: number; asc: number; mc: number }[];
@@ -58,6 +74,17 @@ export default function RectifyPage() {
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [chosen, setChosen] = React.useState(0);
+  const [spans, setSpans] = React.useState<Span[] | null>(null);
+  const [picked, setPicked] = React.useState<number[]>([]);
+  const birthKey = b ? JSON.stringify([b.date, b.lat, b.lon, b.tz, defaults.zodiac, defaults.houseSystem]) : "";
+  React.useEffect(() => {
+    if (!b || DATA_MODE !== "server") return;
+    let live = true;
+    api<{ rising: Span[] }>("/api/v1/astro/rising", { body: { birth: b, settings: { zodiac: defaults.zodiac, houseSystem: defaults.houseSystem } } })
+      .then((r) => live && setSpans(r.rising), () => live && setSpans([]));
+    return () => { live = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [birthKey]);
 
   if (!person || !b) return <PageHeader title="Rectification" description={hydrated ? "Client not found." : "Loading…"} />;
   if (hydrated && !premium) return (<div><PageHeader title="Rectification" /><PremiumGate feature="Rectification" /></div>);
@@ -70,7 +97,7 @@ export default function RectifyPage() {
     setError(null);
     try {
       const r = await api<{ rectify: Result }>("/api/v1/astro/rectify", {
-        body: { birth: b, events: sorted.map((e) => ({ date: e.date, type: e.type })), from, to: to < from ? from : to, stepMin: step, settings: { zodiac: defaults.zodiac, houseSystem: defaults.houseSystem } },
+        body: { birth: b, events: sorted.map((e) => ({ date: e.date, type: e.type })), from, to: to < from ? from : to, stepMin: step, settings: { zodiac: defaults.zodiac, houseSystem: defaults.houseSystem }, ascSigns: picked.length ? picked : undefined },
       });
       setResult(r.rectify);
       setChosen(0);
@@ -84,6 +111,19 @@ export default function RectifyPage() {
     updatePerson(person.id, { birth: { ...b, time, timeAccuracy: "exact", rectifiedFrom: b.timeAccuracy === "unknown" ? "unknown" : b.time, rectifiedAt: TODAY } });
     toast("Birth Time Updated", `${personName(person)}’s birth time is now ${fmtClock(time)} (rectified). Charts recalculate with it.`, "success");
   };
+
+  // Choosing rising signs sets the window to the span(s) they rise.
+  const pick = (sign: number) => {
+    const next = picked.includes(sign) ? picked.filter((x) => x !== sign) : [...picked, sign];
+    setPicked(next);
+    const sel = (spans ?? []).filter((x) => next.includes(x.sign));
+    if (sel.length) {
+      setFrom(sel.map((x) => x.from).sort()[0]!);
+      setTo(sel.map((x) => x.to).sort().at(-1)!);
+      setStep(2);
+    }
+  };
+  const recordedSpan = known && spans ? spans.find((x) => x.from <= b.time && b.time <= x.to) : undefined;
 
   const maxScore = Math.max(1, ...(result?.curve.map((c) => c.score) ?? [1]));
   const top = result?.top[chosen];
@@ -100,13 +140,49 @@ export default function RectifyPage() {
 
       <div className="mb-5 rounded-lg border border-line bg-canvas-2 px-4 py-3 text-[12.5px] text-muted">
         <p className="mb-0.5 font-semibold text-ink">How Reliable Is This?</p>
-        <p>We tested this on 10 people with birth-certificate times (Astro-Databank, rated AA) and four to seven well-dated events each, searching two hours either side. The top candidate was within 30 minutes of the true time for 1 of the 10, which is no better than chance. Treat the ranking as a starting point, judge the contacts listed for each candidate yourself, and keep the window narrow around a remembered time where you can.</p>
+        <p>We tested this on 10 people with birth-certificate times (Astro-Databank, rated AA) and four to seven well-dated events each. Judging the rising sign correctly narrowed the search from four hours to about two and a half. Within that span, the event scoring did not narrow it further: its top candidate was within 30 minutes of the true time for 1 of the 10, no better than chance. Judge the rising sign first, treat the event ranking as a starting point, and weigh the contacts listed for each candidate yourself.</p>
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[420px_minmax(0,1fr)]">
         <div className="space-y-5">
           <Card>
-            <CardHeader title="Life Events" description="Dated events with known dates. Five or more spread across life give the clearest result." />
+            <CardHeader title="Step 1: Rising Sign" description="Judge the rising sign from appearance and manner. Choosing one limits the search to the times it rises on the birth date." />
+            <CardBody className="space-y-2 pt-0">
+              {!spans ? (
+                <p className="flex items-center gap-2 text-[12.5px] text-muted"><Loader2 className="size-4 animate-spin" /> Finding rising times…</p>
+              ) : spans.length === 0 ? (
+                <p className="text-[12.5px] text-muted">Rising times couldn’t be calculated.</p>
+              ) : (
+                <ul className="divide-y divide-line rounded-lg border border-line">
+                  {spans.map((x) => {
+                    const on = picked.includes(x.sign);
+                    return (
+                      <li key={`${x.sign}-${x.from}`}>
+                        <button type="button" aria-pressed={on} onClick={() => pick(x.sign)} className={cn("flex w-full items-baseline justify-between gap-2 px-3 py-1.5 text-left text-[12.5px]", on ? "bg-accent/10" : "hover:bg-canvas-2")}>
+                          <span className={cn("font-medium", on ? "text-accent" : "text-ink")}><span className="glyph mr-1" aria-hidden>{SIGNS[x.sign]!.glyph}</span>{SIGNS[x.sign]!.name} Rising{recordedSpan === x && <span className="ml-1.5 font-normal text-muted">(Recorded Time)</span>}</span>
+                          <span className="shrink-0 tabular-nums text-muted">{fmtClock(x.from)}–{fmtClock(x.to)}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              {picked.length > 0 && (
+                <div className="space-y-1 rounded-lg bg-canvas-2 px-3 py-2 text-[12.5px]">
+                  {picked.map((x) => <p key={x}><span className="font-medium text-ink">{SIGNS[x]!.name} Rising:</span> <span className="text-muted">{RISING[x]}</span></p>)}
+                </div>
+              )}
+              {spans && spans.length > 0 && (
+                <Breakdown title="Rising Sign Guide">
+                  <BTable head={["Rising Sign", "Typical Appearance and Manner"]} rows={SIGNS.map((g, i) => [`${g.name}`, RISING[i]!])} />
+                </Breakdown>
+              )}
+              <p className="text-[11.5px] text-muted">Planets close to the Ascendant, and the sign and condition of its ruler, change how the rising sign shows. Choose two neighboring signs if you can’t decide.</p>
+            </CardBody>
+          </Card>
+
+          <Card>
+            <CardHeader title="Step 2: Life Events" description="Dated events with known dates. Five or more spread across life give the clearest result." />
             <CardBody className="space-y-3 pt-0">
               <div className="grid grid-cols-[1fr_auto] gap-2">
                 <Input type="date" aria-label="Event date" value={draft.date} max={TODAY} min={b.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} />
@@ -145,7 +221,7 @@ export default function RectifyPage() {
           </Card>
 
           <Card>
-            <CardHeader title="Search Window" description={`On ${fmtDate(b.date)}, local time at the birthplace.`} />
+            <CardHeader title="Step 3: Search Window" description={`On ${fmtDate(b.date)}, local time at the birthplace.${picked.length ? ` Only times with ${picked.map((x) => SIGNS[x]!.name).join(" or ")} rising are tested.` : ""}`} />
             <CardBody className="space-y-3 pt-0">
               <div className="grid grid-cols-3 gap-2 text-[12.5px]">
                 <label><span className="mb-1 block text-muted">From</span><Input type="time" value={from} onChange={(e) => e.target.value && setFrom(e.target.value)} /></label>
@@ -158,6 +234,7 @@ export default function RectifyPage() {
                 {known && <Button size="sm" variant="ghost" onClick={() => { setFrom(toTime(toMin(b.time) - 30)); setTo(toTime(toMin(b.time) + 30)); setStep(1); }}>±30 Minutes</Button>}
                 {known && <Button size="sm" variant="ghost" onClick={() => { setFrom(toTime(toMin(b.time) - 120)); setTo(toTime(toMin(b.time) + 120)); setStep(2); }}>±2 Hours</Button>}
                 <Button size="sm" variant="ghost" onClick={() => { setFrom("00:00"); setTo("23:59"); setStep(4); }}>Whole Day</Button>
+                {picked.length > 0 && <Button size="sm" variant="ghost" onClick={() => setPicked([])}>Clear Rising Sign</Button>}
               </div>
               <Button onClick={run} disabled={busy || sorted.length === 0 || DATA_MODE !== "server"}>
                 {busy ? <Loader2 className="animate-spin" /> : <Sparkles />} Test {Math.floor((toMin(to) - toMin(from)) / step) + 1} Candidate Times
@@ -227,7 +304,7 @@ export default function RectifyPage() {
                             <p className="mt-1 text-[12.5px] text-muted">No contact to the angles at this time.</p>
                           ) : (
                             <ul className="mt-1 space-y-0.5 text-[12.5px] text-ink-3">
-                              {hits.slice(0, 6).map((h, k) => <li key={k}>{h.from} {h.aspect} natal {h.to} <span className="text-muted">({h.orb.toFixed(2)}°, {h.points.toFixed(2)} pts)</span></li>)}
+                              {hits.slice(0, 6).map((h, k) => <li key={k}>{h.from} {h.aspect.charAt(0).toUpperCase() + h.aspect.slice(1)} Natal {h.to} <span className="text-muted">({h.orb.toFixed(2)}° Orb, {h.points.toFixed(2)} Points)</span></li>)}
                               {hits.length > 6 && <li className="text-muted">+{hits.length - 6} More</li>}
                             </ul>
                           )}

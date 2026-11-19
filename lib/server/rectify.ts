@@ -92,7 +92,35 @@ function contact(moving: number, fixed: number, orbMax: number) {
   return best;
 }
 
-export function rectify(birth: BirthData, events: RectifyEvent[], from: string, to: string, stepMin: number, s: Pick<ChartSettings, "zodiac" | "houseSystem">) {
+/**
+ * When each sign rises on the birth date (local time at the birthplace),
+ * found every 2 minutes and refined to the minute. The first step of
+ * rectification: the astrologer judges the rising sign from appearance and
+ * manner, which narrows the search to roughly the two hours it rises.
+ */
+export function risingSpans(birth: BirthData, s: Pick<ChartSettings, "zodiac" | "houseSystem">) {
+  const signAt = (min: number) => {
+    const time = `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+    return Math.floor(housesAt(zonedToUtc(`${birth.date}T${time}:00`, birth.tz || "UTC").toISOString(), birth.lat, birth.lon, s.houseSystem as HouseSystem, s.zodiac).asc / 30);
+  };
+  const spans: { sign: number; from: string; to: string }[] = [];
+  const hhmm = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+  let start = 0, cur = signAt(0), prev = 0;
+  for (let m = 2; m <= 1440; m += 2) {
+    const sg = m === 1440 ? -1 : signAt(m);
+    if (sg !== cur) {
+      // Refine the change to the minute.
+      let change = m;
+      if (m < 1440) for (let k = prev + 1; k < m; k++) if (signAt(k) !== cur) { change = k; break; }
+      spans.push({ sign: cur, from: hhmm(start), to: hhmm(Math.min(1439, change - 1)) });
+      start = change; cur = sg;
+    }
+    prev = m;
+  }
+  return spans;
+}
+
+export function rectify(birth: BirthData, events: RectifyEvent[], from: string, to: string, stepMin: number, s: Pick<ChartSettings, "zodiac" | "houseSystem">, ascSigns?: number[]) {
   const [fh, fm] = from.split(":").map(Number), [th, tm] = to.split(":").map(Number);
   const start = fh! * 60 + fm!, end = th! * 60 + tm!;
   // Transits at each event (noon UTC): the same for every candidate.
@@ -105,6 +133,8 @@ export function rectify(birth: BirthData, events: RectifyEvent[], from: string, 
     const time = `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
     const utc = zonedToUtc(`${birth.date}T${time}:00`, birth.tz || "UTC").toISOString();
     const h = housesAt(utc, birth.lat, birth.lon, s.houseSystem as HouseSystem, s.zodiac);
+    // Only times when the chosen rising sign(s) rise.
+    if (ascSigns?.length && !ascSigns.includes(Math.floor(h.asc / 30))) continue;
     const natal = bodiesAt(utc, { zodiac: s.zodiac, bodies: NATAL });
     const eps = obliquityAt(utc);
     const angles: Record<Angle, number> = { asc: h.asc, mc: h.mc, dsc: (h.asc + 180) % 360, ic: (h.mc + 180) % 360 };

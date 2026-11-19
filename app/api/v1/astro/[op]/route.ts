@@ -3,13 +3,14 @@ import { handler, HttpError, json, readJson, requireUser } from "@/lib/server/ht
 import { birthSchema, settingsSchema } from "@/lib/server/validation";
 import { acgChart, davisonChart, motionFrom, natalChart, returnChart, positionsAt, progressedChart, solarArcChart, solarReturnChart } from "@/lib/server/astro";
 import { SWISS_INFO } from "@/lib/server/swiss";
-import { EVENT_TYPES, rectify, type EventType } from "@/lib/server/rectify";
+import { EVENT_TYPES, rectify, risingSpans, type EventType } from "@/lib/server/rectify";
 import { findElections } from "@/lib/server/elect";
 import { ELECTION_CHECKS, type ElectionCheck } from "@/lib/astro/elect";
 import { requirePremium } from "@/lib/server/plan";
 
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const points = z.object({ cusps: z.array(z.number()).length(12), asc: z.number(), mc: z.number() });
+const rectSettings = z.object({ zodiac: z.enum(["tropical", "sidereal-lahiri", "sidereal-fagan-bradley"]), houseSystem: z.enum(["placidus", "whole-sign", "koch", "equal", "porphyry", "regiomontanus", "campanus"]) }).passthrough();
 const Bodies = {
   natal: z.object({ birth: birthSchema, settings: settingsSchema }),
   positions: z.object({ utc: z.string().max(40), settings: settingsSchema, reference: points.optional() }),
@@ -35,8 +36,10 @@ const Bodies = {
     from: z.string().regex(/^\d{2}:\d{2}$/),
     to: z.string().regex(/^\d{2}:\d{2}$/),
     stepMin: z.union([z.literal(1), z.literal(2), z.literal(4), z.literal(5)]),
-    settings: z.object({ zodiac: z.enum(["tropical", "sidereal-lahiri", "sidereal-fagan-bradley"]), houseSystem: z.enum(["placidus", "whole-sign", "koch", "equal", "porphyry", "regiomontanus", "campanus"]) }).passthrough(),
+    settings: rectSettings,
+    ascSigns: z.array(z.number().int().min(0).max(11)).max(12).optional(),
   }),
+  rising: z.object({ birth: birthSchema, settings: rectSettings }),
   davison: z.object({ a: birthSchema, b: birthSchema, settings: settingsSchema }),
   "solar-return": z.object({ birth: birthSchema, year: z.number().int().min(1800).max(2399), settings: settingsSchema, place: z.object({ lat: z.number(), lon: z.number() }).optional() }),
 };
@@ -83,8 +86,12 @@ export const POST = handler(async (req: Request, ctx: { params: Promise<{ op: st
         return json({ engine: SWISS_INFO, motion: motionFrom(b.utc, b.settings) });
       case "rectify": {
         if (b.from > b.to) throw new HttpError(422, "The window’s end is before its start.");
-        return json({ engine: SWISS_INFO, rectify: rectify(b.birth, b.events, b.from, b.to, b.stepMin, b.settings) });
+        const out = rectify(b.birth, b.events, b.from, b.to, b.stepMin, b.settings, b.ascSigns);
+        if (!out.curve.length) throw new HttpError(422, "The chosen rising sign doesn’t rise inside this window.");
+        return json({ engine: SWISS_INFO, rectify: out });
       }
+      case "rising":
+        return json({ engine: SWISS_INFO, rising: risingSpans(b.birth, b.settings) });
       case "davison":
         return json({ engine: SWISS_INFO, points: davisonChart(b.a, b.b, b.settings) });
       case "solar-return":
