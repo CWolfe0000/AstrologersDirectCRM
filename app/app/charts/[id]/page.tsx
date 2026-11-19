@@ -187,10 +187,10 @@ function Workspace() {
         <button onClick={() => setSelected(null)} className="text-[12px] text-muted hover:text-ink">Clear Selection</button>
       </div>
       <p className="mt-0.5 text-[12.5px] text-muted">
-        {sel.id === "asc" ? <>1st-house cusp; the Descendant is opposite · </> : sel.id === "mc" ? <>10th-house cusp; the IC is opposite · </> : <>{ordinal(selBody.house)}-house placement · </>}
+        {sel.id === "asc" ? <>1st-House Cusp (Descendant Opposite) · </> : sel.id === "mc" ? <>10th-House Cusp (IC Opposite) · </> : <>{ordinal(selBody.house)}-House Placement · </>}
       {selRules.length > 0 && <>Rules the {selRules.map(ordinal).join(" & ")} · </>}
         {dignityOf(sel.id, selBody.lon) ? `${dignityOf(sel.id, selBody.lon)} · ` : ""}
-        {selAspects.length} aspect{selAspects.length === 1 ? "" : "s"} in orb
+        {selAspects.length} Aspect{selAspects.length === 1 ? "" : "s"} In Orb
       </p>
       {selAspects.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
@@ -248,7 +248,7 @@ function Workspace() {
             {meta.timing && refDate && !view.moment && <span>Reference: {fmtDate(refDate)}</span>}
             {view.moment && (
               <span>
-                {chart.type === "davison" ? "Cast for" : "Exact return"}{" "}
+                {chart.type === "davison" ? "Cast For" : "Exact Return"}{" "}
                 {new Date(view.moment).toLocaleString("en-US", { timeZone: chart.type === "davison" ? "UTC" : chart.returnPlace?.tz || subjects[0]?.birth.tz || "UTC", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short" })}
                 {chart.returnPlace ? ` · ${chart.returnPlace.place}` : ""}
               </span>

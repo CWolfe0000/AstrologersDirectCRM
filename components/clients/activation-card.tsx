@@ -52,7 +52,7 @@ export function ActivationCard({ clientId, person }: { clientId: string; person:
   return (
     <Card>
       <CardHeader
-        title={<>Current Activations <span className="ml-1.5 text-[12.5px] font-normal text-muted">As of {fmt(TODAY)}{next ? ` · next session ${fmtShort(next.start.slice(0, 10))}` : ""}</span></>}
+        title={<>Current Activations <span className="ml-1.5 text-[12.5px] font-normal text-muted">As of {fmt(TODAY)}{next ? ` · Next Session ${fmtShort(next.start.slice(0, 10))}` : ""}</span></>}
         icon={<Waves />}
         action={<Link href={`/app/timeline?client=${clientId}`} className="text-[12.5px] font-medium text-accent hover:underline">Open Timeline</Link>}
       />
@@ -105,10 +105,10 @@ function Summary({ model: m, lastDate, clientId }: { model: ReturnType<typeof ac
       </div>
       <div className="space-y-1 text-[12.5px]">
         <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted">Since the Last Session{lastDate ? ` (${fmtShort(lastDate)})` : ""}</p>
-        <p><span className="text-muted">New:</span> {names(since.started) ?? "nothing new"}</p>
-        <p><span className="text-muted">Ended:</span> {names(since.ended) ?? "nothing has ended"}</p>
-        {nx && <p><span className="text-muted">Next exact:</span> {contactLabel(nx.contact)} · {fmtShort(new Date(nx.t).toISOString())} <span className="text-muted">({Math.round((nx.t - at) / DAY)} days)</span></p>}
-        {bg && <p><span className="text-muted">Background:</span> {contactLabel(bg)} <span className="text-muted">until {fmtShort(new Date(lifecycleOf(bg, at)!.last).toISOString())}</span></p>}
+        <p><span className="text-muted">New:</span> {names(since.started) ?? "Nothing New"}</p>
+        <p><span className="text-muted">Ended:</span> {names(since.ended) ?? "Nothing Has Ended"}</p>
+        {nx && <p><span className="text-muted">Next Exact:</span> {contactLabel(nx.contact)} · {fmtShort(new Date(nx.t).toISOString())} <span className="text-muted">({Math.round((nx.t - at) / DAY)} Days)</span></p>}
+        {bg && <p><span className="text-muted">Background:</span> {contactLabel(bg)} <span className="text-muted">Until {fmtShort(new Date(lifecycleOf(bg, at)!.last).toISOString())}</span></p>}
       </div>
       <p className="text-[11.5px] text-muted">Major and moderate influences. Scores run from 0 to 100, where 100 is the strongest activation from the last session to a year ahead.</p>
     </>

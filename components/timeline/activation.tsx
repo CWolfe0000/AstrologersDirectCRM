@@ -18,6 +18,10 @@ import { Segmented } from "@/components/ui/tabs";
 import { Sheet } from "@/components/ui/dialog";
 import { DAY, Glyphs, contactLabel, fmt, fmtShort } from "./labels";
 
+/** "solar arcs" → "Solar Arcs"; ["a", "b", "c"] → "a, b and c". */
+const titleWords = (x: string) => x.replace(/(^|\s)(\p{Ll})/gu, (_m, a: string, b: string) => a + b.toUpperCase());
+const andList = (xs: string[]) => (xs.length < 2 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
+
 export const dayIso = (m: ActivationModel, d: number) => new Date(Date.parse(m.tl.from) + d * DAY).toISOString().slice(0, 10);
 const atMs = (m: ActivationModel, d: number) => Date.parse(m.tl.from) + d * DAY + DAY / 2;
 const isoOf = (ms: number) => new Date(ms).toISOString();
@@ -32,7 +36,7 @@ export function TrendTag({ trend }: { trend: "rising" | "easing" | "steady" }) {
 export function placementOf(m: ActivationModel, id: TargetId) {
   const p = m.natal.byId.get(id);
   if (!p) return "";
-  const where = id === "asc" ? "the 1st-house cusp" : id === "mc" ? "the 10th-house cusp" : p.house ? `${ordinal(p.house)} house` : "";
+  const where = id === "asc" ? "1st-House Cusp" : id === "mc" ? "10th-House Cusp" : p.house ? `${ordinal(p.house)} House` : "";
   return `${fmtDeg(p.lon)} ${signOf(p.lon).name}${where ? ` · ${where}` : ""}`;
 }
 export function rulesOf(m: ActivationModel, id: TargetId) {
@@ -65,7 +69,7 @@ export function ActivationOverview({ m, d, lastSession, onOpenContact, onPoint, 
                         {p.id === m.natal.chartRuler && <Badge tone="sage">Chart Ruler</Badge>}
                         <TrendTag trend={p.trend} />
                       </span>
-                      <span className="block text-[11.5px] text-muted">{isAngle(p.id) ? "Angle" : house ? `${ordinal(house)} house` : ""}{rules ? ` · ${rules}` : ""}</span>
+                      <span className="block text-[11.5px] text-muted">{isAngle(p.id) ? "Angle" : house ? `${ordinal(house)} House` : ""}{rules ? ` · ${rules}` : ""}</span>
                       <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-canvas-2"><span className="block h-full rounded-full bg-accent" style={{ width: `${p.score}%` }} /></span>
                     </span>
                     <span className="text-right text-[15px] font-semibold tabular-nums text-ink">{p.score}</span>
@@ -93,7 +97,7 @@ export function ActivationOverview({ m, d, lastSession, onOpenContact, onPoint, 
                 >
                   <span className="flex justify-between text-[11px] text-muted"><span>{ordinal(h.house)}</span><span className="glyph">{m.natal.houseRulers(h.house).map((r) => BODIES[r].glyph).join("")}</span></span>
                   <span className="text-[18px] font-semibold tabular-nums text-ink">{h.score}</span>
-                  <span className="truncate text-[10.5px] text-muted">{HOUSE_TOPICS[h.house - 1]}</span>
+                  <span className="truncate text-[10.5px] text-muted" title={HOUSE_TOPICS[h.house - 1]}>{HOUSE_TOPICS[h.house - 1]}</span>
                 </button>
               ))}
             </div>
@@ -129,14 +133,14 @@ function WhatsChanging({ m, d, lastSession, onOpenContact }: { m: ActivationMode
               </button>
             </li>
           ))}
-          {items.length > 5 && <li className="px-1.5 text-[11.5px] text-muted">+{items.length - 5} more</li>}
+          {items.length > 5 && <li className="px-1.5 text-[11.5px] text-muted">+{items.length - 5} More</li>}
         </ul>
       )}
     </div>
   );
   const days = (t: number) => Math.round((t - atMs(m, d)) / DAY);
   const changeNote = (x: Change, kind: "i" | "s" | "e") =>
-    kind === "i" ? `exact ${fmtShort(isoOf(x.at))} (${days(x.at)} days)` : kind === "s" ? `${x.final ? "final pass, leaves orb" : "out of orb"} ${fmtShort(isoOf(x.at))}` : x.contact.events ? fmtShort(isoOf(x.at)) : `enters orb ${fmtShort(isoOf(x.at))}`;
+    kind === "i" ? `Exact ${fmtShort(isoOf(x.at))} (${days(x.at)} Days)` : kind === "s" ? `${x.final ? "Final Pass, Leaves Orb" : "Out of Orb"} ${fmtShort(isoOf(x.at))}` : x.contact.events ? fmtShort(isoOf(x.at)) : `Enters Orb ${fmtShort(isoOf(x.at))}`;
   return (
     <Card className="lg:col-span-2 xl:col-span-1">
       <CardHeader
@@ -153,9 +157,9 @@ function WhatsChanging({ m, d, lastSession, onOpenContact }: { m: ActivationMode
           </>
         ) : (
           <>
-            {col("New Since Then", "text-accent", since.started.map((c) => ({ c, note: "now in orb" })))}
-            {col("Ended Since Then", "text-sage-dark", since.ended.map((c) => ({ c, note: "no longer in orb" })))}
-            {col("Still Active", "text-warn", since.continuing.map((c) => ({ c, note: lifecycleOf(c, atMs(m, d))?.phase.toLowerCase() ?? "in orb" })))}
+            {col("New Since Then", "text-accent", since.started.map((c) => ({ c, note: "Now In Orb" })))}
+            {col("Ended Since Then", "text-sage-dark", since.ended.map((c) => ({ c, note: "No Longer In Orb" })))}
+            {col("Still Active", "text-warn", since.continuing.map((c) => ({ c, note: lifecycleOf(c, atMs(m, d))?.phase ?? "In Orb" })))}
           </>
         )}
       </CardBody>
@@ -207,7 +211,7 @@ export function PointSheet({ m, d, id, onClose, onOpenContact, onNote }: { m: Ac
       open
       onOpenChange={(o) => !o && onClose()}
       title={`Natal ${BODIES[id].name}`}
-      description={`${placementOf(m, id)}${rules ? ` · ${rules}` : ""}${id === m.natal.chartRuler ? " · Chart ruler" : ""}`}
+      description={`${placementOf(m, id)}${rules ? ` · ${rules}` : ""}${id === m.natal.chartRuler ? " · Chart Ruler" : ""}`}
       footer={<Button variant="secondary" onClick={() => onNote([id], `Natal ${BODIES[id].name}`)}><NotebookPen /> Add Note About Natal {BODIES[id].name}</Button>}
     >
       <div className="space-y-5 px-6 py-5">
@@ -215,7 +219,7 @@ export function PointSheet({ m, d, id, onClose, onOpenContact, onNote }: { m: Ac
           <dt className="text-muted">Activation</dt>
           <dd><b className="text-[20px] tabular-nums">{scale(s[d] ?? 0, m.pointMax)}</b> / 100 on {fmt(dayIso(m, d))} <TrendTag trend={rankPoints(m, d).find((x) => x.id === id)!.trend} /></dd>
           <dt className="text-muted">Heightened</dt>
-          <dd>{sp ? `${fmt(dayIso(m, sp[0]))} – ${fmt(dayIso(m, sp[1]))}${sp[0] > d ? " (upcoming)" : ""}` : "Not in this range"}<span className="block text-[11.5px] text-muted">When its score is at least half its peak for this range.</span></dd>
+          <dd>{sp ? `${fmt(dayIso(m, sp[0]))} – ${fmt(dayIso(m, sp[1]))}${sp[0] > d ? " (Upcoming)" : ""}` : "Not In This Range"}<span className="block text-[11.5px] text-muted">When its score is at least half its peak for this range.</span></dd>
           {config.length > 0 && (
             <>
               <dt className="text-muted">Configuration</dt>
@@ -234,7 +238,7 @@ export function PointSheet({ m, d, id, onClose, onOpenContact, onNote }: { m: Ac
                 {cs.map((c) => (
                   <tr key={c.id} className="border-b border-line/70">
                     <td className="py-1.5 pr-2"><button type="button" className="text-left text-ink hover:text-accent" onClick={() => onOpenContact(c)}><Glyphs c={c} size={13} /> {contactLabel(c)}</button></td>
-                    <td className="py-1.5 pr-2 text-muted">{c.events ? "Eclipse season" : lifecycleOf(c, atMs(m, d))?.phase}</td>
+                    <td className="py-1.5 pr-2 text-muted">{c.events ? "Eclipse Season" : lifecycleOf(c, atMs(m, d))?.phase}</td>
                     <td className="py-1.5 text-right tabular-nums">{scale(m.series.get(c.id)![d] ?? 0, m.pointMax)}</td>
                   </tr>
                 ))}
@@ -258,19 +262,19 @@ export function HouseSheet({ m, d, h, onClose, onOpenContact }: { m: ActivationM
   const rulers = m.natal.houseRulers(h);
   const ids: TargetId[] = [...occ, ...rulers, ...(h === 1 ? (["asc"] as TargetId[]) : h === 10 ? (["mc"] as TargetId[]) : [])];
   const cs = activeOn(m, d, (c) => ids.includes(c.target));
-  const kind = { occupant: "Planet in the house", ruler: "Ruler", "modern-ruler": "Modern ruler", cusp: "Cusp" } as const;
+  const kind = { occupant: "Planet In the House", ruler: "Ruler", "modern-ruler": "Modern Ruler", cusp: "Cusp" } as const;
   return (
-    <Sheet open onOpenChange={(o) => !o && onClose()} title={`${ordinal(h)} House`} description={`${HOUSE_TOPICS[h - 1]} · cusp ${fmtDeg(m.natal.cusps![h - 1]!)} ${signOf(m.natal.cusps![h - 1]!).name}`}>
+    <Sheet open onOpenChange={(o) => !o && onClose()} title={`${ordinal(h)} House`} description={`${HOUSE_TOPICS[h - 1]} · Cusp ${fmtDeg(m.natal.cusps![h - 1]!)} ${signOf(m.natal.cusps![h - 1]!).name}`}>
       <div className="space-y-5 px-6 py-5">
         <dl className="grid grid-cols-[120px_minmax(0,1fr)] gap-x-3 gap-y-2 text-[13px]">
           <dt className="text-muted">Activation</dt>
           <dd><b className="text-[20px] tabular-nums">{scale(total, m.houseMax)}</b> / 100 on {fmt(dayIso(m, d))}</dd>
           <dt className="text-muted">Ruler</dt>
-          <dd>{rulers.map((r, i) => <span key={r} className="block">{BODIES[r].name}{i ? " (modern)" : ""}, {placementOf(m, r)}</span>)}{rulers[0] === m.natal.chartRuler && <Badge tone="sage">Also the Chart Ruler</Badge>}</dd>
+          <dd>{rulers.map((r, i) => <span key={r} className="block">{BODIES[r].name}{i ? " (Modern)" : ""}, {placementOf(m, r)}</span>)}{rulers[0] === m.natal.chartRuler && <Badge tone="sage">Also the Chart Ruler</Badge>}</dd>
           <dt className="text-muted">In the House</dt>
-          <dd>{occ.length ? occ.map((o) => <span key={o} className="block">{BODIES[o].name} {placementOf(m, o).split(" · ")[0]}</span>) : "No planets"}</dd>
+          <dd>{occ.length ? occ.map((o) => <span key={o} className="block">{BODIES[o].name} {placementOf(m, o).split(" · ")[0]}</span>) : "No Planets"}</dd>
           <dt className="text-muted">Heightened</dt>
-          <dd>{sp ? `${fmt(dayIso(m, sp[0]))} – ${fmt(dayIso(m, sp[1]))}${sp[0] > d ? " (upcoming)" : ""}` : "Not in this range"}</dd>
+          <dd>{sp ? `${fmt(dayIso(m, sp[0]))} – ${fmt(dayIso(m, sp[1]))}${sp[0] > d ? " (Upcoming)" : ""}` : "Not In This Range"}</dd>
         </dl>
         <section>
           <h3 className="mb-2 text-[13px] font-semibold text-ink">How the Score Is Made</h3>
@@ -298,7 +302,7 @@ export function HouseSheet({ m, d, h, onClose, onOpenContact }: { m: ActivationM
                 <li key={c.id}>
                   <button type="button" onClick={() => onOpenContact(c)} className="grid w-full grid-cols-[56px_minmax(0,1fr)] gap-2 rounded-md px-1.5 py-1 text-left text-[12.5px] hover:bg-canvas-2">
                     <Glyphs c={c} size={13} />
-                    <span>{contactLabel(c)} <span className="text-muted">· via {occ.includes(c.target as never) ? "a planet in the house" : isAngle(c.target) ? "the cusp" : "the ruler"}</span></span>
+                    <span>{contactLabel(c)} <span className="text-muted">· Via {occ.includes(c.target as never) ? "a Planet In the House" : isAngle(c.target) ? "the Cusp" : "the Ruler"}</span></span>
                   </button>
                 </li>
               ))}
@@ -339,7 +343,7 @@ function ClusterCard({ m, cl, onOpenContact, onNote }: { m: ActivationModel; cl:
         {cl.targets.map((t, i) => (
           <React.Fragment key={t}>
             {i > 0 && " · "}
-            Natal {BODIES[t].name} <span className="text-[11.5px]">({isAngle(t) ? "angle" : `${m.natal.byId.get(t)?.house ? ordinal(m.natal.byId.get(t)!.house!) : ""}${m.natal.ruledBy(t).length ? `, rules ${m.natal.ruledBy(t).map(ordinal).join(" & ")}` : ""}`})</span>
+            Natal {BODIES[t].name} <span className="text-[11.5px]">({isAngle(t) ? "Angle" : `${m.natal.byId.get(t)?.house ? `${ordinal(m.natal.byId.get(t)!.house!)} House` : ""}${m.natal.ruledBy(t).length ? `, Rules ${m.natal.ruledBy(t).map(ordinal).join(" & ")}` : ""}`})</span>
           </React.Fragment>
         ))}
       </p>
@@ -352,7 +356,7 @@ function ClusterCard({ m, cl, onOpenContact, onNote }: { m: ActivationModel; cl:
               <Badge tone={c.layer === "background" ? "outline" : "accent"}>{c.layer === "background" ? "Background" : "Trigger"}</Badge>
             </li>
           ))}
-          {cl.contacts.length > 5 && <li className="text-muted">+{cl.contacts.length - 5} more</li>}
+          {cl.contacts.length > 5 && <li className="text-muted">+{cl.contacts.length - 5} More</li>}
         </ul>
         {cl.links.length > 0 && (
           <>
@@ -362,12 +366,12 @@ function ClusterCard({ m, cl, onOpenContact, onNote }: { m: ActivationModel; cl:
         )}
         <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">Timing</p>
         <p>
-          {cl.techniques.length > 1 ? <b className="font-medium">{cl.techniques.length} techniques agree ({cl.techniques.join(", ")}). </b> : `${cl.techniques[0]!.charAt(0).toUpperCase()}${cl.techniques[0]!.slice(1)} only. `}
-          Together in orb {fmt(dayIso(m, cl.span[0]))} – {fmt(dayIso(m, cl.span[1]))} ({cl.span[1] - cl.span[0] + 1} days).
+          {cl.techniques.length > 1 ? <b className="font-medium">{cl.techniques.length} Techniques Agree: {andList(cl.techniques.map(titleWords))}. </b> : `${titleWords(cl.techniques[0]!)} Only. `}
+          Together In Orb {fmt(dayIso(m, cl.span[0]))} – {fmt(dayIso(m, cl.span[1]))} ({cl.span[1] - cl.span[0] + 1} Days).
         </p>
       </div>
       <div className="rounded-lg bg-canvas-2 px-3 py-2.5 text-[13px] text-ink-3">
-        <p className="mb-1 flex items-center gap-2 text-[11.5px] font-semibold text-ink"><Layers className="size-3.5" /> Themes <span className="font-normal text-muted">From planet and house meanings</span></p>
+        <p className="mb-1 flex items-center gap-2 text-[11.5px] font-semibold text-ink"><Layers className="size-3.5" /> Themes <span className="font-normal text-muted">From Planet & House Meanings</span></p>
         {clusterThemes(cl)}
       </div>
       <p className="flex items-start gap-2 rounded-lg border border-dashed border-line-strong px-3 py-2 text-[12px] text-muted">
@@ -398,7 +402,7 @@ export function BackgroundInfluences({ m, d, onOpenContact }: { m: ActivationMod
           <table className="w-full min-w-[720px] text-[12.5px]">
             <thead>
               <tr className="border-b border-line text-left text-[11px] uppercase tracking-wide text-muted">
-                <th className="px-5 py-2 font-medium">Influence</th><th className="py-2 font-medium">In Orb</th><th className="py-2 text-right font-medium">Exact Passes</th><th className="py-2 text-right font-medium">Days in Range</th><th className="py-2 text-right font-medium">Intensity</th><th className="w-[200px] px-5 py-2 font-medium">This Range</th>
+                <th className="px-5 py-2 font-medium">Influence</th><th className="py-2 font-medium">In Orb</th><th className="py-2 text-right font-medium">Exact Passes</th><th className="py-2 text-right font-medium">Days In Range</th><th className="py-2 text-right font-medium">Intensity</th><th className="w-[200px] px-5 py-2 font-medium">This Range</th>
               </tr>
             </thead>
             <tbody>
@@ -434,10 +438,10 @@ export function BackgroundInfluences({ m, d, onOpenContact }: { m: ActivationMod
 /** "1 year, 6 months" / "5 months" / "12 days". */
 const fmtSpan = (ms: number) => {
   const d = Math.round(ms / DAY);
-  if (d < 60) return `${d} days`;
+  if (d < 60) return `${d} Days`;
   const months = Math.round(d / 30.44);
   const y = Math.floor(months / 12), m = months % 12;
-  return [y && `${y} year${y > 1 ? "s" : ""}`, m && `${m} month${m > 1 ? "s" : ""}`].filter(Boolean).join(", ") + ` (${d} days)`;
+  return [y && `${y} Year${y > 1 ? "s" : ""}`, m && `${m} Month${m > 1 ? "s" : ""}`].filter(Boolean).join(", ") + ` (${d} Days)`;
 };
 
 export function LifecycleSection({ c, at, full }: { c: TimelineContact; at: number; full: TimelineContact | null | "loading" }) {
@@ -453,16 +457,16 @@ export function LifecycleSection({ c, at, full }: { c: TimelineContact; at: numb
         <dt className="text-muted">First Entered Orb</dt>
         <dd>{L.firstOpen ? `Before ${t(L.first)}` : t(L.first)}</dd>
         <dt className="text-muted">Exact Contacts</dt>
-        <dd>{L.exacts.length ? L.exacts.map((x, i) => <span key={x.t} className="block">{i + 1}. {t(x.t)}{x.retrograde ? " · Retrograde" : ""}{x.t < at ? <span className="text-muted"> (past)</span> : ""}</span>) : "None: it comes close without perfecting"}</dd>
-        {L.stations.length > 0 && (<><dt className="text-muted">Stations</dt><dd>{L.stations.map((s) => <span key={s.t} className="block">Turns {s.kind} {t(s.t)}</span>)}</dd></>)}
+        <dd>{L.exacts.length ? L.exacts.map((x, i) => <span key={x.t} className="block">{i + 1}. {t(x.t)}{x.retrograde ? " · Retrograde" : ""}{x.t < at ? <span className="text-muted"> (Past)</span> : ""}</span>) : "None: It Comes Close Without Perfecting"}</dd>
+        {L.stations.length > 0 && (<><dt className="text-muted">Stations</dt><dd>{L.stations.map((s) => <span key={s.t} className="block">Turns {s.kind === "retrograde" ? "Retrograde" : "Direct"} {t(s.t)}</span>)}</dd></>)}
         <dt className="text-muted">On {fmtShort(isoOf(at))}</dt>
-        <dd><span className="font-medium">{L.phase}</span>{L.next && <span className="block">Next exact {t(L.next.t)} · in {days(L.next.t)} days</span>}</dd>
+        <dd><span className="font-medium">{L.phase}</span>{L.next && <span className="block">Next Exact {t(L.next.t)} · In {days(L.next.t)} Days</span>}</dd>
         <dt className="text-muted">Final Exit From Orb</dt>
-        <dd>{t(L.last)}{L.lastOpen ? " or later" : ""}{L.last > at && <span className="text-muted"> · {days(L.last)} days from then</span>}</dd>
+        <dd>{t(L.last)}{L.lastOpen ? " or Later" : ""}{L.last > at && <span className="text-muted"> · {days(L.last)} Days From Then</span>}</dd>
         <dt className="text-muted">Whole Period</dt>
-        <dd>{fmtSpan(L.last - L.first)}{L.firstOpen || L.lastOpen ? " or more" : ""} · {src.windows.length} pass{src.windows.length === 1 ? "" : "es"} through orb</dd>
+        <dd>{fmtSpan(L.last - L.first)}{L.firstOpen || L.lastOpen ? " or More" : ""} · {src.windows.length} Pass{src.windows.length === 1 ? "" : "es"} Through Orb</dd>
         <dt className="text-muted">Layer</dt>
-        <dd>{c.layer === "background" ? "Background influence" : "Short-term trigger"} · intensity weight {c.weight}</dd>
+        <dd>{c.layer === "background" ? "Background Influence" : "Short-Term Trigger"} · Intensity Weight {c.weight}</dd>
       </dl>
       <p className="mt-1.5 text-[11.5px] text-muted">{full === "loading" ? "Looking beyond this range for the full cycle…" : full ? "The whole cycle around the As Of date: passes less than a year apart, looking up to three years either way." : "Within this range only."}</p>
     </section>

@@ -71,9 +71,9 @@ function PrintPage() {
       <div className="print-hide mb-5 flex flex-wrap items-center gap-3">
         <Link href={`/app/charts/${chart.id}`} className="inline-flex items-center gap-1.5 text-[13px] text-muted hover:text-ink"><ArrowLeft className="size-4" /> Back to Chart</Link>
         <span className="flex flex-wrap items-center gap-4 text-[13px]">
-          <label className="inline-flex items-center gap-2"><Checkbox checked={opts.patterns} onChange={(e) => setOpts({ ...opts, patterns: e.target.checked })} /> Aspect patterns</label>
-          <label className="inline-flex items-center gap-2"><Checkbox checked={opts.aspects} onChange={(e) => setOpts({ ...opts, aspects: e.target.checked })} /> Aspect list</label>
-          <label className="inline-flex items-center gap-2"><Checkbox checked={opts.rulership} onChange={(e) => setOpts({ ...opts, rulership: e.target.checked })} /> Rulerships & houses</label>
+          <label className="inline-flex items-center gap-2"><Checkbox checked={opts.patterns} onChange={(e) => setOpts({ ...opts, patterns: e.target.checked })} /> Aspect Patterns</label>
+          <label className="inline-flex items-center gap-2"><Checkbox checked={opts.aspects} onChange={(e) => setOpts({ ...opts, aspects: e.target.checked })} /> Aspect List</label>
+          <label className="inline-flex items-center gap-2"><Checkbox checked={opts.rulership} onChange={(e) => setOpts({ ...opts, rulership: e.target.checked })} /> Rulerships & Houses</label>
         </span>
         <Button className="ml-auto" onClick={() => window.print()} disabled={!view}><Printer /> Print or Save as PDF</Button>
       </div>
@@ -85,12 +85,12 @@ function PrintPage() {
             <h1 className="font-serif text-[30px] leading-tight text-ink">{chart.title}</h1>
             {subjects.map((p) => (
               <p key={p!.id} className="text-[13px] text-ink-3">
-                {personName(p)} · {fmtDate(p!.birth.date)}, {p!.birth.timeAccuracy === "unknown" ? "time unknown" : fmtClock(p!.birth.time)} · {p!.birth.place}
+                {personName(p)} · {fmtDate(p!.birth.date)}, {p!.birth.timeAccuracy === "unknown" ? "Time Unknown" : fmtClock(p!.birth.time)} · {p!.birth.place}
               </p>
             ))}
             {view?.moment && (
               <p className="text-[13px] text-ink-3">
-                {chart.type === "davison" ? "Cast for " : "Exact return "}
+                {chart.type === "davison" ? "Cast For " : "Exact Return "}
                 {new Date(view.moment).toLocaleString("en-US", { timeZone: momentTz, month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short" })}
                 {chart.returnPlace ? ` · ${chart.returnPlace.place}` : ""}
               </p>
@@ -98,7 +98,7 @@ function PrintPage() {
             {meta.timing && chart.refDate && !view?.moment && <p className="text-[13px] text-ink-3">For {fmtDate(chart.refDate)}</p>}
           </div>
           <div className="text-right text-[12px] text-muted">
-            {s && <p>{HOUSE_SYSTEMS.find((h) => h.id === s.houseSystem)?.name} · {ZODIACS.find((z) => z.id === s.zodiac)?.name} · {s.rulership === "modern" ? "Modern" : "Traditional"} rulers</p>}
+            {s && <p>{HOUSE_SYSTEMS.find((h) => h.id === s.houseSystem)?.name} · {ZODIACS.find((z) => z.id === s.zodiac)?.name} · {s.rulership === "modern" ? "Modern" : "Traditional"} Rulers</p>}
             <p>Swiss Ephemeris</p>
             {(practitioner.practice || practitioner.name) && <p className="mt-1 font-medium text-ink-3">{practitioner.practice || practitioner.name}</p>}
           </div>

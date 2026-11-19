@@ -34,6 +34,6 @@ describe("aspect patterns", () => {
   });
   it("Stellium by sign", () => {
     const r = patterns({ sun: 331, mercury: 340, venus: 352, jupiter: 120 });
-    expect(r.find((x) => x.kind === "Stellium" && x.detail === "in Pisces")?.points).toHaveLength(3);
+    expect(r.find((x) => x.kind === "Stellium" && x.detail === "In Pisces")?.points).toHaveLength(3);
   });
 });

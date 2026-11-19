@@ -51,7 +51,7 @@ export function findPatterns(p: ChartPoints, aspects: Aspect[]): Pattern[] {
         const [a, b, c] = [ids[i]!, ids[j]!, ids[k]!];
         if (is(a, b, "trine") && is(b, c, "trine") && is(a, c, "trine")) {
           const els = new Set([a, b, c].map((x) => sign(x) % 4));
-          add({ kind: "Grand Trine", points: [a, b, c], detail: els.size === 1 ? ELEMENTS[[...els][0]!] : "Mixed elements" });
+          add({ kind: "Grand Trine", points: [a, b, c], detail: els.size === 1 ? ELEMENTS[[...els][0]!] : "Mixed Elements" });
         }
         for (const [x, y, apex] of [[a, b, c], [a, c, b], [b, c, a]] as const) {
           if (is(x, y, "opposition") && is(apex, x, "square") && is(apex, y, "square")) add({ kind: "T-Square", points: [x, y, apex], apex, detail: MODES[sign(apex) % 3] });
@@ -87,11 +87,11 @@ export function findPatterns(p: ChartPoints, aspects: Aspect[]): Pattern[] {
   const planets = p.bodies.filter((b) => PLANETS.includes(b.id));
   for (let s = 0; s < 12; s++) {
     const inSign = planets.filter((b) => Math.floor(b.lon / 30) % 12 === s).map((b) => b.id);
-    if (inSign.length >= 3) filtered.push({ kind: "Stellium", points: inSign, detail: `in ${SIGNS[s]!.name}` });
+    if (inSign.length >= 3) filtered.push({ kind: "Stellium", points: inSign, detail: `In ${SIGNS[s]!.name}` });
   }
   for (let h = 1; h <= 12; h++) {
     const inHouse = planets.filter((b) => b.house === h).map((b) => b.id);
-    if (inHouse.length >= 3) filtered.push({ kind: "Stellium", points: inHouse, detail: `in the ${h}${h === 1 ? "st" : h === 2 ? "nd" : h === 3 ? "rd" : "th"} house` });
+    if (inHouse.length >= 3) filtered.push({ kind: "Stellium", points: inHouse, detail: `In the ${h}${h === 1 ? "st" : h === 2 ? "nd" : h === 3 ? "rd" : "th"} House` });
   }
   const order: PatternKind[] = ["Grand Cross", "Grand Trine", "Kite", "Mystic Rectangle", "T-Square", "Yod", "Stellium"];
   return filtered.sort((x, y) => order.indexOf(x.kind) - order.indexOf(y.kind));

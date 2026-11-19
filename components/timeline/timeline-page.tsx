@@ -275,7 +275,7 @@ function Timeline() {
               <section aria-labelledby="tl-act" className="space-y-3">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <h2 id="tl-act" className="font-serif text-[22px] text-ink">Client Activation</h2>
-                  <p className="text-[12.5px] text-muted">As of {fmt(asOf)} · {sig === "major" ? "Major cycles only" : sig === "moderate" ? "Major and moderate influences" : "All contacts"}</p>
+                  <p className="text-[12.5px] text-muted">As of {fmt(asOf)} · {sig === "major" ? "Major Cycles Only" : sig === "moderate" ? "Major & Moderate Influences" : "All Contacts"}</p>
                 </div>
                 <ActivationOverview m={model} d={d} lastSession={lastSession ? { date: lastSession.start.slice(0, 10), type: lastSession.type } : null} onOpenContact={setDetail} onPoint={setPointSheet} onHouse={setHouseSheet} />
               </section>
@@ -418,7 +418,7 @@ function DensityStrip({ tl, focus, onFocus, asOf, onAsOf }: { tl: NonNullable<Ti
         description="Weighted intensity each day. Background influences are grey; short-term triggers sit on top. Shaded bands are busy periods. Select a day to move the As Of date."
         action={
           <span className="hidden text-right text-[12px] text-muted sm:block">
-            {h ? `${fmt(h.date)} · ${h.count} in orb (${h.triggerCount ?? 0} triggers, ${h.count - (h.triggerCount ?? 0)} background)` : `Most short-term activity: ${fmt(peak.date)} (${peak.triggerCount ?? 0} triggers, ${peak.count} in orb in all)`}
+            {h ? `${fmt(h.date)} · ${h.count} In Orb (${h.triggerCount ?? 0} Triggers, ${h.count - (h.triggerCount ?? 0)} Background)` : `Most Short-Term Activity: ${fmt(peak.date)} (${peak.triggerCount ?? 0} Triggers, ${peak.count} In Orb In All)`}
             <span className="mt-1 flex justify-end gap-3">
               <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2 w-3 rounded-sm bg-ink/20" /> Background</span>
               <span className="inline-flex items-center gap-1.5"><span className="inline-block h-2 w-3 rounded-sm bg-accent/50" /> Triggers</span>
@@ -509,16 +509,16 @@ function Convergences({ tl, focus, onFocus, onOpen, onAsOf }: { tl: NonNullable<
             <div key={w.start} className={cn("flex flex-col gap-2.5 rounded-xl border bg-surface p-4 shadow-card transition-colors", active ? "border-accent/60 ring-1 ring-accent/30" : "border-line")}>
               <button type="button" onClick={() => onFocus(active ? null : w)} className="block w-full text-left" aria-pressed={active}>
                 <p className="flex flex-wrap items-center gap-1.5 text-[12px] font-medium text-accent">
-                  <CalendarRange className="size-3.5" /> {w.startOpen ? "Before " : ""}{fmtRange(w.start, w.end)}{w.endOpen ? " and beyond" : ""}
+                  <CalendarRange className="size-3.5" /> {w.startOpen ? "Before " : ""}{fmtRange(w.start, w.end)}{w.endOpen ? " and Beyond" : ""}
                   {w.peakScore === strongest && <span className="rounded-full bg-accent-50 px-2 py-0.5 text-[10.5px]">Strongest</span>}
                 </p>
                 {w.startOpen && <p className="mt-1 text-[11.5px] text-warn">Began before this range: it may be longer, and may have peaked earlier.</p>}
                 {w.endOpen && <p className="mt-1 text-[11.5px] text-warn">Runs past the end of this range.</p>}
               </button>
               <div className="grid grid-cols-3 gap-1.5">
-                <div className="rounded-lg bg-canvas-2 px-2 py-1.5"><b className="block text-[15px] tabular-nums text-ink">{fmtShort(w.peak)}</b><span className="block text-[10.5px] leading-tight text-muted">Peak day: {w.peakCount} in orb at once, {w.peakTriggers} of them triggers</span></div>
-                <div className="rounded-lg bg-canvas-2 px-2 py-1.5"><b className="block text-[15px] tabular-nums text-ink">{w.contacts.length + w.background.length}</b><span className="block text-[10.5px] leading-tight text-muted">Distinct contacts over the period</span></div>
-                <div className="rounded-lg bg-canvas-2 px-2 py-1.5"><b className="block text-[15px] tabular-nums text-ink">{w.exactCount}</b><span className="block text-[10.5px] leading-tight text-muted">Exact hits inside the period</span></div>
+                <div className="rounded-lg bg-canvas-2 px-2 py-1.5"><b className="block text-[15px] tabular-nums text-ink">{fmtShort(w.peak)}</b><span className="block text-[10.5px] leading-tight text-muted">Peak Day: {w.peakCount} In Orb at Once, {w.peakTriggers} of Them Triggers</span></div>
+                <div className="rounded-lg bg-canvas-2 px-2 py-1.5"><b className="block text-[15px] tabular-nums text-ink">{w.contacts.length + w.background.length}</b><span className="block text-[10.5px] leading-tight text-muted">Distinct Contacts Over the Period</span></div>
+                <div className="rounded-lg bg-canvas-2 px-2 py-1.5"><b className="block text-[15px] tabular-nums text-ink">{w.exactCount}</b><span className="block text-[10.5px] leading-tight text-muted">Exact Hits Inside the Period</span></div>
               </div>
               {(t || hs) && (
                 <dl className="space-y-1 rounded-lg bg-canvas/60 px-2.5 py-2 text-[12.5px] leading-snug">
@@ -537,8 +537,8 @@ function Convergences({ tl, focus, onFocus, onOpen, onAsOf }: { tl: NonNullable<
                     <div className="flex gap-2">
                       <dt className="w-12 shrink-0 text-muted">House</dt>
                       <dd className="text-ink">
-                        <span className="font-medium">{ordinal(hs)} House</span> <span className="text-muted">· {w.focus.houseCount} Contacts to planets there</span>
-                        {rulersOf(hs).length > 0 && <span className="block text-ink-3">Ruled by {rulersOf(hs).map((r) => BODIES[r].name).join(" and ")}</span>}
+                        <span className="font-medium">{ordinal(hs)} House</span> <span className="text-muted">· {w.focus.houseCount} Contacts to Planets There</span>
+                        {rulersOf(hs).length > 0 && <span className="block text-ink-3">Ruled By {rulersOf(hs).map((r) => BODIES[r].name).join(" and ")}</span>}
                       </dd>
                     </div>
                   )}
@@ -562,8 +562,8 @@ function Convergences({ tl, focus, onFocus, onOpen, onAsOf }: { tl: NonNullable<
                 </p>
               )}
               <div className="mt-auto flex flex-wrap gap-x-4 gap-y-1">
-                {w.contacts.length > top.length && <button type="button" onClick={() => onFocus(w)} className="text-[12px] text-accent hover:underline">Show all {w.contacts.length} below</button>}
-                <button type="button" onClick={() => onAsOf(w.peak)} className="text-[12px] text-accent hover:underline">Set As Of to the peak day</button>
+                {w.contacts.length > top.length && <button type="button" onClick={() => onFocus(w)} className="text-[12px] text-accent hover:underline">Show All {w.contacts.length} Below</button>}
+                <button type="button" onClick={() => onAsOf(w.peak)} className="text-[12px] text-accent hover:underline">Set As Of to the Peak Day</button>
               </div>
             </div>
           );
@@ -660,7 +660,7 @@ function ContactGrid({
           />
         </div>
         <label className="inline-flex items-center gap-2 text-[12.5px] text-ink">
-          <Checkbox checked={exactOnly} onChange={(e) => setExactOnly(e.target.checked)} /> Only contacts that go exact in the period
+          <Checkbox checked={exactOnly} onChange={(e) => setExactOnly(e.target.checked)} /> Only Contacts That Go Exact In the Period
         </label>
       </div>
       <Legend />
@@ -727,7 +727,7 @@ function ContactRow({ c, axis, onOpen, groupBy }: { c: TimelineContact; axis: Re
   const exacts = c.windows.flatMap((w) => w.exacts);
   const total = exacts.length;
   const firstExact = exacts[0];
-  const summary = firstExact ? (total > 1 ? `${total} exact hits, first ${fmtShort(firstExact.utc)}` : `Exact ${fmt(firstExact.utc)}`) : "In orb, not exact in this period";
+  const summary = firstExact ? (total > 1 ? `${total} Exact Hits, First ${fmtShort(firstExact.utc)}` : `Exact ${fmt(firstExact.utc)}`) : "In Orb, Not Exact In This Period";
   return (
     <li>
       <button
@@ -937,9 +937,9 @@ function ContactSheet({ contact: c, clientId, personId, clientName, tl, asOf, op
                   <p className="font-medium text-ink">
                     {w.startOpen ? "Before " : ""}
                     {fmt(w.start)} – {fmt(w.end)}
-                    {w.endOpen ? " and after" : ""}
+                    {w.endOpen ? " and After" : ""}
                   </p>
-                  <p className="text-muted">{w.exacts.length ? `In orb for ${Math.round((Date.parse(w.end) - Date.parse(w.start)) / DAY)} days` : `Closest approach ${w.minOrb.toFixed(2)}° on ${fmt(w.closest)}`}</p>
+                  <p className="text-muted">{w.exacts.length ? `In Orb for ${Math.round((Date.parse(w.end) - Date.parse(w.start)) / DAY)} Days` : `Closest Approach ${w.minOrb.toFixed(2)}° on ${fmt(w.closest)}`}</p>
                   {w.exacts.length > 0 && (
                     <ul className="mt-2 space-y-1">
                       {w.exacts.map((e) => (
@@ -949,7 +949,7 @@ function ContactSheet({ contact: c, clientId, personId, clientName, tl, asOf, op
                             Exact {fmtTime(e.utc)}
                             <span className="text-muted">
                               {" "}
-                              · pass {e.pass} of {exacts.length}
+                              · Pass {e.pass} of {exacts.length}
                               {e.retrograde ? " · Retrograde" : ""}
                             </span>
                           </span>
@@ -962,7 +962,7 @@ function ContactSheet({ contact: c, clientId, personId, clientName, tl, asOf, op
                   )}
                   {w.stations.length > 0 && (
                     <p className="mt-2 text-muted">
-                      {w.stations.map((s) => `Stations ${s.kind} ${fmt(s.utc)}`).join(" · ")}
+                      {w.stations.map((s) => `Stations ${s.kind === "retrograde" ? "Retrograde" : "Direct"} ${fmt(s.utc)}`).join(" · ")}
                     </p>
                   )}
                 </li>

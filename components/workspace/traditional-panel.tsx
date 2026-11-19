@@ -34,7 +34,7 @@ export function TraditionalPanel({ view, birthUtc }: { view: ChartView; birthUtc
   return (
     <div className="space-y-6">
       <p className="rounded-lg bg-canvas-2 px-3 py-2 text-[12.5px] text-ink-3">
-        <b className="font-medium text-ink">{day ? "Day chart" : "Night chart"}</b> (the Sun is {day ? "above" : "below"} the horizon). Sect decides the triplicity ruler, the lots and the order of the firdaria.
+        <b className="font-medium text-ink">{day ? "Day Chart" : "Night Chart"}</b> (the Sun is {day ? "above" : "below"} the horizon). Sect decides the triplicity ruler, the lots and the order of the firdaria.
       </p>
 
       <section>
@@ -69,7 +69,7 @@ export function TraditionalPanel({ view, birthUtc }: { view: ChartView; birthUtc
           const lh = houseOf(cur.lord as BodyId);
           return (
             <div className="mb-2 rounded-lg border border-line px-3 py-2 text-[13px]">
-              Age {age}: the <b className="font-medium">{ordinal(cur.house)} house</b> year, {signName(cur.sign)}. Lord of the Year: <b className="font-medium"><G id={cur.lord} /> {BODIES[cur.lord].name}</b>{lh ? `, natally in the ${ordinal(lh)} house` : ""}.
+              Age {age}: the <b className="font-medium">{ordinal(cur.house)} House</b> year, {signName(cur.sign)}. Lord of the Year: <b className="font-medium"><G id={cur.lord} /> {BODIES[cur.lord].name}</b>{lh ? `, natally in the ${ordinal(lh)} House` : ""}.
             </div>
           );
         })()}

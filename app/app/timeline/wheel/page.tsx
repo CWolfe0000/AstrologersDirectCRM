@@ -194,7 +194,7 @@ function MultiWheelView() {
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
               <p className="font-serif text-[20px] text-ink" aria-live="polite">{fmtLong(date)}</p>
               <span className="flex flex-wrap items-center gap-3 text-[12px] text-muted">
-                <span className="inline-flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-ink" /> Natal (inner)</span>
+                <span className="inline-flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-ink" /> Natal (Inner)</span>
                 {rings.map((r) => <span key={r.key} className="inline-flex items-center gap-1.5"><span className="size-2.5 rounded-full" style={{ background: r.color }} /> {r.label}</span>)}
               </span>
             </div>
@@ -208,7 +208,7 @@ function MultiWheelView() {
         <Card>
           <CardHeader
             title="Contacts to the Natal Chart"
-            description={selected ? `For ${selected.startsWith("natal:") ? "natal" : RINGS.find((r) => selected.startsWith(r.key))?.label.toLowerCase()} ${BODIES[selected.split(":")[1] as keyof typeof BODIES].name} · ${shown.length}` : `${contacts.length} within ${orb}° · tightest first`}
+            description={selected ? `For ${selected.startsWith("natal:") ? "Natal" : RINGS.find((r) => selected.startsWith(r.key))?.label} ${BODIES[selected.split(":")[1] as keyof typeof BODIES].name} · ${shown.length}` : `${contacts.length} Within ${orb}° · Tightest First`}
             action={selected ? <button className="text-[12.5px] text-accent hover:underline" onClick={() => setSelected(null)}>Show All</button> : undefined}
           />
           <CardBody className="pt-0">

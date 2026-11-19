@@ -106,7 +106,7 @@ await page.getByRole("heading", { name: "Busiest Periods" }).waitFor({ timeout: 
 step("detail panel → observation on a timing chart");
 await page.locator('li > button[data-contact="transit:pluto:conjunction:moon"]').click();
 const dialog = page.getByRole("dialog");
-await dialog.getByText(/pass 1 of/).first().waitFor();
+await dialog.getByText(/Pass 1 of/).first().waitFor();
 await dialog.getByRole("button", { name: /Add Observation/ }).click();
 await page.waitForURL(/\/app\/charts\/[^?]+\?note=1/);
 await page.getByText("Pluto conjunct natal Moon").first().waitFor();

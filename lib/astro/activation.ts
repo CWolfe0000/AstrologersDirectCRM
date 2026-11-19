@@ -24,12 +24,12 @@ export type Significance = "major" | "moderate" | "all";
 const MODERATE_SOURCES = new Set(["saturn", "jupiter", "chiron", "node"]);
 
 export const HOUSE_TOPICS = [
-  "Self & Body", "Money & Values", "Communication & Siblings", "Home & Family", "Creativity & Children", "Work & Health",
-  "Partnerships", "Shared Resources & Intimacy", "Beliefs, Study & Travel", "Career & Reputation", "Friends & Groups", "Retreat & the Unconscious",
+  "Self, Body & Identity", "Money, Values & Resources", "Communication, Siblings & Learning", "Home, Family & Roots", "Creativity, Children & Pleasure", "Work, Health & Routines",
+  "Partnerships, Marriage & Contracts", "Shared Resources, Intimacy & Change", "Beliefs, Study & Travel", "Career, Reputation & Public Life", "Friends, Hopes & Networks", "Retreat, Hidden Matters & the Unconscious",
 ];
 export const PLANET_THEMES: Record<TargetId, string> = {
   sun: "identity and vitality", moon: "feelings, needs and security", mercury: "thinking and communication", venus: "love, values and money",
-  mars: "drive, anger and initiative", jupiter: "growth and opportunity", saturn: "structure, responsibility and limits", uranus: "change, disruption and independence",
+  mars: "drive, courage and initiative", jupiter: "growth and opportunity", saturn: "structure, responsibility and limits", uranus: "change, disruption and independence",
   neptune: "ideals, uncertainty and imagination", pluto: "power, depth and transformation", node: "direction and growth", chiron: "old wounds and healing",
   asc: "self-presentation and the body", mc: "vocation and public life",
   southnode: "the familiar and what is being released", ceres: "nurture, care and loss", pallas: "strategy and pattern-seeing",
@@ -264,8 +264,8 @@ export function lifecycleOf(c: TimelineContact, at: number): Lifecycle | null {
   let phase: string;
   if (cur) {
     const ahead = cur.exacts.some((x) => parse(x.utc) > at);
-    phase = ahead ? "Applying" : cur.exacts.length ? "Separating" : parse(cur.closest) > at ? "Applying (won’t perfect this pass)" : "Separating (didn’t perfect this pass)";
-  } else phase = parse(w0.start) > at ? "Not yet in orb" : parse(wn.end) < at ? "Complete" : "Out of orb between passes";
+    phase = ahead ? "Applying" : cur.exacts.length ? "Separating" : parse(cur.closest) > at ? "Applying (Won’t Perfect This Pass)" : "Separating (Didn’t Perfect This Pass)";
+  } else phase = parse(w0.start) > at ? "Not Yet In Orb" : parse(wn.end) < at ? "Complete" : "Out of Orb Between Passes";
   return { first: parse(w0.start), firstOpen: w0.startOpen, last: parse(wn.end), lastOpen: wn.endOpen, exacts, stations, phase, inOrb: !!cur, next, passEnd: cur ? parse(cur.end) : null };
 }
 
@@ -358,7 +358,7 @@ export function clustersAt(m: ActivationModel, d: number, limit = 4): Cluster[] 
   const why = (a: TargetId, b: TargetId) => {
     const out: string[] = [];
     const asp = N.natalAspect(a, b);
-    if (asp) out.push(`natal ${name(a)} ${asp === "conjunction" ? "conjunct" : asp === "opposition" ? "opposite" : asp} ${name(b)}`);
+    if (asp) out.push(`Natal ${name(a)} ${asp === "conjunction" ? "conjunct" : asp === "opposition" ? "opposite" : asp} ${name(b)}`);
     const hb = N.byId.get(b)?.house, ha = N.byId.get(a)?.house;
     if (hb && b !== "asc" && b !== "mc" && N.ruledBy(a).includes(hb)) out.push(`${name(a)} rules the ${ord(hb)}, where ${name(b)} is`);
     if (ha && a !== "asc" && a !== "mc" && N.ruledBy(b).includes(ha)) out.push(`${name(b)} rules the ${ord(ha)}, where ${name(a)} is`);
@@ -410,8 +410,11 @@ export function clusterThemes(cl: Cluster) {
   return `${lead.charAt(0).toUpperCase()}${lead.slice(1)} ${cl.targets.length > 1 ? "are" : "is"} activated together.${areas.length ? ` Through the houses involved, this touches ${list(areas)}.` : ""} The activating planets bring ${list(srcText)}.`;
 }
 
+/** The first word of a house's topics, for short titles: "Career, Reputation & Public Life" → "Career". */
+export const houseShort = (h: number) => HOUSE_TOPICS[h - 1]!.split(/,| &/)[0]!;
+
 export const clusterTitle = (cl: Cluster) => {
-  const t = cl.houses.slice(0, 3).map((h) => HOUSE_TOPICS[h - 1]!);
+  const t = cl.houses.slice(0, 3).map(houseShort);
   return t.length ? (t.length === 1 ? t[0]! : `${t.slice(0, -1).join(", ")} & ${t[t.length - 1]}`) : cl.targets.map((x) => `Natal ${BODIES[x].name}`).join(" & ");
 };
 
