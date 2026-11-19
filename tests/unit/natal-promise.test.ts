@@ -65,7 +65,9 @@ describe("lot records and verification", () => {
   });
   it("Basis keeps its other readings beside it", () => {
     const r = lotRecord(ctx, lotById("basis"));
-    expect(r.def.verification.status).toBe("unresolved");
+    expect(r.def.verification.status).toBe("secondary");
+    // The shorter arc always puts Basis below the horizon (within 180° after the Ascendant).
+    expect(r.lon).toBe(120);
     // Fortune 60, Spirit 300. By night Spirit → Fortune: 0 + 60 − 300 = 120; Ascendant + Fortune − Spirit = 120.
     expect(r.readings.map((x) => x.lon)).toEqual([120, 120]);
   });

@@ -17,7 +17,7 @@ import { Checkbox } from "@/components/ui/input";
 
 const sub = "mb-1 mt-3 text-[11px] font-semibold uppercase tracking-wide text-muted";
 const MARK = { support: ["+", "text-sage-dark", "Supports: "], challenge: ["−", "text-warn", "Against: "], neutral: ["·", "text-muted", ""] } as const;
-const VERIFY: Record<Verification, { label: string; tone: "sage" | "outline" | "warn" }> = { verified: { label: "Verified", tone: "sage" }, secondary: { label: "Secondary Sources Only", tone: "outline" }, unverified: { label: "Unverified", tone: "warn" }, unresolved: { label: "Unresolved", tone: "warn" } };
+const VERIFY: Record<Verification, { label: string; tone: "sage" | "outline" | "warn" }> = { verified: { label: "Verified", tone: "sage" }, secondary: { label: "Supported by Excerpts", tone: "outline" }, unverified: { label: "Unverified", tone: "warn" }, unresolved: { label: "Unresolved", tone: "warn" } };
 
 function Rows({ items, working }: { items: Evidence[]; working: boolean }) {
   return (
@@ -98,7 +98,7 @@ export function PromisePanel({ view }: { view: ChartView }) {
       <details className="rounded-lg border border-line">
         <summary className="cursor-pointer list-none px-3 py-2.5 text-[13px] font-semibold text-ink [&::-webkit-details-marker]:hidden">Lots: Sources, Formulas and Verification</summary>
         <div className="space-y-3 border-t border-line px-3 py-3">
-          <p className="rounded-lg bg-warn-50 px-2.5 py-1.5 text-[12px] text-ink-3">No formula here has yet been checked against a primary text or scholarly translation. Each Lot shows how far it has been verified; an unresolved Lot is not calculated, and an alternative from another tradition is shown for comparison only and used in no judgment.</p>
+          <p className="rounded-lg bg-warn-50 px-2.5 py-1.5 text-[12px] text-ink-3">No formula here has been read in a primary text or a full translation; several are supported by excerpts of translations or by agreeing modern sources, and each Lot says which. An unresolved Lot is not calculated, and an alternative from another tradition is shown for comparison only and used in no judgment.</p>
           {LOTS.map((def) => {
             const r = lotRecord(ctx, def);
             const v = VERIFY[def.verification.status];
