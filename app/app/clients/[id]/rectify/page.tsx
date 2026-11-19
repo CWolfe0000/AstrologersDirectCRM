@@ -98,6 +98,11 @@ export default function RectifyPage() {
       />
       {b.rectifiedFrom && <p className="mb-4 text-[12.5px] text-muted">Already rectified{b.rectifiedAt ? ` on ${fmtDate(b.rectifiedAt)}` : ""}: previously {b.rectifiedFrom === "unknown" ? "unknown" : fmtClock(b.rectifiedFrom)}.</p>}
 
+      <div className="mb-5 rounded-lg border border-line bg-canvas-2 px-4 py-3 text-[12.5px] text-muted">
+        <p className="mb-0.5 font-semibold text-ink">How Reliable Is This?</p>
+        <p>We tested this on 10 people with birth-certificate times (Astro-Databank, rated AA) and four to seven well-dated events each, searching two hours either side. The top candidate was within 30 minutes of the true time for 1 of the 10, which is no better than chance. Treat the ranking as a starting point, judge the contacts listed for each candidate yourself, and keep the window narrow around a remembered time where you can.</p>
+      </div>
+
       <div className="grid gap-5 xl:grid-cols-[420px_minmax(0,1fr)]">
         <div className="space-y-5">
           <Card>
@@ -237,13 +242,13 @@ export default function RectifyPage() {
                       </div>
                       <div className="space-y-1">
                         <BHead>Aspect Weights</BHead>
-                        <p>{result.weights.aspects.map((a) => `${a.name} ${a.w}`).join(" · ")}. An opposition to the Ascendant or Midheaven is counted as a conjunction to the Descendant or IC.</p>
+                        <p>{result.weights.aspects.map((a) => `${a.name.charAt(0).toUpperCase()}${a.name.slice(1)} ${a.w}`).join(" · ")}. An opposition to the Ascendant or Midheaven is counted as a conjunction to the Descendant or IC.</p>
                       </div>
                       <div className="space-y-1">
                         <BHead>Which Angle Matters for Each Event</BHead>
                         <BTable head={["Event", "ASC", "MC", "DSC", "IC"]} rows={Object.values(result.weights.events).map((e) => [e.label, e.angles.asc, e.angles.mc, e.angles.dsc, e.angles.ic])} />
                       </div>
-                      <p>Points for a hit = technique weight × aspect weight × angle weight × (1 − ½ × orb ÷ maximum orb). A candidate’s score is the sum of its hits. Weights are provisional; the hits listed above are the evidence to judge.</p>
+                      <p>Points for a hit = technique weight × aspect weight × angle weight × (1 − orb ÷ maximum orb), so an exact hit scores in full and one at the edge of orb scores nothing. Each event counts its best hit plus a quarter of its second; a candidate’s score is the total over all events. Only conjunctions, oppositions and squares count. Weights are provisional; the hits listed above are the evidence to judge.</p>
                     </Breakdown>
                   </CardBody>
                 </Card>

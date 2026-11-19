@@ -1,0 +1,25 @@
+{
+  "about": "Rectification benchmark. Birth data: Astro-Databank (astro.com), Rodden rating AA only, time zone as the fixed UT offset ADB gives. Event dates: confirmed in the person's English Wikipedia article (for Martha Stewart's 2004 conviction and sentencing, ADB's biography). Fetched 2026-11-19.",
+  "cases": [
+    { "name": "Donald Trump", "birth": { "date": "1946-06-14", "time": "10:54", "lat": 40.7, "lon": -73.8164, "tz": "Etc/GMT+4", "place": "Queens, New York" },
+      "events": [["1977-04-09","marriage","Married Ivana"],["1990-12-11","separation","Divorced Ivana"],["1993-12-20","marriage","Married Marla Maples"],["1999-06-08","separation","Divorced Marla Maples"],["2005-01-22","marriage","Married Melania"],["2024-05-30","legal","Convicted in New York"],["2024-07-13","health","Shot at Butler rally"]] },
+    { "name": "William, Prince of Wales", "birth": { "date": "1982-06-21", "time": "21:03", "lat": 51.5333, "lon": -0.2, "tz": "Etc/GMT-1", "place": "Paddington, England" },
+      "events": [["1997-08-31","parent","Mother died"],["2011-04-29","marriage","Married Catherine"],["2013-07-22","child","George born"],["2015-05-02","child","Charlotte born"],["2018-04-23","child","Louis born"],["2022-09-08","career","Became heir apparent"]] },
+    { "name": "Angelina Jolie", "birth": { "date": "1975-06-04", "time": "09:09", "lat": 34.0961, "lon": -118.2944, "tz": "Etc/GMT+7", "place": "Los Angeles" },
+      "events": [["2000-05-05","marriage","Married Billy Bob Thornton"],["2006-05-27","child","Shiloh born"],["2007-01-27","parent","Mother died"],["2014-08-23","marriage","Married Brad Pitt"],["2016-09-19","separation","Filed for divorce"]] },
+    { "name": "Martha Stewart", "birth": { "date": "1941-08-03", "time": "13:33", "lat": 40.7333, "lon": -74.0833, "tz": "Etc/GMT+4", "place": "Jersey City, New Jersey" },
+      "events": [["1999-10-19","career","Company went public"],["2003-06-04","legal","Indicted; resigned as CEO"],["2004-03-05","legal","Convicted"],["2004-07-16","legal","Sentenced"],["2004-10-08","incarceration","Reported to prison"]] },
+    { "name": "O. J. Simpson", "birth": { "date": "1947-07-09", "time": "08:08", "lat": 37.7833, "lon": -122.4167, "tz": "Etc/GMT+8", "place": "San Francisco" },
+      "events": [["1994-06-17","legal","Arrested after Bronco chase"],["1995-10-03","legal","Acquitted"],["2007-09-16","legal","Arrested in Las Vegas"],["2008-12-05","incarceration","Sentenced to prison"]] },
+    { "name": "Kamala Harris", "birth": { "date": "1964-10-20", "time": "21:28", "lat": 37.8, "lon": -122.2667, "tz": "Etc/GMT+7", "place": "Oakland, California" },
+      "events": [["2014-08-22","marriage","Married Doug Emhoff"],["2020-08-11","career","Chosen as running mate"],["2021-01-20","career","Became vice president"],["2024-07-21","career","Became presidential candidate"]] },
+    { "name": "Steve Jobs", "birth": { "date": "1955-02-24", "time": "19:15", "lat": 37.7833, "lon": -122.4167, "tz": "Etc/GMT+8", "place": "San Francisco" },
+      "events": [["1976-04-01","career","Founded Apple"],["1985-09-17","career","Resigned from Apple"],["1991-03-18","marriage","Married Laurene Powell"],["2011-08-24","career","Resigned as CEO"]] },
+    { "name": "Tiger Woods", "birth": { "date": "1975-12-30", "time": "22:50", "lat": 33.7667, "lon": -118.1833, "tz": "Etc/GMT+8", "place": "Long Beach, California" },
+      "events": [["1997-04-13","career","Won the Masters"],["2004-10-05","marriage","Married Elin Nordegren"],["2006-05-03","parent","Father died"],["2010-08-23","separation","Divorced"],["2017-05-29","legal","DUI arrest"],["2021-02-23","health","Car crash"]] },
+    { "name": "Elvis Presley", "birth": { "date": "1935-01-08", "time": "04:35", "lat": 34.25, "lon": -88.7, "tz": "Etc/GMT+6", "place": "Tupelo, Mississippi" },
+      "events": [["1958-03-24","career","Inducted into the Army"],["1967-05-01","marriage","Married Priscilla"],["1968-02-01","child","Lisa Marie born"],["1973-10-09","separation","Divorced"]] },
+    { "name": "Elizabeth Taylor", "birth": { "date": "1932-02-27", "time": "02:30", "lat": 51.5, "lon": -0.1667, "tz": "Etc/GMT", "place": "London" },
+      "events": [["1950-05-06","marriage","Married Conrad Hilton Jr."],["1952-02-21","marriage","Married Michael Wilding"],["1957-02-02","marriage","Married Mike Todd"],["1959-05-12","marriage","Married Eddie Fisher"],["1991-10-06","marriage","Married Larry Fortensky"]] }
+  ]
+}
