@@ -86,7 +86,7 @@ export default function Home() {
             {[
               ["Your pattern", "How you love, what you need, who you are drawn to and what you repeat. Free."],
               ["The pattern across your exes", "What your past partners share, and how each of their charts met yours."],
-              ["A check on someone new", "Which parts of your pattern this person repeats and which they break."],
+              ["A check on someone new", "Which parts of your pattern this person repeats, and which sore spots in each of your charts the other one presses on."],
               ["Your calendar", "The periods in the next 12 months when your relationship planets are active."],
             ].map(([t, b]) => (
               <div key={t} className="card !p-5">

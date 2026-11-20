@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Insight, OwnPattern, Placement } from "@/lib/reading/own";
+import type { DifficultAspect } from "@/lib/reading/triggers";
 
 export function InsightCard({ insight, tag }: { insight: Insight; tag?: React.ReactNode }) {
   return (
@@ -87,6 +88,35 @@ export function PatternView({ pattern, placements, children }: { pattern: OwnPat
         )}
       </Section>
       {children}
+    </div>
+  );
+}
+
+/** One person's difficult aspects, with what the other person does to each. */
+export function TriggerList({ aspects, quiet }: { aspects: DifficultAspect[]; quiet: string }) {
+  return (
+    <div className="grid gap-4">
+      {aspects.map((a) => (
+        <article key={a.key} className={`card ${a.triggers.length ? "" : "!bg-transparent !shadow-none"}`}>
+          <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
+            <h4 className="font-display text-xl font-semibold">{a.name}</h4>
+            <span className={`rounded-full px-3 py-1 text-sm font-semibold ${a.triggers.length ? "bg-rose-soft text-rose-hover" : "bg-cream-2 text-ink-2"}`}>{a.triggers.length ? "Set off" : "Left alone"}</span>
+          </div>
+          <p className="mt-2 text-ink-2">{a.body}</p>
+          <p className="mt-3 text-xs font-medium uppercase tracking-wider text-muted">{a.basis}</p>
+          {a.triggers.length > 0 ? (
+            <ul className="mt-4 space-y-2 border-t border-line pt-4">
+              {a.triggers.map((t) => (
+                <li key={t.title}>
+                  <span className="font-semibold">{t.title}.</span> <span className="text-ink-2">{t.body}</span> <span className="whitespace-nowrap text-sm text-muted">{t.orb.toFixed(1)}° from exact</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-sm text-muted">{quiet}</p>
+          )}
+        </article>
+      ))}
     </div>
   );
 }

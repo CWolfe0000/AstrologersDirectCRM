@@ -106,6 +106,8 @@ export interface Dynamic {
   /** Name of the difficult form, and of the easy form. */
   name: string;
   easyName: string;
+  /** The difficult form, said about someone else. */
+  them: string;
   /** How a conjunction reads. */
   conj: "hard" | "flowing";
   hard: string;
@@ -116,6 +118,7 @@ export interface Dynamic {
 export const DYNAMICS: Record<string, Dynamic> = {
   "venus-saturn": {
     name: "The slow thaw",
+    them: "They expect love to be earned and hold back until they are sure. They can seem cool, or slow to commit.",
     easyName: "Built to last",
     conj: "hard",
     hard: "You expect love to be earned, and part of you waits for it to be withdrawn. You hold back until you are sure, choose partners who are hard to reach, or stay loyal long after the warmth has gone. The other side of this is that what you build tends to last.",
@@ -123,6 +126,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
   },
   "venus-uranus": {
     name: "Come close, need space",
+    them: "They want closeness and then need room. Expect them to pull away when things get settled.",
     easyName: "Room to breathe",
     conj: "hard",
     hard: "Attraction arrives suddenly for you and can leave the same way. When someone gets close you want room; when they give you room you want them back. You are often drawn to people who are unavailable or far away because the distance is already built in.",
@@ -130,6 +134,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
   },
   "venus-neptune": {
     name: "The idealised partner",
+    them: "They fall for an ideal and are let down by the real person. They can give too much and resent it quietly.",
     easyName: "The romantic",
     conj: "hard",
     hard: "You fall for who someone could be. Early on you fill the gaps with hope, and the disappointment comes when the real person shows up. You are also prone to giving more than you get and calling it love.",
@@ -137,6 +142,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
   },
   "venus-pluto": {
     name: "All or nothing",
+    them: "They attach intensely and find it hard to let go. Jealousy and tests of loyalty are likely.",
     easyName: "Deep loyalty",
     conj: "hard",
     hard: "You do not do casual. Your relationships go deep fast and can turn into jealousy, power struggles or an inability to let go. You are drawn to people who change you, and endings are rarely clean.",
@@ -144,6 +150,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
   },
   "venus-mars": {
     name: "Chemistry first",
+    them: "They are drawn to friction and can take arguments for passion.",
     easyName: "Easy chemistry",
     conj: "flowing",
     hard: "What you want and what is good for you pull in different directions. You are attracted to friction, so relationships with strong chemistry and frequent arguments feel more real to you than calm ones.",
@@ -151,6 +158,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
   },
   "venus-jupiter": {
     name: "More is more",
+    them: "They overdo it in love: big gestures early, then restlessness when the excitement settles.",
     easyName: "Generous heart",
     conj: "flowing",
     hard: "You are generous in love and inclined to overdo it: too much too soon, big promises, or expecting a relationship to stay as exciting as its first month.",
@@ -158,6 +166,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
   },
   "moon-saturn": {
     name: "Self-contained",
+    them: "They keep their feelings to themselves and find it hard to ask for comfort. They can seem most distant when they most need someone.",
     easyName: "The steady one",
     conj: "hard",
     hard: "You learned early to look after your own feelings. You find it hard to ask for comfort, and you can pick partners who are emotionally sparing because that feels familiar. People often do not know when you need them.",
@@ -165,6 +174,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
   },
   "moon-uranus": {
     name: "Restless heart",
+    them: "They need a lot of emotional space and get restless with routine.",
     easyName: "Easy independence",
     conj: "hard",
     hard: "You need more emotional freedom than most relationships assume. Too much routine or closeness makes you restless, and you may leave, or provoke a change, when things get too settled.",
@@ -172,6 +182,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
   },
   "moon-neptune": {
     name: "The absorber",
+    them: "They soak up other people’s moods and lose track of their own needs.",
     easyName: "The intuitive",
     conj: "hard",
     hard: "You take on a partner's feelings as if they were yours. It makes you very caring and it makes your own needs hard to locate. You can stay in something draining because you feel sorry for the other person.",
@@ -179,6 +190,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
   },
   "moon-pluto": {
     name: "Deep waters",
+    them: "They feel things intensely and fear being left, which can come out as control.",
     easyName: "Emotional stamina",
     conj: "hard",
     hard: "You feel everything intensely and you guard against being abandoned. You may try to control a relationship to feel safe in it, or pick partners who do that to you. Trust has to be proved.",
@@ -186,6 +198,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
   },
   "moon-venus": {
     name: "Comfort versus desire",
+    them: "What attracts them and what comforts them are different, so they send mixed signals about what they want.",
     easyName: "Heart in agreement",
     conj: "flowing",
     hard: "What attracts you and what makes you feel safe are different things. You can end up with exciting partners who do not look after you, or kind ones you do not want.",
@@ -193,6 +206,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
   },
   "moon-mars": {
     name: "Quick to flare",
+    them: "They react fast and hot when they are hurt.",
     easyName: "Says what they feel",
     conj: "hard",
     hard: "Your feelings come out as heat. You react fast, argue when you are hurt, and can read a calm partner as an indifferent one.",
@@ -200,6 +214,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
   },
   "sun-moon": {
     name: "Two minds",
+    them: "What they want and what they need pull apart, so they are hard to satisfy.",
     easyName: "Of one mind",
     conj: "flowing",
     hard: "What you want for yourself and what you need to feel safe pull in different directions, so part of you is always unsatisfied with a relationship. Partners may get mixed signals about what you are asking for.",
@@ -207,6 +222,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
   },
   "mars-saturn": {
     name: "Stop and start",
+    them: "They hold back desire and anger until it comes out as resentment.",
     easyName: "Patient desire",
     conj: "hard",
     hard: "You hold your desire back. You hesitate to make the first move, fear rejection, and can let resentment build instead of saying what you want. With trust this becomes real staying power.",
@@ -214,6 +230,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
   },
   "mars-uranus": {
     name: "Sudden attractions",
+    them: "They act on impulse and rebel when they feel controlled.",
     easyName: "The spark",
     conj: "hard",
     hard: "Attraction hits you without warning and you act on it. You want excitement and independence, and you can blow up a relationship when you feel controlled.",
@@ -221,6 +238,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
   },
   "mars-pluto": {
     name: "The power struggle",
+    them: "They do not back down, and disagreements become contests of will.",
     easyName: "Strong will",
     conj: "hard",
     hard: "You want intensely and you do not back down. Relationships can become contests of will, and you are attracted to people who are as forceful as you are.",
@@ -497,3 +515,21 @@ export const HOUSE_AREA = [
   "romance, fun and creativity", "work and daily routine", "committed partnership", "intimacy, trust and shared resources",
   "travel, study and beliefs", "career and reputation", "friendships and hopes", "the inner life and what is kept hidden",
 ];
+
+/* ---------- Triggers ---------- */
+
+/** How one person's planet sets off a difficult aspect in the other's chart. {P} is "Your" or "Sam’s". */
+export const SETS_OFF: Partial<Record<PointId, string>> = {
+  sun: "{P} ordinary way of being is enough to set it off.",
+  moon: "{P} moods and needs set it off.",
+  mercury: "{P} words set it off: what is said, and how.",
+  venus: "{P} affection, tastes and wants set it off.",
+  mars: "{P} anger, desire or pushing sets it off.",
+  jupiter: "{P} enthusiasm and promises make it bigger.",
+  saturn: "{P} criticism, distance or demands press on it.",
+  uranus: "{P} unpredictability jolts it.",
+  neptune: "{P} vagueness or elusiveness feeds it.",
+  pluto: "{P} intensity or need for control forces it to the surface.",
+  node: "{P} direction in life pulls it into the centre of things.",
+  asc: "{P} manner and presence set it off.",
+};

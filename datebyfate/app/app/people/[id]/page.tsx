@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { removePerson } from "@/app/actions";
-import { InsightCard, Locked, NoteList, Placements, Section } from "@/components/reading";
+import { InsightCard, Locked, NoteList, Placements, Section, TriggerList } from "@/components/reading";
 import { formatDate, oneIn, plural } from "@/lib/format";
 import { coupleReport } from "@/lib/reading/couple";
 import { checkAgainst } from "@/lib/reading/exes";
 import { placementsOf } from "@/lib/reading/own";
+import { difficultAspects } from "@/lib/reading/triggers";
 import { requireUser } from "@/lib/server/auth";
 import { exPattern, loadContext } from "@/lib/server/readings";
 import { transitWindows } from "@/lib/server/timing";
@@ -55,6 +56,10 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const report = coupleReport(ctx.self.chart, person.chart, person.name);
   const pattern = isEx ? null : exPattern(user.id, ctx);
   const check = pattern?.repeats.length ? checkAgainst(ctx.self.chart, pattern.repeats, { chart: person.chart, hasTime: !!person.birth.time }) : null;
+  // Each person alone, then what the other sets off.
+  const yours = difficultAspects(ctx.self.chart, person.chart, null, person.name);
+  const theirs = difficultAspects(person.chart, ctx.self.chart, person.name, null);
+  const setOff = (xs: typeof yours) => xs.filter((a) => a.triggers.length).length;
   const judged = check ? check.carried.length + check.absent.length : 0;
 
   return (
@@ -102,6 +107,29 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           <Section title="Where it rubs" intro="The closest tense contacts. These are where the work is, and often where the pull is.">
             {report.friction.length ? <div className="grid gap-4 lg:grid-cols-2">{report.friction.map((i) => <InsightCard key={i.title} insight={i} />)}</div> : <p className="card text-ink-2">No close tense contacts between the two charts.</p>}
           </Section>
+          <Section
+            title="What you set off in each other"
+            intro="Each of you has difficult aspects in your own chart, whoever you are with. These are the ones the other person’s planets land on, closest first."
+          >
+            <div className="grid gap-8 lg:grid-cols-2">
+              <div>
+                <h3 className="mb-3 text-xl font-semibold">In you</h3>
+                {yours.length ? (
+                  <TriggerList aspects={yours} quiet={`Nothing in ${person.name}’s chart touches this. It stays quiet between you.`} />
+                ) : (
+                  <p className="card text-ink-2">Your chart has no difficult aspects between the relationship planets, so there is nothing here for {person.name} to set off.</p>
+                )}
+              </div>
+              <div>
+                <h3 className="mb-3 text-xl font-semibold">In {person.name}</h3>
+                {theirs.length ? (
+                  <TriggerList aspects={theirs} quiet="Nothing in your chart touches this. It stays quiet between you." />
+                ) : (
+                  <p className="card text-ink-2">{person.name}’s chart has no difficult aspects between the relationship planets{person.birth.time ? "" : " that can be read without a birth time"}.</p>
+                )}
+              </div>
+            </div>
+          </Section>
           {report.overlays.length > 0 && (
             <Section title="Where you land in each other’s lives" intro="The part of one person’s chart that the other person’s planets fall in.">
               <ul className="card grid gap-x-8 gap-y-3 sm:grid-cols-2">
@@ -117,7 +145,9 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       ) : (
         <Section title="The two of you together">
           <Locked title={`${plural(report.strengths.length, "strength")} and ${plural(report.friction.length, "friction point")} between your charts`}>
-            <p>Subscribe to read each contact, where you land in each other’s lives, the relationship’s own chart and its timing for the next 12 months.</p>
+            <p>
+              {person.name} sets off {setOff(yours)} of the {plural(yours.length, "difficult aspect")} in your chart, and you set off {setOff(theirs)} of the {theirs.length} in theirs. Subscribe to see which ones and how, along with each contact, where you land in each other’s lives, the relationship’s own chart and its timing for the next 12 months.
+            </p>
           </Locked>
         </Section>
       )}

@@ -97,6 +97,7 @@ const personUrl = page.url();
 text = await page.locator("main").innerText();
 assert.match(text, /\d+ strengths? and \d+ friction points? between your charts/);
 assert.doesNotMatch(text, /What comes easily/);
+assert.match(text, /Charlie sets off \d+ of the \d+ difficult aspects? in your chart, and you set off \d+ of the \d+ in theirs/);
 await shot("05-person-free");
 
 step("pricing without Stripe configured says so and charges nothing");
@@ -116,6 +117,8 @@ await shot("07-exes-premium");
 await page.goto(personUrl);
 await page.getByRole("heading", { name: "What comes easily" }).waitFor();
 await page.getByRole("heading", { name: "The relationship itself" }).waitFor();
+await page.getByRole("heading", { name: "What you set off in each other" }).waitFor();
+await page.getByRole("heading", { name: "In Charlie", exact: true }).waitFor();
 text = await page.locator("main").innerText();
 assert.match(text, /Charlie’s (Sun|Moon|Venus|Mars) in your \d+(st|nd|rd|th) house/);
 await shot("08-person-premium");

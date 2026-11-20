@@ -31,6 +31,9 @@ export default function Method() {
         <H>Two charts together</H>
         <P>For a couple we list the closest contacts between the two charts, sorted into what comes easily and what causes friction, where each person’s planets fall in the other’s houses, and the composite chart, which is made of the midpoints between your planets and describes the relationship itself. There is no compatibility score.</P>
 
+        <H>Triggers</H>
+        <P>Each person is also read alone. A difficult aspect in someone’s chart, such as Venus square Saturn, is theirs whoever they are with. We then check whether the other person has a planet within 3° or 4° of either end of it, by conjunction, square or opposition. If so, that person sets it off; if not, it stays quiet in this relationship. You see this in both directions: what they set off in you, and what you set off in them. Across past partners, being set off in the same place again and again counts as a repeat.</P>
+
         <H>Timing</H>
         <P>Your calendar lists the periods in the next 12 months when Jupiter, Saturn, Uranus, Neptune or Pluto come within a degree or two of your relationship points, with start, peak and end dates.</P>
 

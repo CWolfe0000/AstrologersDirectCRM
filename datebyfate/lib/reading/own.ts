@@ -1,6 +1,6 @@
 import type { BodyId, Chart } from "@/lib/astro/types";
 import { NATAL_ORBS, POINT_NAMES, SIGNS, aspectBetween, houseOf, ordinal, signIndex, signName } from "@/lib/astro/zodiac";
-import { DESCENDANT, DYNAMICS, IN_SEVENTH, MARS, MOON, RULER_HOUSE, VENUS, VENUS_HEADLINES } from "./text";
+import { DESCENDANT, DYNAMICS, type Dynamic, IN_SEVENTH, MARS, MOON, RULER_HOUSE, VENUS, VENUS_HEADLINES } from "./text";
 
 export interface Insight {
   title: string;
@@ -16,6 +16,33 @@ export interface OwnPattern {
   drawnTo: Insight[];
   dynamics: Insight[];
   notes: string[];
+}
+
+export interface NatalAspect {
+  /** Key into DYNAMICS, e.g. "venus-saturn". */
+  key: string;
+  x: BodyId;
+  y: BodyId;
+  dynamic: Dynamic;
+  /** "Venus square Saturn" */
+  label: string;
+  orb: number;
+  /** The difficult form of the dynamic. */
+  hard: boolean;
+}
+
+/** The aspects in one chart that make relationship dynamics. */
+export function aspectsOf(chart: Chart): NatalAspect[] {
+  const out: NatalAspect[] = [];
+  for (const [key, dynamic] of Object.entries(DYNAMICS)) {
+    const [x, y] = key.split("-") as [BodyId, BodyId];
+    // Without a birth time the Moon can be 6° either way: too loose for aspects.
+    if (!chart.houses && (x === "moon" || y === "moon")) continue;
+    const asp = aspectBetween(chart.bodies[x].lon, chart.bodies[y].lon, NATAL_ORBS);
+    if (!asp) continue;
+    out.push({ key, x, y, dynamic, label: `${POINT_NAMES[x]} ${asp.name} ${POINT_NAMES[y]}`, orb: asp.orb, hard: (asp.cls === "conjunction" ? dynamic.conj : asp.cls) === "hard" });
+  }
+  return out;
 }
 
 const firstSentence = (s: string) => s.slice(0, s.indexOf(". ") + 1 || s.length);
@@ -51,16 +78,13 @@ export function ownPattern(chart: Chart): OwnPattern {
     notes.push("Without a birth time we can’t work out your rising sign or houses, so the section on who you are drawn to is missing. Add your birth time to see it.");
   }
 
-  const found: (Insight & { orb: number; hard: boolean })[] = [];
-  for (const [key, d] of Object.entries(DYNAMICS)) {
-    const [x, y] = key.split("-") as [BodyId, BodyId];
-    // Without a birth time the Moon can be 6° either way: too loose for aspects.
-    if (!h && (x === "moon" || y === "moon")) continue;
-    const asp = aspectBetween(b[x].lon, b[y].lon, NATAL_ORBS);
-    if (!asp) continue;
-    const tone = asp.cls === "conjunction" ? d.conj : asp.cls;
-    found.push({ title: tone === "hard" ? d.name : d.easyName, body: d[tone], basis: `${POINT_NAMES[x]} ${asp.name} ${POINT_NAMES[y]}, ${asp.orb.toFixed(1)}° from exact`, orb: asp.orb, hard: tone === "hard" });
-  }
+  const found: (Insight & { orb: number; hard: boolean })[] = aspectsOf(chart).map((a) => ({
+    title: a.hard ? a.dynamic.name : a.dynamic.easyName,
+    body: a.dynamic[a.hard ? "hard" : "flowing"],
+    basis: `${a.label}, ${a.orb.toFixed(1)}° from exact`,
+    orb: a.orb,
+    hard: a.hard,
+  }));
   found.sort((p, q) => p.orb - q.orb);
   const dynamics = found.map(({ title, body, basis }) => ({ title, body, basis }));
 

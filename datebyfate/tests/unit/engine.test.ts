@@ -3,14 +3,16 @@ import type { Birth } from "@/lib/astro/types";
 import { signName } from "@/lib/astro/zodiac";
 import { binomialTail, checkAgainst, patternAcross, plainFacts, signaturesOf } from "@/lib/reading/exes";
 import { coupleReport } from "@/lib/reading/couple";
-import { ownPattern } from "@/lib/reading/own";
+import { aspectsOf, ownPattern } from "@/lib/reading/own";
 import { contactText } from "@/lib/reading/text";
+import { difficultAspects, triggeredKeys } from "@/lib/reading/triggers";
 import { chartFor } from "@/lib/server/charts";
 import { referenceSignatures, seeded } from "@/lib/server/reference";
 import { ownTiming } from "@/lib/server/readings";
 
 const london = { place: "London", lat: 51.5074, lon: -0.1278, tz: "Europe/London" };
 const me: Birth = { date: "1990-06-15", time: "14:30", ...london };
+const aspectKeys = (c: ReturnType<typeof chartFor>) => aspectsOf(c).filter((a) => a.hard).map((a) => a.key).sort();
 const born = (date: string, time: string | null = null): Birth => ({ date, time, ...london });
 
 describe("charts", () => {
@@ -145,6 +147,43 @@ describe("couple report and wording", () => {
     expect(noTime.overlays).toHaveLength(3);
     expect(noTime.composite).toHaveLength(2);
     expect(noTime.notes[0]).toMatch(/Sam’s birth time is unknown/);
+  });
+});
+
+describe("triggers", () => {
+  // 1990-06-15 14:30 London has Mars square Uranus and Venus opposite Pluto (see the own-pattern reading).
+  const you = chartFor(me);
+
+  it("reads each person alone and finds what the other sets off", () => {
+    const own = difficultAspects(you, chartFor(born("1988-03-10")), null, "Sam");
+    expect(own.map((a) => a.key).sort()).toEqual(aspectKeys(you));
+    for (const a of own) {
+      expect(a.body).toMatch(/\byou\b/i);
+      for (const t of a.triggers) {
+        expect(t.title).toMatch(/^Sam’s \w+( \w+)? (on|opposite|square) your (Venus|Pluto|Mars|Uranus|Moon|Sun|Saturn|Neptune|Jupiter)$/);
+        expect(t.orb).toBeLessThanOrEqual(4);
+        expect(t.by).not.toBe("moon"); // Sam's birth time is unknown
+        expect(["uranus", "neptune", "pluto"].includes(t.by) && ["uranus", "neptune", "pluto"].includes(t.end)).toBe(false);
+      }
+    }
+    // Triggered aspects come first.
+    const flags = own.map((a) => a.triggers.length > 0);
+    expect(flags).toEqual([...flags].sort((p, q) => Number(q) - Number(p)));
+  });
+
+  it("someone born with a planet on one end of the aspect sets it off; the wording flips for the other person", () => {
+    // A person whose own chart is yours has every planet on yours.
+    const twin = difficultAspects(you, you, null, "Twin");
+    expect(twin.every((a) => a.triggers.length >= 1)).toBe(true);
+    const theirs = difficultAspects(you, you, "Twin", null);
+    expect(theirs[0]!.body).toMatch(/^(They|What they) /);
+    expect(theirs[0]!.triggers[0]!.title).toMatch(/^Your \w+( \w+)? on Twin’s /);
+    expect(triggeredKeys(you, you).sort()).toEqual(aspectKeys(you));
+  });
+
+  it("counts as a signature across partners", () => {
+    const keys = [...signaturesOf(you, { chart: you, hasTime: true })].filter((k) => k.startsWith("trigger|"));
+    expect(keys.sort()).toEqual(aspectKeys(you).map((k) => `trigger|${k}`));
   });
 });
 

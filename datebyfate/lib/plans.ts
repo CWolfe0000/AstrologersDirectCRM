@@ -15,7 +15,7 @@ export const FREE_FEATURES = ["Your own relationship pattern, from your birth ch
 export const PREMIUM_FEATURES = [
   "The pattern across your past partners, checked against chance",
   "Check anyone new against your pattern",
+  "Each partner read on their own, and what the two of you set off in each other",
   "Full couple reports: strengths, friction and the relationship’s own chart",
   "Your relationship calendar for the next 12 months",
-  "Unlimited people",
 ];
