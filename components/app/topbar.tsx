@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bell, Plus, Search, HelpCircle, Menu, LogOut, Settings, User, BookOpen, Keyboard, Compass, MessageCircle, ExternalLink } from "lucide-react";
 import { useStore } from "@/lib/store";
-import { cn, relTime } from "@/lib/utils";
+import { cn, titleCase, relTime } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Kbd } from "@/components/ui/misc";
@@ -90,7 +90,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
                 >
                   <NotificationIcon type={n.type} />
                   <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-medium text-ink">{n.title}</p>
+                    <p className="text-[13px] font-medium text-ink">{titleCase(n.title)}</p>
                     <p className="line-clamp-2 text-[12.5px] text-muted">{n.body}</p>
                     <p className="mt-1 text-[11px] text-muted">{relTime(n.at)}</p>
                   </div>

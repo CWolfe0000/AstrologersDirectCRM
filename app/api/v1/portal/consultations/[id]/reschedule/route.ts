@@ -24,7 +24,7 @@ export const POST = handler(async (req: Request, ctx: { params: Promise<{ id: st
   await upsertRecord(practiceId, "notifications", {
     id: newId("n"),
     type: "client",
-    title: "Reschedule request",
+    title: "Reschedule Request",
     body: `${name} asked to move “${k.type}” on ${String(k.start).slice(0, 10)}.${note ? ` “${note.slice(0, 140)}${note.length > 140 ? "…" : ""}”` : ""}`,
     at: nowLocal(),
     read: false,

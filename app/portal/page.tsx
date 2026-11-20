@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { ArrowRight, Video, Phone, MapPin, Mail, Globe, FileText, Headphones, Film, Bell, Check, FolderOpen, MessagesSquare, CalendarPlus } from "lucide-react";
 import { useStore, personName } from "@/lib/store";
-import { cn, fmtDay, fmtDate, fmtLong, fmtTime, relTime, sameDay, fmtDuration } from "@/lib/utils";
+import { cn, titleCase, fmtDay, fmtDate, fmtLong, fmtTime, relTime, sameDay, fmtDuration } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -222,7 +222,7 @@ export default function PortalHome() {
                 <li key={n.id} className={cn("flex gap-3 border-b border-line/70 px-5 py-3.5 last:border-0", !n.read && "bg-accent-50/40")}>
                   <span className={cn("mt-1.5 size-2 shrink-0 rounded-full", n.read ? "bg-line-strong" : "bg-accent")} />
                   <Link href={n.href ?? "/portal"} onClick={() => markRead(n.id)} className="min-w-0 flex-1">
-                    <p className="text-[13px] font-medium text-ink">{n.title}</p>
+                    <p className="text-[13px] font-medium text-ink">{titleCase(n.title)}</p>
                     <p className="text-[12.5px] text-muted">{n.body}</p>
                     <p className="mt-1 text-[11px] text-muted">{relTime(n.at)}</p>
                   </Link>

@@ -253,7 +253,7 @@ export const useStore = create<DemoState>()(
           clientWork: [work, ...s.clientWork],
           portalNotifications:
             work.status === "shared"
-              ? [{ id: uid("pn"), clientId: work.clientId, title: "New from your astrologer", body: `“${work.title}” has been shared with you.`, at: NOW(), read: false, href: `/portal/work/${work.id}` }, ...s.portalNotifications]
+              ? [{ id: uid("pn"), clientId: work.clientId, title: "New From Your Astrologer", body: `“${work.title}” has been shared with you.`, at: NOW(), read: false, href: `/portal/work/${work.id}` }, ...s.portalNotifications]
               : s.portalNotifications,
         }));
         get().log({ kind: "client", text: `${work.status === "shared" ? "Shared" : "Drafted"} “${work.title}”`, clientId: work.clientId, href: `/app/clients/${work.clientId}?tab=work&work=${work.id}` });
@@ -274,7 +274,7 @@ export const useStore = create<DemoState>()(
           clientWork: s.clientWork.map((w) => (w.id === id ? next : w)),
           // The client sees a notice in their portal when work is first shared.
           portalNotifications: sharingNow
-              ? [{ id: uid("pn"), clientId: next.clientId, title: "New from your astrologer", body: `“${next.title}” has been shared with you.`, at: NOW(), read: false, href: `/portal/work/${id}` }, ...s.portalNotifications]
+              ? [{ id: uid("pn"), clientId: next.clientId, title: "New From Your Astrologer", body: `“${next.title}” has been shared with you.`, at: NOW(), read: false, href: `/portal/work/${id}` }, ...s.portalNotifications]
               : s.portalNotifications,
         }));
         if (sharingNow) get().log({ kind: "client", text: `Shared “${next.title}”`, clientId: next.clientId, href: `/app/clients/${next.clientId}?tab=work&work=${id}` });
@@ -332,8 +332,8 @@ export const useStore = create<DemoState>()(
         set((s) => ({
           readings: s.readings.map((x) => (x.id === id ? { ...x, status: "delivered", deliveredAt: NOW(), notification: "sent", failureReason: undefined } : x)),
           // Simulated client notification — appears in the client portal for the demo client.
-          portalNotifications: [{ id: uid("pn"), clientId: r.clientId, title: "New reading available", body: `“${r.title}” has been shared with you.`, at: NOW(), read: false, href: `/portal/readings/${r.id}` }, ...s.portalNotifications],
-          notifications: [{ id: uid("n"), type: "delivery", title: "Reading delivered", body: `“${r.title}” was delivered to the client portal.`, at: NOW(), read: false, href: `/app/delivery?id=${r.id}` }, ...s.notifications],
+          portalNotifications: [{ id: uid("pn"), clientId: r.clientId, title: "New Reading Available", body: `“${r.title}” has been shared with you.`, at: NOW(), read: false, href: `/portal/readings/${r.id}` }, ...s.portalNotifications],
+          notifications: [{ id: uid("n"), type: "delivery", title: "Reading Delivered", body: `“${r.title}” was delivered to the client portal.`, at: NOW(), read: false, href: `/app/delivery?id=${r.id}` }, ...s.notifications],
         }));
         get().log({ kind: "reading", text: `Delivered “${r.title}”`, clientId: r.clientId, href: `/app/delivery?id=${r.id}` });
       },

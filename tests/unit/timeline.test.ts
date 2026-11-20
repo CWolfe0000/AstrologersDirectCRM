@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { convergenceTimeline } from "@/lib/astro/timeline";
 import type { Ephemeris } from "@/lib/astro/techniques";
+import { lifecycleOf } from "@/lib/astro/activation";
 
 /**
  * Stand-in ephemeris with hand-checkable motion:
@@ -137,6 +138,52 @@ describe("convergence timeline", () => {
     expect(r.contacts.some((c) => c.id === "progressed:sun:conjunction:moon")).toBe(false);
     // A point is never directed onto itself.
     expect(r.contacts.some((c) => c.source === c.target)).toBe(false);
+  });
+
+  describe("solar arc lifecycle across the range edge", () => {
+    // The fake Sun moves 1°/day, so the solar arc is 1° per year of life. Natal Sun = the fake Sun at birth.
+    const birthUtc = "1990-01-01T00:00:00Z";
+    const age = (utc: string) => (Date.parse(utc) - Date.parse(birthUtc)) / 86_400_000 / 365.24219;
+    const moon = 99 + 38 / 60; // 9°38' Cancer
+    // Solar arc Mars reaches the natal Moon on 2026-10-10.
+    const mars = moon - age("2026-10-10T00:00:00Z");
+    const chart = { birthUtc, bodies: [{ id: "sun" as const, lon: ((d(birthUtc) % 360) + 360) % 360 }, { id: "moon" as const, lon: moon }, { id: "mars" as const, lon: mars }] };
+    const run = (from: string) =>
+      convergenceTimeline({ natal: chart, from, to: "2027-12-31", eph: fake, options: { transits: false, progressions: false, solarArcs: true, lunations: false, aspects: ["conjunction"] } });
+    const asOf = Date.parse("2026-11-20T12:00:00Z");
+
+    for (const from of ["2026-11-01", "2026-09-01"]) {
+      it(`is one pass, exact Oct 10, 2026, with the range starting ${from}`, async () => {
+        const r = await run(from);
+        const c = r.contacts.find((x) => x.id === "solar-arc:mars:conjunction:moon")!;
+        expect(c.cycle).toHaveLength(1);
+        const L = lifecycleOf(c, asOf)!;
+        expect(L.single).toBe(true);
+        expect(L.windows).toHaveLength(1);
+        expect(L.exacts).toHaveLength(1);
+        expect(Math.abs(L.exacts[0]!.t - Date.parse("2026-10-10T00:00:00Z"))).toBeLessThan(3_600_000);
+        expect(L.phase).toBe("Separating, exact 6 weeks ago, in orb until Oct 2027");
+        expect(L.phase).not.toMatch(/Perfect/);
+        // A year either side of the exact at 1°/year.
+        expect(Math.abs((L.last - L.first) / 86_400_000 - 2 * 365.24)).toBeLessThan(1);
+      });
+    }
+
+    it("measures the closest approach inside the range", async () => {
+      const c = (await run("2026-11-01")).contacts.find((x) => x.id === "solar-arc:mars:conjunction:moon")!;
+      const w = c.windows[0]!;
+      expect(w.exacts).toHaveLength(0);
+      expect(w.startOpen).toBe(true);
+      expect(w.closest.slice(0, 10)).toBe("2026-11-01");
+      // 22 days after the exact at 1°/year.
+      expect(Math.abs(w.minOrb - 22 / 365.24)).toBeLessThan(0.002);
+    });
+
+    it("words the phase by time while applying and at the exact", async () => {
+      const c = (await run("2026-01-01")).contacts.find((x) => x.id === "solar-arc:mars:conjunction:moon")!;
+      expect(lifecycleOf(c, Date.parse("2026-03-10T12:00:00Z"))!.phase).toBe("Applying, exact in 7 months (Oct 2026)");
+      expect(lifecycleOf(c, Date.parse("2026-10-25T12:00:00Z"))!.phase).toBe("Exact this month");
+    });
   });
 
   it("uses a planet's own transit orb when one is set", async () => {

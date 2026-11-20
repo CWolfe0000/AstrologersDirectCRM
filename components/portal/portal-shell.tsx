@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, BookOpen, CalendarDays, Settings, Bell, LogOut, ArrowLeftRight, Sprout, MessagesSquare, CircleDot } from "lucide-react";
 import { useUnreadMessages } from "@/components/messages/unread";
-import { cn, DATA_MODE, relTime } from "@/lib/utils";
+import { cn, titleCase, DATA_MODE, relTime } from "@/lib/utils";
 import { signOut } from "@/lib/sync";
 import { useStore, personName } from "@/lib/store";
 import { Avatar } from "@/components/ui/avatar";
@@ -81,7 +81,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
                 <p className="border-b border-line px-4 py-3 text-[14px] font-semibold">Notifications</p>
                 {notes.slice(0, 5).map((n) => (
                   <Link key={n.id} href={n.href ?? "/portal"} onClick={() => markRead(n.id)} className={cn("block border-b border-line/70 px-4 py-3 last:border-0 hover:bg-canvas", !n.read && "bg-accent-50/40")}>
-                    <p className="text-[13px] font-medium">{n.title}</p>
+                    <p className="text-[13px] font-medium">{titleCase(n.title)}</p>
                     <p className="text-[12.5px] text-muted">{n.body}</p>
                     <p className="mt-1 text-[11px] text-muted">{relTime(n.at)}</p>
                   </Link>

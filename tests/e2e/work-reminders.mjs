@@ -93,7 +93,7 @@ await cron();
 mail = (await outbox(amelia)).filter((m) => m.subject.startsWith("A gentle reminder"));
 assert.equal(mail.length, 1, "never twice");
 s = await api("/api/v1/bootstrap?view=app");
-assert.ok(s.portalNotifications.some((n) => n.title === "A gentle reminder" && n.clientId === "c1"), "portal notification too");
+assert.ok(s.portalNotifications.some((n) => n.title === "A Gentle Reminder" && n.clientId === "c1"), "portal notification too");
 
 assert.deepEqual(errors, []);
 await browser.close();

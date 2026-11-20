@@ -474,31 +474,44 @@ const fmtSpan = (ms: number) => {
   return [y && `${y} Year${y > 1 ? "s" : ""}`, m && `${m} Month${m > 1 ? "s" : ""}`].filter(Boolean).join(", ") + ` (${d} Days)`;
 };
 
-export function LifecycleSection({ c, at, full }: { c: TimelineContact; at: number; full: TimelineContact | null | "loading" }) {
+export function LifecycleSection({ c, at, full, range }: { c: TimelineContact; at: number; full: TimelineContact | null | "loading"; range: { from: number; to: number } }) {
   const src = full && full !== "loading" ? full : c;
   const L = lifecycleOf(src, at);
   if (!L) return null;
   const t = (ms: number) => fmt(isoOf(ms));
   const days = (ms: number) => Math.round((ms - at) / DAY);
+  const where = (ms: number) => (ms < range.from ? ", before this range" : ms >= range.to ? ", after this range" : "");
+  const progressedPlanet = c.technique === "progressed" && !L.single;
+  const note = full === "loading"
+    ? "Looking beyond this range for the full cycle…"
+    : L.single
+      ? c.technique === "solar-arc"
+        ? "A solar arc moves forward about 1° a year and never turns back, so it enters orb once, is exact once and leaves once. Calculated beyond this range."
+        : "The progressed Sun moves forward about 1° a year and never turns retrograde, so it enters orb once, is exact once and leaves once. Calculated beyond this range."
+      : progressedPlanet
+        ? "The whole cycle around the As Of date, calculated three years beyond this range. A progressed planet can station and turn back, so it can make more than one pass."
+        : full
+          ? "The whole cycle around the As Of date: passes less than a year apart, looking up to three years either way."
+          : "Within this range only.";
   return (
     <section>
       <h3 className="mb-2 text-[13px] font-semibold text-ink">Lifecycle</h3>
       <dl className="grid grid-cols-[130px_minmax(0,1fr)] gap-x-3 gap-y-2 rounded-lg border border-line p-3 text-[12.5px]">
         <dt className="text-muted">First Entered Orb</dt>
         <dd>{L.firstOpen ? `Before ${t(L.first)}` : t(L.first)}</dd>
-        <dt className="text-muted">Exact Contacts</dt>
-        <dd>{L.exacts.length ? L.exacts.map((x, i) => <span key={x.t} className="block">{i + 1}. {t(x.t)}{x.retrograde ? " · Retrograde" : ""}{x.t < at ? <span className="text-muted"> (Past)</span> : ""}</span>) : "None: It Comes Close Without Perfecting"}</dd>
+        <dt className="text-muted">{L.single ? "Exact" : "Exact Contacts"}</dt>
+        <dd>{L.exacts.length ? L.exacts.map((x, i) => <span key={x.t} className="block">{L.exacts.length > 1 ? `${i + 1}. ` : ""}{t(x.t)}{where(x.t)}{x.retrograde ? " · Retrograde" : ""}{!where(x.t) && x.t < at ? <span className="text-muted"> (Past)</span> : ""}</span>) : L.firstOpen || L.lastOpen ? "Not Within the Calculated Period" : "None: It Comes Close Without Perfecting"}</dd>
         {L.stations.length > 0 && (<><dt className="text-muted">Stations</dt><dd>{L.stations.map((s) => <span key={s.t} className="block">Turns {s.kind === "retrograde" ? "Retrograde" : "Direct"} {t(s.t)}</span>)}</dd></>)}
         <dt className="text-muted">On {fmtShort(isoOf(at))}</dt>
-        <dd><span className="font-medium">{L.phase}</span>{L.next && <span className="block">Next Exact {t(L.next.t)} · In {days(L.next.t)} Days</span>}</dd>
+        <dd><span className="font-medium">{L.phase}</span>{L.next && !L.single && <span className="block">Next Exact {t(L.next.t)} · In {days(L.next.t)} Days</span>}</dd>
         <dt className="text-muted">Final Exit From Orb</dt>
         <dd>{t(L.last)}{L.lastOpen ? " or Later" : ""}{L.last > at && <span className="text-muted"> · {days(L.last)} Days From Then</span>}</dd>
         <dt className="text-muted">Whole Period</dt>
-        <dd>{fmtSpan(L.last - L.first)}{L.firstOpen || L.lastOpen ? " or More" : ""} · {src.windows.length} Pass{src.windows.length === 1 ? "" : "es"} Through Orb</dd>
+        <dd>{fmtSpan(L.last - L.first)}{L.firstOpen || L.lastOpen ? " or More" : ""}{!L.single && ` · ${L.windows.length} Pass${L.windows.length === 1 ? "" : "es"} Through Orb`}</dd>
         <dt className="text-muted">Layer</dt>
         <dd>{c.layer === "background" ? "Background Influence" : "Short-Term Trigger"} · Intensity Weight {c.weight}</dd>
       </dl>
-      <p className="mt-1.5 text-[11.5px] text-muted">{full === "loading" ? "Looking beyond this range for the full cycle…" : full ? "The whole cycle around the As Of date: passes less than a year apart, looking up to three years either way." : "Within this range only."}</p>
+      <p className="mt-1.5 text-[11.5px] text-muted">{note}</p>
     </section>
   );
 }

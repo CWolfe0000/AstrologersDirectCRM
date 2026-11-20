@@ -817,10 +817,12 @@ function useFullContact(c: TimelineContact, personId: string, asOf: string, opts
   const [full, setFull] = React.useState<TimelineContact | null | "loading">(c.events ? null : "loading");
   React.useEffect(() => {
     if (c.events || !person?.birth) return setFull(null);
-    // Three years back and three years ahead (two calculations, each within the three-year limit).
+    // Progressions and solar arcs already carry their whole passes (calculated well beyond the range).
+    if (c.cycle?.length) return setFull({ ...c, windows: c.cycle });
+    // Three years back and three years ahead (two calculations, each within the three-year limit, meeting at the As Of date).
     const at = Date.parse(`${asOf}T00:00:00Z`);
     const day = (n: number) => new Date(at + n * DAY).toISOString().slice(0, 10);
-    const ranges: [string, string][] = [[day(-1090), day(0)], [day(0), day(1090)]];
+    const ranges: [string, string][] = [[day(-1090), day(-1)], [day(0), day(1090)]];
     const src = c.source as BodyId;
     const options = {
       transits: c.technique === "transit",
@@ -853,7 +855,7 @@ function useFullContact(c: TimelineContact, personId: string, asOf: string, opts
       live = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [c.id, asOf, person?.birth]);
+  }, [c.id, asOf, person?.birth, c.cycle]);
   return full;
 }
 
@@ -868,6 +870,15 @@ function ContactSheet({ contact: c, clientId, personId, clientName, tl, asOf, op
   // The first exact hit, or else the closest approach in the period.
   const closest = [...c.windows].sort((a, b) => a.minOrb - b.minOrb)[0];
   const keyDate = (exacts[0]?.utc ?? closest?.closest ?? tl.from).slice(0, 10);
+  const range = { from: Date.parse(`${tl.from.slice(0, 10)}T00:00:00Z`), to: Date.parse(`${tl.to.slice(0, 10)}T00:00:00Z`) + DAY };
+  // Exact hits of a pass that's cut by the range edge but perfects outside it (from the whole pass, when known).
+  const passes = full && full !== "loading" ? full.windows : [];
+  const outsideExacts = (w: TimelineContact["windows"][number]) => {
+    if (!w.startOpen && !w.endOpen) return [];
+    const s = Date.parse(w.start), e = Date.parse(w.end);
+    const whole = passes.find((p) => Date.parse(p.start) <= s + DAY && Date.parse(p.end) >= e - DAY);
+    return (whole?.exacts ?? []).map((x) => Date.parse(x.utc)).filter((x) => (w.startOpen && x < range.from) || (w.endOpen && x >= range.to));
+  };
 
   const chartFor = (date: string, forNote: boolean) => {
     const type = t.chart;
@@ -927,7 +938,7 @@ function ContactSheet({ contact: c, clientId, personId, clientName, tl, asOf, op
           </div>
         </div>
 
-        {!c.events && <LifecycleSection c={c} at={Date.parse(`${asOf}T12:00:00Z`)} full={full} />}
+        {!c.events && <LifecycleSection c={c} at={Date.parse(`${asOf}T12:00:00Z`)} full={full} range={range} />}
 
         {c.events ? (
           <section>
@@ -960,7 +971,10 @@ function ContactSheet({ contact: c, clientId, personId, clientName, tl, asOf, op
                     {fmt(w.start)} – {fmt(w.end)}
                     {w.endOpen ? " and After" : ""}
                   </p>
-                  <p className="text-muted">{w.exacts.length ? `In Orb for ${Math.round((Date.parse(w.end) - Date.parse(w.start)) / DAY)} Days` : `Closest Approach ${w.minOrb.toFixed(2)}° on ${fmt(w.closest)}`}</p>
+                  <p className="text-muted">{w.exacts.length ? `In Orb for ${Math.round((Date.parse(w.end) - Date.parse(w.start)) / DAY)} Days` : `Closest Approach in This Range ${w.minOrb.toFixed(2)}° on ${fmt(w.closest)}`}</p>
+                  {outsideExacts(w).map((x) => (
+                    <p key={x} className="mt-1 text-ink-3">Exact {fmt(new Date(x).toISOString())}, {x < range.from ? "before" : "after"} this range</p>
+                  ))}
                   {w.exacts.length > 0 && (
                     <ul className="mt-2 space-y-1">
                       {w.exacts.map((e) => (

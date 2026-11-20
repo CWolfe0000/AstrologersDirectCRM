@@ -5,7 +5,7 @@ import Link from "next/link";
 import { CheckCheck, Bell, Circle, CircleCheck, Settings2 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import type { NotificationType } from "@/lib/data/types";
-import { cn, relTime, fmtDate, fmtTime } from "@/lib/utils";
+import { cn, titleCase, relTime, fmtDate, fmtTime } from "@/lib/utils";
 import { PageHeader, EmptyState } from "@/components/ui/misc";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -72,7 +72,7 @@ export default function NotificationsPage() {
                     <NotificationIcon type={n.type} />
                     <Link href={n.href ?? "#"} onClick={() => s.markNotification(n.id, true)} className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-baseline gap-x-2">
-                        <p className={cn("text-[13.5px]", !n.read ? "font-semibold" : "font-medium")}>{n.title}</p>
+                        <p className={cn("text-[13.5px]", !n.read ? "font-semibold" : "font-medium")}>{titleCase(n.title)}</p>
                         <span className="text-[11.5px] text-muted" title={`${fmtDate(n.at)} ${fmtTime(n.at)}`}>{relTime(n.at)}</span>
                       </div>
                       <p className="mt-0.5 text-[13px] text-muted">{n.body}</p>

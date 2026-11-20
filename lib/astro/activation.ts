@@ -219,6 +219,26 @@ export interface Lifecycle {
   next: { t: number; retrograde: boolean } | null;
   /** End of the current pass, when in orb. */
   passEnd: number | null;
+  /** The whole passes this lifecycle is built from (not cut to the range when the full cycle is known). */
+  windows: TimelineContact["windows"];
+  /** Moves one way only (solar arcs, the progressed Sun): always a single pass. */
+  single: boolean;
+}
+
+/** Solar arcs and the progressed Sun never turn retrograde: one entry, one exact, one exit. */
+export const singlePass = (c: Pick<TimelineContact, "technique" | "source">) => c.technique === "solar-arc" || (c.technique === "progressed" && c.source === "sun");
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const monthYear = (ms: number) => { const d = new Date(ms); return `${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`; };
+/** "5 days", "6 weeks", "7 months", "2 years". */
+export function spanWords(ms: number) {
+  const d = Math.round(Math.abs(ms) / DAY);
+  const n = (k: number, w: string) => `${k} ${w}${k === 1 ? "" : "s"}`;
+  if (d < 14) return n(d, "day");
+  if (d < 63) return n(Math.round(d / 7), "week");
+  const months = Math.round(d / 30.44);
+  if (months < 24) return n(months, "month");
+  return n(Math.round(d / 365.25), "year");
 }
 
 /**
@@ -231,13 +251,15 @@ export function cycleAround(windows: TimelineContact["windows"], at: number, gap
   const joined: TimelineContact["windows"] = [];
   for (const w of sorted) {
     const last = joined[joined.length - 1];
-    if (last && last.endOpen && w.startOpen && Math.abs(parse(w.start) - parse(last.end)) < DAY) {
+    // Join where one calculation's window runs to its edge and the next one's starts there (touching or overlapping).
+    if (last && last.endOpen && w.startOpen && parse(w.start) <= parse(last.end) + DAY && parse(w.end) >= parse(last.end) - DAY) {
+      const near = (a: string, b: string) => Math.abs(parse(a) - parse(b)) < 3_600_000;
       joined[joined.length - 1] = {
         ...last,
-        end: w.end,
-        endOpen: w.endOpen,
-        exacts: [...last.exacts, ...w.exacts].map((x, i) => ({ ...x, pass: i + 1 })),
-        stations: [...last.stations, ...w.stations],
+        end: parse(w.end) > parse(last.end) ? w.end : last.end,
+        endOpen: parse(w.end) > parse(last.end) ? w.endOpen : last.endOpen,
+        exacts: [...last.exacts, ...w.exacts.filter((x) => !last.exacts.some((y) => near(x.utc, y.utc)))].map((x, i) => ({ ...x, pass: i + 1 })),
+        stations: [...last.stations, ...w.stations.filter((x) => !last.stations.some((y) => near(x.utc, y.utc)))],
         minOrb: Math.min(last.minOrb, w.minOrb),
         closest: last.minOrb <= w.minOrb ? last.closest : w.closest,
       };
@@ -256,17 +278,26 @@ export function cycleAround(windows: TimelineContact["windows"], at: number, gap
 
 export function lifecycleOf(c: TimelineContact, at: number): Lifecycle | null {
   if (c.events || c.windows.length === 0) return null;
-  const w0 = c.windows[0]!, wn = c.windows[c.windows.length - 1]!;
-  const exacts = c.windows.flatMap((w) => w.exacts.map((x) => ({ t: parse(x.utc), retrograde: x.retrograde })));
-  const stations = c.windows.flatMap((w) => w.stations.map((s) => ({ t: parse(s.utc), kind: s.kind })));
-  const cur = c.windows.find((w) => parse(w.start) <= at && at <= parse(w.end));
+  const single = singlePass(c);
+  // Whole passes when they're known (progressions, solar arcs); a one-way contact is one pass, so no grouping.
+  const windows = c.cycle?.length ? cycleAround(c.cycle, at, single ? 0 : 400) : c.windows;
+  if (!windows.length) return null;
+  const w0 = windows[0]!, wn = windows[windows.length - 1]!;
+  const exacts = windows.flatMap((w) => w.exacts.map((x) => ({ t: parse(x.utc), retrograde: x.retrograde })));
+  const stations = windows.flatMap((w) => w.stations.map((s) => ({ t: parse(s.utc), kind: s.kind })));
+  const cur = windows.find((w) => parse(w.start) <= at && at <= parse(w.end));
   const next = exacts.find((x) => x.t > at) ?? null;
   let phase: string;
-  if (cur) {
+  if (cur && single && cur.exacts.length) {
+    const ex = parse(cur.exacts[0]!.utc);
+    const until = `in orb until ${cur.endOpen ? "after " : ""}${monthYear(parse(cur.end))}`;
+    phase = monthYear(ex) === monthYear(at) ? "Exact this month" : ex > at ? `Applying, exact in ${spanWords(ex - at)} (${monthYear(ex)})` : `Separating, exact ${spanWords(at - ex)} ago, ${until}`;
+  } else if (cur) {
     const ahead = cur.exacts.some((x) => parse(x.utc) > at);
-    phase = ahead ? "Applying" : cur.exacts.length ? "Separating" : parse(cur.closest) > at ? "Applying (Won’t Perfect This Pass)" : "Separating (Didn’t Perfect This Pass)";
+    // A pass cut off by the edge of the calculation may perfect beyond it: only say it doesn't when the whole pass is known.
+    phase = ahead ? "Applying" : cur.exacts.length ? "Separating" : parse(cur.closest) > at ? (cur.endOpen ? "Applying" : "Applying (Won’t Perfect This Pass)") : cur.startOpen ? "Separating" : "Separating (Didn’t Perfect This Pass)";
   } else phase = parse(w0.start) > at ? "Not Yet In Orb" : parse(wn.end) < at ? "Complete" : "Out of Orb Between Passes";
-  return { first: parse(w0.start), firstOpen: w0.startOpen, last: parse(wn.end), lastOpen: wn.endOpen, exacts, stations, phase, inOrb: !!cur, next, passEnd: cur ? parse(cur.end) : null };
+  return { first: parse(w0.start), firstOpen: w0.startOpen, last: parse(wn.end), lastOpen: wn.endOpen, exacts, stations, phase, inOrb: !!cur, next, passEnd: cur ? parse(cur.end) : null, windows, single };
 }
 
 // ---------------------------------------------------------------------------

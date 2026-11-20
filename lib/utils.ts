@@ -161,3 +161,12 @@ export function isoAt(base: Date, dayOffset: number, hh = 9, mm = 0) {
 export function stripHtml(html: string) {
   return html.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
 }
+
+const SMALL_WORDS = new Set(["a", "an", "the", "and", "but", "or", "nor", "for", "of", "to", "in", "on", "at", "by", "as", "with", "from"]);
+/** Title Case for headings and notification titles: "New reading available" → "New Reading Available". Leaves words that already have capitals alone. */
+export function titleCase(s: string) {
+  const words = s.split(" ");
+  return words
+    .map((w, i) => (/[A-Z]/.test(w) || !/^[a-z]/.test(w) ? w : i > 0 && i < words.length - 1 && SMALL_WORDS.has(w) ? w : w[0]!.toUpperCase() + w.slice(1)))
+    .join(" ");
+}

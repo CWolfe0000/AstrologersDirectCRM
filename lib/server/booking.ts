@@ -361,7 +361,7 @@ export async function reschedule(token: string, startIso: string, visitorTz: str
   await tellBoth(
     b,
     { subject: `Rescheduled: ${b.k.type} with ${astro}`, body: `Hi ${b.row.clientName.split(" ")[0]},\n\nYour ${b.k.type} with ${astro} is now ${when(start, vz)}.\n\nYour booking link still works if you need to change it again:\n${link(`/book/manage/${token}`)}\n` },
-    { title: "Session rescheduled", body: `${b.row.clientName} moved ${b.k.type} from ${when(b.start, b.tz)} to ${when(start, b.tz)}.`, email: `${b.row.clientName} moved ${b.k.type}:\n\nFrom: ${when(b.start, b.tz)}\nTo: ${when(start, b.tz)}\n\nOpen the session:\n${link(`/app/consultations?id=${b.row.consultationId}`)}\n` },
+    { title: "Session Rescheduled", body: `${b.row.clientName} moved ${b.k.type} from ${when(b.start, b.tz)} to ${when(start, b.tz)}.`, email: `${b.row.clientName} moved ${b.k.type}:\n\nFrom: ${when(b.start, b.tz)}\nTo: ${when(start, b.tz)}\n\nOpen the session:\n${link(`/app/consultations?id=${b.row.consultationId}`)}\n` },
   );
   return manageView(token);
 }
@@ -376,7 +376,7 @@ export async function cancelBooking(token: string, reason: string) {
   await tellBoth(
     b,
     { subject: `Canceled: ${b.k.type} with ${astro}`, body: `Hi ${b.row.clientName.split(" ")[0]},\n\nYour ${b.k.type} with ${astro} on ${when(b.start, b.tz)} is canceled.${b.profile.enabled && b.profile.slug ? `\n\nWhenever you’d like to book again:\n${link(`/book/${b.profile.slug}`)}` : ""}\n` },
-    { title: "Session canceled", body: `${b.row.clientName} canceled ${b.k.type} on ${when(b.start, b.tz)}.${why ? ` “${why.slice(0, 140)}”` : ""}`, email: `${b.row.clientName} canceled ${b.k.type} on ${when(b.start, b.tz)}.${why ? `\n\nTheir reason:\n${why}` : ""}\n\nThe time is free again on your booking page.\n` },
+    { title: "Session Canceled", body: `${b.row.clientName} canceled ${b.k.type} on ${when(b.start, b.tz)}.${why ? ` “${why.slice(0, 140)}”` : ""}`, email: `${b.row.clientName} canceled ${b.k.type} on ${when(b.start, b.tz)}.${why ? `\n\nTheir reason:\n${why}` : ""}\n\nThe time is free again on your booking page.\n` },
   );
   return manageView(token);
 }

@@ -29,7 +29,7 @@ export function ChartActionsMenu({ chart, svg, inWorkspace, view }: { chart: Cha
     updateChart(chart.id, { shared: { at: new Date().toISOString(), view: snap } });
     if (!again)
       useStore.setState((s) => ({
-        portalNotifications: [{ id: `pn_${Math.random().toString(36).slice(2, 10)}`, clientId: chart.clientId, title: "New chart shared", body: `“${chart.title}” is in My Charts.`, at: new Date().toISOString().slice(0, 19), read: false, href: `/portal/charts/${chart.id}` }, ...s.portalNotifications],
+        portalNotifications: [{ id: `pn_${Math.random().toString(36).slice(2, 10)}`, clientId: chart.clientId, title: "New Chart Shared", body: `“${chart.title}” is in My Charts.`, at: new Date().toISOString().slice(0, 19), read: false, href: `/portal/charts/${chart.id}` }, ...s.portalNotifications],
       }));
     toast(again ? "Shared Chart Updated" : "Chart Shared", again ? `${clientName} now sees the current version.` : `${clientName} can see it in My Charts in their portal.`, "success");
   };

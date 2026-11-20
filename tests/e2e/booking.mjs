@@ -144,7 +144,7 @@ assert.notEqual(moved.start, k.start, "moved");
 assert.ok(moved.prepNotes.includes("Rescheduled online by the client"));
 const NYp = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(moveSlots[moveSlots.length - 1])).map((x) => [x.type, x.value]));
 assert.equal(moved.start, `${NYp.year}-${NYp.month}-${NYp.day}T${NYp.hour}:${NYp.minute}:00`, "moved to the chosen time");
-assert.ok(s3.notifications.some((n) => n.title === "Session rescheduled"));
+assert.ok(s3.notifications.some((n) => n.title === "Session Rescheduled"));
 assert.ok((await mail(visitor)).some((m) => m.subject === "Rescheduled: Natal Chart Reading with Maya Lin"));
 assert.ok((await call(v, `/api/public/book/${slug}/slots?service=natal`)).body.slots.includes(bookedStart), "the old time is free again");
 
@@ -158,8 +158,8 @@ s3 = (await call(page, "/api/v1/bootstrap?view=app")).body;
 const canceled = s3.consultations.find((x) => x.id === k.id);
 assert.equal(canceled.status, "cancelled");
 assert.ok(canceled.prepNotes.includes("Something came up at work."));
-assert.ok(s3.notifications.some((n) => n.title === "Session canceled"));
-assert.ok((await mail(ownerEmail)).some((m) => m.subject === "Session canceled: Rosa Vale"));
+assert.ok(s3.notifications.some((n) => n.title === "Session Canceled"));
+assert.ok((await mail(ownerEmail)).some((m) => m.subject === "Session Canceled: Rosa Vale"));
 const t0 = links[0].split("/").pop();
 assert.equal((await call(v, `/api/public/booking/${t0}/cancel`, { method: "POST", body: "{}" })).status, 409, "can't cancel twice");
 

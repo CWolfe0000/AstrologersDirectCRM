@@ -63,7 +63,7 @@ export async function sendDueReminders(now = new Date()) {
         await upsertRecord(practiceId, "portalNotifications", {
           id: newId("pn"),
           clientId: String(k.clientId),
-          title: "Upcoming consultation",
+          title: "Upcoming Consultation",
           body: `${k.type} on ${when(String(k.start), zone)}.`,
           at: new Date().toISOString().slice(0, 19),
           read: false,
@@ -130,7 +130,7 @@ export async function sendDueWorkReminders(now = new Date()) {
       await upsertRecord(practiceId, "portalNotifications", {
         id: newId("pn"),
         clientId: String(w.clientId),
-        title: "A gentle reminder",
+        title: "A Gentle Reminder",
         body: `“${w.title}” is suggested for ${when}.`,
         at: new Date().toISOString().slice(0, 19),
         read: false,

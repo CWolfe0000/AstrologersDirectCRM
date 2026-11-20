@@ -94,12 +94,12 @@ export async function send(practiceId: string, clientId: string, from: Sender, r
   if (from === "practitioner") {
     const u = await clientUserFor(practiceId, clientId);
     if (u) {
-      await upsertRecord(practiceId, "portalNotifications", { id: newId("pn"), clientId, title: `New message from ${pr.firstName ?? astrologer}`, body: preview.slice(0, 200), at, read: false, href: "/portal/messages" });
+      await upsertRecord(practiceId, "portalNotifications", { id: newId("pn"), clientId, title: `New Message From ${pr.firstName ?? astrologer}`, body: preview.slice(0, 200), at, read: false, href: "/portal/messages" });
       if (!recent && u.emailVerifiedAt)
         await sendMail(u.email, `New message from ${astrologer}`, `Hi ${first},\n\n${astrologer} sent you a message:\n\n${preview}\n\nRead and reply in your client portal:\n${link(`/portal/messages?practice=${encodeURIComponent(practiceId)}`)}\n`);
     }
   } else {
-    await upsertRecord(practiceId, "notifications", { id: newId("n"), type: "client", title: "New message", body: `${first} ${String(person.lastName ?? "")}`.trim() + `: ${preview.slice(0, 160)}`, at, read: false, href: `/app/messages?client=${encodeURIComponent(clientId)}` });
+    await upsertRecord(practiceId, "notifications", { id: newId("n"), type: "client", title: "New Message", body: `${first} ${String(person.lastName ?? "")}`.trim() + `: ${preview.slice(0, 160)}`, at, read: false, href: `/app/messages?client=${encodeURIComponent(clientId)}` });
     if (!recent) {
       const to = pr.email?.includes("@") ? pr.email : (await ownerEmail(practiceId));
       if (to) await sendMail(to, `New message from ${first}`, `${first} ${String(person.lastName ?? "")}`.trim() + ` sent you a message:\n\n${preview}\n\nReply in AstrologersDirect:\n${link(`/app/messages?client=${encodeURIComponent(clientId)}`)}\n`);

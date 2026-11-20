@@ -159,6 +159,11 @@ export interface TimelineContact {
   /** Days in orb within the range (a lunation or eclipse counts for the days it's scored). */
   durationDays: number;
   windows: TimelineWindow[];
+  /**
+   * Progressions and solar arcs: the whole passes through orb (not cut to the range), from a calculation
+   * that runs years beyond it. Pass counts and whether a pass perfects come from these.
+   */
+  cycle?: TimelineWindow[];
   /** Lunations/eclipses: the individual events (each also has a zero-length window). */
   events?: (LunationEvent & { orb: number })[];
 }
@@ -286,8 +291,15 @@ interface ScanHooks {
 }
 
 /** Closeness taper: transits keep half weight at the orb's edge; slow directed contacts fall to zero there. */
-function scan(tr: Track, targetLon: number, orb: number, hooks: ScanHooks, fromMs: number, toMs: number, edge = 0.5) {
-  const windows: (Omit<TimelineWindow, "exacts" | "stations" | "start" | "end" | "closest"> & { s: number; e: number; ct: number; ex: { t: number; retro: boolean }[] })[] = [];
+type RawWindow = Omit<TimelineWindow, "exacts" | "stations" | "start" | "end" | "closest"> & { s: number; e: number; ct: number; ex: { t: number; retro: boolean }[] };
+
+/**
+ * Scan a track for its passes through orb. `full` holds every pass over the whole track (open only where
+ * the track itself ends); `clipped` holds the passes that touch [fromMs, toMs], cut to that range for
+ * display, with the closest approach measured inside the range.
+ */
+function scan(tr: Track, targetLon: number, orb: number, hooks: ScanHooks, fromMs: number, toMs: number, edge = 0.5): { full: RawWindow[]; clipped: RawWindow[] } {
+  const windows: RawWindow[] = [];
   const f0 = (i: number) => delta(targetLon, tr.lon[i]!); // signed: point − target
   let cur: (typeof windows)[number] | null = null;
   const first = f0(0);
@@ -335,7 +347,7 @@ function scan(tr: Track, targetLon: number, orb: number, hooks: ScanHooks, fromM
         cur.minOrb = 0;
       }
     }
-    if (cur && Math.abs(fb) < cur.minOrb && tr.t[i + 1]! >= fromMs && tr.t[i + 1]! <= toMs) {
+    if (cur && Math.abs(fb) < cur.minOrb) {
       cur.minOrb = Math.abs(fb);
       cur.ct = tr.t[i + 1]!;
     }
@@ -345,18 +357,38 @@ function scan(tr: Track, targetLon: number, orb: number, hooks: ScanHooks, fromM
     cur.endOpen = true;
     windows.push(cur);
   }
-  // Clip to the requested range (samples may extend past it).
-  return windows
+  // Orb at any moment along the track.
+  const orbAt = (t: number) => {
+    let lo = 0, hi = tr.t.length - 1;
+    if (t <= tr.t[0]!) return Math.abs(f0(0));
+    if (t >= tr.t[hi]!) return Math.abs(f0(hi));
+    while (hi - lo > 1) {
+      const mid = (lo + hi) >> 1;
+      if (tr.t[mid]! <= t) lo = mid;
+      else hi = mid;
+    }
+    return Math.abs(f0(lo) + hermite(tr, lo, (t - tr.t[lo]!) / (tr.t[lo + 1]! - tr.t[lo]!)));
+  };
+  // Cut to the requested range for display (samples may extend past it). Whether a pass perfects is
+  // decided on the full pass; only what's shown is cut.
+  const clipped = windows
     .filter((w) => w.e >= fromMs && w.s <= toMs)
-    .map((w) => ({
-      ...w,
-      startOpen: w.startOpen || w.s < fromMs,
-      endOpen: w.endOpen || w.e > toMs,
-      ct: Math.min(Math.max(w.ct, fromMs), toMs),
-      s: Math.max(w.s, fromMs),
-      e: Math.min(w.e, toMs),
-      ex: w.ex.filter((x) => x.t >= fromMs && x.t <= toMs),
-    }));
+    .map((w) => {
+      const s = Math.max(w.s, fromMs), e = Math.min(w.e, toMs);
+      let { minOrb, ct } = w;
+      if (ct < s || ct > e) {
+        // The pass is closest outside the range: find the closest point inside it.
+        ct = s;
+        minOrb = orbAt(s);
+        const candidates = [e, ...tr.t.filter((x) => x > s && x < e)];
+        for (const x of candidates) {
+          const o = orbAt(x);
+          if (o < minOrb) { minOrb = o; ct = x; }
+        }
+      }
+      return { ...w, startOpen: w.startOpen || w.s < fromMs, endOpen: w.endOpen || w.e > toMs, ct, minOrb, s, e, ex: w.ex.filter((x) => x.t >= fromMs && x.t <= toMs) };
+    });
+  return { full: windows, clipped };
 }
 
 function stationsOf(tr: Track) {
@@ -415,6 +447,7 @@ export interface TimelineInput {
 }
 
 const MAX_RANGE_DAYS = 3 * 366 + 1;
+const DIRECTED_MARGIN_DAYS = 3 * 366;
 
 export async function convergenceTimeline(input: TimelineInput): Promise<TimelineResult> {
   const o: TimelineOptions = { ...DEFAULT_TIMELINE_OPTIONS, ...input.options, orbs: { ...DEFAULT_TIMELINE_OPTIONS.orbs, ...input.options?.orbs } };
@@ -475,20 +508,26 @@ export async function convergenceTimeline(input: TimelineInput): Promise<Timelin
         const layer = layerOf(technique, source);
         const sides = a.angle === 0 || a.angle === 180 ? [a.angle] : [a.angle, -a.angle];
         const edge = technique === "transit" ? 0.5 : 0;
-        const raw = sides.flatMap((s) => scan(tr, norm(target.lon + s), orb, { sample: (t, h, c) => addScore(t, h, weight * c, layer) }, fromMs, toMs, edge));
+        const scans = sides.map((s) => scan(tr, norm(target.lon + s), orb, { sample: (t, h, c) => addScore(t, h, weight * c, layer) }, fromMs, toMs, edge));
+        const raw = scans.flatMap((x) => x.clipped);
         if (raw.length === 0) continue;
         raw.sort((x, y) => x.s - y.s);
-        let pass = 0;
-        const windows: TimelineWindow[] = raw.map((w) => ({
-          start: iso(w.s),
-          end: iso(w.e),
-          startOpen: w.startOpen,
-          endOpen: w.endOpen,
-          minOrb: Math.round(w.minOrb * 1000) / 1000,
-          closest: iso(w.ct),
-          exacts: w.ex.map((x) => ({ utc: iso(x.t), pass: ++pass, retrograde: x.retro })),
-          stations: stations.filter((s) => s.t >= w.s && s.t <= w.e).map((s) => ({ utc: iso(s.t), kind: s.kind })),
-        }));
+        const toWindows = (ws: RawWindow[]) => {
+          let pass = 0;
+          return ws.map((w): TimelineWindow => ({
+            start: iso(w.s),
+            end: iso(w.e),
+            startOpen: w.startOpen,
+            endOpen: w.endOpen,
+            minOrb: Math.round(w.minOrb * 1000) / 1000,
+            closest: iso(w.ct),
+            exacts: w.ex.map((x) => ({ utc: iso(x.t), pass: ++pass, retrograde: x.retro })),
+            stations: stations.filter((s) => s.t >= w.s && s.t <= w.e).map((s) => ({ utc: iso(s.t), kind: s.kind })),
+          }));
+        };
+        const windows = toWindows(raw);
+        // Directed contacts are sampled well beyond the range, so their whole passes are known.
+        const cycle = technique === "transit" ? undefined : toWindows(scans.flatMap((x) => x.full).sort((x, y) => x.s - y.s));
         let durationDays = 0;
         for (const w of raw)
           for (let d = Math.max(0, dayOf(w.s)); d <= Math.min(nDays - 1, dayOf(w.e)); d++) {
@@ -496,7 +535,7 @@ export async function convergenceTimeline(input: TimelineInput): Promise<Timelin
             if (layer === "trigger") triggerSets[d]!.add(id);
             durationDays++;
           }
-        contacts.push({ id, technique, source, aspect: a.id, target: target.id, targetHouse: houseOfTarget(target.lon), weight: Math.round(weight * 100) / 100, layer, durationDays, windows });
+        contacts.push({ id, technique, source, aspect: a.id, target: target.id, targetHouse: houseOfTarget(target.lon), weight: Math.round(weight * 100) / 100, layer, durationDays, windows, ...(cycle ? { cycle } : {}) });
       }
     }
   }
@@ -515,9 +554,10 @@ export async function convergenceTimeline(input: TimelineInput): Promise<Timelin
     }
   }
 
-  // Secondary progressions and solar arcs (slow: sampled every 5 days).
+  // Secondary progressions and solar arcs (slow: sampled every 5 days). Sampled three years either side
+  // of the range so a pass that crosses the range's edge is seen whole (a 1° solar arc pass lasts about two years).
   if ((o.progressions || o.solarArcs) && Number.isFinite(birthMs)) {
-    const prog = await sampleProgressions(input.eph, birthMs, fromMs - 5 * DAY, toMs + 5 * DAY, 5);
+    const prog = await sampleProgressions(input.eph, birthMs, fromMs - DIRECTED_MARGIN_DAYS * DAY, toMs + DIRECTED_MARGIN_DAYS * DAY, 5);
     if (o.progressions) {
       for (const b of natal.bodies.filter((x) => o.progressedBodies.includes(x.id))) {
         const tr = prog.get(b.id);
