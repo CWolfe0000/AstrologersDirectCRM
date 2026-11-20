@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { removePerson } from "@/app/actions";
-import { InsightCard, Locked, NoteList, Placements, Section, TriggerList } from "@/components/reading";
+import { InsightCard, Locked, NoteList, Placements, Section, GiftList, TriggerList } from "@/components/reading";
 import { formatDate, oneIn, plural } from "@/lib/format";
 import { coupleReport } from "@/lib/reading/couple";
 import { checkAgainst } from "@/lib/reading/exes";
 import { placementsOf } from "@/lib/reading/own";
-import { difficultAspects } from "@/lib/reading/triggers";
+import { difficultAspects, gifts } from "@/lib/reading/triggers";
 import { requireUser } from "@/lib/server/auth";
 import { exPattern, loadContext } from "@/lib/server/readings";
 import { transitWindows } from "@/lib/server/timing";
@@ -59,7 +59,11 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   // Each person alone, then what the other sets off.
   const yours = difficultAspects(ctx.self.chart, person.chart, null, person.name);
   const theirs = difficultAspects(person.chart, ctx.self.chart, person.name, null);
+  const yourGifts = gifts(ctx.self.chart, person.chart, null, person.name);
+  const theirGifts = gifts(person.chart, ctx.self.chart, person.name, null);
   const setOff = (xs: typeof yours) => xs.filter((a) => a.triggers.length).length;
+  const eased = (xs: typeof yours) => xs.filter((a) => a.eased.length).length;
+  const broughtOut = (xs: typeof yourGifts) => xs.filter((g) => g.broughtOut.length).length;
   const judged = check ? check.carried.length + check.absent.length : 0;
 
   return (
@@ -76,7 +80,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           ) : (
             <>
               <div className="card">
-                <p className="font-display text-2xl font-semibold">{person.name} repeats {check.carried.length} of the {plural(judged, "repeat")} in your pattern.</p>
+                <p className="heading font-display text-2xl font-semibold">{person.name} repeats {check.carried.length} of the {plural(judged, "repeat")} in your pattern.</p>
                 <p className="mt-2 text-ink-2">
                   {check.carried.length === 0 ? "On the chart, this person is a break from your past." : check.carried.length * 2 >= judged ? "On the chart, this is familiar ground for you." : "Some familiar ground, and some that is new."}
                   {check.unknown.length > 0 && ` ${plural(check.unknown.length, "repeat")} can’t be judged without their birth time.`}
@@ -109,7 +113,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           </Section>
           <Section
             title="What you set off in each other"
-            intro="Each of you has difficult aspects in your own chart, whoever you are with. These are the ones the other person’s planets land on, closest first."
+            intro="Each of you has difficult aspects in your own chart, whoever you are with. The other person’s planets can press on them (conjunction, square, opposition) or ease them (trine, sextile)."
           >
             <div className="grid gap-8 lg:grid-cols-2">
               <div>
@@ -130,6 +134,21 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
               </div>
             </div>
           </Section>
+          <Section
+            title="What you bring out in each other"
+            intro="Each of you also has supportive aspects in your own chart. These are the strengths the other person’s planets land on or support."
+          >
+            <div className="grid gap-8 lg:grid-cols-2">
+              <div>
+                <h3 className="mb-3 text-xl font-semibold">In you</h3>
+                {yourGifts.length ? <GiftList gifts={yourGifts} quiet={`Nothing in ${person.name}’s chart touches this. It is yours either way.`} /> : <p className="card text-ink-2">Your chart has no supportive aspects between the relationship planets.</p>}
+              </div>
+              <div>
+                <h3 className="mb-3 text-xl font-semibold">In {person.name}</h3>
+                {theirGifts.length ? <GiftList gifts={theirGifts} quiet="Nothing in your chart touches this. It is theirs either way." /> : <p className="card text-ink-2">{person.name}’s chart has no supportive aspects between the relationship planets{person.birth.time ? "" : " that can be read without a birth time"}.</p>}
+              </div>
+            </div>
+          </Section>
           {report.overlays.length > 0 && (
             <Section title="Where you land in each other’s lives" intro="The part of one person’s chart that the other person’s planets fall in.">
               <ul className="card grid gap-x-8 gap-y-3 sm:grid-cols-2">
@@ -146,7 +165,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         <Section title="The two of you together">
           <Locked title={`${plural(report.strengths.length, "strength")} and ${plural(report.friction.length, "friction point")} between your charts`}>
             <p>
-              {person.name} sets off {setOff(yours)} of the {plural(yours.length, "difficult aspect")} in your chart, and you set off {setOff(theirs)} of the {theirs.length} in theirs. Subscribe to see which ones and how, along with each contact, where you land in each other’s lives, the relationship’s own chart and its timing for the next 12 months.
+              {person.name} sets off {setOff(yours)} and eases {eased(yours)} of the {plural(yours.length, "difficult aspect")} in your chart, and brings out {broughtOut(yourGifts)} of your {plural(yourGifts.length, "strength")}. You set off {setOff(theirs)}, ease {eased(theirs)} and bring out {broughtOut(theirGifts)} in theirs. Subscribe to see which ones and how, along with each contact, where you land in each other’s lives, the relationship’s own chart and its timing for the next 12 months.
             </p>
           </Locked>
         </Section>

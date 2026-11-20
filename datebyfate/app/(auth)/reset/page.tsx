@@ -3,7 +3,7 @@ import Link from "next/link";
 import { requestReset, resetPassword } from "@/app/actions";
 import { AuthForm } from "@/components/forms";
 
-export const metadata: Metadata = { title: "Reset your password", robots: { index: false } };
+export const metadata: Metadata = { title: "Reset Your Password", robots: { index: false } };
 
 export default async function Reset({ searchParams }: { searchParams: Promise<{ token?: string }> }) {
   const { token } = await searchParams;

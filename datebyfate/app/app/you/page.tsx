@@ -5,7 +5,7 @@ import { SelfForm } from "@/components/forms";
 import { requireUser } from "@/lib/server/auth";
 import { loadContext } from "@/lib/server/readings";
 
-export const metadata: Metadata = { title: "Your birth details" };
+export const metadata: Metadata = { title: "Your Birth Details" };
 
 export default async function You() {
   const user = await requireUser();

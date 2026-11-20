@@ -1,7 +1,7 @@
 import type { AspectClass, BodyId, Chart, PointId } from "@/lib/astro/types";
 import { BODIES } from "@/lib/astro/types";
 import { POINT_NAMES, SIGNS, SYNASTRY_ORBS, aspectBetween, elementOf, houseOf, ordinal, signIndex } from "@/lib/astro/zodiac";
-import { triggeredKeys } from "./triggers";
+import { natalContactKeys } from "./triggers";
 import { BODY_SHOWS, DYNAMICS, ELEMENT_PEOPLE, HOUSE_AREA, SIGN_PEOPLE, contactText } from "./text";
 
 /**
@@ -54,8 +54,8 @@ export function signaturesOf(you: Chart, them: Subject): Set<string> {
       const asp = aspectBetween(ylon, t[tid].lon, SYNASTRY_ORBS);
       if (asp) out.add(`contact|${yid}|${tid}|${asp.cls}`);
     }
-  // Which of your own difficult aspects this person sets off.
-  for (const key of triggeredKeys(you, them.chart)) out.add(`trigger|${key}`);
+  // How this person meets the aspects in your own chart: sets off, eases, brings out.
+  for (const key of natalContactKeys(you, them.chart)) out.add(key);
   return out;
 }
 
@@ -78,6 +78,16 @@ export function describeSignature(key: string, you: Chart): { title: string; bod
       const d = DYNAMICS[a]!;
       const [x, y] = a.split("-") as [BodyId, BodyId];
       return { title: `Sets off your “${d.name}”`, body: `Their planets land on your ${POINT_NAMES[x]}–${POINT_NAMES[y]} aspect. ${d.hard}` };
+    }
+    case "eases": {
+      const d = DYNAMICS[a]!;
+      const [x, y] = a.split("-") as [BodyId, BodyId];
+      return { title: `Eases your “${d.name}”`, body: `Their planets make an easy aspect to your ${POINT_NAMES[x]}–${POINT_NAMES[y]} aspect, so this difficulty of yours is calmer around them. ${d.hard}` };
+    }
+    case "gift": {
+      const d = DYNAMICS[a]!;
+      const [x, y] = a.split("-") as [BodyId, BodyId];
+      return { title: `Brings out your “${d.easyName}”`, body: `Their planets support your ${POINT_NAMES[x]}–${POINT_NAMES[y]} aspect, one of the strengths in your chart. ${d.flowing}` };
     }
     case "house":
       return { title: `${POINT_NAMES[body]} in your ${ordinal(Number(b))} house`, body: `Their ${BODY_SHOWS[body]} lands in the part of your chart to do with ${HOUSE_AREA[Number(b) - 1]}. That is where you feel them most.` };

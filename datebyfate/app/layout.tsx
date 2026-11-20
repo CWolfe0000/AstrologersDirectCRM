@@ -5,7 +5,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || "http://localhost:3000"),
-  title: { default: "Datebyfate — see the pattern in who you love", template: "%s · Datebyfate" },
+  title: { default: "Datebyfate — See The Pattern In Who You Love", template: "%s · Datebyfate" },
   description: "Datebyfate reads your birth chart for your relationship pattern, finds what repeats across your past partners, and checks anyone new against it.",
   openGraph: { title: "Datebyfate", description: "See the pattern in who you love.", type: "website" },
 };

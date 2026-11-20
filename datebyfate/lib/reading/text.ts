@@ -106,8 +106,9 @@ export interface Dynamic {
   /** Name of the difficult form, and of the easy form. */
   name: string;
   easyName: string;
-  /** The difficult form, said about someone else. */
+  /** The difficult form, and the easy form, said about someone else. */
   them: string;
+  themEasy: string;
   /** How a conjunction reads. */
   conj: "hard" | "flowing";
   hard: string;
@@ -120,6 +121,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
     name: "The slow thaw",
     them: "They expect love to be earned and hold back until they are sure. They can seem cool, or slow to commit.",
     easyName: "Built to last",
+    themEasy: "They are steady in love and commit without drama.",
     conj: "hard",
     hard: "You expect love to be earned, and part of you waits for it to be withdrawn. You hold back until you are sure, choose partners who are hard to reach, or stay loyal long after the warmth has gone. The other side of this is that what you build tends to last.",
     flowing: "You are steady in love. You commit without drama and you value loyalty, and your relationships tend to last longer than those of the people around you.",
@@ -128,6 +130,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
     name: "Come close, need space",
     them: "They want closeness and then need room. Expect them to pull away when things get settled.",
     easyName: "Room to breathe",
+    themEasy: "They keep things fresh and give a partner freedom without feeling threatened.",
     conj: "hard",
     hard: "Attraction arrives suddenly for you and can leave the same way. When someone gets close you want room; when they give you room you want them back. You are often drawn to people who are unavailable or far away because the distance is already built in.",
     flowing: "You keep relationships fresh. You are open to unusual people and arrangements, and you give a partner freedom without feeling threatened by it.",
@@ -136,6 +139,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
     name: "The idealised partner",
     them: "They fall for an ideal and are let down by the real person. They can give too much and resent it quietly.",
     easyName: "The romantic",
+    themEasy: "They are tender, forgiving and romantic.",
     conj: "hard",
     hard: "You fall for who someone could be. Early on you fill the gaps with hope, and the disappointment comes when the real person shows up. You are also prone to giving more than you get and calling it love.",
     flowing: "You are romantic and kind in love, with a real gift for tenderness. You forgive easily and you bring imagination into a relationship.",
@@ -144,6 +148,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
     name: "All or nothing",
     them: "They attach intensely and find it hard to let go. Jealousy and tests of loyalty are likely.",
     easyName: "Deep loyalty",
+    themEasy: "They love deeply and are not put off by a partner’s difficult sides.",
     conj: "hard",
     hard: "You do not do casual. Your relationships go deep fast and can turn into jealousy, power struggles or an inability to let go. You are drawn to people who change you, and endings are rarely clean.",
     flowing: "You love deeply and loyally, and you are not afraid of a partner's difficult sides. Your relationships tend to change you for the better.",
@@ -152,6 +157,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
     name: "Chemistry first",
     them: "They are drawn to friction and can take arguments for passion.",
     easyName: "Easy chemistry",
+    themEasy: "Affection and desire work together in them, and they show interest easily.",
     conj: "flowing",
     hard: "What you want and what is good for you pull in different directions. You are attracted to friction, so relationships with strong chemistry and frequent arguments feel more real to you than calm ones.",
     flowing: "Affection and desire work together in you. You are comfortable showing interest, and attraction comes easily and is usually returned.",
@@ -160,6 +166,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
     name: "More is more",
     them: "They overdo it in love: big gestures early, then restlessness when the excitement settles.",
     easyName: "Generous heart",
+    themEasy: "They are warm and generous, and good company.",
     conj: "flowing",
     hard: "You are generous in love and inclined to overdo it: too much too soon, big promises, or expecting a relationship to stay as exciting as its first month.",
     flowing: "You are warm and generous, and people like being around you. You tend to be lucky in love and to draw partners who are good for you.",
@@ -168,6 +175,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
     name: "Self-contained",
     them: "They keep their feelings to themselves and find it hard to ask for comfort. They can seem most distant when they most need someone.",
     easyName: "The steady one",
+    themEasy: "They are emotionally steady and keep their head in a crisis.",
     conj: "hard",
     hard: "You learned early to look after your own feelings. You find it hard to ask for comfort, and you can pick partners who are emotionally sparing because that feels familiar. People often do not know when you need them.",
     flowing: "You are emotionally steady and dependable. You keep your head in a crisis, and partners come to rely on you.",
@@ -176,6 +184,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
     name: "Restless heart",
     them: "They need a lot of emotional space and get restless with routine.",
     easyName: "Easy independence",
+    themEasy: "They are emotionally independent and do not crowd a partner.",
     conj: "hard",
     hard: "You need more emotional freedom than most relationships assume. Too much routine or closeness makes you restless, and you may leave, or provoke a change, when things get too settled.",
     flowing: "You are emotionally independent and easy to be with. You do not crowd a partner, and change does not frighten you.",
@@ -184,6 +193,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
     name: "The absorber",
     them: "They soak up other people’s moods and lose track of their own needs.",
     easyName: "The intuitive",
+    themEasy: "They pick up what a partner feels without being told.",
     conj: "hard",
     hard: "You take on a partner's feelings as if they were yours. It makes you very caring and it makes your own needs hard to locate. You can stay in something draining because you feel sorry for the other person.",
     flowing: "You are intuitive and gentle, and you pick up what a partner feels without being told. People feel understood by you.",
@@ -192,6 +202,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
     name: "Deep waters",
     them: "They feel things intensely and fear being left, which can come out as control.",
     easyName: "Emotional stamina",
+    themEasy: "They have emotional depth and stay through difficult periods.",
     conj: "hard",
     hard: "You feel everything intensely and you guard against being abandoned. You may try to control a relationship to feel safe in it, or pick partners who do that to you. Trust has to be proved.",
     flowing: "You have emotional depth and stamina. You can stay with a partner through difficult periods, and you are hard to shock.",
@@ -200,6 +211,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
     name: "Comfort versus desire",
     them: "What attracts them and what comforts them are different, so they send mixed signals about what they want.",
     easyName: "Heart in agreement",
+    themEasy: "What they want and what they need agree, so they are easy to be close to.",
     conj: "flowing",
     hard: "What attracts you and what makes you feel safe are different things. You can end up with exciting partners who do not look after you, or kind ones you do not want.",
     flowing: "What you want and what you need agree. You are affectionate and easy to be close to, and you tend to choose partners who are kind to you.",
@@ -208,6 +220,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
     name: "Quick to flare",
     them: "They react fast and hot when they are hurt.",
     easyName: "Says what they feel",
+    themEasy: "They say what they need directly and recover quickly after an argument.",
     conj: "hard",
     hard: "Your feelings come out as heat. You react fast, argue when you are hurt, and can read a calm partner as an indifferent one.",
     flowing: "You act on your feelings without much delay. You are direct about what you need, and you recover quickly after an argument.",
@@ -216,6 +229,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
     name: "Two minds",
     them: "What they want and what they need pull apart, so they are hard to satisfy.",
     easyName: "Of one mind",
+    themEasy: "They know what they are looking for and send clear signals.",
     conj: "flowing",
     hard: "What you want for yourself and what you need to feel safe pull in different directions, so part of you is always unsatisfied with a relationship. Partners may get mixed signals about what you are asking for.",
     flowing: "What you want and what you need line up. You tend to know what you are looking for, and you send clear signals.",
@@ -224,6 +238,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
     name: "Stop and start",
     them: "They hold back desire and anger until it comes out as resentment.",
     easyName: "Patient desire",
+    themEasy: "They are patient about what they want and follow through.",
     conj: "hard",
     hard: "You hold your desire back. You hesitate to make the first move, fear rejection, and can let resentment build instead of saying what you want. With trust this becomes real staying power.",
     flowing: "You are patient and disciplined about what you want. You do not rush, and you follow through.",
@@ -232,6 +247,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
     name: "Sudden attractions",
     them: "They act on impulse and rebel when they feel controlled.",
     easyName: "The spark",
+    themEasy: "They are spontaneous and keep things lively.",
     conj: "hard",
     hard: "Attraction hits you without warning and you act on it. You want excitement and independence, and you can blow up a relationship when you feel controlled.",
     flowing: "You are spontaneous and bring energy to a relationship. You like trying new things and you keep the spark going.",
@@ -240,6 +256,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
     name: "The power struggle",
     them: "They do not back down, and disagreements become contests of will.",
     easyName: "Strong will",
+    themEasy: "They have strong desire and will, and put both into the relationship.",
     conj: "hard",
     hard: "You want intensely and you do not back down. Relationships can become contests of will, and you are attracted to people who are as forceful as you are.",
     flowing: "You have strong desire and strong will, and you put them into the relationship. You are not easily discouraged.",
@@ -532,4 +549,20 @@ export const SETS_OFF: Partial<Record<PointId, string>> = {
   pluto: "{P} intensity or need for control forces it to the surface.",
   node: "{P} direction in life pulls it into the centre of things.",
   asc: "{P} manner and presence set it off.",
+};
+
+/** What each planet contributes when it supports an aspect in the other person's chart. {P} is "Your" or "Sam’s". */
+export const SUPPORTS_WITH: Partial<Record<PointId, string>> = {
+  sun: "{P} ordinary way of being",
+  moon: "{P} care and attention",
+  mercury: "{P} way of talking things through",
+  venus: "{P} affection",
+  mars: "{P} energy and directness",
+  jupiter: "{P} optimism and generosity",
+  saturn: "{P} steadiness and patience",
+  uranus: "{P} openness and spontaneity",
+  neptune: "{P} gentleness and acceptance",
+  pluto: "{P} depth and commitment",
+  node: "{P} direction in life",
+  asc: "{P} manner and presence",
 };

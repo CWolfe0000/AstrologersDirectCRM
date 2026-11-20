@@ -5,7 +5,7 @@ import { binomialTail, checkAgainst, patternAcross, plainFacts, signaturesOf } f
 import { coupleReport } from "@/lib/reading/couple";
 import { aspectsOf, ownPattern } from "@/lib/reading/own";
 import { contactText } from "@/lib/reading/text";
-import { difficultAspects, triggeredKeys } from "@/lib/reading/triggers";
+import { difficultAspects, gifts, natalContactKeys } from "@/lib/reading/triggers";
 import { chartFor } from "@/lib/server/charts";
 import { referenceSignatures, seeded } from "@/lib/server/reference";
 import { ownTiming } from "@/lib/server/readings";
@@ -178,12 +178,48 @@ describe("triggers", () => {
     const theirs = difficultAspects(you, you, "Twin", null);
     expect(theirs[0]!.body).toMatch(/^(They|What they) /);
     expect(theirs[0]!.triggers[0]!.title).toMatch(/^Your \w+( \w+)? on Twin’s /);
-    expect(triggeredKeys(you, you).sort()).toEqual(aspectKeys(you));
+    expect(natalContactKeys(you, you).filter((k) => k.startsWith("trigger|")).sort()).toEqual(aspectKeys(you).map((k) => `trigger|${k}`));
   });
 
   it("counts as a signature across partners", () => {
     const keys = [...signaturesOf(you, { chart: you, hasTime: true })].filter((k) => k.startsWith("trigger|"));
     expect(keys.sort()).toEqual(aspectKeys(you).map((k) => `trigger|${k}`));
+  });
+});
+
+describe("eased by and brought out", () => {
+  const you = chartFor(me);
+  const easy = aspectsOf(you).filter((a) => !a.hard).map((a) => a.key).sort();
+
+  it("a twin chart brings out every strength, and the wording flips for the other person", () => {
+    const mine = gifts(you, you, null, "Twin");
+    expect(mine.map((g) => g.key).sort()).toEqual(easy);
+    expect(mine.every((g) => g.broughtOut.length >= 1)).toBe(true);
+    expect(mine[0]!.broughtOut[0]!.body).toMatch(/^It is brought out by Twin’s .*\.$/);
+    const theirs = gifts(you, you, "Twin", null);
+    expect(theirs[0]!.body).toMatch(/they|them/i);
+    expect(theirs[0]!.broughtOut[0]!.title).toMatch(/^Your .* Twin’s /);
+  });
+
+  it("easing uses trines and sextiles only, and never slow planet to slow planet", () => {
+    let seen = 0;
+    for (let d = 1; d <= 28; d++) {
+      const other = chartFor(born(`1989-02-${String(d).padStart(2, "0")}`));
+      for (const a of difficultAspects(you, other, null, "Sam"))
+        for (const t of a.eased) {
+          seen++;
+          expect(t.title).toMatch(/ (trine|sextile) your /);
+          expect(t.body).toMatch(/^It is eased by Sam’s /);
+          expect(t.orb).toBeLessThanOrEqual(3);
+          expect(["jupiter", "saturn", "uranus", "neptune", "pluto", "node"].includes(t.by) && ["jupiter", "saturn", "uranus", "neptune", "pluto"].includes(t.end)).toBe(false);
+        }
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
+
+  it("feeds the pattern across partners", () => {
+    const keys = natalContactKeys(you, you);
+    expect(keys.filter((k) => k.startsWith("gift|")).sort()).toEqual(easy.map((k) => `gift|${k}`));
   });
 });
 

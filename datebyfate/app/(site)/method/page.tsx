@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-chrome";
 
-export const metadata: Metadata = { title: "How it works", description: "What Datebyfate calculates, where the words come from, and how the pattern across your partners is checked against chance." };
+export const metadata: Metadata = { title: "How It Works", description: "What Datebyfate calculates, where the words come from, and how the pattern across your partners is checked against chance." };
 
 const H = ({ children }: { children: React.ReactNode }) => <h2 className="mt-10 text-2xl font-semibold">{children}</h2>;
 const P = ({ children }: { children: React.ReactNode }) => <p className="mt-3 text-ink-2">{children}</p>;
@@ -32,7 +32,7 @@ export default function Method() {
         <P>For a couple we list the closest contacts between the two charts, sorted into what comes easily and what causes friction, where each person’s planets fall in the other’s houses, and the composite chart, which is made of the midpoints between your planets and describes the relationship itself. There is no compatibility score.</P>
 
         <H>Triggers</H>
-        <P>Each person is also read alone. A difficult aspect in someone’s chart, such as Venus square Saturn, is theirs whoever they are with. We then check whether the other person has a planet within 3° or 4° of either end of it, by conjunction, square or opposition. If so, that person sets it off; if not, it stays quiet in this relationship. You see this in both directions: what they set off in you, and what you set off in them. Across past partners, being set off in the same place again and again counts as a repeat.</P>
+        <P>Each person is also read alone. A difficult aspect in someone’s chart, such as Venus square Saturn, is theirs whoever they are with. We then check whether the other person has a planet within 3° or 4° of either end of it, by conjunction, square or opposition. If so, that person sets it off. A planet in trine or sextile to either end eases it instead, and if nothing touches it, it stays quiet in this relationship. The supportive aspects in each chart are read the same way: the other person’s planets on them, or in trine or sextile to them, bring that strength out. You see all of this in both directions, and across past partners, being set off, eased or brought out in the same place again and again counts as a repeat.</P>
 
         <H>Timing</H>
         <P>Your calendar lists the periods in the next 12 months when Jupiter, Saturn, Uranus, Neptune or Pluto come within a degree or two of your relationship points, with start, peak and end dates.</P>

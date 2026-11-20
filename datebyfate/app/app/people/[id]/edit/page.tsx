@@ -6,7 +6,7 @@ import { PersonForm } from "@/components/forms";
 import { requireUser } from "@/lib/server/auth";
 import { getPerson } from "@/lib/server/people";
 
-export const metadata: Metadata = { title: "Edit details" };
+export const metadata: Metadata = { title: "Edit Details" };
 
 export default async function EditPerson({ params }: { params: Promise<{ id: string }> }) {
   const [{ id }, user] = await Promise.all([params, requireUser()]);

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { saveMatch } from "@/app/actions";
 import { PersonForm } from "@/components/forms";
 
-export const metadata: Metadata = { title: "Add someone new" };
+export const metadata: Metadata = { title: "Add Someone New" };
 
 export default function NewMatch() {
   return (

@@ -4,7 +4,7 @@ import { PersonRow } from "@/components/person-row";
 import { requireUser } from "@/lib/server/auth";
 import { loadContext } from "@/lib/server/readings";
 
-export const metadata: Metadata = { title: "Someone new" };
+export const metadata: Metadata = { title: "Someone New" };
 
 export default async function People() {
   const user = await requireUser();

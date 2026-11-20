@@ -43,7 +43,7 @@ export default function Home() {
               ].map(([title, count, base]) => (
                 <li key={title} className="rounded-2xl bg-night px-4 py-3.5">
                   <div className="flex items-baseline justify-between gap-3">
-                    <p className="font-display text-lg">{title}</p>
+                    <p className="heading font-display text-lg">{title}</p>
                     <p className="shrink-0 text-sm font-semibold text-rose-line">{count}</p>
                   </div>
                   <p className="mt-0.5 text-sm text-cream/60">Usual rate: {base}</p>
@@ -107,7 +107,7 @@ export default function Home() {
           <div className="divide-y divide-line border-y border-line">
             {FAQ.map((f) => (
               <details key={f.q} className="group py-4">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-semibold">
+                <summary className="heading flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-semibold">
                   {f.q}
                   <span className="text-rose transition-transform group-open:rotate-45" aria-hidden="true">+</span>
                 </summary>

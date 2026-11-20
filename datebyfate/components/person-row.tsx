@@ -9,7 +9,7 @@ export function PersonRow({ person }: { person: Person & { chart: Chart } }) {
     <li>
       <Link href={`/app/people/${person.id}`} className="card flex items-center justify-between gap-4 !p-4 hover:border-ink">
         <span>
-          <span className="font-display text-xl font-semibold">{person.name}</span>
+          <span className="heading font-display text-xl font-semibold">{person.name}</span>
           <span className="mt-0.5 block text-sm text-muted">
             Sun in {signName(person.chart.bodies.sun.lon)} · Venus in {signName(person.chart.bodies.venus.lon)}
             {years && ` · ${years}`}

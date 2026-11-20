@@ -6,6 +6,8 @@
   html { @apply bg-cream text-ink antialiased; }
   body { @apply font-sans text-[16px] leading-relaxed; }
   h1, h2, h3 { @apply font-display tracking-tight; font-variation-settings: "opsz" 96; }
+  /* House style: every word of a heading starts with a capital. Use .heading on heading-like text that isn't an h1–h4. */
+  h1, h2, h3, h4, legend, .heading { text-transform: capitalize; }
   :focus-visible { @apply outline-none ring-2 ring-rose ring-offset-2 ring-offset-cream; }
   ::selection { background: #f0c9d0; }
 }

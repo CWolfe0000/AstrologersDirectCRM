@@ -3,7 +3,7 @@ import Link from "next/link";
 import { saveEx } from "@/app/actions";
 import { PersonForm } from "@/components/forms";
 
-export const metadata: Metadata = { title: "Add a past partner" };
+export const metadata: Metadata = { title: "Add A Past Partner" };
 
 export default function NewEx() {
   return (

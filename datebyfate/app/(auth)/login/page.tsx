@@ -5,7 +5,7 @@ import { login } from "@/app/actions";
 import { AuthForm } from "@/components/forms";
 import { getUser } from "@/lib/server/auth";
 
-export const metadata: Metadata = { title: "Sign in" };
+export const metadata: Metadata = { title: "Sign In" };
 
 export default async function Login() {
   if (await getUser()) redirect("/app");

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Insight, OwnPattern, Placement } from "@/lib/reading/own";
-import type { DifficultAspect } from "@/lib/reading/triggers";
+import type { DifficultAspect, Gift, Trigger } from "@/lib/reading/triggers";
 
 export function InsightCard({ insight, tag }: { insight: Insight; tag?: React.ReactNode }) {
   return (
@@ -92,30 +92,62 @@ export function PatternView({ pattern, placements, children }: { pattern: OwnPat
   );
 }
 
-/** One person's difficult aspects, with what the other person does to each. */
+function Touches({ label, items }: { label: string; items: Trigger[] }) {
+  if (!items.length) return null;
+  return (
+    <div className="mt-4 border-t border-line pt-4">
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted">{label}</p>
+      <ul className="mt-2 space-y-2">
+        {items.map((t) => (
+          <li key={t.title}>
+            <span className="font-semibold">{t.title}.</span> <span className="text-ink-2">{t.body}</span> <span className="whitespace-nowrap text-sm text-muted">{t.orb.toFixed(1)}° from exact</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function AspectCard({ name, body, basis, tag, active, quiet, children }: { name: string; body: string; basis: string; tag: string; active: boolean; quiet: string; children: React.ReactNode }) {
+  return (
+    <article className={`card ${active ? "" : "!bg-transparent !shadow-none"}`}>
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
+        <h4 className="font-display text-xl font-semibold">{name}</h4>
+        <span className={`rounded-full px-3 py-1 text-sm font-semibold ${!active ? "bg-cream-2 text-ink-2" : tag.startsWith("Set Off") ? "bg-rose-soft text-rose-hover" : "bg-gold-soft text-gold"}`}>{tag}</span>
+      </div>
+      <p className="mt-2 text-ink-2">{body}</p>
+      <p className="mt-3 text-xs font-medium uppercase tracking-wider text-muted">{basis}</p>
+      {children}
+      {!active && <p className="mt-3 text-sm text-muted">{quiet}</p>}
+    </article>
+  );
+}
+
+/** One person's difficult aspects, with what the other person's chart does to each: sets it off, eases it, or both. */
 export function TriggerList({ aspects, quiet }: { aspects: DifficultAspect[]; quiet: string }) {
   return (
     <div className="grid gap-4">
-      {aspects.map((a) => (
-        <article key={a.key} className={`card ${a.triggers.length ? "" : "!bg-transparent !shadow-none"}`}>
-          <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
-            <h4 className="font-display text-xl font-semibold">{a.name}</h4>
-            <span className={`rounded-full px-3 py-1 text-sm font-semibold ${a.triggers.length ? "bg-rose-soft text-rose-hover" : "bg-cream-2 text-ink-2"}`}>{a.triggers.length ? "Set off" : "Left alone"}</span>
-          </div>
-          <p className="mt-2 text-ink-2">{a.body}</p>
-          <p className="mt-3 text-xs font-medium uppercase tracking-wider text-muted">{a.basis}</p>
-          {a.triggers.length > 0 ? (
-            <ul className="mt-4 space-y-2 border-t border-line pt-4">
-              {a.triggers.map((t) => (
-                <li key={t.title}>
-                  <span className="font-semibold">{t.title}.</span> <span className="text-ink-2">{t.body}</span> <span className="whitespace-nowrap text-sm text-muted">{t.orb.toFixed(1)}° from exact</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-3 text-sm text-muted">{quiet}</p>
-          )}
-        </article>
+      {aspects.map((a) => {
+        const tag = a.triggers.length && a.eased.length ? "Set Off And Eased" : a.triggers.length ? "Set Off" : a.eased.length ? "Eased" : "Left Alone";
+        return (
+          <AspectCard key={a.key} name={a.name} body={a.body} basis={a.basis} tag={tag} active={tag !== "Left Alone"} quiet={quiet}>
+            <Touches label="Set off by" items={a.triggers} />
+            <Touches label="Eased by" items={a.eased} />
+          </AspectCard>
+        );
+      })}
+    </div>
+  );
+}
+
+/** One person's supportive aspects, with what in the other person's chart brings each out. */
+export function GiftList({ gifts, quiet }: { gifts: Gift[]; quiet: string }) {
+  return (
+    <div className="grid gap-4">
+      {gifts.map((g) => (
+        <AspectCard key={g.key} name={g.name} body={g.body} basis={g.basis} tag={g.broughtOut.length ? "Brought Out" : "Not Touched"} active={g.broughtOut.length > 0} quiet={quiet}>
+          <Touches label="Brought out by" items={g.broughtOut} />
+        </AspectCard>
       ))}
     </div>
   );

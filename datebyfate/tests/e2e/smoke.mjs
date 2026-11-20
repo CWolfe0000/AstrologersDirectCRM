@@ -80,11 +80,11 @@ for (const ex of exes) {
 }
 await page.getByRole("heading", { name: /repeats? found|No repeats/ }).waitFor();
 let text = await page.locator("main").innerText();
-assert.match(text, /A random group of 3 people born in the same years would show about \d+\.\d/);
-assert.match(text, /Every partner was older than you/);
-assert.match(text, /They ended 2 of 3\./);
-const hasRepeats = /repeats? found/.test(text);
-if (hasRepeats) assert.match(text, /Subscribe to see what each one is/); // free plan: locked
+assert.match(text, /A random group of 3 people born in the same years would show about \d+\.\d/i);
+assert.match(text, /Every partner was older than you/i);
+assert.match(text, /They ended 2 of 3\./i);
+const hasRepeats = /repeats? found/i.test(text);
+if (hasRepeats) assert.match(text, /Subscribe to see what each one is/i); // free plan: locked
 await shot("04-exes-free");
 
 step("add someone new (free plan: locked report)");
@@ -95,9 +95,9 @@ await page.getByRole("button", { name: "Add and read" }).click();
 await page.waitForURL(/\/app\/people\/p_/);
 const personUrl = page.url();
 text = await page.locator("main").innerText();
-assert.match(text, /\d+ strengths? and \d+ friction points? between your charts/);
-assert.doesNotMatch(text, /What comes easily/);
-assert.match(text, /Charlie sets off \d+ of the \d+ difficult aspects? in your chart, and you set off \d+ of the \d+ in theirs/);
+assert.match(text, /\d+ strengths? and \d+ friction points? between your charts/i);
+assert.doesNotMatch(text, /What comes easily/i);
+assert.match(text, /Charlie sets off \d+ and eases \d+ of the \d+ difficult aspects? in your chart, and brings out \d+ of your \d+ strengths?/i);
 await shot("05-person-free");
 
 step("pricing without Stripe configured says so and charges nothing");
@@ -112,15 +112,16 @@ execFileSync("node", ["scripts/set-plan.mjs", email, "premium"], { stdio: "inher
 await page.goto(`${BASE}/app/exes`);
 text = await page.locator("main").innerText();
 if (hasRepeats) assert.match(text, /usual rate about/i);
-assert.doesNotMatch(text, /Subscribe to see/);
+assert.doesNotMatch(text, /Subscribe to see/i);
 await shot("07-exes-premium");
 await page.goto(personUrl);
 await page.getByRole("heading", { name: "What comes easily" }).waitFor();
 await page.getByRole("heading", { name: "The relationship itself" }).waitFor();
 await page.getByRole("heading", { name: "What you set off in each other" }).waitFor();
-await page.getByRole("heading", { name: "In Charlie", exact: true }).waitFor();
+await page.getByRole("heading", { name: "What you bring out in each other" }).waitFor();
+assert.equal(await page.getByRole("heading", { name: "In Charlie", exact: true }).count(), 2);
 text = await page.locator("main").innerText();
-assert.match(text, /Charlie’s (Sun|Moon|Venus|Mars) in your \d+(st|nd|rd|th) house/);
+assert.match(text, /Charlie’s (Sun|Moon|Venus|Mars) in your \d+(st|nd|rd|th) house/i);
 await shot("08-person-premium");
 await page.goto(`${BASE}/app/timing`);
 await page.getByRole("heading", { name: "Your relationship calendar" }).waitFor();

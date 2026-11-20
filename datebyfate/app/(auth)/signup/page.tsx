@@ -5,7 +5,7 @@ import { signup } from "@/app/actions";
 import { AuthForm } from "@/components/forms";
 import { getUser } from "@/lib/server/auth";
 
-export const metadata: Metadata = { title: "Create your account" };
+export const metadata: Metadata = { title: "Create Your Account" };
 
 export default async function Signup() {
   if (await getUser()) redirect("/app");

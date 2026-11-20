@@ -6,7 +6,7 @@ import { oneIn, plural } from "@/lib/format";
 import { requireUser } from "@/lib/server/auth";
 import { exPattern, loadContext } from "@/lib/server/readings";
 
-export const metadata: Metadata = { title: "Past partners" };
+export const metadata: Metadata = { title: "Past Partners" };
 
 const STRENGTH = { strong: "Strong repeat", clear: "Clear repeat", faint: "Faint repeat" } as const;
 

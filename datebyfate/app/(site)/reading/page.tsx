@@ -3,7 +3,7 @@ import { SiteHeader } from "@/components/site-chrome";
 import { getUser } from "@/lib/server/auth";
 import { FreeReadingTool } from "./free-reading";
 
-export const metadata: Metadata = { title: "Your free relationship pattern", description: "Enter your birth details and see how you love, what you need, who you are drawn to and the dynamics you repeat." };
+export const metadata: Metadata = { title: "Your Free Relationship Pattern", description: "Enter your birth details and see how you love, what you need, who you are drawn to and the dynamics you repeat." };
 
 export default async function ReadingPage() {
   const user = await getUser().catch(() => null);

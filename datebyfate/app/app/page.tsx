@@ -8,7 +8,7 @@ import { ownPattern, placementsOf } from "@/lib/reading/own";
 import { requireUser } from "@/lib/server/auth";
 import { loadContext, ownTiming } from "@/lib/server/readings";
 
-export const metadata: Metadata = { title: "Your pattern" };
+export const metadata: Metadata = { title: "Your Pattern" };
 
 export default async function AppHome() {
   const user = await requireUser();
