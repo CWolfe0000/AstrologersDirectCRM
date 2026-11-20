@@ -11,11 +11,13 @@ import { useStore } from "@/lib/store";
 import { Wordmark } from "@/components/ui/misc";
 import { Avatar } from "@/components/ui/avatar";
 import { APP_NAV, APP_NAV_SECONDARY } from "./nav";
+import { useUnreadMessages } from "@/components/messages/unread";
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const path = usePathname();
   const p = useStore((s) => s.practitioner);
   const unread = useStore((s) => s.notifications.filter((n) => !n.read).length);
+  const unreadMessages = useUnreadMessages("app", useStore((s) => s.session.status === "ready"));
   const overdue = useStore((s) => s.tasks.filter((t) => t.status !== "done" && t.due < TODAY).length);
   const pending = useStore((s) => s.readings.filter((r) => r.status === "ready" || r.status === "failed" || r.status === "draft").length);
   const resetDemo = useStore((s) => s.resetDemo);
@@ -27,7 +29,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const secondary = isAdmin ? [...APP_NAV_SECONDARY, { href: "/app/admin", label: "Admin", icon: ShieldCheck }] : APP_NAV_SECONDARY;
 
   const isActive = (href: string, exact?: boolean) => (exact ? path === href : path === href || path.startsWith(href + "/"));
-  const badge = (href: string) => (href === "/app/tasks" ? overdue : href === "/app/delivery" ? pending : href === "/app/notifications" ? unread : 0);
+  const badge = (href: string) => (href === "/app/tasks" ? overdue : href === "/app/delivery" ? pending : href === "/app/notifications" ? unread : href === "/app/messages" ? unreadMessages : 0);
 
   return (
     <div className="flex h-full flex-col bg-ink text-[#CFCAD0]">

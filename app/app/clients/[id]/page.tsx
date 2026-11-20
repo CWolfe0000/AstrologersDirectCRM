@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams, usePathname } from "next/navigation";
-import { Pencil, CalendarPlus, CircleDot, NotebookPen, Mail, Phone, Cake, Clock, MapPin, AlertTriangle, MoreHorizontal, Archive, ArchiveRestore, Mic, Send, KeyRound, ListPlus, Eye, Waves } from "lucide-react";
+import { Pencil, CalendarPlus, CircleDot, NotebookPen, Mail, Phone, Cake, Clock, MapPin, AlertTriangle, MoreHorizontal, Archive, ArchiveRestore, Mic, Send, KeyRound, ListPlus, Eye, Waves, MessagesSquare } from "lucide-react";
 import { useStore, personName } from "@/lib/store";
 import { DATA_MODE } from "@/lib/utils";
 import { api } from "@/lib/api";
@@ -122,6 +122,7 @@ function Profile() {
           <div className="flex flex-wrap gap-2 lg:max-w-[340px] lg:justify-end">
             <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}><Pencil /> Edit Profile</Button>
             <ButtonLink href={`/app/consultations?new=1&client=${id}`} size="sm"><CalendarPlus /> Schedule Consultation</ButtonLink>
+            {DATA_MODE === "server" && <ButtonLink href={`/app/messages?client=${id}`} variant="secondary" size="sm"><MessagesSquare /> Message</ButtonLink>}
             <ButtonLink href={`/app/charts/new?client=${id}`} variant="secondary" size="sm"><CircleDot /> Create Chart</ButtonLink>
             <ButtonLink href={`/app/observations?new=1&client=${id}`} variant="secondary" size="sm"><NotebookPen /> Add Observation</ButtonLink>
             <ButtonLink href={`/app/timeline?client=${id}`} variant="secondary" size="sm"><Waves /> Timeline</ButtonLink>

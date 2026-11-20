@@ -3,7 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, BookOpen, CalendarDays, Settings, Bell, LogOut, ArrowLeftRight, Sprout } from "lucide-react";
+import { Home, BookOpen, CalendarDays, Settings, Bell, LogOut, ArrowLeftRight, Sprout, MessagesSquare, CircleDot } from "lucide-react";
+import { useUnreadMessages } from "@/components/messages/unread";
 import { cn, DATA_MODE, relTime } from "@/lib/utils";
 import { signOut } from "@/lib/sync";
 import { useStore, personName } from "@/lib/store";
@@ -23,6 +24,8 @@ const NAV = [
   { href: "/portal/readings", label: "My Readings", short: "Readings", icon: BookOpen },
   { href: "/portal/work", label: "Between Sessions", short: "Between", icon: Sprout },
   { href: "/portal/consultations", label: "Consultations", short: "Sessions", icon: CalendarDays },
+  { href: "/portal/messages", label: "Messages", icon: MessagesSquare },
+  { href: "/portal/charts", label: "My Charts", short: "Charts", icon: CircleDot },
   { href: "/portal/settings", label: "Account", icon: Settings },
 ];
 
@@ -38,6 +41,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
   const showBanner = DATA_MODE === "demo" || session.preview;
   const markRead = useStore((s) => s.markPortalNotification);
   const unread = notes.filter((n) => !n.read).length;
+  const unreadMessages = useUnreadMessages("portal", session.status === "ready" && !session.preview);
   const active = (href: string, exact?: boolean) => (exact ? path === href : path.startsWith(href));
 
   return (
@@ -59,8 +63,9 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
           </Link>
           <nav className="ml-auto hidden items-center gap-1 md:flex">
             {NAV.map((n) => (
-              <Link key={n.href} href={n.href} className={cn("rounded-lg px-3 py-2 text-[13.5px] transition-colors", active(n.href, n.exact) ? "bg-canvas-2 font-medium text-ink" : "text-muted hover:text-ink")}>
+              <Link key={n.href} href={n.href} className={cn("whitespace-nowrap rounded-lg px-2.5 py-2 text-[13.5px] transition-colors", active(n.href, n.exact) ? "bg-canvas-2 font-medium text-ink" : "text-muted hover:text-ink")}>
                 {n.label}
+                {n.href === "/portal/messages" && unreadMessages > 0 && <span className="ml-1.5 rounded-full bg-accent px-1.5 text-[10.5px] font-bold text-white">{unreadMessages}</span>}
               </Link>
             ))}
           </nav>
@@ -111,10 +116,10 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
         Your readings and consultation records are private to you and {joinNames(practices.map((p) => p.name)) || "your astrologer"}. <Link href="/legal/privacy" className="underline">Privacy</Link>
       </footer>
       {/* mobile tab bar */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-7 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
         {NAV.map((n) => (
-          <Link key={n.href} href={n.href} className={cn("flex flex-col items-center gap-0.5 py-2.5 text-[11px]", active(n.href, n.exact) ? "text-accent" : "text-muted")}>
-            <n.icon className="size-5" />
+          <Link key={n.href} href={n.href} className={cn("flex flex-col items-center gap-0.5 py-2.5 text-[10.5px]", active(n.href, n.exact) ? "text-accent" : "text-muted")}>
+            <span className="relative"><n.icon className="size-5" />{n.href === "/portal/messages" && unreadMessages > 0 && <span className="absolute -right-2 -top-1 flex size-4 items-center justify-center rounded-full bg-accent text-[9.5px] font-bold text-white">{unreadMessages}</span>}</span>
             {n.short ?? n.label}
           </Link>
         ))}

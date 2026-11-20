@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Video, Phone, MapPin, Lock, FileText, Clock } from "lucide-react";
+import { Video, Phone, MapPin, Lock, FileText, Clock, CalendarPlus } from "lucide-react";
 import { mediaUrl } from "@/lib/upload";
 import { useStore } from "@/lib/store";
 import { cn, fmtDate, fmtTime, monthName, sameDay } from "@/lib/utils";
@@ -28,7 +28,16 @@ export default function PortalConsultations() {
 
   return (
     <div>
-      <h1 className="font-serif text-[34px] leading-tight text-ink md:text-[40px]">Consultations</h1>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <h1 className="font-serif text-[34px] leading-tight text-ink md:text-[40px]">Consultations</h1>
+        <div className="flex flex-wrap gap-2">
+          {practices.filter((p) => p.bookingUrl).map((p) => (
+            <a key={p.id || "p"} href={p.bookingUrl} className="inline-flex h-9 items-center gap-2 rounded-lg bg-accent px-3.5 text-[13.5px] font-medium text-white hover:bg-accent-hover">
+              <CalendarPlus className="size-4" /> Book a Session{practices.length > 1 ? ` With ${p.firstName}` : ""}
+            </a>
+          ))}
+        </div>
+      </div>
       <p className="mt-1.5 text-[15px] text-muted">Your sessions with your astrologer, and what was shared from each.</p>
 
       <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-line bg-surface px-4 py-3 text-[13px] text-ink-3">

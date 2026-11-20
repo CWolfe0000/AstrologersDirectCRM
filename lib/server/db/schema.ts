@@ -295,3 +295,23 @@ export const platformSettings = pgTable("platform_settings", {
   value: jsonb("value").notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+/**
+ * In-app messages between a practice and one of its clients. The text is
+ * encrypted at rest (sealed). Kept out of the synced record collections:
+ * messages are sent and read through their own endpoints.
+ */
+export const messages = pgTable(
+  "messages",
+  {
+    id: text("id").primaryKey(),
+    practiceId: text("practice_id").notNull().references(() => practices.id, { onDelete: "cascade" }),
+    clientId: text("client_id").notNull(),
+    /** "practitioner" or "client". */
+    sender: text("sender").notNull(),
+    sealed: text("sealed").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    readAt: timestamp("read_at", { withTimezone: true }),
+  },
+  (t) => [index("messages_thread_idx").on(t.practiceId, t.clientId, t.createdAt)],
+);

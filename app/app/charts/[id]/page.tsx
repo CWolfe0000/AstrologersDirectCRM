@@ -232,6 +232,7 @@ function Workspace() {
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-serif text-[28px] leading-tight text-ink md:text-[32px]">{chart.title}</h1>
             <ChartTypeBadge type={chart.type} />
+            {chart.shared && <span className="rounded-full border border-sage/40 bg-sage-50 px-2 py-0.5 text-[11.5px] font-medium text-sage-dark" title={`Shared ${new Date(chart.shared.at).toLocaleDateString()}`}>Shared With Client</span>}
           </div>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] text-muted">
             {chart.type === "election" && chart.election ? (
@@ -287,7 +288,7 @@ function Workspace() {
           <ButtonLink href={`/app/delivery?new=1&client=${chart.clientId}&chart=${chart.id}`}>
             <Send /> Deliver
           </ButtonLink>
-          <ChartActionsMenu chart={chart} svg={() => svgRef.current ?? document.querySelector<SVGSVGElement>('svg[aria-label^="Astrocartography map"]')} inWorkspace />
+          <ChartActionsMenu chart={chart} view={view} svg={() => svgRef.current ?? document.querySelector<SVGSVGElement>('svg[aria-label^="Astrocartography map"]')} inWorkspace />
         </div>
       </div>
 

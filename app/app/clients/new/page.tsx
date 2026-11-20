@@ -4,6 +4,9 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Check, ChevronLeft, ChevronRight, Sparkles, AlertTriangle, Info } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { api } from "@/lib/api";
+import { flushNow } from "@/lib/sync";
+import { DATA_MODE } from "@/lib/utils";
 import { useChartView } from "@/components/chart/chart-helpers";
 import { BODIES, fmtDeg, signOf, HOUSE_SYSTEMS, type BirthData, type HouseSystem } from "@/lib/astro";
 import type { ChartRecord, Person } from "@/lib/data/types";
@@ -57,7 +60,7 @@ export default function NewClientPage() {
 
   const canNext = step === 0 ? contactOk : step === 1 ? birthOk : true;
 
-  const save = () => {
+  const save = async () => {
     if (!tempPerson) return;
     setSaving(true);
     const client = s.addClient(
@@ -68,7 +71,8 @@ export default function NewClientPage() {
         status: "new",
         source: contact.source.trim() || undefined,
         tags: contact.tags.split(",").map((t) => t.trim()).filter(Boolean),
-        portalAccess: invite ? "invited" : "none",
+        // With live data the invitation endpoint marks the client invited once the email is sent.
+        portalAccess: invite && DATA_MODE === "demo" ? "invited" : "none",
         summary: contact.notes.trim() || undefined,
       },
       { firstName: contact.firstName.trim(), lastName: contact.lastName.trim(), birth: tempPerson.birth },
@@ -81,7 +85,18 @@ export default function NewClientPage() {
       settings: { houseSystem: effectiveHouse },
     });
     void chart;
-    s.toast("Client Created", `${fullName}'s record and natal chart have been saved.${invite ? " Portal invitation queued (simulated)." : ""}`, "success");
+    if (invite && DATA_MODE === "server") {
+      try {
+        await flushNow();
+        await api("/api/v1/portal/invite", { body: { clientId: client.id } });
+        useStore.setState((st) => ({ clients: st.clients.map((c) => (c.id === client.id ? { ...c, portalAccess: "invited" } : c)) }));
+        s.toast("Client Created", `${fullName}'s record and natal chart have been saved, and a portal invitation was emailed to ${contact.email.trim()}.`, "success");
+      } catch (e) {
+        s.toast("Client Created, Invitation Not Sent", `${(e as Error).message} You can send it from the client’s menu.`, "error");
+      }
+    } else {
+      s.toast("Client Created", `${fullName}'s record and natal chart have been saved.${invite ? " Portal invitation queued (simulated in the demo)." : ""}`, "success");
+    }
     router.push(`/app/clients/${client.id}`);
   };
 
@@ -225,7 +240,7 @@ export default function NewClientPage() {
                 <Summary title="Natal chart" rows={[["Chart", `${fullName} — Natal`], ["House system", HOUSE_SYSTEMS.find((h) => h.id === effectiveHouse)!.name], ["Zodiac", "Tropical"], ["Engine", "Demonstration"]]} />
               </div>
               <div className="rounded-lg border border-line bg-canvas/60 p-4">
-                <Checkbox checked={invite} onChange={(e) => setInvite(e.target.checked)} label={<span>Invite {contact.firstName} to the client portal <span className="text-muted">(email invitation is simulated)</span></span>} />
+                <Checkbox checked={invite} onChange={(e) => setInvite(e.target.checked)} label={<span>Invite {contact.firstName} to the client portal{DATA_MODE === "demo" && <span className="text-muted"> (email invitation is simulated in the demo)</span>}</span>} />
               </div>
             </div>
           )}

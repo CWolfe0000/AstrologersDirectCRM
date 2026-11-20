@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowRight, Video, Phone, MapPin, Mail, Globe, FileText, Headphones, Film, Bell, Check, FolderOpen } from "lucide-react";
+import { ArrowRight, Video, Phone, MapPin, Mail, Globe, FileText, Headphones, Film, Bell, Check, FolderOpen, MessagesSquare, CalendarPlus } from "lucide-react";
 import { useStore, personName } from "@/lib/store";
 import { cn, fmtDay, fmtDate, fmtLong, fmtTime, relTime, sameDay, fmtDuration } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
@@ -197,11 +197,18 @@ export default function PortalHome() {
               <Button variant="secondary" className="mt-4 w-full" onClick={() => toast("Message Sent", `${pr.firstName} will reply by email. (Simulated)`, "success")}>
                 <Mail /> Message {pr.firstName}
               </Button>
-            ) : pr.email ? (
-              <a href={`mailto:${pr.email}`} className="mt-4 inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-line bg-surface text-[13.5px] font-medium text-ink hover:border-line-strong">
-                <Mail className="size-4" /> Email {pr.firstName || "your astrologer"}
-              </a>
-            ) : null}
+            ) : (
+              <div className="mt-4 space-y-2">
+                <Link href={`/portal/messages${pr.id ? `?practice=${encodeURIComponent(pr.id)}` : ""}`} className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-line bg-surface text-[13.5px] font-medium text-ink hover:border-line-strong">
+                  <MessagesSquare className="size-4" /> Message {pr.firstName || "your astrologer"}
+                </Link>
+                {pr.bookingUrl && (
+                  <a href={pr.bookingUrl} className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-accent text-[13.5px] font-medium text-white hover:bg-accent-hover">
+                    <CalendarPlus className="size-4" /> Book a Session
+                  </a>
+                )}
+              </div>
+            )}
           </div>
           ))}
 

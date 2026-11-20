@@ -91,6 +91,8 @@ export interface ChartRecord {
   lastOpenedAt?: string;
   favorite?: boolean;
   savedConfig?: string; // name of saved display configuration
+  /** Shared with the client: a snapshot of the calculated chart, shown read-only in their portal. */
+  shared?: { at: string; view: { type: string; inner: import("@/lib/astro/types").ChartPoints; outer?: import("@/lib/astro/types").ChartPoints; aspects: import("@/lib/astro/types").Aspect[] } };
 }
 
 /**
@@ -251,6 +253,8 @@ export interface Activity {
 }
 
 export interface Practitioner {
+  /** Portal only: the astrologer's public booking page, when online booking is on. */
+  bookingUrl?: string;
   name: string;
   firstName: string;
   title: string;

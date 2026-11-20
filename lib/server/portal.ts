@@ -1,5 +1,7 @@
 import "server-only";
+import { eq } from "drizzle-orm";
 import { getSettings, listCollection } from "./records";
+import { db, schema } from "./db";
 
 type Rec = Record<string, unknown>;
 
@@ -18,7 +20,7 @@ export function isExpired(expiresAt: unknown, now = new Date()) {
  */
 export async function portalView(practiceId: string, clientId: string) {
   const ids = [clientId];
-  const [people, clients, readings, consultations, files, portalNotifications, clientWork, workResponses, settings] = await Promise.all([
+  const [people, clients, readings, consultations, files, portalNotifications, clientWork, workResponses, settings, charts] = await Promise.all([
     listCollection(practiceId, "people", { clientIds: ids }),
     listCollection(practiceId, "clients", { clientIds: ids }),
     listCollection(practiceId, "readings", { clientIds: ids }),
@@ -28,12 +30,14 @@ export async function portalView(practiceId: string, clientId: string) {
     listCollection(practiceId, "clientWork", { clientIds: ids }),
     listCollection(practiceId, "workResponses", { clientIds: ids }),
     getSettings(practiceId),
+    listCollection(practiceId, "charts", { clientIds: ids }),
   ]);
+  const [booking] = await db().select({ slug: schema.bookingProfiles.slug, enabled: schema.bookingProfiles.enabled }).from(schema.bookingProfiles).where(eq(schema.bookingProfiles.practiceId, practiceId));
   const me = people.find((p) => p.id === clientId);
   const client = clients.find((c) => c.id === clientId);
   const p = (settings?.practitioner ?? {}) as Rec;
   return {
-    practitioner: { name: p.name, firstName: p.firstName, title: p.title, email: p.email, phone: p.phone, practice: p.practice, website: p.website, bio: p.bio, timezone: p.timezone, portalAccent: p.portalAccent, plan: "" },
+    practitioner: { name: p.name, firstName: p.firstName, title: p.title, email: p.email, phone: p.phone, practice: p.practice, website: p.website, bio: p.bio, timezone: p.timezone, portalAccent: p.portalAccent, plan: "", bookingUrl: booking?.enabled ? `/book/${booking.slug}` : undefined },
     people: me ? [{ id: me.id, firstName: me.firstName, lastName: me.lastName, birth: me.birth }] : [],
     clients: client ? [{ id: client.id, email: client.email, status: client.status, createdAt: client.createdAt, tags: [], portalAccess: client.portalAccess }] : [],
     readings: readings.filter((r) => r.clientId === clientId && r.status === "delivered" && !isExpired(r.expiresAt)),
@@ -48,6 +52,8 @@ export async function portalView(practiceId: string, clientId: string) {
     // Only work that has been shared: never drafts or archived items.
     clientWork: clientWork.filter((w) => w.clientId === clientId && (w.status === "shared" || w.status === "completed")),
     workResponses: workResponses.filter((r) => r.clientId === clientId),
+    // Only charts the astrologer chose to share, as their read-only snapshot.
+    charts: charts.filter((c) => c.clientId === clientId && c.shared).map((c) => ({ id: c.id, title: c.title, type: c.type, clientId: c.clientId, personIds: [], createdAt: c.createdAt, updatedAt: c.updatedAt, shared: c.shared })),
   };
 }
 
@@ -55,7 +61,7 @@ type View = Awaited<ReturnType<typeof portalView>>;
 const SEP = "~";
 const sc = (practiceId: string, id: unknown) => (typeof id === "string" && id ? `${practiceId}${SEP}${id}` : id);
 const scHref = (practiceId: string, href: unknown) =>
-  typeof href === "string" ? href.replace(/^\/portal\/(readings|work)\/([^/?#]+)/, (_m, kind: string, id: string) => `/portal/${kind}/${practiceId}${SEP}${id}`) : href;
+  typeof href === "string" ? href.replace(/^\/portal\/(readings|work|charts)\/([^/?#]+)/, (_m, kind: string, id: string) => `/portal/${kind}/${practiceId}${SEP}${id}`) : href;
 
 /**
  * A client's portal across every astrologer they see: each practice's view,
@@ -79,5 +85,6 @@ export function mergePortalViews(views: { practiceId: string; view: View }[]) {
     portalNotifications: all("portalNotifications", (n, p) => ({ ...n, id: sc(p, n.id), clientId: "me", href: scHref(p, n.href) })),
     clientWork: all("clientWork", (w, p) => ({ ...w, id: sc(p, w.id), clientId: "me", consultationId: sc(p, w.consultationId) })),
     workResponses: all("workResponses", (r, p) => ({ ...r, id: sc(p, r.id), clientId: "me", workId: sc(p, r.workId) })),
+    charts: all("charts", (c, p) => ({ ...c, id: sc(p, c.id), clientId: "me" })),
   };
 }

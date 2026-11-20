@@ -101,6 +101,29 @@ const client = z
   })
   .strict();
 
+/** A chart's calculated positions, as shared with the client (a read-only snapshot). */
+const sharedPoints = z
+  .object({
+    bodies: z.array(z.object({ id: str(20), lon: z.number(), speed: z.number(), house: z.number().int().min(1).max(12) }).strict()).max(40),
+    cusps: z.array(z.number()).length(12),
+    asc: z.number(),
+    mc: z.number(),
+  })
+  .strict();
+const sharedChart = z
+  .object({
+    at: str(40),
+    view: z
+      .object({
+        type: str(40),
+        inner: sharedPoints,
+        outer: opt(sharedPoints),
+        aspects: z.array(z.object({ a: str(20), b: str(20), aRing: z.enum(["inner", "outer"]), bRing: z.enum(["inner", "outer"]), type: aspectId, orb: z.number(), applying: z.boolean() }).strict()).max(400),
+      })
+      .strict(),
+  })
+  .strict();
+
 const chart = z
   .object({
     id,
@@ -108,6 +131,7 @@ const chart = z
     type: z.enum(["natal", "synastry", "composite", "davison", "transits", "progressions", "solar-arc", "solar-return", "lunar-return", "planetary-return", "horary", "astrocartography", "election"]),
     personIds: z.array(id).min(1).max(2),
     clientId: id,
+    shared: opt(sharedChart),
     refDate: opt(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)),
     returnBody: opt(z.enum(["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "chiron", "node"])),
     returnPlace: opt(z.object({ place: str(200), lat: z.number().min(-90).max(90), lon: z.number().min(-180).max(180), tz: str(80) }).strict()),

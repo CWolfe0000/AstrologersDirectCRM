@@ -131,6 +131,8 @@ export async function upsertRecord(practiceId: string, collection: Collection, v
 export async function deleteRecord(practiceId: string, collection: Collection, id: string) {
   const t = RECORD_TABLES[collection];
   const gone = await db().delete(t).where(and(eq(t.practiceId, practiceId), eq(t.id, id))).returning({ id: t.id });
+  // A deleted client takes their message thread with them.
+  if (gone.length && collection === "clients") await db().delete(schema.messages).where(and(eq(schema.messages.practiceId, practiceId), eq(schema.messages.clientId, id)));
   if (gone.length) {
     await db()
       .insert(schema.tombstones)
@@ -198,6 +200,7 @@ export async function deleteAllRecords(practiceId: string) {
     const t = RECORD_TABLES[c];
     await db().delete(t).where(eq(t.practiceId, practiceId));
   }
+  await db().delete(schema.messages).where(eq(schema.messages.practiceId, practiceId));
 }
 
 export async function getSettings(practiceId: string) {
