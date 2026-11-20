@@ -2,17 +2,19 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { User, Building2, CircleDot, Bell, Shield, CreditCard, Database, CalendarCheck } from "lucide-react";
+import { User, Building2, CircleDot, Bell, Shield, CreditCard, Database, CalendarCheck, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/ui/misc";
 import { Select } from "@/components/ui/input";
 import { BookingSection } from "@/components/settings/booking-section";
+import { IntakeFormsSection } from "@/components/settings/intake-forms";
 import { ProfileSection, PracticeSection, AstrologySection, NotificationsSection, SecuritySection, SubscriptionSection, DataSection } from "@/components/settings/sections";
 
 const SECTIONS = [
   { id: "profile", label: "Profile", icon: User, C: ProfileSection },
   { id: "practice", label: "Practice", icon: Building2, C: PracticeSection },
   { id: "astrology", label: "Astrology Defaults", icon: CircleDot, C: AstrologySection },
+  { id: "intake", label: "Intake Forms", icon: ClipboardList, C: IntakeFormsSection },
   { id: "booking", label: "Booking", icon: CalendarCheck, C: BookingSection },
   { id: "notifications", label: "Notifications", icon: Bell, C: NotificationsSection },
   { id: "security", label: "Security", icon: Shield, C: SecuritySection },

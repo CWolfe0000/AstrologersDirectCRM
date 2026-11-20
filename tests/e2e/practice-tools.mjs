@@ -59,6 +59,9 @@ await dlg.locator('input[placeholder="Start typing a town or city…"]').first()
 await dlg.locator("button", { hasText: "Paris, France" }).first().click();
 await dlg.getByRole("button", { name: /Import 3 clients/ }).click();
 await page.getByText("Imported 3 clients").waitFor();
+// Next the import offers portal invitations: not now.
+await dlg.getByText("Invite Them to Their Portal").waitFor();
+await dlg.getByRole("button", { name: "Skip for Now" }).click();
 await page.getByText("All changes saved").waitFor({ timeout: 15000 });
 s = await state();
 const kenji = s.people.find((p) => p.firstName === "Kenji");
@@ -89,6 +92,17 @@ await dlg.getByText("2 ready").waitFor();
 await dlg.getByText(/local time was adjusted/).waitFor();
 await dlg.getByRole("button", { name: /Import 2 clients/ }).click();
 await page.getByText("Imported 2 clients").waitFor();
+
+step("after the import: add an email by pasting a list, and invite");
+await dlg.getByText("Invite Them to Their Portal").waitFor();
+await dlg.getByLabel("Paste emails").fill(`Claire Moreau${stamp}, claire-${stamp}@example.com`);
+await dlg.getByRole("button", { name: "Match to Names" }).click();
+await page.getByText("Matched 1 Email").waitFor();
+assert.equal(await dlg.getByLabel(`Email for Claire Moreau${stamp}`).inputValue(), `claire-${stamp}@example.com`);
+await dlg.getByRole("button", { name: "Invite 1 Client" }).click();
+await dlg.getByText("Invited", { exact: true }).waitFor();
+await dlg.getByRole("button", { name: "Done" }).click();
+for (let i = 0; i < 40; i++) { const { rows } = await db.query('select 1 from outbox where "to"=$1', [`claire-${stamp}@example.com`]); if (rows.length) break; assert.ok(i < 39, "invitation emailed"); await new Promise((r) => setTimeout(r, 250)); }
 await page.getByText("All changes saved").waitFor({ timeout: 15000 });
 s = await state();
 const claire = s.people.find((p) => p.lastName === `Moreau${stamp}`);

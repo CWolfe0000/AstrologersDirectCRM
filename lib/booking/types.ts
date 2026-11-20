@@ -16,6 +16,8 @@ export interface BookingService {
   price: string;
   format: "Video call" | "Phone" | "In person";
   active: boolean;
+  /** The intake form sent to whoever books this service. */
+  intakeFormId?: string;
 }
 
 export interface BookingRules {

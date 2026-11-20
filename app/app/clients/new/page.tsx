@@ -1,11 +1,13 @@
 "use client";
 
+import { selectIntakeForms } from "@/lib/intake";
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Check, ChevronLeft, ChevronRight, Sparkles, AlertTriangle, Info } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { api } from "@/lib/api";
 import { flushNow } from "@/lib/sync";
+import { sendIntakeForm } from "@/components/intake/send";
 import { DATA_MODE } from "@/lib/utils";
 import { useChartView } from "@/components/chart/chart-helpers";
 import { BODIES, fmtDeg, signOf, HOUSE_SYSTEMS, type BirthData, type HouseSystem } from "@/lib/astro";
@@ -31,6 +33,8 @@ export default function NewClientPage() {
   const [place, setPlace] = React.useState<PlaceValue | null>(null);
   const [houseSystem, setHouseSystem] = React.useState<HouseSystem>(s.defaults.houseSystem);
   const [invite, setInvite] = React.useState(true);
+  const intakeForms = useStore(selectIntakeForms);
+  const [formId, setFormId] = React.useState("");
   const [saving, setSaving] = React.useState(false);
 
   const c = (k: keyof typeof contact) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setContact((x) => ({ ...x, [k]: e.target.value }));
@@ -88,9 +92,11 @@ export default function NewClientPage() {
     if (invite && DATA_MODE === "server") {
       try {
         await flushNow();
-        await api("/api/v1/portal/invite", { body: { clientId: client.id } });
+        const form = intakeForms.find((f) => f.id === formId);
+        if (form) await sendIntakeForm(form, client.id);
+        else await api("/api/v1/portal/invite", { body: { clientId: client.id } });
         useStore.setState((st) => ({ clients: st.clients.map((c) => (c.id === client.id ? { ...c, portalAccess: "invited" } : c)) }));
-        s.toast("Client Created", `${fullName}'s record and natal chart have been saved, and a portal invitation was emailed to ${contact.email.trim()}.`, "success");
+        s.toast("Client Created", `${fullName}'s record and natal chart have been saved, and a portal invitation${form ? ` with “${form.title}”` : ""} was emailed to ${contact.email.trim()}.`, "success");
       } catch (e) {
         s.toast("Client Created, Invitation Not Sent", `${(e as Error).message} You can send it from the client’s menu.`, "error");
       }
@@ -241,6 +247,15 @@ export default function NewClientPage() {
               </div>
               <div className="rounded-lg border border-line bg-canvas/60 p-4">
                 <Checkbox checked={invite} onChange={(e) => setInvite(e.target.checked)} label={<span>Invite {contact.firstName} to the client portal{DATA_MODE === "demo" && <span className="text-muted"> (email invitation is simulated in the demo)</span>}</span>} />
+                {invite && intakeForms.length > 0 && (
+                  <label className="mt-3 block max-w-sm">
+                    <span className="mb-1 block text-[12.5px] font-medium text-ink-3">Intake Form to Include</span>
+                    <Select value={formId} onChange={(e) => setFormId(e.target.value)}>
+                      <option value="">No Form</option>
+                      {intakeForms.map((f) => <option key={f.id} value={f.id}>{f.title}</option>)}
+                    </Select>
+                  </label>
+                )}
               </div>
             </div>
           )}

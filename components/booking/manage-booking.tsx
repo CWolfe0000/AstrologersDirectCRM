@@ -6,6 +6,9 @@ import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { BookingShell, TimePicker, browserZone, longWhen } from "./shared";
+import { IntakeFill } from "@/components/intake/intake-fill";
+import type { IntakeSection } from "@/lib/data/types";
+import type { BirthData } from "@/lib/astro/types";
 
 type View = {
   service: string;
@@ -20,6 +23,7 @@ type View = {
   canReschedule: boolean;
   deadline: string;
   noticeHours: number;
+  intake: { title: string; status: "sent" | "submitted" } | null;
 };
 
 /** The client's private page for a booked session: see it, reschedule or cancel. */
@@ -144,7 +148,43 @@ export function ManageBooking({ token }: { token: string }) {
         )}
 
         {error && v && <p role="alert" className="mt-4 rounded-lg bg-danger-50 px-3 py-2 text-[13px] text-danger">{error}</p>}
+
+        {v.intake && v.status !== "canceled" && <BookingIntake token={token} intake={v.intake} displayName={v.displayName} />}
       </div>
     </BookingShell>
+  );
+}
+
+/** The intake form that came with this booking (filled in from the booking link, no sign-in). */
+function BookingIntake({ token, intake, displayName }: { token: string; intake: NonNullable<View["intake"]>; displayName: string }) {
+  const [form, setForm] = React.useState<{ title: string; intro: string | null; sections: IntakeSection[]; birth: Partial<BirthData> | null } | null>(null);
+  const [open, setOpen] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const base = `/api/public/booking/${encodeURIComponent(token)}/intake`;
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash === "#intake" && intake.status === "sent") setOpen(true);
+  }, [intake.status]);
+  React.useEffect(() => {
+    if (!open || form) return;
+    api<NonNullable<typeof form>>(base).then(setForm, (e: Error) => setError(e.message));
+  }, [open, form, base]);
+  return (
+    <section id="intake" className="mt-8 scroll-mt-6">
+      {intake.status === "submitted" ? (
+        <p className="flex items-center gap-2 rounded-lg bg-sage-50 px-3 py-2 text-[13.5px] text-sage-dark"><Check className="size-4" /> Thank you: {displayName} has your answers to “{intake.title}”.</p>
+      ) : !open ? (
+        <div className="rounded-2xl border border-accent-100 bg-accent-50/60 p-5">
+          <p className="text-[15px] font-semibold text-ink">Before Your Session</p>
+          <p className="mt-1 text-[13.5px] text-ink-3">{displayName} asked you to fill in “{intake.title}”. It takes a few minutes.</p>
+          <Button className="mt-3" onClick={() => setOpen(true)}>Fill In the Form</Button>
+        </div>
+      ) : error ? (
+        <p role="alert" className="rounded-lg bg-danger-50 px-3 py-2 text-[13px] text-danger">{error}</p>
+      ) : !form ? (
+        <div className="h-48 animate-pulse rounded-2xl bg-canvas-2" />
+      ) : (
+        <IntakeFill title={form.title} intro={form.intro} sections={form.sections} knownBirth={form.birth} placesEndpoint="/api/public/places" onSubmit={async (answers) => { await api(base, { body: { answers } }); }} />
+      )}
+    </section>
   );
 }

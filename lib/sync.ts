@@ -22,7 +22,7 @@ import { SwissApiEngine } from "./astro/swiss-client";
 const COLLECTIONS = [
   "people", "clients", "charts", "observations", "consultations", "tasks",
   "readings", "recordings", "files", "notifications", "activity", "portalNotifications",
-  "clientWork", "workResponses",
+  "clientWork", "workResponses", "intakeRequests",
 ] as const;
 type Coll = (typeof COLLECTIONS)[number];
 type Rec = { id: string } & Record<string, unknown>;
@@ -294,10 +294,19 @@ export async function bootstrap(view: "app" | "portal", opts: { as?: string | nu
   }
 }
 
-/** Save anything pending immediately (e.g. before navigating away). */
-export function flushNow() {
+/**
+ * Save anything pending immediately (e.g. before navigating away, or before a
+ * server action that needs the records). Waits for a save already under way too.
+ */
+export async function flushNow() {
   if (timer) clearTimeout(timer);
-  return flush();
+  timer = null;
+  await flush();
+  const until = Date.now() + 20_000;
+  while ((flushing || queue.size) && Date.now() < until) {
+    await new Promise((r) => setTimeout(r, 50));
+    if (!flushing && queue.size) await flush();
+  }
 }
 
 export function hasPendingChanges() {

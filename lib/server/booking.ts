@@ -6,12 +6,14 @@ import { HttpError } from "./http";
 import { getRecord, getSettings, listCollection, upsertRecord } from "./records";
 import { newId, newToken, sha256 } from "./crypto";
 import { link, sendMail } from "./mail";
+import { intakeFormsOf, requestFromForm, submitIntake } from "./intake";
 import { inviteClient } from "./invite";
 import { birthSchema } from "./validation";
 import { ianaZone, zonedToUtc } from "@/lib/timezones";
 import { nowLocal } from "@/lib/utils";
 import { availableSlots } from "@/lib/booking/slots";
 import { DEFAULT_RULES, RESERVED_SLUGS, SLUG_RE, type BookingProfile } from "@/lib/booking/types";
+import type { IntakeRequest } from "@/lib/data/types";
 
 const hhmm = z.string().regex(/^\d{2}:\d{2}$/);
 const range = z.object({ start: hhmm, end: hhmm }).strict().refine((r) => r.start < r.end, "Each range must start before it ends.");
@@ -37,6 +39,8 @@ export const profileSchema = z
             price: text(40),
             format: z.enum(["Video call", "Phone", "In person"]),
             active: z.boolean(),
+            /** The intake form sent when someone books this service. */
+            intakeFormId: z.string().regex(/^[A-Za-z0-9_-]{1,80}$/).optional(),
           })
           .strict(),
       )
@@ -259,6 +263,10 @@ export async function book(slug: string, input: z.infer<typeof bookingRequest>) 
   const { raw: token, hash: tokenHash } = newToken();
   await db().insert(schema.bookingTokens).values({ tokenHash, practiceId, consultationId, serviceId: service.id, clientEmail: input.email, clientName: name });
   const manage = link(`/book/manage/${token}`);
+  // The service's intake form, filled in from the booking link (no sign-in needed).
+  const form = service.intakeFormId ? (await intakeFormsOf(practiceId)).find((f) => f.id === service.intakeFormId) : undefined;
+  if (form) await upsertRecord(practiceId, "intakeRequests", { ...requestFromForm(form, clientId, consultationId) });
+  const formText = form ? `\n\nBefore your session, please fill in “${form.title}” (a few minutes):\n${manage}#intake\n` : "";
   await upsertRecord(practiceId, "notifications", {
     id: newId("n"),
     type: "consultation",
@@ -276,7 +284,7 @@ export async function book(slug: string, input: z.infer<typeof bookingRequest>) 
   await sendMail(
     input.email,
     `Booked: ${service.name} with ${astro}`,
-    `Hi ${input.firstName},\n\nYour ${service.name} with ${astro} is booked for ${when(start, visitorTz)}${visitorTz !== tz ? ` (${when(start, tz)} for ${astro})` : ""}.\n\n${service.durationMin} minutes · ${place}${service.price ? `\nPrice: ${service.price} (payment arranged directly with ${astro})` : ""}\n\nNeed to reschedule or cancel? Use your booking link${profile.rules.changeNoticeHours ? ` (up to ${noticeText(profile.rules.changeNoticeHours)} before)` : ""}:\n${manage}\n\nOr reply to this email.\n${profile.autoInvite && !existing ? `\nYou’ll also get an invitation to your private client portal, where ${astro} can share your readings.\n` : ""}`,
+    `Hi ${input.firstName},\n\nYour ${service.name} with ${astro} is booked for ${when(start, visitorTz)}${visitorTz !== tz ? ` (${when(start, tz)} for ${astro})` : ""}.\n\n${service.durationMin} minutes · ${place}${service.price ? `\nPrice: ${service.price} (payment arranged directly with ${astro})` : ""}${formText}\n\nNeed to reschedule or cancel? Use your booking link${profile.rules.changeNoticeHours ? ` (up to ${noticeText(profile.rules.changeNoticeHours)} before)` : ""}:\n${manage}\n\nOr reply to this email.\n${profile.autoInvite && !existing ? `\nYou’ll also get an invitation to your private client portal, where ${astro} can share your readings.\n` : ""}`,
     owner ? { replyTo: owner } : {},
   );
   if (owner)
@@ -327,7 +335,39 @@ export async function manageView(token: string) {
     canReschedule: b.canReschedule,
     deadline: new Date(b.deadline).toISOString(),
     noticeHours: b.profile.rules.changeNoticeHours,
+    intake: await intakeFor(b).then((r) => (r ? { title: r.title, status: r.status } : null)),
   };
+}
+
+async function intakeFor(b: Awaited<ReturnType<typeof lookup>>) {
+  const reqs = await listCollection(b.row.practiceId, "intakeRequests", { clientIds: [String(b.k.clientId)] });
+  return (reqs.find((r) => r.consultationId === b.row.consultationId) as unknown as IntakeRequest | undefined) ?? null;
+}
+
+/** The booked session's intake form: what to ask, and whether it's been sent back. */
+export async function bookingIntake(token: string) {
+  const b = await lookup(token);
+  const r = await intakeFor(b);
+  if (!r) throw new HttpError(404, "There’s no form for this session.");
+  const person = await getRecord(b.row.practiceId, "people", String(b.k.clientId));
+  return {
+    id: r.id,
+    title: r.title,
+    intro: r.intro ?? null,
+    sections: r.sections,
+    status: r.status,
+    displayName: b.profile.displayName || b.practitioner.name || "Your astrologer",
+    clientName: b.row.clientName,
+    /** What the astrologer already has, so the client can confirm rather than retype. */
+    birth: r.status === "sent" ? (person?.birth ?? null) : null,
+  };
+}
+
+export async function submitBookingIntake(token: string, answers: unknown) {
+  const b = await lookup(token);
+  const r = await intakeFor(b);
+  if (!r) throw new HttpError(404, "There’s no form for this session.");
+  return submitIntake(b.row.practiceId, String(b.k.clientId), r.id, answers);
 }
 
 export async function manageSlots(token: string) {

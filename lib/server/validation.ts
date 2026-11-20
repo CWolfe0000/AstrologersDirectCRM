@@ -30,6 +30,37 @@ export const birthSchema = z
   })
   .strict();
 
+const ymd = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+export const lifeEvent = z
+  .object({ id: str(40).min(1), date: ymd, end: opt(ymd), ongoing: opt(z.boolean()), approx: opt(z.boolean()), type: str(20).min(1), note: opt(str(500)), source: opt(z.enum(["client", "astrologer"])) })
+  .strict()
+  .refine((e) => !e.end || e.end >= e.date, "A period can’t end before it starts.");
+
+export const intakeSection = z
+  .object({
+    id,
+    kind: z.enum(["birth", "contact", "goals", "lifeEvents", "horary", "question"]),
+    label: opt(str(300)),
+    help: opt(str(1000)),
+    required: opt(z.boolean()),
+    answer: opt(z.enum(["short", "long", "choice", "multi", "date"])),
+    options: opt(z.array(str(200).min(1)).max(20)),
+  })
+  .strict();
+export const intakeForm = z.object({ id, title: str(120).min(1), intro: opt(str(2000)), sections: z.array(intakeSection).max(40), updatedAt: iso }).strict();
+
+const place = { place: str(200), lat: z.number().min(-90).max(90), lon: z.number().min(-180).max(180), tz: str(64) };
+export const intakeAnswers = z
+  .object({
+    birth: opt(z.object({ date: ymd, time: opt(z.string().regex(/^\d{2}:\d{2}$/)), timeAccuracy: z.enum(["exact", "approximate", "unknown"]), timeSource: opt(str(200)), ...place }).strict()),
+    contact: opt(z.object({ preferredName: opt(str(100)), pronouns: opt(str(60)), phone: opt(str(60)) }).strict()),
+    goals: opt(str(5000)),
+    lifeEvents: opt(z.array(lifeEvent).max(100)),
+    horary: opt(z.object({ question: str(2000).min(1), date: ymd, time: z.string().regex(/^\d{2}:\d{2}$/), ...place }).strict()),
+    questions: opt(z.record(id, z.union([str(5000), z.array(str(200)).max(20)]))),
+  })
+  .strict();
+
 const orbDeg = z.number().min(0.1).max(15);
 export const timelineDefaultsSchema = z
   .object({
@@ -81,7 +112,7 @@ const person = z
     relationship: opt(str(80)),
     notes: opt(str(5000)),
     birthCircumstances: opt(z.array(str(20)).max(12)),
-    lifeEvents: opt(z.array(z.object({ id: str(40), date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), type: str(20), note: opt(str(300)) }).strict()).max(60)),
+    lifeEvents: opt(z.array(lifeEvent).max(200)),
   })
   .strict();
 
@@ -345,6 +376,7 @@ export const practitionerSchema = z
         .array(z.object({ id, kind: z.enum(["assignment", "journal", "goal", "activity"]), title: str(200).min(1), instructions: str(10_000) }).strict())
         .max(50),
     ),
+    intakeForms: opt(z.array(intakeForm).max(30)),
   })
   .strict();
 
@@ -361,6 +393,25 @@ const clientWork = z
     status: z.enum(["draft", "shared", "completed", "archived"]),
     sharedAt: opt(iso),
     completedAt: opt(iso),
+    createdAt: iso,
+    updatedAt: iso,
+  })
+  .strict();
+
+const intakeRequest = z
+  .object({
+    id,
+    clientId: id,
+    formId: id,
+    title: str(120).min(1),
+    intro: opt(str(2000)),
+    sections: z.array(intakeSection).max(40),
+    status: z.enum(["sent", "submitted"]),
+    consultationId: opt(id),
+    sentAt: iso,
+    submittedAt: opt(iso),
+    answers: opt(intakeAnswers),
+    applied: opt(z.object({ birth: opt(z.enum(["applied", "review", "dismissed"])), events: opt(z.number().int().min(0)), contact: opt(z.boolean()), chartId: opt(id) }).strict()),
     createdAt: iso,
     updatedAt: iso,
   })
@@ -392,4 +443,5 @@ export const COLLECTION_SCHEMAS = {
   portalNotifications: portalNotification,
   clientWork,
   workResponses: workResponse,
+  intakeRequests: intakeRequest,
 } as const;

@@ -1,5 +1,6 @@
 "use client";
 
+import { selectIntakeForms } from "@/lib/intake";
 import * as React from "react";
 import { Copy, ExternalLink, Loader2, Plus, Trash2 } from "lucide-react";
 import { api } from "@/lib/api";
@@ -16,6 +17,7 @@ const DURATIONS = [30, 45, 60, 75, 90, 120];
 
 /** Settings → Booking: the public booking page, services, weekly hours and rules. */
 export function BookingSection() {
+  const intakeForms = useStore(selectIntakeForms);
   const toast = useStore((s) => s.toast);
   const tz = useStore((s) => s.practitioner.timezone);
   const [p, setP] = React.useState<BookingProfile | null>(null);
@@ -122,6 +124,13 @@ export function BookingSection() {
                 </Field>
                 <Field label="Description" htmlFor={`sv-ds-${s.id}`} optional className="sm:col-span-2"><Input id={`sv-ds-${s.id}`} maxLength={1000} value={s.description} onChange={(e) => setService(s.id, { description: e.target.value })} /></Field>
                 <Field label="Price" htmlFor={`sv-p-${s.id}`} optional><Input id={`sv-p-${s.id}`} maxLength={40} placeholder="e.g. $150" value={s.price} onChange={(e) => setService(s.id, { price: e.target.value })} /></Field>
+                <Field label="Intake Form" htmlFor={`sv-i-${s.id}`} optional className="sm:col-span-3" hint={intakeForms.length ? "Sent automatically when someone books this service. They fill it in from their booking link, no sign-in needed." : "Create intake forms under Settings › Intake Forms, then choose one here."}>
+                  <Select id={`sv-i-${s.id}`} value={s.intakeFormId ?? ""} onChange={(e) => setService(s.id, { intakeFormId: e.target.value || undefined })} disabled={!intakeForms.length && !s.intakeFormId}>
+                    <option value="">No Form</option>
+                    {intakeForms.map((f) => <option key={f.id} value={f.id}>{f.title}</option>)}
+                    {s.intakeFormId && !intakeForms.some((f) => f.id === s.intakeFormId) && <option value={s.intakeFormId}>(Deleted Form)</option>}
+                  </Select>
+                </Field>
               </div>
               <div className="mt-2 flex items-center justify-between">
                 <Checkbox label={<span className="text-[13px]">Bookable</span>} checked={s.active} onChange={(e) => setService(s.id, { active: e.target.checked })} />

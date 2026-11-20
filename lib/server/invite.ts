@@ -10,7 +10,7 @@ import { normEmail } from "./accounts";
 import { clientUserFor, linksFor, removeClientAccess } from "./clientaccess";
 
 /** Invite a client to their portal: creates (or reuses) their login and emails a set-password link. */
-export async function inviteClient(owner: { practiceId: string }, clientId: string | undefined) {
+export async function inviteClient(owner: { practiceId: string }, clientId: string | undefined, extra?: string) {
   const client = clientId ? await getRecord(owner.practiceId, "clients", clientId) : null;
   const person = clientId ? await getRecord(owner.practiceId, "people", clientId) : null;
   if (!client || !person) throw new HttpError(404, "Client not found.");
@@ -44,7 +44,7 @@ export async function inviteClient(owner: { practiceId: string }, clientId: stri
   await sendMail(
     email,
     `${p.name ?? "Your astrologer"} invited you to your client portal`,
-    `Hi ${person.firstName},\n\n${p.name ?? "Your astrologer"} (${p.practice ?? "AstrologersDirect"}) has set up a private portal for your readings, recordings, sessions and the work you do between them.\n\nOpen your portal:\n${link(`/auth/invite?token=${token}`)}\n\nNo password needed: whenever you want to come back, enter your email on the sign-in page and we’ll send you a link. This invitation expires in 7 days.`,
+    `Hi ${person.firstName},\n\n${p.name ?? "Your astrologer"} (${p.practice ?? "AstrologersDirect"}) has set up a private portal for your readings, recordings, sessions and the work you do between them.${extra ? `\n\n${extra}` : ""}\n\nOpen your portal:\n${link(`/auth/invite?token=${token}`)}\n\nNo password needed: whenever you want to come back, enter your email on the sign-in page and we’ll send you a link. This invitation expires in 7 days.`,
   );
   if (client.portalAccess !== "active") await upsertRecord(owner.practiceId, "clients", { ...client, portalAccess: "invited" });
 }

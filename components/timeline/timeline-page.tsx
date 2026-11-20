@@ -22,7 +22,9 @@ import { Button } from "@/components/ui/button";
 import { Checkbox, Field, Input, Select } from "@/components/ui/input";
 import { Segmented } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Sheet } from "@/components/ui/dialog";
+import { Dialog, DialogContent, Sheet } from "@/components/ui/dialog";
+import { LifeEventsEditor } from "@/components/intake/life-events-editor";
+import { lifeEventLabel, lifeEventWhen } from "@/lib/life-events";
 import { EngineNotice } from "@/components/chart/chart-helpers";
 import { useHydrated } from "@/components/workspace/use-hydrated";
 import { PremiumGate, usePremium } from "@/components/plan/premium";
@@ -290,6 +292,7 @@ function Timeline() {
             </ClientContext.Provider>
           )}
           <DensityStrip tl={shown} focus={focus} onFocus={setFocus} asOf={asOf} onAsOf={moveAsOf} />
+          {person && <LifeEventsLane tl={shown} personId={person.id} onAsOf={moveAsOf} />}
           <Convergences tl={shown} focus={focus} onFocus={setFocus} onOpen={setDetail} onAsOf={(x) => { moveAsOf(x); window.scrollTo({ top: 0, behavior: "smooth" }); }} />
           {model && <BackgroundInfluences m={model} d={d} onOpenContact={setDetail} />}
           <ContactGrid tl={shown} sig={sig} groupBy={groupBy} setGroupBy={setGroupBy} focus={focus} onFocus={setFocus} onOpen={setDetail} />
@@ -471,6 +474,63 @@ function DensityStrip({ tl, focus, onFocus, asOf, onAsOf }: { tl: NonNullable<Ti
           {hover !== null && <div className="pointer-events-none absolute inset-y-0 w-px bg-ink/50" style={{ left: `${((hover + 0.5) / n) * 100}%` }} aria-hidden />}
         </div>
       </CardBody>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Life events (from intake forms or added here)
+
+function LifeEventsLane({ tl, personId, onAsOf }: { tl: NonNullable<TimelineResponse["timeline"]>; personId: string; onAsOf: (d: string) => void }) {
+  const axis = useAxis(tl.from, tl.to);
+  const person = useStore((s) => s.people.find((p) => p.id === personId));
+  const updatePerson = useStore((s) => s.updatePerson);
+  const [editing, setEditing] = React.useState(false);
+  const events = person?.lifeEvents ?? [];
+  const from = tl.from.slice(0, 10), to = tl.to.slice(0, 10);
+  const endOf = (e: (typeof events)[number]) => (e.ongoing ? to : (e.end ?? e.date));
+  const inRange = events.filter((e) => e.date <= to && endOf(e) >= from).sort((a, b) => a.date.localeCompare(b.date));
+  const clamp = (v: number) => Math.max(0, Math.min(100, v));
+  return (
+    <Card>
+      <CardHeader
+        icon={<CalendarRange />}
+        title="Life Events"
+        description={events.length ? `What happened in ${person ? person.firstName + "’s" : "their"} life, from intake forms and your notes. ${inRange.length} in this range, ${events.length} in all. Select one to move the As Of date.` : "No life events yet. Add them here, or send an intake form with a Life Events section."}
+        action={<Button size="sm" variant="secondary" onClick={() => setEditing(true)}>{events.length ? "Edit Events" : "Add Events"}</Button>}
+      />
+      {inRange.length > 0 && (
+        <CardBody className="pb-8 pt-7">
+          <div className="relative" style={{ height: `${Math.max(1, Math.min(inRange.length, 6)) * 28 + 6}px` }}>
+            <MonthGrid axis={axis} />
+            {inRange.slice(0, 6).map((e, i) => {
+              const a = clamp(axis.pct(e.date));
+              const b = e.end || e.ongoing ? clamp(axis.pct(endOf(e))) : null;
+              return (
+                <button
+                  key={e.id}
+                  type="button"
+                  onClick={() => onAsOf(e.date < from ? from : e.date)}
+                  title={`${lifeEventLabel(e.type)} · ${lifeEventWhen(e)}${e.note ? ` · ${e.note}` : ""}`}
+                  className={cn("group absolute flex h-5", b !== null ? "items-end pb-0.5" : "items-center")}
+                  style={{ top: i * 28 + 6, left: `${a}%`, width: b !== null ? `${Math.max(0.8, b - a)}%` : undefined }}
+                >
+                  {b !== null ? <span className="h-2 w-full rounded-full bg-sage/70 group-hover:bg-sage-dark" /> : <span className="size-2.5 -translate-x-1/2 rotate-45 bg-accent group-hover:bg-accent-hover" />}
+                  <span className={cn("pointer-events-none absolute whitespace-nowrap text-[11px] leading-none text-ink-3", b !== null ? "-top-1.5 left-1" : a > 60 ? "right-full mr-2" : "left-full ml-2")}>{e.note || lifeEventLabel(e.type)}</span>
+                </button>
+              );
+            })}
+          </div>
+          {inRange.length > 6 && <p className="mt-2 text-[12px] text-muted">Showing the first 6 of {inRange.length} in this range.</p>}
+        </CardBody>
+      )}
+      <Dialog open={editing} onOpenChange={setEditing}>
+        <DialogContent title="Life Events" description="A single date for an event, or a start and end for a period. These also feed Rectification." size="lg">
+          <div className="max-h-[70vh] overflow-y-auto px-6 pb-6">
+            <LifeEventsEditor value={events} onChange={(v) => updatePerson(personId, { lifeEvents: v.map((e) => (e.source ? e : { ...e, source: "astrologer" as const })) })} idPrefix="tl-le" />
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

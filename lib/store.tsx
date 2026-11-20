@@ -9,7 +9,7 @@ import { DEFAULT_SETTINGS } from "@/lib/astro/meta";
 import { associatedPeople, clientPeople, clients as seedClients, practitioner as seedPractitioner } from "./data/people";
 import * as seed from "./data/records";
 import type {
-  Activity, AppNotification, ChartRecord, Client, ClientFile, ClientWork, Consultation, Observation, Person, PortalNotification,
+  Activity, AppNotification, ChartRecord, Client, ClientFile, ClientWork, Consultation, IntakeRequest, Observation, Person, PortalNotification,
   Practitioner, Reading, Recording, Task, WorkResponse,
 } from "./data/types";
 import { DATA_MODE, nowLocal, uid } from "./utils";
@@ -62,6 +62,8 @@ export interface DemoState {
   clientWork: ClientWork[];
   /** Clients' responses to that work. Written in the portal only. */
   workResponses: WorkResponse[];
+  /** Intake forms sent to clients, and their answers. */
+  intakeRequests: IntakeRequest[];
   /** Toasts are transient (not persisted). */
   toasts: { id: string; title: string; body?: string; tone?: "default" | "success" | "error" }[];
 
@@ -141,7 +143,8 @@ function emptyState() {
     portalNotifications: [],
     clientWork: [],
     workResponses: [],
-  } as Pick<DemoState, "practitioner" | "plan" | "defaults" | "people" | "clients" | "charts" | "consultations" | "observations" | "tasks" | "readings" | "recordings" | "files" | "notifications" | "activity" | "portalNotifications" | "clientWork" | "workResponses">;
+    intakeRequests: [],
+  } as Pick<DemoState, "practitioner" | "plan" | "defaults" | "people" | "clients" | "charts" | "consultations" | "observations" | "tasks" | "readings" | "recordings" | "files" | "notifications" | "activity" | "portalNotifications" | "clientWork" | "workResponses" | "intakeRequests">;
 }
 
 function seedState() {
@@ -163,6 +166,7 @@ function seedState() {
     portalNotifications: seed.portalNotifications,
     clientWork: seed.clientWork,
     workResponses: seed.workResponses,
+    intakeRequests: [] as IntakeRequest[],
   };
 }
 

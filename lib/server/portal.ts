@@ -20,7 +20,7 @@ export function isExpired(expiresAt: unknown, now = new Date()) {
  */
 export async function portalView(practiceId: string, clientId: string) {
   const ids = [clientId];
-  const [people, clients, readings, consultations, files, portalNotifications, clientWork, workResponses, settings, charts] = await Promise.all([
+  const [people, clients, readings, consultations, files, portalNotifications, clientWork, workResponses, settings, charts, intakeRequests] = await Promise.all([
     listCollection(practiceId, "people", { clientIds: ids }),
     listCollection(practiceId, "clients", { clientIds: ids }),
     listCollection(practiceId, "readings", { clientIds: ids }),
@@ -31,6 +31,7 @@ export async function portalView(practiceId: string, clientId: string) {
     listCollection(practiceId, "workResponses", { clientIds: ids }),
     getSettings(practiceId),
     listCollection(practiceId, "charts", { clientIds: ids }),
+    listCollection(practiceId, "intakeRequests", { clientIds: ids }),
   ]);
   const [booking] = await db().select({ slug: schema.bookingProfiles.slug, enabled: schema.bookingProfiles.enabled }).from(schema.bookingProfiles).where(eq(schema.bookingProfiles.practiceId, practiceId));
   const me = people.find((p) => p.id === clientId);
@@ -52,6 +53,8 @@ export async function portalView(practiceId: string, clientId: string) {
     // Only work that has been shared: never drafts or archived items.
     clientWork: clientWork.filter((w) => w.clientId === clientId && (w.status === "shared" || w.status === "completed")),
     workResponses: workResponses.filter((r) => r.clientId === clientId),
+    // Intake forms sent to them, with their own answers (never the astrologer's review state).
+    intakeRequests: intakeRequests.filter((r) => r.clientId === clientId).map(({ applied, ...r }) => (void applied, r)),
     // Only charts the astrologer chose to share, as their read-only snapshot.
     charts: charts.filter((c) => c.clientId === clientId && c.shared).map((c) => ({ id: c.id, title: c.title, type: c.type, clientId: c.clientId, personIds: [], createdAt: c.createdAt, updatedAt: c.updatedAt, shared: c.shared })),
   };
@@ -61,7 +64,7 @@ type View = Awaited<ReturnType<typeof portalView>>;
 const SEP = "~";
 const sc = (practiceId: string, id: unknown) => (typeof id === "string" && id ? `${practiceId}${SEP}${id}` : id);
 const scHref = (practiceId: string, href: unknown) =>
-  typeof href === "string" ? href.replace(/^\/portal\/(readings|work|charts)\/([^/?#]+)/, (_m, kind: string, id: string) => `/portal/${kind}/${practiceId}${SEP}${id}`) : href;
+  typeof href === "string" ? href.replace(/^\/portal\/(readings|work|charts|forms)\/([^/?#]+)/, (_m, kind: string, id: string) => `/portal/${kind}/${practiceId}${SEP}${id}`) : href;
 
 /**
  * A client's portal across every astrologer they see: each practice's view,
@@ -86,5 +89,6 @@ export function mergePortalViews(views: { practiceId: string; view: View }[]) {
     clientWork: all("clientWork", (w, p) => ({ ...w, id: sc(p, w.id), clientId: "me", consultationId: sc(p, w.consultationId) })),
     workResponses: all("workResponses", (r, p) => ({ ...r, id: sc(p, r.id), clientId: "me", workId: sc(p, r.workId) })),
     charts: all("charts", (c, p) => ({ ...c, id: sc(p, c.id), clientId: "me" })),
+    intakeRequests: all("intakeRequests", (r, p) => ({ ...r, id: sc(p, r.id), clientId: "me", consultationId: sc(p, r.consultationId) })),
   };
 }

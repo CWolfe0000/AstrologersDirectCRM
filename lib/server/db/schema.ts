@@ -138,6 +138,7 @@ export const activity = recordTable("activity");
 export const portalNotifications = recordTable("portal_notifications");
 export const clientWork = recordTable("client_work");
 export const workResponses = recordTable("work_responses");
+export const intakeRequests = recordTable("intake_requests");
 
 /**
  * Which practices a client login can see: one row per astrologer who has
@@ -216,6 +217,7 @@ export const RECORD_TABLES = {
   portalNotifications,
   clientWork,
   workResponses,
+  intakeRequests,
 } as const;
 
 export type Collection = keyof typeof RECORD_TABLES;

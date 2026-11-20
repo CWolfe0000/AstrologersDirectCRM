@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowRight, Video, Phone, MapPin, Mail, Globe, FileText, Headphones, Film, Bell, Check, FolderOpen, MessagesSquare, CalendarPlus } from "lucide-react";
+import { ArrowRight, Video, Phone, MapPin, Mail, Globe, FileText, Headphones, Film, Bell, Check, FolderOpen, MessagesSquare, CalendarPlus, ClipboardList } from "lucide-react";
 import { useStore, personName } from "@/lib/store";
 import { cn, titleCase, fmtDay, fmtDate, fmtLong, fmtTime, relTime, sameDay, fmtDuration } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
@@ -37,6 +37,8 @@ export default function PortalHome() {
   const upcoming = useMyConsultations().filter((k) => k.status === "scheduled" && k.start >= PORTAL_NOW.slice(0, 10));
   const files = useSharedFiles();
   const work = useMyWork();
+  const allForms = useStore((s) => s.intakeRequests);
+  const forms = React.useMemo(() => allForms.filter((r) => r.status === "sent"), [allForms]);
   const workResponses = useStore((s) => s.workResponses);
   const openWork = work.filter((w) => !workState(w, workResponses).done);
   const media = readings.filter((r) => r.kind === "audio" || r.kind === "video");
@@ -97,6 +99,25 @@ export default function PortalHome() {
               </div>
             )}
           </section>
+
+          {/* Intake forms waiting */}
+          {forms.length > 0 && (
+            <section>
+              <h2 className="mb-4 font-serif text-[24px] text-ink">Forms to Fill In</h2>
+              <div className="space-y-3">
+                {forms.map((f) => (
+                  <Link key={f.id} href={`/portal/forms/${encodeURIComponent(f.id)}`} className="flex items-center gap-4 rounded-2xl border border-accent-100 bg-accent-50/60 p-5 hover:border-accent/40">
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent text-white"><ClipboardList className="size-5" /></span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[15px] font-semibold text-ink">{f.title}</span>
+                      <span className="block text-[13px] text-muted">A few questions before your session</span>
+                    </span>
+                    <ArrowRight className="size-4 text-accent" />
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Between sessions */}
           {openWork.length > 0 && (

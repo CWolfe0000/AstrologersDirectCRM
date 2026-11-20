@@ -13,6 +13,7 @@ import { PageHeader } from "@/components/ui/misc";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { Breakdown, BHead, BTable } from "@/components/ui/breakdown";
+import { lifeEventLabel, lifeEventWhen, rectifyType } from "@/lib/life-events";
 import { PremiumGate, usePremium } from "@/components/plan/premium";
 import { useHydrated } from "@/components/workspace/use-hydrated";
 
@@ -132,7 +133,7 @@ export default function RectifyPage() {
     setError(null);
     try {
       const r = await api<{ rectify: Result }>("/api/v1/astro/rectify", {
-        body: { birth: b, events: sorted.map((e) => ({ date: e.date, type: e.type })), from, to: to < from ? from : to, stepMin: step, settings: { zodiac: defaults.zodiac, houseSystem: defaults.houseSystem }, ascSigns: picked.length ? picked : undefined, moonSigns: pickedMoon.length ? pickedMoon : undefined, circumstances: circs },
+        body: { birth: b, events: sorted.map((e) => ({ date: e.date, type: rectifyType(e.type) })), from, to: to < from ? from : to, stepMin: step, settings: { zodiac: defaults.zodiac, houseSystem: defaults.houseSystem }, ascSigns: picked.length ? picked : undefined, moonSigns: pickedMoon.length ? pickedMoon : undefined, circumstances: circs },
       });
       setResult(r.rectify);
       setRanCircs(circs);
@@ -310,7 +311,7 @@ export default function RectifyPage() {
                     <li key={e.id} className="flex items-center gap-2 px-3 py-2 text-[12.5px]">
                       <span className="w-5 text-muted tabular-nums">{i + 1}</span>
                       <span className="min-w-0 flex-1">
-                        <span className="font-medium text-ink">{fmtDate(e.date)}</span> · {EVENT_TYPES.find((t) => t.id === e.type)?.label ?? e.type}
+                        <span className="font-medium text-ink">{e.end || e.approx ? lifeEventWhen(e) : fmtDate(e.date)}</span> · {lifeEventLabel(e.type)}{e.source === "client" && <span className="text-muted"> · From Client</span>}
                         {e.note && <span className="block truncate text-muted">{e.note}</span>}
                       </span>
                       <Button variant="ghost" size="icon-sm" aria-label={`Remove event ${i + 1}`} onClick={() => setEvents(events.filter((x) => x.id !== e.id))}><Trash2 /></Button>

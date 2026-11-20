@@ -10,6 +10,10 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
 import { Segmented } from "@/components/ui/tabs";
+import { api } from "@/lib/api";
+import { flushNow } from "@/lib/sync";
+import { cn, DATA_MODE } from "@/lib/utils";
+import { sendIntakeForm } from "@/components/intake/send";
 import { Badge } from "@/components/ui/badge";
 import { PlaceLookup, type PlaceValue } from "./place-lookup";
 import { PLACES } from "./helpers";
@@ -61,7 +65,8 @@ export function ImportClientsDialog({ open, onOpenChange }: { open: boolean; onO
   const [mapping, setMapping] = React.useState<Partial<Record<ImportField, number>>>({});
   const [order, setOrder] = React.useState<"us" | "intl">("us");
   const [fixes, setFixes] = React.useState<Record<number, PlaceValue>>({});
-  const [step, setStep] = React.useState<"file" | "map" | "review">("file");
+  const [step, setStep] = React.useState<"file" | "map" | "review" | "invite">("file");
+  const [imported, setImported] = React.useState<Imported[]>([]);
   const [error, setError] = React.useState<string | null>(null);
   const [aafProblems, setAafProblems] = React.useState<string[]>([]);
 
@@ -73,6 +78,7 @@ export function ImportClientsDialog({ open, onOpenChange }: { open: boolean; onO
     setStep("file");
     setError(null);
     setAafProblems([]);
+    setImported([]);
   };
 
   const onFile = async (f?: File) => {
@@ -142,6 +148,7 @@ export function ImportClientsDialog({ open, onOpenChange }: { open: boolean; onO
   const skipped = rows.filter((r) => r.problem || r.duplicate);
 
   const doImport = () => {
+    const made: Imported[] = [];
     for (const r of ready) {
       const client = s.addClient(
         { email: r.email, phone: r.phone, status: "new", source: `Import: ${fileName}`, tags: r.tags, portalAccess: "none", summary: r.notes },
@@ -158,10 +165,12 @@ export function ImportClientsDialog({ open, onOpenChange }: { open: boolean; onO
         clientId: client.id,
         settings: r.time ? undefined : { houseSystem: "whole-sign" },
       });
+      made.push({ id: client.id, name: personName({ firstName: r.first, lastName: r.last }), email: r.email, pick: !!r.email });
     }
-    s.toast(`Imported ${ready.length} ${ready.length === 1 ? "client" : "clients"}`, skipped.length || needsPlace.length ? `${skipped.length + needsPlace.length} rows were left out — see the summary in the import window.` : "Each has a natal chart.", "success");
-    onOpenChange(false);
-    reset();
+    s.toast(`Imported ${ready.length} ${ready.length === 1 ? "client" : "clients"}`, skipped.length || needsPlace.length ? `${skipped.length + needsPlace.length} rows were left out.` : "Each has a natal chart.", "success");
+    // Next: invite them to their portals (optional).
+    setImported(made);
+    setStep("invite");
   };
 
   return (
@@ -171,7 +180,7 @@ export function ImportClientsDialog({ open, onOpenChange }: { open: boolean; onO
         title="Import Clients"
         description="From a spreadsheet saved as CSV, or charts exported from an astrology program as AAF. Each imported client gets a natal chart."
         footer={
-          step === "file" ? (
+          step === "invite" ? null : step === "file" ? (
             <Button variant="secondary" onClick={() => onOpenChange(false)}>Cancel</Button>
           ) : step === "map" ? (
             <>
@@ -277,7 +286,121 @@ export function ImportClientsDialog({ open, onOpenChange }: { open: boolean; onO
             <p className="text-[12px] text-muted">Clients without a birth time are imported with “time unknown”: their natal chart uses a noon reference and whole-sign houses until you add a time.</p>
           </div>
         )}
+
+        {step === "invite" && <InviteImported clients={imported} onChange={setImported} onDone={() => { onOpenChange(false); reset(); }} />}
       </DialogContent>
     </Dialog>
+  );
+}
+
+type Imported = { id: string; name: string; email: string; pick: boolean; result?: string; ok?: boolean };
+const EMAIL_RE = /[^\s<>,;]+@[^\s<>,;]+\.[^\s<>,;]+/;
+
+/**
+ * After an import: add any missing email addresses (typed, or pasted as a
+ * list of "Name, email" lines), pick who to invite, and send each a portal
+ * invitation, with an intake form if chosen.
+ */
+function InviteImported({ clients, onChange, onDone }: { clients: Imported[]; onChange: (c: Imported[]) => void; onDone: () => void }) {
+  const s = useStore();
+  const forms = s.practitioner.intakeForms ?? [];
+  const [formId, setFormId] = React.useState("");
+  const [paste, setPaste] = React.useState("");
+  const [busy, setBusy] = React.useState<{ done: number; of: number } | null>(null);
+  const finished = clients.some((c) => c.result);
+  const set = (id: string, patch: Partial<Imported>) => onChange(clients.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+  const norm = (x: string) => x.toLowerCase().replace(/[^a-z]/g, "");
+
+  const matchPaste = () => {
+    let n = 0;
+    const next = clients.map((c) => {
+      const line = paste.split("\n").find((l) => norm(l.replace(EMAIL_RE, "")) === norm(c.name) || (norm(l.replace(EMAIL_RE, "")).includes(norm(c.name)) && norm(c.name).length > 5));
+      const email = line?.match(EMAIL_RE)?.[0];
+      if (!email) return c;
+      n++;
+      return { ...c, email, pick: true };
+    });
+    onChange(next);
+    s.toast(n ? `Matched ${n} ${n === 1 ? "Email" : "Emails"}` : "No Names Matched", n ? undefined : "Use one line per client: their name as imported, then their email.", n ? "success" : "error");
+  };
+
+  const send = async () => {
+    const list = clients.filter((c) => c.pick && EMAIL_RE.test(c.email));
+    if (!list.length) return;
+    const form = forms.find((f) => f.id === formId);
+    // Save any emails added here first.
+    for (const c of list) if (s.clients.find((x) => x.id === c.id)?.email !== c.email.trim()) s.updateClient(c.id, { email: c.email.trim() });
+    setBusy({ done: 0, of: list.length });
+    const results: Record<string, { ok: boolean; result: string }> = {};
+    if (DATA_MODE === "server") await flushNow().catch(() => {});
+    for (const [i, c] of list.entries()) {
+      try {
+        if (form) await sendIntakeForm(form, c.id);
+        else if (DATA_MODE === "server") await api("/api/v1/portal/invite", { body: { clientId: c.id } });
+        useStore.setState((st) => ({ clients: st.clients.map((x) => (x.id === c.id && x.portalAccess === "none" ? { ...x, portalAccess: "invited" } : x)) }));
+        results[c.id] = { ok: true, result: form ? "Invited, with the form" : "Invited" };
+      } catch (e) {
+        results[c.id] = { ok: false, result: (e as Error).message };
+      }
+      setBusy({ done: i + 1, of: list.length });
+    }
+    onChange(clients.map((c) => (results[c.id] ? { ...c, ...results[c.id] } : c)));
+    setBusy(null);
+    const ok = Object.values(results).filter((r) => r.ok).length;
+    s.toast(`${ok} ${ok === 1 ? "Invitation" : "Invitations"} Sent`, ok < list.length ? `${list.length - ok} couldn’t be sent: see the list.` : undefined, ok ? "success" : "error");
+  };
+
+  const chosen = clients.filter((c) => c.pick && EMAIL_RE.test(c.email)).length;
+  return (
+    <div className="space-y-4">
+      <div>
+        <p className="text-[15px] font-semibold text-ink">Invite Them to Their Portal</p>
+        <p className="text-[13px] text-muted">Optional. Each person gets an email with a link to their private portal{forms.length ? ", and the intake form if you choose one" : ""}. Files from astrology programs don’t include email addresses: type them in or paste a list.</p>
+      </div>
+      {!finished && (
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_260px]">
+          <div>
+            <span className="mb-1 block text-[12.5px] font-medium text-ink-3">Paste Emails</span>
+            <textarea aria-label="Paste emails" value={paste} onChange={(e) => setPaste(e.target.value)} rows={3} className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-[13px]" placeholder={"Amelia Hart, amelia@example.com\nTheo Brandt <theo@example.com>"} />
+            <Button size="sm" variant="secondary" onClick={matchPaste} disabled={!paste.trim()}>Match to Names</Button>
+          </div>
+          {forms.length > 0 && (
+            <label className="block">
+              <span className="mb-1 block text-[12.5px] font-medium text-ink-3">Intake Form to Include</span>
+              <Select value={formId} onChange={(e) => setFormId(e.target.value)}>
+                <option value="">No Form</option>
+                {forms.map((f) => <option key={f.id} value={f.id}>{f.title}</option>)}
+              </Select>
+            </label>
+          )}
+        </div>
+      )}
+      <div className="max-h-[40vh] overflow-auto rounded-xl border border-line">
+        <table className="w-full text-left text-[12.5px]">
+          <thead className="sticky top-0 bg-canvas text-muted"><tr><th className="w-10 px-3 py-2"><span className="sr-only">Invite</span></th><th className="px-3 py-2 font-medium">Client</th><th className="px-3 py-2 font-medium">Email</th>{finished && <th className="px-3 py-2 font-medium">Result</th>}</tr></thead>
+          <tbody className="divide-y divide-line">
+            {clients.map((c) => (
+              <tr key={c.id}>
+                <td className="px-3 py-1.5"><input type="checkbox" aria-label={`Invite ${c.name}`} checked={c.pick} disabled={finished || !EMAIL_RE.test(c.email)} onChange={(e) => set(c.id, { pick: e.target.checked })} /></td>
+                <td className="px-3 py-1.5 font-medium">{c.name}</td>
+                <td className="px-3 py-1.5"><input type="email" aria-label={`Email for ${c.name}`} value={c.email} disabled={finished} onChange={(e) => set(c.id, { email: e.target.value, pick: EMAIL_RE.test(e.target.value) })} className="h-8 w-full min-w-[200px] rounded-md border border-line bg-surface px-2" placeholder="Add email" /></td>
+                {finished && <td className={cn("px-3 py-1.5", c.ok ? "text-sage-dark" : c.result ? "text-danger" : "text-muted")}>{c.result ?? "Not invited"}</td>}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        {busy && <span className="mr-auto text-[12.5px] text-muted">Sending {busy.done} of {busy.of}…</span>}
+        {finished ? (
+          <Button onClick={onDone}>Done</Button>
+        ) : (
+          <>
+            <Button variant="ghost" onClick={onDone} disabled={!!busy}>Skip for Now</Button>
+            <Button onClick={send} disabled={!!busy || chosen === 0}>Invite {chosen} {chosen === 1 ? "Client" : "Clients"}</Button>
+          </>
+        )}
+      </div>
+    </div>
   );
 }

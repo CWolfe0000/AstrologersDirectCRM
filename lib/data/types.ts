@@ -1,4 +1,6 @@
 import type { BirthData, BodyId, AspectId, ChartSettings } from "@/lib/astro/types";
+import type { LifeEvent } from "@/lib/life-events";
+export type { LifeEvent };
 
 export type ClientStatus = "active" | "new" | "inactive" | "archived";
 
@@ -12,9 +14,9 @@ export interface Person {
   clientId?: string;
   relationship?: string; // "Partner", "Mother", …
   notes?: string;
-  /** Dated life events, for rectification. */
   birthCircumstances?: string[];
-  lifeEvents?: { id: string; date: string; type: string; note?: string }[];
+  /** Dated life events and periods: for the timeline and rectification. */
+  lifeEvents?: LifeEvent[];
 }
 
 export interface Client {
@@ -271,6 +273,67 @@ export interface Practitioner {
   portalAccent?: string;
   /** Reusable Between Sessions items. */
   workTemplates?: WorkTemplate[];
+  /** The practice's intake forms (as many as the astrologer likes). */
+  intakeForms?: IntakeForm[];
+}
+
+/**
+ * One part of an intake form. The built-in parts (birth details, contact
+ * details, goals, life events) appear at most once; custom questions as often
+ * as the astrologer likes.
+ */
+export type IntakeSectionKind = "birth" | "contact" | "goals" | "lifeEvents" | "horary" | "question";
+export type IntakeAnswerKind = "short" | "long" | "choice" | "multi" | "date";
+export interface IntakeSection {
+  id: string;
+  kind: IntakeSectionKind;
+  /** The question or heading (custom questions; built-in parts have a default). */
+  label?: string;
+  help?: string;
+  required?: boolean;
+  /** Custom questions: how they're answered, and the choices. */
+  answer?: IntakeAnswerKind;
+  options?: string[];
+}
+export interface IntakeForm {
+  id: string;
+  title: string;
+  /** Shown to the client above the form. */
+  intro?: string;
+  sections: IntakeSection[];
+  updatedAt: string;
+}
+
+/** What a client sends back. */
+export interface IntakeAnswers {
+  birth?: { date: string; time?: string; timeAccuracy: "exact" | "approximate" | "unknown"; timeSource?: string; place: string; lat: number; lon: number; tz: string };
+  contact?: { preferredName?: string; pronouns?: string; phone?: string };
+  goals?: string;
+  lifeEvents?: LifeEvent[];
+  /** A horary question and the moment and place it was asked (local time). */
+  horary?: { question: string; date: string; time: string; place: string; lat: number; lon: number; tz: string };
+  /** Custom questions, by section id. */
+  questions?: Record<string, string | string[]>;
+}
+
+/** An intake form sent to one client: a copy of the form as it was when sent, and their answers. */
+export interface IntakeRequest {
+  id: string;
+  clientId: string;
+  formId: string;
+  title: string;
+  intro?: string;
+  sections: IntakeSection[];
+  status: "sent" | "submitted";
+  /** Sent because the client booked this session. */
+  consultationId?: string;
+  sentAt: string;
+  submittedAt?: string;
+  answers?: IntakeAnswers;
+  /** What was copied into the client record on submission, and what's waiting for the astrologer. */
+  applied?: { birth?: "applied" | "review" | "dismissed"; events?: number; contact?: boolean; chartId?: string };
+  createdAt: string;
+  updatedAt: string;
 }
 
 /** A saved starting point for between-session work. */
