@@ -87,6 +87,25 @@ if (await pick.count()) {
   await page.waitForFunction((v) => [...document.querySelectorAll("input[type=date]")].some((i) => i.value === v), from, { timeout: 20000 });
   void ev;
 }
+step("custom wheel colors: pick in Settings, saved, used on the wheel");
+
+await page.goto(BASE + "/app/settings?section=astrology");
+await page.getByRole("combobox").filter({ has: page.locator('option[value="custom"]') }).first().selectOption("custom");
+await page.getByText("Preview", { exact: true }).waitFor();
+await page.getByLabel("Sun color").fill("#ff00aa");
+if (SHOTS) { await page.waitForTimeout(400); await page.locator("text=Preview").first().scrollIntoViewIfNeeded(); await page.screenshot({ path: `${SHOTS}/palette.png` }); }
+let saved;
+for (let i = 0; i < 20; i++) {
+  saved = await page.evaluate(() => fetch("/api/v1/bootstrap?view=app").then((r) => r.json()));
+  if (saved.defaults?.wheelPalette?.planets?.sun === "#ff00aa") break;
+  await page.waitForTimeout(750);
+}
+assert.equal(saved.defaults.wheelPalette?.planets?.sun, "#ff00aa");
+assert.equal(saved.defaults.wheelColors, "custom");
+await page.goto(BASE + `/app/charts/${natal.id}`);
+const sunFill = await page.getByRole("img", { name: "Chart wheel" }).first().locator("g", { has: page.locator("title", { hasText: /^Sun / }) }).locator("text.glyph").first().getAttribute("fill");
+assert.equal(sunFill, "#ff00aa");
+
 assert.deepEqual(errors, []);
 await browser.close();
 console.log("✓ forecast, midpoints and fixed stars");

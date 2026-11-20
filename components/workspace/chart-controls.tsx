@@ -209,9 +209,10 @@ export function ChartControls({
           </label>
           <label className="flex items-center justify-between gap-2 text-[12.5px]">
             Wheel Colors
-            <select aria-label="Wheel colors" value={settings.wheelColors ?? "color"} onChange={(e) => onChange({ wheelColors: e.target.value as "color" | "muted" })} className="h-8 rounded-md border border-line bg-surface px-2 text-[12.5px]">
+            <select aria-label="Wheel colors" value={settings.wheelColors ?? "color"} onChange={(e) => onChange({ wheelColors: e.target.value as "color" | "muted" | "custom" })} className="h-8 rounded-md border border-line bg-surface px-2 text-[12.5px]">
               <option value="color">Color</option>
               <option value="muted">Muted</option>
+              <option value="custom">Custom (Settings)</option>
             </select>
           </label>
         </div>

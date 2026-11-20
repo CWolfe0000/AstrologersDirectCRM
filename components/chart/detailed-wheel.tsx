@@ -4,7 +4,7 @@ import * as React from "react";
 import { ASPECTS, BODIES, SIGNS, degInSign, norm, type Aspect, type BodyId, type BodyPosition } from "@/lib/astro";
 import { cn } from "@/lib/utils";
 import type { ChartWheelProps } from "./chart-wheel";
-import { ELEMENT, aspectColor, planetColor, type WheelColors } from "./wheel-palette";
+import { resolvePalette, type Resolved } from "./wheel-palette";
 
 const C = 300;
 const SANS = "Inter Variable, Inter, sans-serif";
@@ -38,13 +38,13 @@ const dm = (lon: number) => {
  * sign and minutes stacked under its glyph, retrograde marks, house cusp
  * positions around the outside and color-coded aspect lines.
  */
-export function DetailedWheel({ view, className, selected, onSelect, highlightAspect, showAspects = true, showHouses = true, showDegrees = true, svgRef, colors = "color" }: ChartWheelProps & { colors?: WheelColors }) {
+export function DetailedWheel({ view, className, selected, onSelect, highlightAspect, showAspects = true, showHouses = true, showDegrees = true, svgRef, palette = resolvePalette() }: ChartWheelProps & { palette?: Resolved }) {
   const [hover, setHover] = React.useState<string | null>(null);
   const focus = hover ?? selected ?? null;
   const { inner, outer, aspects } = view;
   const ang = (lon: number) => 180 + norm(lon - inner.asc);
   const bi = !!outer;
-  const el = ELEMENT[colors];
+  const el = palette;
 
   const R_OUT = 300, R_SIGN = 266;
   const R_SPLIT = bi ? 196 : 0;
@@ -74,7 +74,7 @@ export function DetailedWheel({ view, className, selected, onSelect, highlightAs
     const S = ring === "outer" ? OUT : IN;
     const display = (ring === "outer" ? outerPos : innerPos)[b.id] ?? b.lon;
     const a = ang(display), exact = ang(b.lon);
-    const color = planetColor(b.id, colors, ring);
+    const color = palette.planet(b.id, ring);
     const { deg, min, sign } = dm(b.lon);
     // The exact-position mark sits on the degree scale (or, for the inner ring of a bi-wheel, on its rim).
     const edge = ring === "outer" || !bi ? R_SIGN : R_SPLIT;
@@ -147,8 +147,8 @@ export function DetailedWheel({ view, className, selected, onSelect, highlightAs
         const [x1, y1] = pt(R_SIGN, ang(d)), [x2, y2] = pt(R_SIGN - len, ang(d));
         return <line key={d} x1={x1} y1={y1} x2={x2} y2={y2} stroke={d % 5 === 0 ? "#9C948A" : "#CFC7BD"} strokeWidth={d % 10 === 0 ? 0.9 : 0.6} />;
       })}
-      {bi && <circle cx={C} cy={C} r={R_SPLIT} fill={colors === "color" ? "#FBFAF7" : "#FFFFFF"} stroke="#CFC7BD" strokeWidth={1} />}
-      <circle cx={C} cy={C} r={R_HOUSE} fill={colors === "color" ? "#FAF8F4" : "#FDFCFA"} stroke="#B9B0A5" strokeWidth={1} />
+      {bi && <circle cx={C} cy={C} r={R_SPLIT} fill={!palette.muted ? "#FBFAF7" : "#FFFFFF"} stroke="#CFC7BD" strokeWidth={1} />}
+      <circle cx={C} cy={C} r={R_HOUSE} fill={!palette.muted ? "#FAF8F4" : "#FDFCFA"} stroke="#B9B0A5" strokeWidth={1} />
       <circle cx={C} cy={C} r={R_ASP} fill="#FFFFFF" stroke="#D6CFC6" strokeWidth={1} />
 
       {/* house cusps, numbers and positions */}
@@ -196,7 +196,7 @@ export function DetailedWheel({ view, className, selected, onSelect, highlightAs
             const nat = ASPECTS[a.type].nature;
             const strong = highlightAspect === k;
             const visible = highlightAspect ? strong : isRelated(a);
-            return <line key={k} x1={x1} y1={y1} x2={x2} y2={y2} stroke={aspectColor(nat, colors)} strokeWidth={strong ? 2.6 : a.orb < 1 ? 1.8 : a.orb < 3 ? 1.2 : 0.8} strokeDasharray={nat === "minor" ? "4 3" : undefined} opacity={visible ? (strong ? 1 : focus ? 0.95 : 0.8) : 0.07} />;
+            return <line key={k} x1={x1} y1={y1} x2={x2} y2={y2} stroke={palette.aspect(nat)} strokeWidth={strong ? 2.6 : a.orb < 1 ? 1.8 : a.orb < 3 ? 1.2 : 0.8} strokeDasharray={nat === "minor" ? "4 3" : undefined} opacity={visible ? (strong ? 1 : focus ? 0.95 : 0.8) : 0.07} />;
           })}
 
       {/* planets */}

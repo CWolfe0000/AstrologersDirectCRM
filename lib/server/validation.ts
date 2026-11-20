@@ -45,6 +45,7 @@ export const timelineDefaultsSchema = z
   })
   .strict();
 
+const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 export const settingsSchema = z
   .object({
     houseSystem: z.enum(["placidus", "whole-sign", "koch", "equal", "porphyry", "regiomontanus", "campanus"]),
@@ -57,7 +58,15 @@ export const settingsSchema = z
     showDegrees: z.boolean(),
     rulership: z.enum(["traditional", "modern"]).optional(),
     wheelStyle: z.enum(["detailed", "classic"]).optional(),
-    wheelColors: z.enum(["color", "muted"]).optional(),
+    wheelColors: z.enum(["color", "muted", "custom"]).optional(),
+    wheelPalette: z
+      .object({
+        elements: z.record(z.enum(["fire", "earth", "air", "water"]), hexColor).optional(),
+        planets: z.record(bodyId, hexColor).optional(),
+        aspects: z.record(z.enum(["hard", "soft", "neutral", "minor"]), hexColor).optional(),
+      })
+      .strict()
+      .optional(),
     timeline: timelineDefaultsSchema.optional(),
   })
   .strict();

@@ -50,6 +50,12 @@ export interface TimelineDefaults {
   backgroundBodies?: BodyId[];
 }
 
+export interface WheelPalette {
+  elements?: Partial<Record<"fire" | "earth" | "air" | "water", string>>;
+  planets?: Partial<Record<BodyId, string>>;
+  aspects?: Partial<Record<"hard" | "soft" | "neutral" | "minor", string>>;
+}
+
 export interface ChartSettings {
   houseSystem: HouseSystem;
   zodiac: ZodiacType;
@@ -63,8 +69,10 @@ export interface ChartSettings {
   rulership?: "traditional" | "modern";
   /** Chart wheel look: detailed (degrees, minutes, cusp positions, 1° ticks) or classic (glyphs only). Default detailed. */
   wheelStyle?: "detailed" | "classic";
-  /** Chart wheel colors: element and planet colors, or muted ink. Default color. */
-  wheelColors?: "color" | "muted";
+  /** Chart wheel colors: the built-in colors, muted ink, or the practice's own palette. Default color. */
+  wheelColors?: "color" | "muted" | "custom";
+  /** The practice's own wheel colors (used when wheelColors is "custom"); anything missing uses the built-in color. */
+  wheelPalette?: WheelPalette;
   /** Convergence timeline defaults (practice-wide). Missing means the built-in defaults. */
   timeline?: TimelineDefaults;
 }

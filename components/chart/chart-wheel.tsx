@@ -5,7 +5,7 @@ import { ASPECTS, BODIES, SIGNS, degInSign, norm, type Aspect, type BodyId, type
 import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
 import { DetailedWheel } from "./detailed-wheel";
-import { ELEMENT, aspectColor, planetColor, type WheelColors } from "./wheel-palette";
+import { resolvePalette, type Resolved, type WheelColors } from "./wheel-palette";
 
 const C = 300; // center (viewBox 600x600)
 
@@ -52,18 +52,20 @@ export interface ChartWheelProps {
   /** Overrides the practice default (Settings → Chart Defaults). */
   wheelStyle?: "detailed" | "classic";
   colors?: WheelColors;
+  /** A palette to use instead of the practice's saved one (live preview). */
+  customPalette?: import("@/lib/astro/types").WheelPalette;
 }
 
 /** The chart wheel in the chosen style: detailed (default) or classic; thumbnails always use the classic layout. */
 export function ChartWheel(props: ChartWheelProps) {
   const defaults = useStore((s) => s.defaults);
   const style = props.wheelStyle ?? defaults.wheelStyle ?? "detailed";
-  const colors = props.colors ?? defaults.wheelColors ?? "color";
-  if (!props.compact && style === "detailed") return <DetailedWheel {...props} colors={colors} />;
-  return <ClassicWheel {...props} colors={colors} />;
+  const palette = resolvePalette(props.colors ?? defaults.wheelColors ?? "color", props.customPalette ?? defaults.wheelPalette);
+  if (!props.compact && style === "detailed") return <DetailedWheel {...props} palette={palette} />;
+  return <ClassicWheel {...props} palette={palette} />;
 }
 
-function ClassicWheel({ view, compact, className, selected, onSelect, highlightAspect, showAspects = true, showHouses = true, showDegrees = true, svgRef, colors = "color" }: ChartWheelProps & { colors?: WheelColors }) {
+function ClassicWheel({ view, compact, className, selected, onSelect, highlightAspect, showAspects = true, showHouses = true, showDegrees = true, svgRef, palette = resolvePalette() }: ChartWheelProps & { palette?: Resolved }) {
   const [hover, setHover] = React.useState<string | null>(null);
   const focus = hover ?? selected ?? null;
   const { inner, outer, aspects } = view;
@@ -109,7 +111,7 @@ function ClassicWheel({ view, compact, className, selected, onSelect, highlightA
     const [lx, ly] = pt(glyphR - 9, a);
     const active = focus === key;
     const dim = focus && !active && !aspects.some((x) => isRelated(x) && (`${x.aRing}:${x.a}` === key || `${x.bRing}:${x.b}` === key));
-    const color = planetColor(b.id, colors, ring);
+    const color = palette.planet(b.id, ring);
     const d = degInSign(b.lon);
     return (
       <g
@@ -148,11 +150,11 @@ function ClassicWheel({ view, compact, className, selected, onSelect, highlightA
         const [x2, y2] = pt(R_ZOD, a1);
         const [x3, y3] = pt(R_ZOD, a0);
         const [gx, gy] = pt((R_OUT + R_ZOD) / 2, ang(i * 30 + 15));
-        const fill = ELEMENT[colors].light[s.element];
+        const fill = palette.light[s.element];
         return (
           <g key={s.id}>
             <path d={`M${x0},${y0} A${R_OUT},${R_OUT} 0 0 0 ${x1},${y1} L${x2},${y2} A${R_ZOD},${R_ZOD} 0 0 1 ${x3},${y3} Z`} fill={fill} stroke="#E7E2DC" strokeWidth={0.8} />
-            <text x={gx} y={gy} textAnchor="middle" dominantBaseline="central" className="glyph" fontSize={compact ? 22 : 19} fill={ELEMENT[colors].strong[s.element]}>
+            <text x={gx} y={gy} textAnchor="middle" dominantBaseline="central" className="glyph" fontSize={compact ? 22 : 19} fill={palette.strong[s.element]}>
               <title>{s.name}</title>
               {s.glyph}
             </text>
@@ -242,7 +244,7 @@ function ClassicWheel({ view, compact, className, selected, onSelect, highlightA
                 y1={y1}
                 x2={x2}
                 y2={y2}
-                stroke={aspectColor(nat, colors)}
+                stroke={palette.aspect(nat)}
                 strokeWidth={strong ? 2.4 : a.orb < 2 ? 1.4 : 0.9}
                 strokeDasharray={nat === "minor" ? "3 3" : undefined}
                 opacity={visible ? (strong ? 1 : focus ? 0.95 : 0.7) : 0.08}

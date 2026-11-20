@@ -12,6 +12,7 @@ import { cn, DATA_MODE, fmtDate } from "@/lib/utils";
 import { PORTAL_ACCENTS } from "@/lib/brand";
 import { api } from "@/lib/api";
 import { TwoFactorCard } from "./two-factor";
+import { WheelPaletteEditor } from "./wheel-palette-editor";
 import { LabelledByContext } from "@/components/ui/label-context";
 import { CalendarFeedCard, RemindersCard } from "./practice-tools";
 import { allZones } from "@/lib/timezones";
@@ -178,12 +179,14 @@ export function AstrologySection() {
               <option value="classic">Classic</option>
             </Select>
           </Row>
-          <Row title="Wheel Colors" desc="Color: signs by element, planets in their own colors, aspects red (hard), blue (soft) and green (minor). Muted: ink tones.">
-            <Select value={d.wheelColors ?? "color"} onChange={(e) => set({ wheelColors: e.target.value as "color" | "muted" })} className="w-56">
+          <Row title="Wheel Colors" desc="Color: signs by element, planets in their own colors, aspects red (hard), blue (soft) and green (minor). Muted: ink tones. Custom: choose your own.">
+            <Select value={d.wheelColors ?? "color"} onChange={(e) => set({ wheelColors: e.target.value as "color" | "muted" | "custom" })} className="w-56">
               <option value="color">Color</option>
               <option value="muted">Muted</option>
+              <option value="custom">Custom</option>
             </Select>
           </Row>
+          {d.wheelColors === "custom" && <WheelPaletteEditor value={d.wheelPalette} onChange={(p) => set({ wheelPalette: p })} />}
           <Row title="Show Aspect Lines"><Switch checked={d.showAspectLines} onCheckedChange={(v) => set({ showAspectLines: v })} /></Row>
           <Row title="Show House Cusps"><Switch checked={d.showHouseCusps} onCheckedChange={(v) => set({ showHouseCusps: v })} /></Row>
           <Row title="Show Degrees on the Wheel"><Switch checked={d.showDegrees} onCheckedChange={(v) => set({ showDegrees: v })} /></Row>
