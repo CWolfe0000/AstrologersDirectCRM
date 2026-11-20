@@ -2,7 +2,9 @@ import { z } from "zod";
 import { handler, HttpError, json, readJson, requireUser } from "@/lib/server/http";
 import { birthSchema, settingsSchema } from "@/lib/server/validation";
 import { acgChart, davisonChart, motionFrom, natalChart, returnChart, positionsAt, progressedChart, solarArcChart, solarReturnChart } from "@/lib/server/astro";
-import { SWISS_INFO } from "@/lib/server/swiss";
+import { SWISS_INFO, fixedStarsAt } from "@/lib/server/swiss";
+import { coupleForecast, forecast, THEMES, type Theme } from "@/lib/server/forecast";
+import { FIXED_STARS } from "@/lib/astro/fixed-stars";
 import { CIRCUMSTANCES, EVENT_TYPES, moonSpans, type Circumstance, rectify, risingSpans, type EventType } from "@/lib/server/rectify";
 import { findElections } from "@/lib/server/elect";
 import { ELECTION_CHECKS, type ElectionCheck } from "@/lib/astro/elect";
@@ -42,6 +44,9 @@ const Bodies = {
     moonSigns: z.array(z.number().int().min(0).max(11)).max(12).optional(),
   }),
   rising: z.object({ birth: birthSchema, settings: rectSettings }),
+  stars: z.object({ utc: z.string().max(40), settings: z.object({ zodiac: z.enum(["tropical", "sidereal-lahiri", "sidereal-fagan-bradley"]) }).passthrough() }),
+  forecast: z.object({ birth: birthSchema, settings: rectSettings, from: date, years: z.number().int().min(1).max(6), themes: z.array(z.enum(Object.keys(THEMES) as [Theme, ...Theme[]])).min(1).max(4) }),
+  "couple-forecast": z.object({ a: birthSchema, b: birthSchema, settings: rectSettings, from: date, years: z.number().int().min(1).max(4), themes: z.array(z.enum(Object.keys(THEMES) as [Theme, ...Theme[]])).min(1).max(4) }),
   davison: z.object({ a: birthSchema, b: birthSchema, settings: settingsSchema }),
   "solar-return": z.object({ birth: birthSchema, year: z.number().int().min(1800).max(2399), settings: settingsSchema, place: z.object({ lat: z.number(), lon: z.number() }).optional() }),
 };
@@ -93,6 +98,15 @@ export const POST = handler(async (req: Request, ctx: { params: Promise<{ op: st
         if (!out.curve.length) throw new HttpError(422, "No time in this window has the chosen Moon and rising signs.");
         return json({ engine: SWISS_INFO, rectify: out });
       }
+      case "stars": {
+        const utc = new Date(b.utc as string);
+        if (Number.isNaN(utc.getTime())) throw new HttpError(422, "Invalid date.");
+        return json({ engine: SWISS_INFO, stars: fixedStarsAt(utc.toISOString(), FIXED_STARS.map((x) => x.name), (b.settings as { zodiac: never }).zodiac) });
+      }
+      case "forecast":
+        return json({ engine: SWISS_INFO, forecast: forecast(b.birth, b.settings, b.from, b.years, b.themes) });
+      case "couple-forecast":
+        return json({ engine: SWISS_INFO, forecast: coupleForecast(b.a, b.b, b.settings, b.from, b.years, b.themes) });
       case "rising":
         return json({ engine: SWISS_INFO, rising: risingSpans(b.birth, b.settings), moon: moonSpans(b.birth, b.settings) });
       case "davison":

@@ -6,6 +6,8 @@ import { ageOn, dignityTable, firdaria, isDayChart, lots, profection, releasingL
 import { cn, TODAY } from "@/lib/utils";
 import { Segmented } from "@/components/ui/tabs";
 import { Breakdown } from "@/components/ui/breakdown";
+import { FixedStars } from "@/components/workspace/fixed-stars";
+import type { ZodiacType } from "@/lib/astro/types";
 
 const fmt = (ms: number) => new Date(ms).toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric", year: "numeric" });
 const G = ({ id }: { id: BodyId | "southnode" }) => <span className="glyph text-[15px]" title={BODIES[id as BodyId]?.name}>{BODIES[id as BodyId]?.glyph}</span>;
@@ -14,7 +16,7 @@ const th = "px-1.5 py-1.5 text-left text-[10.5px] font-semibold uppercase tracki
 const td = "border-b border-line/60 px-1.5 py-1.5 text-[12.5px]";
 
 /** Traditional techniques for a natal chart: dignities, profections, firdaria, zodiacal releasing. */
-export function TraditionalPanel({ view, birthUtc }: { view: ChartView; birthUtc: string }) {
+export function TraditionalPanel({ view, birthUtc, zodiac }: { view: ChartView; birthUtc: string; zodiac?: ZodiacType }) {
   const p = view.inner;
   const now = Date.parse(`${TODAY}T12:00:00Z`);
   const day = isDayChart(p);
@@ -62,6 +64,8 @@ export function TraditionalPanel({ view, birthUtc }: { view: ChartView; birthUtc
         </div>
         <p className="mt-1.5 text-[11.5px] text-muted">Egyptian terms, Chaldean faces, Dorothean triplicities (the ruler for this chart's sect is in full color). Lilly's points: domicile 5, exaltation 4, triplicity 3, term 2, face 1; detriment −5, fall −4, peregrine −5. Hover a row for its dignities; almuten of each degree: {rows.map((r) => `${BODIES[r.id].name} → ${r.almuten.map((a) => BODIES[a].name).join("/")}`).join(", ")}.</p>
       </section>
+
+      <FixedStars view={view} utc={birthUtc} zodiac={zodiac} />
 
       <section>
         <h3 className={h3}>Annual Profections</h3>

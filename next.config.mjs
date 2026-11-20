@@ -10,6 +10,6 @@ const nextConfig = {
   // Swiss Ephemeris is a native module: load it at runtime, not through the bundler.
   serverExternalPackages: ["sweph"],
   // Ship the ephemeris data files with the server functions that calculate charts.
-  outputFileTracingIncludes: { "/api/v1/astro/**": ["./.sweph-ephe/*.se1"], "/api/v1/timeline": ["./.sweph-ephe/*.se1"] },
+  outputFileTracingIncludes: { "/api/v1/astro/**": ["./.sweph-ephe/*.se1", "./.sweph-ephe/sefstars.txt"], "/api/v1/timeline": ["./.sweph-ephe/*.se1"] },
 };
 export default nextConfig;

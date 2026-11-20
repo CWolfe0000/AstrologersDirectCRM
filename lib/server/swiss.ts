@@ -200,3 +200,24 @@ export function swissEphemeris(zodiac: ZodiacType = "tropical"): Ephemeris {
     },
   };
 }
+
+/**
+ * Fixed-star positions (ecliptic longitude and latitude, of date) from the
+ * Swiss Ephemeris star catalog (sefstars.txt, downloaded with the ephemeris).
+ * Stars missing from the catalog are skipped.
+ */
+export function fixedStarsAt(utc: string, names: readonly string[], zodiac?: ZodiacType) {
+  const jd = julianDay(utc);
+  const flags = C.SEFLG_SWIEPH | zodiacFlags(zodiac);
+  const out: { name: string; lon: number; lat: number; mag: number | null }[] = [];
+  for (const name of names) {
+    const r = sw.fixstar2_ut(name, jd, flags) as { flag: number; error?: string; data: number[] };
+    if (r.flag < 0) {
+      if (/sefstars|open/i.test(r.error ?? "")) throw new Error("Star catalog sefstars.txt is missing. Run: npm run ephemeris");
+      continue;
+    }
+    const m = sw.fixstar2_mag(name) as { flag: number; data: number };
+    out.push({ name, lon: r.data[0]!, lat: r.data[1]!, mag: m.flag < 0 ? null : m.data });
+  }
+  return out;
+}

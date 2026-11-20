@@ -76,6 +76,7 @@ jobs:
           node tests/e2e/elect.mjs
           node tests/e2e/rectify.mjs
           node tests/e2e/promise.mjs
+          node tests/e2e/forecast.mjs
           node tests/e2e/booking.mjs
           node tests/e2e/pwa.mjs
           node tests/e2e/a11y.mjs

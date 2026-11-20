@@ -226,6 +226,7 @@ function NewChart() {
               )}
               {isElection && (
                 <ElectionFinder
+                  initial={{ event: params.get("event"), from: params.get("from"), to: params.get("to") }}
                   clientFirst={people.find((p) => p.id === clientId)?.firstName ?? "the client"}
                   natal={people.find((p) => p.id === clientId)?.birth}
                   settings={{ ...defaults, houseSystem, zodiac }}

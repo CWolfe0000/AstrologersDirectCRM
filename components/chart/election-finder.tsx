@@ -23,6 +23,7 @@ export function ElectionFinder({
   onPick,
   purpose,
   onPurpose,
+  initial,
 }: {
   clientFirst: string;
   natal?: BirthData;
@@ -30,11 +31,15 @@ export function ElectionFinder({
   onPick: (e: ElectionData | null) => void;
   purpose: string;
   onPurpose: (s: string) => void;
+  /** Prefill from a link (e.g. a forecast window): event type and date range. */
+  initial?: { event?: string | null; from?: string | null; to?: string | null };
 }) {
-  const [event, setEvent] = React.useState<ElectionEvent>("general");
-  const [checks, setChecks] = React.useState<ElectionCheck[]>(ELECTION_EVENTS[0]!.checks);
-  const [from, setFrom] = React.useState(daysFromToday(1));
-  const [to, setTo] = React.useState(daysFromToday(30));
+  const initEvent = ELECTION_EVENTS.find((e) => e.id === initial?.event) ?? ELECTION_EVENTS[0]!;
+  const okDate = (d?: string | null) => (d && /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : null);
+  const [event, setEvent] = React.useState<ElectionEvent>(initEvent.id);
+  const [checks, setChecks] = React.useState<ElectionCheck[]>(initEvent.checks);
+  const [from, setFrom] = React.useState(okDate(initial?.from) ?? daysFromToday(1));
+  const [to, setTo] = React.useState(okDate(initial?.to) ?? daysFromToday(30));
   const [dailyFrom, setDailyFrom] = React.useState("09:00");
   const [dailyTo, setDailyTo] = React.useState("18:00");
   const [step, setStep] = React.useState(15);

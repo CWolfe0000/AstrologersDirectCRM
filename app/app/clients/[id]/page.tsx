@@ -108,6 +108,7 @@ function Profile() {
                   )}
                   {b.rectifiedFrom && <Badge tone="outline" className="ml-1" title={`Rectified${b.rectifiedAt ? ` on ${fmtDate(b.rectifiedAt)}` : ""}; previously ${b.rectifiedFrom}`}>Rectified</Badge>}
                   <Link href={`/app/clients/${client.id}/rectify`} className="ml-1.5 text-[12px] font-medium text-accent hover:underline">Rectify</Link>
+                  <Link href={`/app/clients/${client.id}/forecast`} className="ml-1.5 text-[12px] font-medium text-accent hover:underline">Forecast</Link>
                 </span>
                 <span className="flex min-w-0 items-center gap-1.5"><MapPin className="size-3.5 shrink-0 text-muted" /> <span className="truncate">{b.place}</span></span>
               </div>

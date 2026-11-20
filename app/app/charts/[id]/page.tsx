@@ -29,6 +29,7 @@ import { ringLabels } from "@/components/workspace/ring-labels";
 import { useHydrated } from "@/components/workspace/use-hydrated";
 import { TraditionalPanel } from "@/components/workspace/traditional-panel";
 import { PromisePanel } from "@/components/workspace/promise-panel";
+import { MidpointsPanel } from "@/components/workspace/midpoints-panel";
 import { zonedToUtc } from "@/lib/timezones";
 
 const PRINT_CSS = `@media print {
@@ -399,6 +400,7 @@ function Workspace() {
                 <TabsTrigger value="grid" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">Grid</TabsTrigger>
                 <TabsTrigger value="houses" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">{chart.type === "synastry" ? "Overlays" : "Houses"}</TabsTrigger>
                 {chart.type !== "synastry" && <TabsTrigger value="promise" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">Promise</TabsTrigger>}
+                {chart.type !== "synastry" && <TabsTrigger value="midpoints" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">Midpoints</TabsTrigger>}
                 <TabsTrigger value="condition" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">{natalBirthUtc ? "Traditional" : "Condition"}</TabsTrigger>
                 <TabsTrigger value="observations" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">
                   Notes{obsCount > 0 && <span className="text-[10.5px] text-accent">{obsCount}</span>}
@@ -435,8 +437,13 @@ function Workspace() {
                     <PromisePanel view={view} houseSystem={s.houseSystem} />
                   </TabsContent>
                 )}
+                {chart.type !== "synastry" && (
+                  <TabsContent value="midpoints">
+                    <MidpointsPanel view={view} />
+                  </TabsContent>
+                )}
                 <TabsContent value="condition">
-                  {natalBirthUtc ? <TraditionalPanel view={view} birthUtc={natalBirthUtc} /> : <ConditionTable view={view} />}
+                  {natalBirthUtc ? <TraditionalPanel view={view} birthUtc={natalBirthUtc} zodiac={s.zodiac} /> : <ConditionTable view={view} />}
                 </TabsContent>
                 <TabsContent value="observations">
                   <WorkspaceObservations chart={chart} editing={editing} setEditing={setEditing} draft={noteDraft} />
