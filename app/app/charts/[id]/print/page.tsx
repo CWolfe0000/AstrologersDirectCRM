@@ -109,7 +109,7 @@ function PrintPage() {
         ) : (
           <>
             <div className="print-wheel mx-auto my-6 max-w-[560px]">
-              <ChartWheel view={view} showAspects={s!.showAspectLines} showHouses={s!.showHouseCusps} showDegrees />
+              <ChartWheel view={view} showAspects={s!.showAspectLines} showHouses={s!.showHouseCusps} showDegrees wheelStyle={s!.wheelStyle} colors={s!.wheelColors} />
             </div>
             <div>
               <h2 className="mb-2 text-[13px] font-semibold uppercase tracking-wide text-muted">Positions</h2>

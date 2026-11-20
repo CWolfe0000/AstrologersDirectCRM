@@ -3,6 +3,9 @@
 import * as React from "react";
 import { ASPECTS, BODIES, SIGNS, degInSign, norm, type Aspect, type BodyId, type BodyPosition, type ChartView } from "@/lib/astro";
 import { cn } from "@/lib/utils";
+import { useStore } from "@/lib/store";
+import { DetailedWheel } from "./detailed-wheel";
+import { ELEMENT, aspectColor, planetColor, type WheelColors } from "./wheel-palette";
 
 const C = 300; // center (viewBox 600x600)
 
@@ -34,7 +37,6 @@ function spread(items: { key: string; lon: number }[], minSep: number) {
   return Object.fromEntries(sorted.map((s) => [s.key, norm(s.pos)])) as Record<string, number>;
 }
 
-const ASPECT_COLOR = { hard: "#824B59", soft: "#5E7266", neutral: "#68645F", minor: "#A39D96" } as const;
 
 export interface ChartWheelProps {
   view: ChartView;
@@ -47,9 +49,21 @@ export interface ChartWheelProps {
   showHouses?: boolean;
   showDegrees?: boolean;
   svgRef?: React.Ref<SVGSVGElement>;
+  /** Overrides the practice default (Settings → Chart Defaults). */
+  wheelStyle?: "detailed" | "classic";
+  colors?: WheelColors;
 }
 
-export function ChartWheel({ view, compact, className, selected, onSelect, highlightAspect, showAspects = true, showHouses = true, showDegrees = true, svgRef }: ChartWheelProps) {
+/** The chart wheel in the chosen style: detailed (default) or classic; thumbnails always use the classic layout. */
+export function ChartWheel(props: ChartWheelProps) {
+  const defaults = useStore((s) => s.defaults);
+  const style = props.wheelStyle ?? defaults.wheelStyle ?? "detailed";
+  const colors = props.colors ?? defaults.wheelColors ?? "color";
+  if (!props.compact && style === "detailed") return <DetailedWheel {...props} colors={colors} />;
+  return <ClassicWheel {...props} colors={colors} />;
+}
+
+function ClassicWheel({ view, compact, className, selected, onSelect, highlightAspect, showAspects = true, showHouses = true, showDegrees = true, svgRef, colors = "color" }: ChartWheelProps & { colors?: WheelColors }) {
   const [hover, setHover] = React.useState<string | null>(null);
   const focus = hover ?? selected ?? null;
   const { inner, outer, aspects } = view;
@@ -95,7 +109,7 @@ export function ChartWheel({ view, compact, className, selected, onSelect, highl
     const [lx, ly] = pt(glyphR - 9, a);
     const active = focus === key;
     const dim = focus && !active && !aspects.some((x) => isRelated(x) && (`${x.aRing}:${x.a}` === key || `${x.bRing}:${x.b}` === key));
-    const color = ring === "outer" ? "#824B59" : "#29272B";
+    const color = planetColor(b.id, colors, ring);
     const d = degInSign(b.lon);
     return (
       <g
@@ -134,11 +148,11 @@ export function ChartWheel({ view, compact, className, selected, onSelect, highl
         const [x2, y2] = pt(R_ZOD, a1);
         const [x3, y3] = pt(R_ZOD, a0);
         const [gx, gy] = pt((R_OUT + R_ZOD) / 2, ang(i * 30 + 15));
-        const fill = { fire: "#F8F1EE", earth: "#F3F1EA", air: "#F2F3F2", water: "#EEF2F1" }[s.element];
+        const fill = ELEMENT[colors].light[s.element];
         return (
           <g key={s.id}>
             <path d={`M${x0},${y0} A${R_OUT},${R_OUT} 0 0 0 ${x1},${y1} L${x2},${y2} A${R_ZOD},${R_ZOD} 0 0 1 ${x3},${y3} Z`} fill={fill} stroke="#E7E2DC" strokeWidth={0.8} />
-            <text x={gx} y={gy} textAnchor="middle" dominantBaseline="central" className="glyph" fontSize={compact ? 22 : 19} fill="#5A555B">
+            <text x={gx} y={gy} textAnchor="middle" dominantBaseline="central" className="glyph" fontSize={compact ? 22 : 19} fill={ELEMENT[colors].strong[s.element]}>
               <title>{s.name}</title>
               {s.glyph}
             </text>
@@ -228,7 +242,7 @@ export function ChartWheel({ view, compact, className, selected, onSelect, highl
                 y1={y1}
                 x2={x2}
                 y2={y2}
-                stroke={ASPECT_COLOR[nat]}
+                stroke={aspectColor(nat, colors)}
                 strokeWidth={strong ? 2.4 : a.orb < 2 ? 1.4 : 0.9}
                 strokeDasharray={nat === "minor" ? "3 3" : undefined}
                 opacity={visible ? (strong ? 1 : focus ? 0.95 : 0.7) : 0.08}

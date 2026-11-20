@@ -56,6 +56,8 @@ export const settingsSchema = z
     showHouseCusps: z.boolean(),
     showDegrees: z.boolean(),
     rulership: z.enum(["traditional", "modern"]).optional(),
+    wheelStyle: z.enum(["detailed", "classic"]).optional(),
+    wheelColors: z.enum(["color", "muted"]).optional(),
     timeline: timelineDefaultsSchema.optional(),
   })
   .strict();

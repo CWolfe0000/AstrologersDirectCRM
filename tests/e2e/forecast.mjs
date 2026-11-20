@@ -53,6 +53,10 @@ assert.equal((await post("/api/v1/astro/forecast", { birth: me, settings, from: 
 
 step("chart: Midpoints tab and Fixed Stars");
 await page.goto(BASE + `/app/charts/${natal.id}`);
+// The detailed wheel (default): minutes beside each planet and cusp positions around the outside.
+const wheelText = await page.getByRole("img", { name: "Chart wheel" }).first().textContent();
+assert.match(wheelText, /\d\d′/);
+assert.match(wheelText, /AC \d+/);
 await page.getByRole("tab", { name: "Midpoints" }).click();
 await page.getByRole("heading", { name: "Midpoint Pictures" }).waitFor();
 assert.ok((await page.locator("li", { hasText: "=" }).count()) > 0);

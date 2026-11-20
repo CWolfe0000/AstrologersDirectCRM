@@ -61,6 +61,10 @@ export interface ChartSettings {
   showDegrees: boolean;
   /** House rulers: traditional (Mars rules Scorpio) or modern (Pluto rules Scorpio, Uranus Aquarius, Neptune Pisces). Default traditional. */
   rulership?: "traditional" | "modern";
+  /** Chart wheel look: detailed (degrees, minutes, cusp positions, 1° ticks) or classic (glyphs only). Default detailed. */
+  wheelStyle?: "detailed" | "classic";
+  /** Chart wheel colors: element and planet colors, or muted ink. Default color. */
+  wheelColors?: "color" | "muted";
   /** Convergence timeline defaults (practice-wide). Missing means the built-in defaults. */
   timeline?: TimelineDefaults;
 }

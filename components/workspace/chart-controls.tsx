@@ -190,9 +190,9 @@ export function ChartControls({
         <div className="space-y-2.5">
           {(
             [
-              ["showAspectLines", "Aspect lines"],
-              ["showHouseCusps", "House cusps"],
-              ["showDegrees", "Degree labels"],
+              ["showAspectLines", "Aspect Lines"],
+              ["showHouseCusps", "House Cusps"],
+              ["showDegrees", "Degree Labels"],
             ] as const
           ).map(([k, l]) => (
             <label key={k} className="flex items-center justify-between text-[12.5px]">
@@ -200,6 +200,20 @@ export function ChartControls({
               <Switch checked={settings[k]} onCheckedChange={(v) => onChange({ [k]: v })} />
             </label>
           ))}
+          <label className="flex items-center justify-between gap-2 text-[12.5px]">
+            Wheel Style
+            <select aria-label="Wheel style" value={settings.wheelStyle ?? "detailed"} onChange={(e) => onChange({ wheelStyle: e.target.value as "detailed" | "classic" })} className="h-8 rounded-md border border-line bg-surface px-2 text-[12.5px]">
+              <option value="detailed">Detailed</option>
+              <option value="classic">Classic</option>
+            </select>
+          </label>
+          <label className="flex items-center justify-between gap-2 text-[12.5px]">
+            Wheel Colors
+            <select aria-label="Wheel colors" value={settings.wheelColors ?? "color"} onChange={(e) => onChange({ wheelColors: e.target.value as "color" | "muted" })} className="h-8 rounded-md border border-line bg-surface px-2 text-[12.5px]">
+              <option value="color">Color</option>
+              <option value="muted">Muted</option>
+            </select>
+          </label>
         </div>
       </Section>
 

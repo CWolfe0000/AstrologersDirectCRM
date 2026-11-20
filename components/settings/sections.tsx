@@ -172,6 +172,18 @@ export function AstrologySection() {
               <option value="modern">Modern</option>
             </Select>
           </Row>
+          <Row title="Wheel Style" desc="Detailed shows each planet’s degree, sign and minutes, cusp positions and 1° marks. Classic shows glyphs only.">
+            <Select value={d.wheelStyle ?? "detailed"} onChange={(e) => set({ wheelStyle: e.target.value as "detailed" | "classic" })} className="w-56">
+              <option value="detailed">Detailed</option>
+              <option value="classic">Classic</option>
+            </Select>
+          </Row>
+          <Row title="Wheel Colors" desc="Color: signs by element, planets in their own colors, aspects red (hard), blue (soft) and green (minor). Muted: ink tones.">
+            <Select value={d.wheelColors ?? "color"} onChange={(e) => set({ wheelColors: e.target.value as "color" | "muted" })} className="w-56">
+              <option value="color">Color</option>
+              <option value="muted">Muted</option>
+            </Select>
+          </Row>
           <Row title="Show Aspect Lines"><Switch checked={d.showAspectLines} onCheckedChange={(v) => set({ showAspectLines: v })} /></Row>
           <Row title="Show House Cusps"><Switch checked={d.showHouseCusps} onCheckedChange={(v) => set({ showHouseCusps: v })} /></Row>
           <Row title="Show Degrees on the Wheel"><Switch checked={d.showDegrees} onCheckedChange={(v) => set({ showDegrees: v })} /></Row>

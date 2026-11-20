@@ -355,6 +355,8 @@ function Workspace() {
                 showAspects={s.showAspectLines}
                 showHouses={s.showHouseCusps}
                 showDegrees={s.showDegrees}
+                wheelStyle={s.wheelStyle}
+                colors={s.wheelColors}
               />
             </div>
             <ExpandedWheel
@@ -371,6 +373,8 @@ function Workspace() {
                 showAspects={s.showAspectLines}
                 showHouses={s.showHouseCusps}
                 showDegrees={s.showDegrees}
+                wheelStyle={s.wheelStyle}
+                colors={s.wheelColors}
               />
             </ExpandedWheel>
             <div className="ws-noprint mt-3 border-t border-line pt-3">
