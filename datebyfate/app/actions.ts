@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { birthSchema, personFromForm, type PersonKind } from "@/lib/people";
 import type { Interval } from "@/lib/plans";
+import { elementReading } from "@/lib/reading/elements";
 import { ownPattern, placementsOf, type OwnPattern, type Placement } from "@/lib/reading/own";
 import { consumeResetToken, createSession, destroySession, hashPassword, issueResetToken, passwordProblem, rateLimit, requireUser, verifyPassword } from "@/lib/server/auth";
 import { billingConfigured, cancelSubscriptionNow, checkoutUrl, portalUrl } from "@/lib/server/billing";
@@ -111,14 +112,14 @@ export async function deleteAccount(_: FormState, form: FormData): Promise<FormS
 
 /* ---------- The free reading (no account) ---------- */
 
-export type FreeReading = { error: string } | { pattern: OwnPattern; placements: Placement[] };
+export type FreeReading = { error: string } | { pattern: OwnPattern; placements: Placement[]; elements: ReturnType<typeof elementReading> };
 
 export async function freeReading(input: unknown): Promise<FreeReading> {
   if (!(await rateLimit("free-reading", 30, 3_600_000))) return { error: BUSY };
   const birth = birthSchema.safeParse(input);
   if (!birth.success) return { error: birth.error.issues[0]?.message ?? "Check the birth details." };
   const chart = chartFor(birth.data);
-  return { pattern: ownPattern(chart), placements: placementsOf(chart) };
+  return { pattern: ownPattern(chart), placements: placementsOf(chart), elements: elementReading(chart) };
 }
 
 /* ---------- People ---------- */

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Insight, OwnPattern, Placement } from "@/lib/reading/own";
+import type { ElementBalance } from "@/lib/reading/elements";
 import type { DifficultAspect, Gift, Trigger } from "@/lib/reading/triggers";
 
 export function InsightCard({ insight, tag }: { insight: Insight; tag?: React.ReactNode }) {
@@ -59,7 +60,7 @@ export function Placements({ placements }: { placements: Placement[] }) {
 }
 
 /** Your own pattern: the free reading and the top of the member's home page. */
-export function PatternView({ pattern, placements, children }: { pattern: OwnPattern; placements: Placement[]; children?: React.ReactNode }) {
+export function PatternView({ pattern, placements, elements, children }: { pattern: OwnPattern; placements: Placement[]; elements: { balance: ElementBalance; insights: Insight[] }; children?: React.ReactNode }) {
   return (
     <div>
       <div className="rounded-3xl bg-night px-6 py-9 text-cream sm:px-10 sm:py-12">
@@ -71,6 +72,10 @@ export function PatternView({ pattern, placements, children }: { pattern: OwnPat
       <NoteList notes={pattern.notes} />
       <Section title="How you are in love" intro="Venus, the Moon and Mars: affection, safety and desire.">
         <div className="grid gap-4 lg:grid-cols-3">{pattern.core.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
+      </Section>
+      <Section title="Your elements" intro="Fire, earth, air and water are the kinds of energy you run on. What your chart is full of comes naturally; what it lacks is what you look for in other people.">
+        <ElementBars balance={elements.balance} />
+        <div className="grid gap-4 lg:grid-cols-2">{elements.insights.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
       </Section>
       {pattern.drawnTo.length > 0 && (
         <Section title="Who you are drawn to" intro="Your 7th house: the partner your chart describes, and where partnership takes you.">
@@ -150,5 +155,25 @@ export function GiftList({ gifts, quiet }: { gifts: Gift[]; quiet: string }) {
         </AspectCard>
       ))}
     </div>
+  );
+}
+
+const ELEMENT_COLOR = { fire: "bg-rose", earth: "bg-gold", air: "bg-ink-2", water: "bg-[#3F6C8A]" } as const;
+
+/** The share of a chart in each element. */
+export function ElementBars({ balance }: { balance: ElementBalance }) {
+  return (
+    <dl className="card grid gap-3">
+      {(["fire", "earth", "air", "water"] as const).map((e) => (
+        <div key={e} className="grid grid-cols-[4.5rem_1fr] items-center gap-x-3 sm:grid-cols-[4.5rem_1fr_14rem]">
+          <dt className="font-semibold capitalize">{e}</dt>
+          <dd className="flex items-center gap-3">
+            <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-cream-2"><span className={`block h-full rounded-full ${ELEMENT_COLOR[e]}`} style={{ width: `${Math.round(balance.shares[e] * 100)}%` }} /></span>
+            <span className="w-10 text-right text-sm tabular-nums text-muted">{Math.round(balance.shares[e] * 100)}%</span>
+          </dd>
+          <dd className="col-span-2 text-sm text-muted sm:col-span-1">{balance.points[e].join(", ") || "None"}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }

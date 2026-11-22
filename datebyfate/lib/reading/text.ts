@@ -444,19 +444,27 @@ export const pairKey = (a: PointId, b: PointId) => (SPEED.indexOf(a) <= SPEED.in
  * One contact between your chart and another person's, in words.
  * `yours` and `theirs` are the two points; `cls` is the kind of aspect.
  */
-export function contactText(yours: PointId, theirs: PointId, cls: AspectClass, theirName = "Their"): { title: string; body: string; tone: "hard" | "flowing"; curated: boolean } {
+export function contactText(
+  yours: PointId,
+  theirs: PointId,
+  cls: AspectClass,
+  theirName = "Their",
+  /** The exact aspect: its definition, and a note when its signs are in unusual elements, are added to the text. */
+  exact?: { word: string; definition: string; elementNote: string },
+): { title: string; body: string; tone: "hard" | "flowing"; curated: boolean } {
   const possessive = theirName === "Their" ? "Their" : `${theirName}’s`;
   const yourActs = SPEED.indexOf(yours) > SPEED.indexOf(theirs);
   const [actor, receiver] = yourActs ? [yours, theirs] : [theirs, yours];
   const actorOwner = yourActs ? "Your" : possessive;
   const receiverOwner = yourActs ? (theirName === "Their" ? "their" : possessive) : "your";
-  const kind = cls === "conjunction" ? "on" : cls === "hard" ? "in tension with" : "in harmony with";
+  const kind = exact ? exact.word : cls === "conjunction" ? "on" : cls === "hard" ? "in tension with" : "in harmony with";
   const title = `${possessive} ${POINT_NAMES[theirs]} ${kind} your ${POINT_NAMES[yours]}`;
   const note = CONTACT_NOTES[pairKey(yours, theirs)];
   const general = `${actorOwner} ${POINT_NAMES[actor]} ${ACTS[actor] ?? "meets"} ${receiverOwner} ${AREA[receiver]}.`;
   // A conjunction takes its tone from the hand-written note, or from the planets involved.
   const tone: "hard" | "flowing" = cls !== "conjunction" ? cls : note ? note.conj : HEAVY.has(actor) ? "hard" : "flowing";
-  return { title, body: note ? `${general} ${note[tone]}` : `${general} ${CLASS_TAIL[cls]}`, tone, curated: !!note };
+  const parts = [general, note ? note[tone] : "", exact ? exact.definition : note ? "" : CLASS_TAIL[cls], exact?.elementNote ?? ""];
+  return { title, body: parts.filter(Boolean).join(" "), tone, curated: !!note };
 }
 
 /* ---------- Timing ---------- */

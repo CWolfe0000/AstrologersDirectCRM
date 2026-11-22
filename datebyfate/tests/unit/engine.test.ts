@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Birth } from "@/lib/astro/types";
 import { signName } from "@/lib/astro/zodiac";
 import { binomialTail, checkAgainst, patternAcross, plainFacts, signaturesOf } from "@/lib/reading/exes";
+import { attunement, elementBalance, elementNote, elementReading, relationOf } from "@/lib/reading/elements";
 import { coupleReport } from "@/lib/reading/couple";
 import { aspectsOf, ownPattern } from "@/lib/reading/own";
 import { contactText } from "@/lib/reading/text";
@@ -220,6 +221,57 @@ describe("eased by and brought out", () => {
   it("feeds the pattern across partners", () => {
     const keys = natalContactKeys(you, you);
     expect(keys.filter((k) => k.startsWith("gift|")).sort()).toEqual(easy.map((k) => `gift|${k}`));
+  });
+});
+
+describe("elements", () => {
+  it("weighs the personal points and leaves out the generational planets", () => {
+    // Sun Gemini, Moon Pisces, Venus Taurus, Mars Aries, Rising Libra.
+    const b = elementBalance(chartFor(me));
+    expect(Object.values(b.shares).reduce((a, c) => a + c, 0)).toBeCloseTo(1);
+    expect(b.points.air).toEqual(expect.arrayContaining(["Sun", "Rising"]));
+    expect(b.points.water).toContain("Moon");
+    expect(Object.values(b.points).flat()).not.toContain("Pluto");
+    expect(b.strong).toContain("air");
+    const noTime = elementBalance(chartFor(born("1990-06-15")));
+    expect(Object.values(noTime.points).flat()).not.toContain("Rising");
+    expect(elementReading(chartFor(me)).insights[0]!.title).toMatch(/^Strong /);
+  });
+
+  it("fire feeds air and earth feeds water; other mixes are at cross purposes", () => {
+    expect(relationOf("fire", "air")).toBe("compatible");
+    expect(relationOf("water", "earth")).toBe("compatible");
+    expect(relationOf("fire", "fire")).toBe("same");
+    for (const [a, b] of [["fire", "water"], ["fire", "earth"], ["air", "water"], ["air", "earth"]] as const) expect(relationOf(a, b)).toBe("discordant");
+  });
+
+  it("compares two people planet by planet", () => {
+    const a = attunement(chartFor(me), chartFor(born("1988-03-10", "09:15")), "Sam");
+    expect(a.levels).toHaveLength(6);
+    expect(a.levels[0]!.title).toBe("Basic Energy: Air With Water"); // Gemini Sun, Pisces Sun
+    expect(a.levels[0]!.relation).toBe("discordant");
+    expect(attunement(chartFor(me), chartFor(me), "Twin").levels.every((l) => l.relation === "same")).toBe(true);
+    // Without their birth time there is no rising sign to compare.
+    expect(attunement(chartFor(me), chartFor(born("1988-03-12")), "Sam").levels.length).toBeLessThan(6);
+  });
+
+  it("notes aspects whose signs are not in the usual elements", () => {
+    expect(elementNote("square", 15, 105)).toBe(""); // Aries–Cancer: fire and water, as a square normally is
+    expect(elementNote("square", 28, 122)).toMatch(/Aries and Leo, are in the same element/); // out-of-sign square
+    expect(elementNote("trine", 29, 151)).toMatch(/Aries and Virgo.*less automatic/);
+    expect(elementNote("conjunction", 29, 31)).toMatch(/different signs, Aries and Taurus/);
+    expect(elementNote("opposition", 10, 190)).toBe("");
+  });
+
+  it("puts the aspect's definition into a contact between two charts", () => {
+    const r = coupleReport(chartFor(me), chartFor(born("1988-03-10", "09:15")), "Sam");
+    for (const list of [r.strengths, r.friction]) {
+      for (const i of list) expect(i.title).toMatch(/ (conjunct|opposite|square|trine|sextile) your /);
+      // Defined on the first card of each kind, and not repeated.
+      expect(list[0]!.body).toMatch(/A (conjunction|square|trine|sextile) |An opposition /);
+      const text = list.map((i) => i.body).join(" ");
+      for (const d of ["A square is", "A trine is", "A sextile is", "An opposition is", "A conjunction fuses"]) expect(text.split(d).length).toBeLessThanOrEqual(2);
+    }
   });
 });
 

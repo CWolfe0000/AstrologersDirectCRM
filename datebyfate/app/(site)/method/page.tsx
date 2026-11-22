@@ -23,6 +23,12 @@ export default function Method() {
         <H>Your own pattern</H>
         <P>Your reading looks at Venus (how you love), the Moon (what you need), Mars (what you go after), your Descendant and 7th house (who you are drawn to), and the close aspects between those planets and Saturn, Uranus, Neptune and Pluto. Those aspects are the recurring dynamics.</P>
 
+        <H>The elements</H>
+        <P>The element readings follow the approach Stephen Arroyo set out in <em>Astrology, Psychology, and the Four Elements</em>. Each element is a kind of energy a person is attuned to. Your balance counts the Sun, Moon and rising sign most, then Mercury, Venus and Mars, then Jupiter and Saturn. Uranus, Neptune and Pluto describe a generation and are not counted. Two people are compared planet by planet: the same element matches, fire with air and earth with water feed each other, and every other mix works at cross purposes. The wording throughout is our own.</P>
+
+        <H>The aspects</H>
+        <P>An aspect is read first by the planets involved and then by its kind. A conjunction fuses two energies. An opposition is felt across the relationship and can become a balance. A square is a challenge that generates energy and has to be worked through. A trine is an easy flow, and a sextile is an opening that works when it is used. Each kind normally joins signs of particular elements, so when an aspect falls across a sign boundary and the elements are different, the reading says so.</P>
+
         <H>The pattern across your partners</H>
         <P>Each partner is reduced to a list of signatures: the signs of their Sun, Moon, Venus and Mars, the houses of your chart their planets fall in, and every aspect between their planets and yours. There are several hundred possible signatures.</P>
         <P>A signature that turns up in at least half of your partners is a candidate. Then comes the check. We build a comparison group of 500 random birth dates from the same years your partners were born, and measure how often each signature appears in that group against your chart. Using the same years matters: slow planets stay in one place for a long time, so everyone of a similar age shares those contacts with you, and they are not a pattern.</P>

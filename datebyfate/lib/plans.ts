@@ -10,12 +10,12 @@ export const PRICES = {
 
 export type Interval = keyof typeof PRICES;
 
-export const FREE_FEATURES = ["Your own relationship pattern, from your birth chart", "How you love, what you need and who you are drawn to", "Your recurring dynamics, named and explained", "Your next relationship period"];
+export const FREE_FEATURES = ["Your own relationship pattern, from your birth chart", "How you love, what you need and who you are drawn to", "Your element balance and your recurring dynamics", "Your next relationship period"];
 
 export const PREMIUM_FEATURES = [
   "The pattern across your past partners, checked against chance",
   "Check anyone new against your pattern",
   "Each partner read on their own: what you set off, ease and bring out in each other",
-  "Full couple reports: strengths, friction and the relationship’s own chart",
+  "Full couple reports: your elements together, strengths, friction and the relationship’s own chart",
   "Your relationship calendar for the next 12 months",
 ];

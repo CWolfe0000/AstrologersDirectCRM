@@ -16,7 +16,7 @@ export function FreeReadingTool({ signedIn }: { signedIn: boolean }) {
   if (result && "pattern" in result)
     return (
       <div>
-        <PatternView pattern={result.pattern} placements={result.placements}>
+        <PatternView pattern={result.pattern} placements={result.placements} elements={result.elements}>
           <section className="mt-12 grid gap-4 lg:grid-cols-2">
             <div className="card">
               <h2 className="text-2xl font-semibold">Keep this reading</h2>

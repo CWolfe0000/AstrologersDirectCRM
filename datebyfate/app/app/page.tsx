@@ -4,6 +4,7 @@ import { saveSelf } from "@/app/actions";
 import { SelfForm } from "@/components/forms";
 import { InsightCard, Locked, PatternView, Section } from "@/components/reading";
 import { formatDate, plural } from "@/lib/format";
+import { elementReading } from "@/lib/reading/elements";
 import { ownPattern, placementsOf } from "@/lib/reading/own";
 import { requireUser } from "@/lib/server/auth";
 import { loadContext, ownTiming } from "@/lib/server/readings";
@@ -26,7 +27,7 @@ export default async function AppHome() {
   const windows = ownTiming(ctx.self.chart);
   const next = windows[0];
   return (
-    <PatternView pattern={ownPattern(ctx.self.chart)} placements={placementsOf(ctx.self.chart)}>
+    <PatternView pattern={ownPattern(ctx.self.chart)} placements={placementsOf(ctx.self.chart)} elements={elementReading(ctx.self.chart)}>
       <Section title="Your next relationship period">
         {next ? (
           <InsightCard

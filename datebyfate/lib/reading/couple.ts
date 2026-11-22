@@ -1,9 +1,12 @@
 import type { BodyId, Chart, PointId } from "@/lib/astro/types";
 import { BODIES } from "@/lib/astro/types";
 import { midpoint } from "@/lib/astro/spherical";
-import { POINT_NAMES, SIGNS, SYNASTRY_ORBS, aspectBetween, houseOf, ordinal, signIndex } from "@/lib/astro/zodiac";
+import { POINT_NAMES, SIGNS, SYNASTRY_ORBS, aspectBetween, houseOf, ordinal, signIndex, type AspectName } from "@/lib/astro/zodiac";
+import { ASPECT_DEFINITION, elementNote } from "./elements";
 import type { Insight } from "./own";
 import { HOUSE_AREA, SIGN_QUALITY, contactText } from "./text";
+
+type Ranked = Insight & { rank: number; aspect: AspectName };
 
 export interface CoupleReport {
   strengths: Insight[];
@@ -17,6 +20,7 @@ export interface CoupleReport {
   notes: string[];
 }
 
+const WORD = { conjunction: "conjunct", opposition: "opposite", square: "square", trine: "trine", sextile: "sextile" } as const;
 const SLOW = new Set<PointId>(["jupiter", "saturn", "uranus", "neptune", "pluto", "node"]);
 /** Contacts worth reading first. */
 const KEY_POINTS = new Set<PointId>(["sun", "moon", "venus", "mars", "asc"]);
@@ -31,19 +35,27 @@ export function coupleReport(you: Chart, them: Chart, name: string): CoupleRepor
   };
   if (!you.houses || !them.houses) notes.push(`${!you.houses ? "Your" : `${name}’s`} birth time is unknown, so Moon contacts, rising signs and house positions are left out for that chart.`);
 
-  const strengths: (Insight & { rank: number })[] = [];
-  const friction: (Insight & { rank: number })[] = [];
+  const strengths: Ranked[] = [];
+  const friction: Ranked[] = [];
   for (const [yid, ylon] of points(you))
     for (const [tid, tlon] of points(them)) {
       if (SLOW.has(yid) && SLOW.has(tid)) continue;
       if (!KEY_POINTS.has(yid) && !KEY_POINTS.has(tid)) continue;
       const asp = aspectBetween(ylon, tlon, SYNASTRY_ORBS);
       if (!asp) continue;
-      const { tone, curated, ...text } = contactText(yid, tid, asp.cls, name);
+      const { tone, curated, ...text } = contactText(yid, tid, asp.cls, name, { word: WORD[asp.name], definition: "", elementNote: elementNote(asp.name, ylon, tlon) });
       const both = KEY_POINTS.has(yid) && KEY_POINTS.has(tid);
-      (tone === "hard" ? friction : strengths).push({ ...text, basis: `${asp.name}, ${asp.orb.toFixed(1)}° from exact`, rank: asp.orb + (curated ? 0 : 3) + (both ? 0 : 1) });
+      (tone === "hard" ? friction : strengths).push({ ...text, basis: `${asp.name}, ${asp.orb.toFixed(1)}° from exact`, rank: asp.orb + (curated ? 0 : 3) + (both ? 0 : 1), aspect: asp.name });
     }
-  const top = (xs: (Insight & { rank: number })[]) => xs.sort((a, b) => a.rank - b.rank).slice(0, 5).map(({ title, body, basis }) => ({ title, body, basis }));
+  // Each kind of aspect is defined once per list, on the first card that has it.
+  const top = (xs: Ranked[]) => {
+    const defined = new Set<AspectName>();
+    return xs.sort((a, b) => a.rank - b.rank).slice(0, 5).map(({ title, body, basis, aspect }) => {
+      const first = !defined.has(aspect);
+      defined.add(aspect);
+      return { title, body: first ? `${body} ${ASPECT_DEFINITION[aspect]}` : body, basis };
+    });
+  };
 
   const overlays: Insight[] = [];
   const lay = (owner: Chart, into: Chart, ownerLabel: string, intoLabel: string) => {

@@ -59,6 +59,7 @@ assert.equal(await page.inputValue('input[name="date"]'), "1990-06-15");
 await page.getByText(/^Time zone: Europe\/London/).waitFor();
 await page.getByRole("button", { name: "Show my pattern" }).click();
 await page.getByRole("heading", { name: "Your recurring dynamics" }).waitFor();
+await page.getByRole("heading", { name: "Your elements" }).waitFor();
 await page.getByRole("heading", { name: "Your next relationship period" }).waitFor();
 await shot("03-app-home");
 
@@ -117,6 +118,7 @@ await shot("07-exes-premium");
 await page.goto(personUrl);
 await page.getByRole("heading", { name: "What comes easily" }).waitFor();
 await page.getByRole("heading", { name: "The relationship itself" }).waitFor();
+await page.getByRole("heading", { name: "Your elements together" }).waitFor();
 await page.getByRole("heading", { name: "What you set off in each other" }).waitFor();
 await page.getByRole("heading", { name: "What you bring out in each other" }).waitFor();
 assert.equal(await page.getByRole("heading", { name: "In Charlie", exact: true }).count(), 2);
