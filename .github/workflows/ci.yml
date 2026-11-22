@@ -80,6 +80,8 @@ jobs:
           node tests/e2e/portal-messages.mjs
           node tests/e2e/intake.mjs
           node tests/e2e/onboarding.mjs
+          node tests/e2e/asteroids.mjs
+          node tests/e2e/share-cards.mjs
           node tests/e2e/booking.mjs
           node tests/e2e/pwa.mjs
           node tests/e2e/a11y.mjs

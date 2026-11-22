@@ -79,6 +79,6 @@ export const SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])$/;
 /** Addresses that are (or may become) the website's own pages: profiles also live at astrologersdirect.com/<address>. */
 export const RESERVED_SLUGS = new Set([
   "admin", "manage", "api", "app", "auth", "book", "portal", "help", "support", "about", "pricing", "contact", "features", "login", "signup", "settings", "astrologersdirect",
-  "how-it-works", "legal", "request-access", "privacy", "terms", "blog", "faq", "docs", "status", "careers", "press", "news", "directory", "astrologers", "search",
+  "how-it-works", "legal", "request-access", "whats-new", "share", "privacy", "terms", "blog", "faq", "docs", "status", "careers", "press", "news", "directory", "astrologers", "search",
   "icons", "screenshots", "offline", "manifest", "robots", "sitemap", "favicon", "www", "mail", "beta", "demo", "home", "account", "billing",
 ]);

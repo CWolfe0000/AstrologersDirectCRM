@@ -317,3 +317,19 @@ export const messages = pgTable(
   },
   (t) => [index("messages_thread_idx").on(t.practiceId, t.clientId, t.createdAt)],
 );
+
+/** Feature suggestions from practitioners ("Suggest a Feature"), read by the platform admin. */
+export const featureRequests = pgTable(
+  "feature_requests",
+  {
+    id: text("id").primaryKey(),
+    practiceId: text("practice_id").references(() => practices.id, { onDelete: "set null" }),
+    email: text("email").notNull(),
+    name: text("name").notNull(),
+    area: text("area").notNull(),
+    text: text("text").notNull(),
+    status: text("status").notNull().default("new"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [index("feature_requests_created_idx").on(t.createdAt)],
+);

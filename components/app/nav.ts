@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, Users, CircleDot, CalendarDays, NotebookPen, ListChecks, Send, Mic, BarChart3, Settings, Bell, Waves, MessagesSquare,
+  LayoutDashboard, Users, CircleDot, CalendarDays, NotebookPen, ListChecks, Send, Mic, BarChart3, Settings, Bell, Waves, MessagesSquare, Image as ImageIcon,
 } from "lucide-react";
 
 export const APP_NAV = [
@@ -13,6 +13,7 @@ export const APP_NAV = [
   { href: "/app/tasks", label: "Tasks & Follow-Ups", short: "Tasks", icon: ListChecks },
   { href: "/app/delivery", label: "Reading Delivery", icon: Send },
   { href: "/app/studio", label: "Recording Studio", icon: Mic },
+  { href: "/app/share", label: "Share Cards", icon: ImageIcon },
   { href: "/app/reports", label: "Reports & Insights", icon: BarChart3 },
 ];
 

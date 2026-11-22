@@ -221,3 +221,11 @@ export function fixedStarsAt(utc: string, names: readonly string[], zodiac?: Zod
   }
   return out;
 }
+
+/** Tropical minus sidereal longitude at a moment (Swiss's own ayanamsa convention), for positions from other sources. */
+export function siderealOffset(utc: string, zodiac: ZodiacType) {
+  if (zodiac === "tropical") return 0;
+  const t = bodiesAt(utc, { zodiac: "tropical", bodies: ["sun"] }).sun!.lon;
+  const s = bodiesAt(utc, { zodiac, bodies: ["sun"] }).sun!.lon;
+  return (((t - s) % 360) + 360) % 360;
+}

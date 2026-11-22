@@ -75,6 +75,8 @@ export interface ChartSettings {
   wheelPalette?: WheelPalette;
   /** Convergence timeline defaults (practice-wide). Missing means the built-in defaults. */
   timeline?: TimelineDefaults;
+  /** Extra asteroids the astrologer follows (any numbered asteroid, by JPL number). */
+  asteroids?: { n: number; name: string }[];
 }
 
 export interface BodyPosition {

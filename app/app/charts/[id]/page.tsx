@@ -28,6 +28,7 @@ import { AiAssistant } from "@/components/workspace/ai-assistant";
 import { ringLabels } from "@/components/workspace/ring-labels";
 import { useHydrated } from "@/components/workspace/use-hydrated";
 import { TraditionalPanel } from "@/components/workspace/traditional-panel";
+import { AsteroidsPanel } from "@/components/workspace/asteroids-panel";
 import { PromisePanel } from "@/components/workspace/promise-panel";
 import { MidpointsPanel } from "@/components/workspace/midpoints-panel";
 import { zonedToUtc } from "@/lib/timezones";
@@ -406,6 +407,7 @@ function Workspace() {
                 <TabsTrigger value="houses" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">{chart.type === "synastry" ? "Overlays" : "Houses"}</TabsTrigger>
                 {chart.type !== "synastry" && <TabsTrigger value="promise" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">Promise</TabsTrigger>}
                 {chart.type !== "synastry" && <TabsTrigger value="midpoints" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">Midpoints</TabsTrigger>}
+                {chart.type !== "synastry" && <TabsTrigger value="asteroids" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">Asteroids</TabsTrigger>}
                 <TabsTrigger value="condition" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">{natalBirthUtc ? "Traditional" : "Condition"}</TabsTrigger>
                 <TabsTrigger value="observations" className="shrink-0 justify-center gap-1 whitespace-nowrap px-2 text-[12.5px]">
                   Notes{obsCount > 0 && <span className="text-[10.5px] text-accent">{obsCount}</span>}
@@ -445,6 +447,11 @@ function Workspace() {
                 {chart.type !== "synastry" && (
                   <TabsContent value="midpoints">
                     <MidpointsPanel view={view} />
+                  </TabsContent>
+                )}
+                {chart.type !== "synastry" && (
+                  <TabsContent value="asteroids">
+                    <AsteroidsPanel view={view} utc={natalBirthUtc} zodiac={s.zodiac} />
                   </TabsContent>
                 )}
                 <TabsContent value="condition">

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { asteroidPositions, searchAsteroids } from "@/lib/server/asteroids";
 import { handler, HttpError, json, readJson, requireUser } from "@/lib/server/http";
 import { birthSchema, settingsSchema } from "@/lib/server/validation";
 import { acgChart, davisonChart, motionFrom, natalChart, returnChart, positionsAt, progressedChart, solarArcChart, solarReturnChart } from "@/lib/server/astro";
@@ -45,6 +46,8 @@ const Bodies = {
   }),
   rising: z.object({ birth: birthSchema, settings: rectSettings }),
   stars: z.object({ utc: z.string().max(40), settings: z.object({ zodiac: z.enum(["tropical", "sidereal-lahiri", "sidereal-fagan-bradley"]) }).passthrough() }),
+  "asteroid-search": z.object({ q: z.string().max(60) }),
+  asteroids: z.object({ utc: z.string().max(40), list: z.array(z.object({ n: z.number().int().min(1).max(10_000_000), name: z.string().max(80) })).min(1).max(30), settings: z.object({ zodiac: z.enum(["tropical", "sidereal-lahiri", "sidereal-fagan-bradley"]) }).passthrough() }),
   forecast: z.object({ birth: birthSchema, settings: rectSettings, from: date, years: z.number().int().min(1).max(6), themes: z.array(z.enum(Object.keys(THEMES) as [Theme, ...Theme[]])).min(1).max(4) }),
   "couple-forecast": z.object({ a: birthSchema, b: birthSchema, settings: rectSettings, from: date, years: z.number().int().min(1).max(4), themes: z.array(z.enum(Object.keys(THEMES) as [Theme, ...Theme[]])).min(1).max(4) }),
   davison: z.object({ a: birthSchema, b: birthSchema, settings: settingsSchema }),
@@ -102,6 +105,13 @@ export const POST = handler(async (req: Request, ctx: { params: Promise<{ op: st
         const utc = new Date(b.utc as string);
         if (Number.isNaN(utc.getTime())) throw new HttpError(422, "Invalid date.");
         return json({ engine: SWISS_INFO, stars: fixedStarsAt(utc.toISOString(), FIXED_STARS.map((x) => x.name), (b.settings as { zodiac: never }).zodiac) });
+      }
+      case "asteroid-search":
+        return json({ results: await searchAsteroids(b.q as string) });
+      case "asteroids": {
+        const utc = new Date(b.utc as string);
+        if (Number.isNaN(utc.getTime())) throw new HttpError(422, "Invalid date.");
+        return json({ source: "NASA JPL Horizons", asteroids: await asteroidPositions(b.list as never, utc.toISOString(), (b.settings as { zodiac: never }).zodiac) });
       }
       case "forecast":
         return json({ engine: SWISS_INFO, forecast: forecast(b.birth, b.settings, b.from, b.years, b.themes) });

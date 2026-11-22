@@ -56,9 +56,22 @@ await other.goto(BASE + "/app");
 await other.getByText("Dashboard").first().waitFor();
 assert.equal(await other.getByRole("link", { name: "Admin", exact: true }).count(), 0, "no admin link for others");
 
+step("a practitioner suggests a feature; the admin reads it");
+await other.getByRole("button", { name: "Suggest a Feature" }).first().click();
+await other.getByLabel("About").selectOption("Booking & Payments");
+await other.getByLabel("Your Suggestion").fill(`Stripe deposits for bookings (${Date.now()})`);
+await other.getByRole("button", { name: "Send Suggestion" }).click();
+await other.getByText("Your suggestion reached the team.").waitFor();
+assert.equal((await other.evaluate(() => fetch("/api/admin/feedback").then((r) => r.status))), 404, "only the admin can read them");
+const wn = await fetch(BASE + "/whats-new");
+assert.equal(wn.status, 200);
+assert.ok((await wn.text()).includes("What We’ve Built Lately"), "What's New page");
+
 step("admin sees every practice, with counts");
 await admin.goto(BASE + "/app/admin");
 await admin.getByRole("link", { name: "Admin", exact: true }).waitFor();
+await admin.getByRole("heading", { name: "Feature Suggestions" }).waitFor();
+await admin.getByText(/Stripe deposits for bookings/).waitFor();
 await admin.getByPlaceholder("Search by practice, name or email").fill(otherEmail);
 const row = admin.getByRole("row").filter({ hasText: otherEmail });
 await row.waitFor();

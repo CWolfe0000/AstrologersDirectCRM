@@ -3,7 +3,7 @@ import { Wordmark } from "@/components/ui/misc";
 import { APP_URL, SIGNUP_URL } from "@/lib/site";
 
 const COLS = [
-  { title: "Product", links: [["Features", "/features"], ["How It Works", "/how-it-works"], ["Pricing", "/pricing"]] },
+  { title: "Product", links: [["Features", "/features"], ["How It Works", "/how-it-works"], ["Pricing", "/pricing"], ["What’s New", "/whats-new"]] },
   { title: "Company", links: [["About", "/about"], ["Contact", "/contact"], ["Privacy", "/legal/privacy"], ["Terms", "/legal/terms"]] },
   { title: "Account", links: [["Sign In", `${APP_URL}/auth/login`], ["Join the Beta", SIGNUP_URL], ["Client Portal", `${APP_URL}/auth/login`]] },
 ];

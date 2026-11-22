@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { AccessRequests } from "@/components/admin/access-requests";
+import { FeatureSuggestions } from "@/components/admin/feature-suggestions";
 
 type Practice = {
   id: string;
@@ -116,6 +117,7 @@ export default function AdminPage() {
       </div>
 
       <AccessRequests />
+      <FeatureSuggestions />
 
       <div className="mb-3 flex items-center gap-2">
         <div className="relative w-full max-w-sm">

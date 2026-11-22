@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { MoreHorizontal, ExternalLink, UserRound, Download, Printer, Star, Mic, Send, Share2, EyeOff, RefreshCw } from "lucide-react";
+import { MoreHorizontal, ExternalLink, UserRound, Download, Printer, Star, Mic, Send, Share2, EyeOff, RefreshCw, Image as ImageIcon } from "lucide-react";
 import type { ChartView } from "@/lib/astro";
 import type { ChartRecord } from "@/lib/data/types";
 import { useStore } from "@/lib/store";
@@ -84,6 +84,11 @@ export function ChartActionsMenu({ chart, svg, inWorkspace, view }: { chart: Cha
         <DropdownItem onSelect={() => downloadPng(getSvg(), chart.title).then((ok) => toast(ok ? "Chart exported" : "Export failed", ok ? "PNG downloaded." : undefined, ok ? "success" : "error"))}>
           <Download /> Export as PNG
         </DropdownItem>
+        {chart.type === "natal" && (
+          <DropdownItem onSelect={() => router.push(`/app/share?chart=${chart.id}`)}>
+            <ImageIcon /> Make a Share Card
+          </DropdownItem>
+        )}
         <DropdownItem onSelect={() => router.push(`/app/charts/${chart.id}/print`)}>
           <Printer /> Print or Save as PDF
         </DropdownItem>

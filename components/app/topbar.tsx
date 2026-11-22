@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, Plus, Search, HelpCircle, Menu, LogOut, Settings, User, BookOpen, Keyboard, Compass, MessageCircle, ExternalLink } from "lucide-react";
+import { Bell, Plus, Search, HelpCircle, Menu, LogOut, Settings, User, BookOpen, Keyboard, Compass, MessageCircle, ExternalLink, Lightbulb, Sparkles } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { cn, titleCase, relTime } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -17,9 +17,11 @@ import { SaveStatus } from "./server-gate";
 import { signOut } from "@/lib/sync";
 import { DATA_MODE } from "@/lib/utils";
 import { SITE_URL } from "@/lib/site";
+import { useSuggestFeature } from "@/components/feedback/suggest-dialog";
 
 export function Topbar({ onMenu }: { onMenu: () => void }) {
   const router = useRouter();
+  const suggest = useSuggestFeature();
   const p = useStore((s) => s.practitioner);
   const notifications = useStore((s) => s.notifications);
   const mark = useStore((s) => s.markNotification);
@@ -115,6 +117,8 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
             <DropdownItem onSelect={() => window.open(`${SITE_URL}/contact#help`, "_blank")}><BookOpen /> Help Center</DropdownItem>
             <DropdownItem onSelect={() => window.open(`${SITE_URL}/how-it-works`, "_blank")}><Compass /> How It Works</DropdownItem>
             <DropdownItem onSelect={() => window.open(`${SITE_URL}/contact`, "_blank")}><MessageCircle /> Contact Support</DropdownItem>
+            <DropdownItem onSelect={suggest.open}><Lightbulb /> Suggest a Feature</DropdownItem>
+            <DropdownItem onSelect={() => window.open(`${SITE_URL}/whats-new`, "_blank")}><Sparkles /> What’s New</DropdownItem>
             <DropdownSeparator />
             <div className="flex items-center justify-between px-2.5 py-2 text-[12.5px] text-muted">
               <span className="flex items-center gap-2"><Keyboard className="size-4" /> Search</span>
@@ -122,6 +126,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
             </div>
           </DropdownContent>
         </Dropdown>
+        {suggest.dialog}
 
         <Dropdown>
           <DropdownTrigger asChild>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
-import { Database, ExternalLink, Lock, RotateCcw, ShieldCheck } from "lucide-react";
+import { Database, ExternalLink, Lock, RotateCcw, ShieldCheck, Lightbulb, Sparkles } from "lucide-react";
 import { usePremium } from "@/components/plan/premium";
 import { loadSampleData } from "@/lib/sync";
 import { cn, DATA_MODE, TODAY } from "@/lib/utils";
@@ -12,9 +12,12 @@ import { Wordmark } from "@/components/ui/misc";
 import { Avatar } from "@/components/ui/avatar";
 import { APP_NAV, APP_NAV_SECONDARY } from "./nav";
 import { useUnreadMessages } from "@/components/messages/unread";
+import { useSuggestFeature } from "@/components/feedback/suggest-dialog";
+import { SITE_URL } from "@/lib/site";
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const path = usePathname();
+  const suggest = useSuggestFeature();
   const p = useStore((s) => s.practitioner);
   const unread = useStore((s) => s.notifications.filter((n) => !n.read).length);
   const unreadMessages = useUnreadMessages("app", useStore((s) => s.session.status === "ready"));
@@ -127,6 +130,13 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             <Link href="/portal" className="mt-1.5 inline-flex items-center gap-1.5 text-[11.5px] text-[#E3C9D0] hover:text-white" onClick={onNavigate}>
               <ExternalLink className="size-3" /> Preview a client’s portal
             </Link>
+            <button type="button" onClick={suggest.open} className="mt-1.5 flex items-center gap-1.5 text-left text-[11.5px] text-[#E3C9D0] hover:text-white">
+              <Lightbulb className="size-3" /> Suggest a Feature
+            </button>
+            <a href={`${SITE_URL}/whats-new`} target="_blank" rel="noreferrer" className="mt-1.5 flex items-center gap-1.5 text-[11.5px] text-[#E3C9D0] hover:text-white">
+              <Sparkles className="size-3" /> What’s New
+            </a>
+            {suggest.dialog}
           </div>
         )}
       </nav>

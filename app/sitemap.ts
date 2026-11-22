@@ -9,7 +9,7 @@ export const revalidate = 3600;
 /** The website's pages, plus each live profile whose astrologer chose to be listed by search engines. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!SITE_URL) return [];
-  const pages = ["", "/features", "/how-it-works", "/pricing", "/about", "/contact", "/request-access"].map((p) => ({ url: `${SITE_URL}${p}` }));
+  const pages = ["", "/features", "/how-it-works", "/pricing", "/whats-new", "/about", "/contact", "/request-access"].map((p) => ({ url: `${SITE_URL}${p}` }));
   try {
     const rows = await db()
       .select({ slug: schema.bookingProfiles.slug, updatedAt: schema.bookingProfiles.updatedAt })

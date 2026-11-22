@@ -99,6 +99,7 @@ export const settingsSchema = z
       .strict()
       .optional(),
     timeline: timelineDefaultsSchema.optional(),
+    asteroids: z.array(z.object({ n: z.number().int().min(1).max(10_000_000), name: z.string().max(80) }).strict()).max(30).optional(),
   })
   .strict();
 
