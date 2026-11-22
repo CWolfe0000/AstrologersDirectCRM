@@ -2,7 +2,7 @@ import type { BodyId, Chart, PointId } from "@/lib/astro/types";
 import { BODIES } from "@/lib/astro/types";
 import { separation } from "@/lib/astro/spherical";
 import { POINT_NAMES } from "@/lib/astro/zodiac";
-import { aspectsOf, type NatalAspect } from "./own";
+import { aspectBasis, aspectsOf, type NatalAspect } from "./own";
 import { SETS_OFF, SUPPORTS_WITH } from "./text";
 
 /**
@@ -117,9 +117,9 @@ export function difficultAspects(owner: Chart, other: Chart, ownerName: string |
     .filter((a) => a.hard)
     .map((a) => ({
       key: a.key,
-      name: a.dynamic.name,
-      basis: `${a.label}, ${a.orb.toFixed(1)}° from exact`,
-      body: ownerName ? a.dynamic.them : a.dynamic.hard,
+      name: a.name,
+      basis: aspectBasis(a),
+      body: ownerName ? a.them : a.you,
       triggers: touching(a, owner, other, HARD).slice(0, 3).map((t) => ({ by: t.by, end: t.end, orb: t.orb, title: title(t), body: (SETS_OFF[t.by] ?? "{P} presence sets it off.").replace("{P}", otherPoss) })),
       eased: touching(a, owner, other, SOFT).slice(0, 2).map((t) => ({ by: t.by, end: t.end, orb: t.orb, title: title(t), body: `It is eased by ${supportOf(t.by, otherPoss)}.` })),
     }))
@@ -133,9 +133,9 @@ export function gifts(owner: Chart, other: Chart, ownerName: string | null, othe
     .filter((a) => !a.hard)
     .map((a) => ({
       key: a.key,
-      name: a.dynamic.easyName,
-      basis: `${a.label}, ${a.orb.toFixed(1)}° from exact`,
-      body: ownerName ? a.dynamic.themEasy : a.dynamic.flowing,
+      name: a.name,
+      basis: aspectBasis(a),
+      body: ownerName ? a.them : a.you,
       broughtOut: touching(a, owner, other, SUPPORT).slice(0, 2).map((t) => ({
         by: t.by,
         end: t.end,

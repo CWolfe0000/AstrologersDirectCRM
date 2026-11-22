@@ -50,8 +50,15 @@ const ASPECTS: { name: AspectName; angle: number; cls: AspectClass }[] = [
 ];
 
 export type Orbs = Record<AspectName, number>;
-/** Within one chart: the orbs Sue Tompkins recommends in "Aspects in Astrology" (8° for the major aspects, 4° for the sextile). */
+/**
+ * Within one chart: the working model Sue Tompkins gives in "Aspects in Astrology", ch. 4.
+ * 8° for the conjunction, opposition, square and trine and 4° for the sextile, with 2° more
+ * when the Sun or Moon is involved.
+ */
 export const NATAL_ORBS: Orbs = { conjunction: 8, opposition: 8, square: 8, trine: 8, sextile: 4 };
+export const LUMINARY_ORBS: Orbs = { conjunction: 10, opposition: 10, square: 10, trine: 10, sextile: 6 };
+/** Her "tight" aspects, the ones central to a life; wider ones confirm. */
+export const TIGHT_ORBS: Orbs = { conjunction: 4, opposition: 4, square: 4, trine: 3, sextile: 2 };
 /** Between two charts: tighter, so that a contact means something. */
 export const SYNASTRY_ORBS: Orbs = { conjunction: 6, opposition: 5, square: 5, trine: 5, sextile: 3 };
 

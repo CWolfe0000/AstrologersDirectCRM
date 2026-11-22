@@ -61,7 +61,11 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const yours = difficultAspects(ctx.self.chart, person.chart, null, person.name);
   const theirs = difficultAspects(person.chart, ctx.self.chart, person.name, null);
   const elements = attunement(ctx.self.chart, person.chart, person.name);
-  const inTune = elements.levels.filter((l) => l.relation !== "discordant").length;
+  const allLevels = [...elements.lights, ...elements.levels];
+  const inTune = allLevels.filter((l) => l.relation !== "discordant").length;
+  const relationTag = (l: (typeof allLevels)[number]) => (
+    <span className={`rounded-full px-3 py-1 text-sm font-semibold ${l.relation === "discordant" ? "bg-rose-soft text-rose-hover" : "bg-gold-soft text-gold"}`}>{l.relation === "same" ? "Same Element" : l.relation === "compatible" ? "Feed Each Other" : "Cross Purposes"}</span>
+  );
   const yourGifts = gifts(ctx.self.chart, person.chart, null, person.name);
   const theirGifts = gifts(person.chart, ctx.self.chart, person.name, null);
   const setOff = (xs: typeof yours) => xs.filter((a) => a.triggers.length).length;
@@ -110,22 +114,21 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         <>
           <Section
             title="Your elements together"
-            intro="Whether the two of you run on the same kind of energy, planet by planet. Fire and air feed each other, and so do earth and water. Other mixes take translation."
+            intro="Whether the two of you run on the same kind of energy. Where your elements are in tune you feed each other; where they are not, it takes energy. None of this decides the outcome: awareness and what you both want change a great deal."
           >
             <div className="card grid gap-4 sm:grid-cols-2">
               <p><span className="font-semibold">You.</span> <span className="text-ink-2">{elements.yours}</span></p>
               <p><span className="font-semibold">{person.name}.</span> <span className="text-ink-2">{elements.theirs}</span></p>
               {elements.supplies.map((t) => <p key={t} className="text-ink-2 sm:col-span-2">{t}</p>)}
             </div>
-            <div className="grid gap-4 lg:grid-cols-2">
-              {elements.levels.map((l) => (
-                <InsightCard
-                  key={l.title}
-                  insight={l}
-                  tag={<span className={`rounded-full px-3 py-1 text-sm font-semibold ${l.relation === "discordant" ? "bg-rose-soft text-rose-hover" : "bg-gold-soft text-gold"}`}>{l.relation === "same" ? "Same Element" : l.relation === "compatible" ? "Feed Each Other" : "Cross Purposes"}</span>}
-                />
-              ))}
-            </div>
+            <h3 className="mt-4 text-xl font-semibold">The core: Sun and Moon</h3>
+            <p className="-mt-2 text-ink-2">{elements.lightsVerdict}</p>
+            <div className="grid gap-4 lg:grid-cols-2">{elements.lights.map((l) => <InsightCard key={l.title} insight={l} tag={relationTag(l)} />)}</div>
+            <h3 className="mt-4 text-xl font-semibold">Attraction</h3>
+            <p className="card text-ink-2">{elements.attraction}</p>
+            <h3 className="mt-4 text-xl font-semibold">Planet by planet</h3>
+            <p className="-mt-2 text-ink-2">The Sun, Moon and rising sign cannot be retuned. Mercury, Venus and Mars can be adjusted to the other person, at some cost in energy.</p>
+            <div className="grid gap-4 lg:grid-cols-2">{elements.levels.map((l) => <InsightCard key={l.title} insight={l} tag={relationTag(l)} />)}</div>
           </Section>
           <Section title="What comes easily" intro="The closest supportive contacts between your two charts.">
             {report.strengths.length ? <div className="grid gap-4 lg:grid-cols-2">{report.strengths.map((i) => <InsightCard key={i.title} insight={i} />)}</div> : <p className="card text-ink-2">No close supportive contacts between the two charts. Ease is something you would build, not start with.</p>}
@@ -187,7 +190,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         <Section title="The two of you together">
           <Locked title={`${plural(report.strengths.length, "strength")} and ${plural(report.friction.length, "friction point")} between your charts`}>
             <p>
-              {person.name} sets off {setOff(yours)} and eases {eased(yours)} of the {plural(yours.length, "difficult aspect")} in your chart, and brings out {broughtOut(yourGifts)} of your {plural(yourGifts.length, "strength")}. You set off {setOff(theirs)}, ease {eased(theirs)} and bring out {broughtOut(theirGifts)} in theirs. Your elements are in tune on {inTune} of {plural(elements.levels.length, "level")}. Subscribe to see which ones and how, along with each contact, where you land in each other’s lives, the relationship’s own chart and its timing for the next 12 months.
+              {person.name} sets off {setOff(yours)} and eases {eased(yours)} of the {plural(yours.length, "difficult aspect")} in your chart, and brings out {broughtOut(yourGifts)} of your {plural(yourGifts.length, "strength")}. You set off {setOff(theirs)}, ease {eased(theirs)} and bring out {broughtOut(theirGifts)} in theirs. Your elements are in tune on {inTune} of {plural(allLevels.length, "link")}. Subscribe to see which ones and how, along with each contact, where you land in each other’s lives, the relationship’s own chart and its timing for the next 12 months.
             </p>
           </Locked>
         </Section>

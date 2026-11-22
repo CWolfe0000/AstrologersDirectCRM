@@ -245,20 +245,37 @@ describe("elements", () => {
     for (const [a, b] of [["fire", "water"], ["fire", "earth"], ["air", "water"], ["air", "earth"]] as const) expect(relationOf(a, b)).toBe("discordant");
   });
 
-  it("compares two people planet by planet", () => {
+  it("compares two people: Sun and Moon first, then planet by planet", () => {
     const a = attunement(chartFor(me), chartFor(born("1988-03-10", "09:15")), "Sam");
-    expect(a.levels).toHaveLength(6);
-    expect(a.levels[0]!.title).toBe("Basic Energy: Air With Water"); // Gemini Sun, Pisces Sun
-    expect(a.levels[0]!.relation).toBe("discordant");
-    expect(attunement(chartFor(me), chartFor(me), "Twin").levels.every((l) => l.relation === "same")).toBe(true);
+    expect(a.lights).toHaveLength(4);
+    expect(a.lights[0]!.title).toBe("Sun With Sun: Air With Water"); // Gemini Sun, Pisces Sun
+    expect(a.lights[0]!.relation).toBe("discordant");
+    expect(a.lights[1]!.title).toMatch(/^Your Sun, Sam’s Moon: /);
+    expect(a.levels).toHaveLength(4);
+    expect(a.attraction).toMatch(/on \d of 4 links, and theirs with yours on \d of 4/);
+    const twin = attunement(chartFor(me), chartFor(me), "Twin");
+    expect(twin.levels.every((l) => l.relation === "same")).toBe(true);
+    expect(twin.lights[0]!.body).toMatch(/share the sign itself/);
     // Without their birth time there is no rising sign to compare.
-    expect(attunement(chartFor(me), chartFor(born("1988-03-12")), "Sam").levels.length).toBeLessThan(6);
+    expect(attunement(chartFor(me), chartFor(born("1988-03-12")), "Sam").levels.length).toBeLessThan(4);
+  });
+
+  it("gives the Sun, Mars and the chart ruler their weight, and reads inner pulls", () => {
+    // Libra rising: Venus rules the chart and is in Taurus, so earth is accented whatever else is there.
+    const b = elementBalance(chartFor(me));
+    expect(b.accented).toEqual({ element: "earth", ruler: "venus" });
+    expect(b.strong).toEqual(expect.arrayContaining(["air", "earth"]));
+    expect(b.points.earth.join(" ")).toMatch(/Venus \(rules your rising sign\)/);
+    expect(b.points.air.join(" ")).toMatch(/Mercury \(rules your Sun sign\)/);
+    const titles = elementReading(chartFor(me)).insights.map((i) => i.title);
+    expect(titles).toContain("Sun And Moon In Different Worlds"); // Gemini Sun (air), Pisces Moon (water)
+    expect(titles).toContain("What You Like Against Who You Are"); // Taurus Venus (earth)
   });
 
   it("notes aspects whose signs are not in the usual elements", () => {
     expect(elementNote("square", 15, 105)).toBe(""); // Aries–Cancer: fire and water, as a square normally is
-    expect(elementNote("square", 28, 122)).toMatch(/Aries and Leo, are in the same element/); // out-of-sign square
-    expect(elementNote("trine", 29, 151)).toMatch(/Aries and Virgo.*less automatic/);
+    expect(elementNote("square", 28, 122)).toMatch(/Aries and Leo, are in the same element, so this square is much less intense/); // out-of-sign square
+    expect(elementNote("trine", 29, 151)).toMatch(/Aries and Virgo.*less easy and more dynamic/);
     expect(elementNote("conjunction", 29, 31)).toMatch(/different signs, Aries and Taurus/);
     expect(elementNote("opposition", 10, 190)).toBe("");
   });
@@ -272,6 +289,23 @@ describe("elements", () => {
       const text = list.map((i) => i.body).join(" ");
       for (const d of ["A square is", "A trine is", "A sextile is", "An opposition is", "A conjunction fuses"]) expect(text.split(d).length).toBeLessThanOrEqual(2);
     }
+  });
+});
+
+describe("aspects within one chart", () => {
+  const a = aspectsOf(chartFor(me));
+  it("marks each aspect close or wide and says what its kind adds", () => {
+    const pluto = a.find((x) => x.key === "venus-pluto")!; // Venus opposite Pluto, 3.5°
+    expect(pluto.tight).toBe(true);
+    expect(pluto.you).toMatch(/As an opposition, .* meet your Pluto in the people you are with/);
+    expect(pluto.them).toMatch(/they tend to meet their Pluto in a partner/);
+    const square = a.find((x) => x.label.includes(" square ") && x.hard)!;
+    expect(square.you).toMatch(/As a square it comes with self-doubt/);
+    expect(a.some((x) => !x.tight)).toBe(true);
+  });
+  it("allows the Sun and Moon two degrees more", () => {
+    const wide = a.filter((x) => x.orb > 8 || (x.label.includes("sextile") && x.orb > 4));
+    for (const x of wide) expect(x.label).toMatch(/Sun|Moon/);
   });
 });
 
