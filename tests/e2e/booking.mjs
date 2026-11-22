@@ -144,7 +144,7 @@ const k = s.consultations.find((x) => x.clientId === client.id);
 const ny = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(bookedStart));
 const P = Object.fromEntries(ny.map((x) => [x.type, x.value]));
 assert.equal(k.start, `${P.year}-${P.month}-${P.day}T${P.hour}:${P.minute}:00`, "stored in the astrologer's time");
-assert.deepEqual([k.type, k.durationMin, k.status, k.location, k.meetingUrl], ["Natal Chart Reading", 90, "scheduled", "Video call", MEET]);
+assert.deepEqual([k.type, k.durationMin, k.status, k.location, k.meetingUrl], ["Natal Chart Reading", 90, "scheduled", "Live session", MEET]);
 assert.ok(k.prepNotes.includes("Career change this year."));
 assert.ok(s.notifications.some((n) => n.title === "New booking from a new client"));
 const mail = async (to) => (await db.query('select subject, body from outbox where "to"=$1 order by created_at', [to])).rows;
@@ -220,16 +220,18 @@ await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify(prof) 
 
 step("formats: a written reading has a ready-by date instead of a time; an existing phone service still needs a number");
 prof = (await call(page, "/api/v1/booking")).body.profile;
-const svc = [...prof.services, { id: "written", name: "Written Year Ahead", description: "", durationMin: 60, price: "$120", format: "Written reading", deliveryDays: 10, active: true }, { id: "phone", name: "Phone Check-In", description: "", durationMin: 30, price: "", format: "Phone", active: true }];
+const svc = [...prof.services, { id: "written", name: "Written Year Ahead", description: "", durationMin: 60, price: "$120", format: "Written reading", deliveryDays: 10, active: true }, { id: "phone", name: "Phone Check-In", description: "", durationMin: 30, price: "", format: "Phone", active: true }, { id: "rec", name: "Recorded Forecast", description: "", durationMin: 45, price: "$90", format: "Recorded reading", recording: "video", deliveryDays: 5, active: true }];
 assert.equal((await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify({ ...prof, services: svc, instructions: { "Written reading": "Look out for an email from me with your PDF." } }) })).status, 200);
 await page.goto(BASE + "/app/settings?section=booking");
 await page.getByLabel("Written Reading", { exact: true }).waitFor();
 assert.equal(await page.getByLabel("Written Reading", { exact: true }).inputValue(), "Look out for an email from me with your PDF.");
 const formats = await page.locator('select[id^="sv-f-"]').first().locator("option").allTextContents();
-assert.deepEqual(formats, ["Video Call", "Audio Call", "Written Reading"], "phone and in person are no longer offered");
+assert.deepEqual(formats, ["Live Session", "Recorded Reading", "Written Reading"], "the three formats");
 const writer = `bk-written-${stamp}@example.com`;
 await v.goto(`${BASE}/book/${slug}`);
 await v.getByRole("button", { name: /Written Year Ahead/ }).getByText("Ready in 10 days").waitFor();
+await v.getByRole("button", { name: /Recorded Forecast/ }).getByText("Recorded Reading (Video)").waitFor();
+await v.getByRole("button", { name: /Recorded Forecast/ }).getByText("Ready in 5 days").waitFor();
 await v.getByRole("button", { name: /Written Year Ahead/ }).click();
 // Straight to the details: no time to choose.
 await v.getByLabel("First Name").fill("Wren");

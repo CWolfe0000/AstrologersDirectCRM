@@ -11,7 +11,7 @@ import { squarePhoto } from "@/lib/photo";
 import { SITE_URL } from "@/lib/site";
 import { cn, nowLocal, uid } from "@/lib/utils";
 import { DAYS, type BookingProfile, type BookingService, type Day } from "@/lib/booking/types";
-import { DELIVERY_DAYS, OFFERED_FORMATS, formatLabel, isWritten } from "@/lib/booking/formats";
+import { DELIVERY_DAYS, OFFERED_FORMATS, formatLabel, isDelivered } from "@/lib/booking/formats";
 import { STARTER_FORMS, selectIntakeForms } from "@/lib/intake";
 import type { IntakeForm } from "@/lib/data/types";
 import { Button } from "@/components/ui/button";
@@ -24,11 +24,12 @@ const DAY_IDS: Day[] = DAYS.map((d) => d.id);
 
 /** Ready-made services to tick; each is suggested with the intake form that suits it. */
 const SUGGESTED: (Omit<BookingService, "id" | "active"> & { key: string; form: string })[] = [
-  { key: "natal", name: "Natal Chart Reading", description: "Your birth chart in depth: strengths, patterns and what you’re growing into.", durationMin: 90, price: "", format: "Video call", form: "new-client" },
-  { key: "year", name: "Year Ahead Forecast", description: "The year’s turning points from transits, progressions and your solar return.", durationMin: 75, price: "", format: "Video call", form: "new-client" },
-  { key: "career", name: "Career Reading", description: "Work, vocation and timing for change.", durationMin: 60, price: "", format: "Video call", form: "career" },
-  { key: "relationship", name: "Relationship Reading", description: "Synastry and composite charts for you and a partner.", durationMin: 90, price: "", format: "Video call", form: "relationship" },
-  { key: "horary", name: "Horary Question", description: "One clear question, answered from the moment you ask it.", durationMin: 30, price: "", format: "Audio call", form: "horary" },
+  { key: "natal", name: "Natal Chart Reading", description: "Your birth chart in depth: strengths, patterns and what you’re growing into.", durationMin: 90, price: "", format: "Live session", form: "new-client" },
+  { key: "year", name: "Year Ahead Forecast", description: "The year’s turning points from transits, progressions and your solar return.", durationMin: 75, price: "", format: "Live session", form: "new-client" },
+  { key: "career", name: "Career Reading", description: "Work, vocation and timing for change.", durationMin: 60, price: "", format: "Live session", form: "career" },
+  { key: "relationship", name: "Relationship Reading", description: "Synastry and composite charts for you and a partner.", durationMin: 90, price: "", format: "Live session", form: "relationship" },
+  { key: "horary", name: "Horary Question", description: "One clear question, answered from the moment you ask it.", durationMin: 30, price: "", format: "Live session", form: "horary" },
+  { key: "recorded", name: "Recorded Reading", description: "Your chart read aloud and recorded, delivered to your portal to listen to any time.", durationMin: 60, price: "", format: "Recorded reading", recording: "audio", deliveryDays: 7, form: "new-client" },
   { key: "written", name: "Written Natal Report", description: "A written reading of your birth chart, delivered to your portal.", durationMin: 60, price: "", format: "Written reading", deliveryDays: 14, form: "new-client" },
 ];
 
@@ -179,11 +180,11 @@ function Services({ profile, busy, onBack, onNext }: { profile: BookingProfile; 
                 {x.on && (
                   <div className="mt-3 grid gap-3 sm:grid-cols-3">
                     <Field label="Format" htmlFor={`ob-f-${x.key}`}>
-                      <Select id={`ob-f-${x.key}`} value={x.format} onChange={(e) => set(x.key, { format: e.target.value as BookingService["format"], ...(isWritten(e.target.value) && !x.deliveryDays ? { deliveryDays: 14 } : {}) })}>
+                      <Select id={`ob-f-${x.key}`} value={x.format} onChange={(e) => set(x.key, { format: e.target.value as BookingService["format"], ...(isDelivered(e.target.value) && !x.deliveryDays ? { deliveryDays: 14 } : {}), ...(e.target.value === "Recorded reading" && !x.recording ? { recording: "audio" as const } : {}) })}>
                         {OFFERED_FORMATS.map((f) => <option key={f} value={f}>{formatLabel(f)}</option>)}
                       </Select>
                     </Field>
-                    {isWritten(x.format) ? (
+                    {isDelivered(x.format) ? (
                       <Field label="Ready Within" htmlFor={`ob-d-${x.key}`}><Select id={`ob-d-${x.key}`} value={x.deliveryDays ?? 14} onChange={(e) => set(x.key, { deliveryDays: +e.target.value })}>{DELIVERY_DAYS.map((d) => <option key={d} value={d}>{d} days</option>)}</Select></Field>
                     ) : (
                       <Field label="Length" htmlFor={`ob-d-${x.key}`}><Select id={`ob-d-${x.key}`} value={x.durationMin} onChange={(e) => set(x.key, { durationMin: +e.target.value })}>{[30, 45, 60, 75, 90, 120].map((d) => <option key={d} value={d}>{d} min</option>)}</Select></Field>
@@ -197,7 +198,7 @@ function Services({ profile, busy, onBack, onNext }: { profile: BookingProfile; 
           </li>
         ))}
       </ul>
-      <Button type="button" variant="secondary" size="sm" className="mt-3" onClick={() => setList([...list, { key: uid("new"), name: "", description: "", durationMin: 60, price: "", format: "Video call", form: "new-client", on: true }])}><Plus /> Add Your Own</Button>
+      <Button type="button" variant="secondary" size="sm" className="mt-3" onClick={() => setList([...list, { key: uid("new"), name: "", description: "", durationMin: 60, price: "", format: "Live session", form: "new-client", on: true }])}><Plus /> Add Your Own</Button>
       <Nav onBack={onBack} busy={busy} disabled={!chosen.length} next={chosen.length ? `Continue With ${chosen.length} ${chosen.length === 1 ? "Service" : "Services"}` : "Tick at Least One"} />
     </form>
   );
@@ -254,7 +255,7 @@ function Hours({ profile, busy, onBack, onNext }: { profile: BookingProfile; bus
   const [days, setDays] = React.useState<Record<Day, boolean>>(() => Object.fromEntries(DAY_IDS.map((d) => [d, profile.rules.weekly[d].length > 0])) as Record<Day, boolean>);
   const [range, setRange] = React.useState(first);
   const [notice, setNotice] = React.useState(profile.rules.minNoticeHours);
-  const written = profile.services.every((s) => !s.active || isWritten(s.format));
+  const written = profile.services.every((s) => !s.active || isDelivered(s.format));
   return (
     <form onSubmit={(e) => { e.preventDefault(); onNext({ ...profile.rules, minNoticeHours: notice, weekly: Object.fromEntries(DAY_IDS.map((d) => [d, days[d] ? [range] : []])) as BookingProfile["rules"]["weekly"] }); }}>
       <p className="mb-5 text-[14px] text-ink-3">{written ? "Your services are all written readings, so clients don’t pick a time. You can still set your hours for later." : "When can clients book sessions? Pick your days and hours. You can set different hours for each day later in Settings › Booking."}</p>

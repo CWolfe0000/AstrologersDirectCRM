@@ -139,7 +139,7 @@ export interface Consultation {
   start: string;
   durationMin: number;
   status: ConsultationStatus;
-  location: "Video call" | "Audio call" | "Phone" | "Written reading" | "In person";
+  location: "Live session" | "Recorded reading" | "Written reading" | "Video call" | "Audio call" | "Phone" | "In person";
   /** Video call link (Zoom, Meet…) the client joins from their portal and reminder email. */
   meetingUrl?: string;
   chartIds: string[];

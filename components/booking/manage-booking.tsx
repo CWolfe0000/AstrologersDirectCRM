@@ -96,7 +96,7 @@ export function ManageBooking({ token }: { token: string }) {
         <div className={`mt-5 rounded-2xl border bg-surface p-5 ${v.status === "canceled" ? "border-line opacity-80" : "border-accent-100"}`}>
           <p className="text-[16px] font-semibold text-ink">{v.service}</p>
           {v.written ? (
-            <p className={`mt-1 text-[15px] ${v.status === "canceled" ? "text-muted line-through" : "text-ink"}`}>Written Reading · Ready by {new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "long", month: "long", day: "numeric" }).format(new Date(v.start))}</p>
+            <p className={`mt-1 text-[15px] ${v.status === "canceled" ? "text-muted line-through" : "text-ink"}`}>{formatLabel(v.format)} · Ready by {new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "long", month: "long", day: "numeric" }).format(new Date(v.start))}</p>
           ) : (
             <>
               <p className={`mt-1 text-[15px] ${v.status === "canceled" ? "text-muted line-through" : "text-ink"}`}>{longWhen(v.start, tz)}</p>

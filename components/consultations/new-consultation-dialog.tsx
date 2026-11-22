@@ -47,7 +47,7 @@ export function NewConsultationDialog({
   const [date, setDate] = React.useState(defaultDate ?? daysFromToday(1));
   const [time, setTime] = React.useState("10:00");
   const [duration, setDuration] = React.useState(60);
-  const [location, setLocation] = React.useState<Consultation["location"]>("Video call");
+  const [location, setLocation] = React.useState<Consultation["location"]>("Live session");
   const [chartIds, setChartIds] = React.useState<string[]>([]);
   const [prep, setPrep] = React.useState("");
   const [meetingUrl, setMeetingUrl] = React.useState("");

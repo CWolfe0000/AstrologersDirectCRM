@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowRight, Video, Phone, MapPin, Mail, Globe, FileText, Headphones, Film, Bell, Check, FolderOpen, MessagesSquare, CalendarPlus, ClipboardList, PenLine } from "lucide-react";
+import { ArrowRight, Video, Phone, MapPin, Mail, Globe, FileText, Headphones, Film, Bell, Check, FolderOpen, MessagesSquare, CalendarPlus, ClipboardList, PenLine, Mic } from "lucide-react";
 import { useStore, personName } from "@/lib/store";
 import { cn, titleCase, fmtDay, fmtDate, fmtLong, fmtTime, relTime, sameDay, fmtDuration } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
@@ -19,7 +19,7 @@ import { ReadingCard } from "@/components/portal/reading-card";
 import { AddToCalendar } from "@/components/portal/session-actions";
 import { formatLabel, isCall } from "@/lib/booking/formats";
 
-const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones } as const;
+const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones, "Live session": Video, "Recorded reading": Mic } as const;
 
 export default function PortalHome() {
   const PORTAL_CLIENT_ID = usePortalClientId();

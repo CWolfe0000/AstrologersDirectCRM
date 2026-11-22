@@ -2,20 +2,20 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeft, CalendarCheck, Check, ChevronRight, Clock, Globe, Loader2, MapPin, Phone, Video, PenLine, Headphones } from "lucide-react";
+import { ArrowLeft, CalendarCheck, Check, ChevronRight, Clock, Globe, Loader2, MapPin, Phone, Video, PenLine, Headphones, Mic } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Checkbox, Field, Input, Textarea } from "@/components/ui/input";
 import { PlaceLookup, type PlaceValue } from "@/components/clients/place-lookup";
 import { BookingShell, TimePicker, browserZone, longWhen } from "./shared";
 import { accentVars } from "@/lib/brand";
-import { formatLabel, isWritten } from "@/lib/booking/formats";
+import { formatLabel, isDelivered } from "@/lib/booking/formats";
 
-type Service = { id: string; name: string; description: string; durationMin: number; price: string; format: "Video call" | "Audio call" | "Phone" | "Written reading" | "In person"; deliveryDays?: number };
+type Service = { id: string; name: string; description: string; durationMin: number; price: string; format: "Live session" | "Recorded reading" | "Written reading" | "Video call" | "Audio call" | "Phone" | "In person"; deliveryDays?: number; recording?: "audio" | "video" };
 type Profile = { slug: string; displayName: string; headline: string; about: string; location: string; practice: string; tz: string; photo: string | null; links: { label: string; url: string }[]; accent: string | null; services: Service[] };
 type Booked = { start: string; service: string; durationMin: number; format: string; written?: boolean; instructions?: string; displayName: string; meetingUrl: string | null; manage: string };
 
-const FORMAT_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones } as const;
+const FORMAT_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones, "Live session": Video, "Recorded reading": Mic } as const;
 /** The public booking page: profile and services → time → details → booked. */
 export function BookingPage({ slug }: { slug: string }) {
   const [profile, setProfile] = React.useState<Profile | null>(null);
@@ -65,8 +65,8 @@ export function BookingPage({ slug }: { slug: string }) {
                             <span className="min-w-0 flex-1">
                               <span className="block text-[16px] font-semibold text-ink">{s.name}</span>
                               <span className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[12.5px] text-muted">
-                                {isWritten(s.format) ? <span className="inline-flex items-center gap-1"><Clock className="size-3.5" /> Ready in {s.deliveryDays ?? 7} days</span> : <span className="inline-flex items-center gap-1"><Clock className="size-3.5" /> {s.durationMin} min</span>}
-                                <span className="inline-flex items-center gap-1"><Icon className="size-3.5" /> {formatLabel(s.format)}</span>
+                                {isDelivered(s.format) ? <span className="inline-flex items-center gap-1"><Clock className="size-3.5" /> Ready in {s.deliveryDays ?? 7} days</span> : <span className="inline-flex items-center gap-1"><Clock className="size-3.5" /> {s.durationMin} min</span>}
+                                <span className="inline-flex items-center gap-1"><Icon className="size-3.5" /> {formatLabel(s.format, s.recording)}</span>
                               </span>
                             </span>
                             {s.price && <span className="shrink-0 rounded-full bg-accent-50 px-3 py-1 text-[14px] font-medium text-accent">{s.price}</span>}
@@ -91,7 +91,7 @@ export function BookingPage({ slug }: { slug: string }) {
                   <h1 className="font-serif text-[24px] leading-tight text-ink">{service.name}</h1>
                 </div>
               </div>
-              {!start && !isWritten(service.format) ? (
+              {!start && !isDelivered(service.format) ? (
                 <>
                   <button type="button" onClick={() => setService(null)} className="inline-flex items-center gap-1 text-[13px] text-muted hover:text-ink"><ArrowLeft className="size-4" /> All Sessions</button>
                   <p className="mt-2 text-[13px] text-muted">{service.durationMin} minutes · {formatLabel(service.format)}{service.price ? ` · ${service.price}` : ""}</p>
@@ -106,7 +106,7 @@ export function BookingPage({ slug }: { slug: string }) {
                   </div>
                 </>
               ) : (
-                <Details slug={slug} profile={profile} service={service} start={start ?? ""} tz={tz} onBack={() => (isWritten(service.format) ? setService(null) : setStart(null))} onBooked={setBooked} onTaken={() => { setStart(null); setService({ ...service }); }} />
+                <Details slug={slug} profile={profile} service={service} start={start ?? ""} tz={tz} onBack={() => (isDelivered(service.format) ? setService(null) : setStart(null))} onBooked={setBooked} onTaken={() => { setStart(null); setService({ ...service }); }} />
               )}
             </section>
           )}
@@ -174,7 +174,7 @@ function Details({ slug, profile, service, start, tz, onBack, onBooked, onTaken 
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF((x) => ({ ...x, [k]: e.target.value }));
-  const written = isWritten(service.format);
+  const written = isDelivered(service.format);
   const phoneCall = service.format === "Phone";
   const ok = f.firstName.trim() && /\S+@\S+\.\S+/.test(f.email) && (!phoneCall || f.phone.trim()) && f.date && (unknownTime || f.time) && place && consent;
 
@@ -213,7 +213,7 @@ function Details({ slug, profile, service, start, tz, onBack, onBooked, onTaken 
       <button type="button" onClick={onBack} className="inline-flex items-center gap-1 text-[13px] text-muted hover:text-ink"><ArrowLeft className="size-4" /> {written ? "All Sessions" : "Choose Another Time"}</button>
       <div className="mt-3 rounded-xl border border-accent-100 bg-accent-50/60 px-4 py-3">
         <p className="text-[15px] font-semibold text-ink">{service.name}</p>
-        <p className="text-[13.5px] text-ink-3">{written ? `Written Reading · Ready in ${service.deliveryDays ?? 7} days` : `${longWhen(start, tz)} · ${service.durationMin} minutes · ${formatLabel(service.format)}`}</p>
+        <p className="text-[13.5px] text-ink-3">{written ? `${formatLabel(service.format, service.recording)} · Ready in ${service.deliveryDays ?? 7} days` : `${longWhen(start, tz)} · ${service.durationMin} minutes · ${formatLabel(service.format)}`}</p>
       </div>
       <div aria-hidden className="absolute -left-[9999px] size-px overflow-hidden">
         <label>Website <input tabIndex={-1} autoComplete="off" value={f.website} onChange={set("website")} /></label>

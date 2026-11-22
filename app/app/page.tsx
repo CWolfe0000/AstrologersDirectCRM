@@ -30,7 +30,7 @@ const ACTIONS = [
   { label: "Deliver Reading", href: "/app/delivery?new=1", icon: Send },
 ];
 
-const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones } as const;
+const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones, "Live session": Video, "Recorded reading": Mic } as const;
 
 const ACT_ICON: Record<Activity["kind"], { i: React.ElementType; c: string }> = {
   observation: { i: NotebookPen, c: "bg-sage-50 text-sage-dark" },

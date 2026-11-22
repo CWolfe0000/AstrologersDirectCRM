@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox, Field, Input, Select, Textarea } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { SimulatedNote } from "@/components/ui/misc";
-import { DEFAULT_INSTRUCTIONS, DELIVERY_DAYS, OFFERED_FORMATS, formatLabel, isWritten } from "@/lib/booking/formats";
+import { DEFAULT_INSTRUCTIONS, DELIVERY_DAYS, OFFERED_FORMATS, formatLabel, isCall, isDelivered } from "@/lib/booking/formats";
 
 const DURATIONS = [30, 45, 60, 75, 90, 120];
 
@@ -148,7 +148,7 @@ export function BookingSection() {
           {OFFERED_FORMATS.map((f) => {
             const key = f as keyof typeof DEFAULT_INSTRUCTIONS;
             return (
-              <Field key={f} label={formatLabel(f)} htmlFor={`bk-in-${f}`} hint={f === "Video call" || f === "Audio call" ? "Your call link is added automatically." : f === "Phone" ? "Clients booking a phone session must give a phone number." : "Written readings have no time slot: clients get a ready-by date instead."}>
+              <Field key={f} label={formatLabel(f)} htmlFor={`bk-in-${f}`} hint={isCall(f) ? "Your call link is added automatically." : f === "Recorded reading" ? "Recorded readings have no time slot: clients get a ready-by date. You record and deliver them from the Recording Studio." : "Written readings have no time slot: clients get a ready-by date instead."}>
                 <Textarea id={`bk-in-${f}`} rows={2} maxLength={2000} value={p.instructions?.[key] ?? DEFAULT_INSTRUCTIONS[key]} onChange={(e) => set({ instructions: { ...(p.instructions ?? {}), [key]: e.target.value } })} />
               </Field>
             );
@@ -157,7 +157,7 @@ export function BookingSection() {
       </Card>
 
       <Card>
-        <CardHeader title="Services" description="Each one is a bookable session. Prices are shown as written; payment is arranged directly for now." action={<Button size="sm" variant="secondary" onClick={() => set({ services: [...p.services, { id: uid("svc"), name: "", description: "", durationMin: 60, price: "", format: "Video call", active: true }] })}><Plus /> Add Service</Button>} />
+        <CardHeader title="Services" description="Each one is a bookable session. Prices are shown as written; payment is arranged directly for now." action={<Button size="sm" variant="secondary" onClick={() => set({ services: [...p.services, { id: uid("svc"), name: "", description: "", durationMin: 60, price: "", format: "Live session", active: true }] })}><Plus /> Add Service</Button>} />
         <CardBody className="space-y-3">
           {p.services.length === 0 && <p className="text-[13px] text-muted">No services yet. Add one to start taking bookings.</p>}
           {p.services.map((s, i) => (
@@ -165,7 +165,7 @@ export function BookingSection() {
               <legend className="sr-only">Service {i + 1}</legend>
               <div className="grid gap-3 sm:grid-cols-[1fr_120px_140px]">
                 <Field label="Service Name" htmlFor={`sv-n-${s.id}`}><Input id={`sv-n-${s.id}`} maxLength={120} value={s.name} onChange={(e) => setService(s.id, { name: e.target.value })} /></Field>
-                {isWritten(s.format) ? (
+                {isDelivered(s.format) ? (
                   <Field label="Ready Within" htmlFor={`sv-d-${s.id}`}>
                     <Select id={`sv-d-${s.id}`} value={s.deliveryDays ?? 7} onChange={(e) => setService(s.id, { deliveryDays: +e.target.value })}>
                       {Array.from(new Set([...DELIVERY_DAYS, s.deliveryDays ?? 7])).sort((a, b) => a - b).map((d) => <option key={d} value={d}>{d} days</option>)}
@@ -183,6 +183,14 @@ export function BookingSection() {
                     {[...OFFERED_FORMATS, ...(OFFERED_FORMATS.includes(s.format) ? [] : [s.format])].map((f) => <option key={f} value={f}>{formatLabel(f)}</option>)}
                   </Select>
                 </Field>
+                {s.format === "Recorded reading" && (
+                  <Field label="Recording" htmlFor={`sv-r-${s.id}`}>
+                    <Select id={`sv-r-${s.id}`} value={s.recording ?? "audio"} onChange={(e) => setService(s.id, { recording: e.target.value as "audio" | "video" })}>
+                      <option value="audio">Audio</option>
+                      <option value="video">Video</option>
+                    </Select>
+                  </Field>
+                )}
                 <Field label="Description" htmlFor={`sv-ds-${s.id}`} optional className="sm:col-span-2"><Input id={`sv-ds-${s.id}`} maxLength={1000} value={s.description} onChange={(e) => setService(s.id, { description: e.target.value })} /></Field>
                 <Field label="Price" htmlFor={`sv-p-${s.id}`} optional><Input id={`sv-p-${s.id}`} maxLength={40} placeholder="e.g. $150" value={s.price} onChange={(e) => setService(s.id, { price: e.target.value })} /></Field>
                 <Field label="Intake Form" htmlFor={`sv-i-${s.id}`} optional className="sm:col-span-3" hint={intakeForms.length ? "Sent automatically when someone books this service. They fill it in from their booking link, no sign-in needed." : "You don’t have any intake forms yet. Save your booking settings first, then create one."}>

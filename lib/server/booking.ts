@@ -12,9 +12,9 @@ import { birthSchema } from "./validation";
 import { ianaZone, zonedToUtc } from "@/lib/timezones";
 import { nowLocal } from "@/lib/utils";
 import { availableSlots } from "@/lib/booking/slots";
-import { DEFAULT_RULES, RESERVED_SLUGS, SLUG_RE, type BookingProfile } from "@/lib/booking/types";
+import { DEFAULT_RULES, RESERVED_SLUGS, SLUG_RE, type BookingProfile, type BookingService } from "@/lib/booking/types";
 import type { IntakeRequest } from "@/lib/data/types";
-import { DEFAULT_INSTRUCTIONS, isCall, isWritten } from "@/lib/booking/formats";
+import { DEFAULT_INSTRUCTIONS, currentFormat, instructionsKey, isCall, isDelivered } from "@/lib/booking/formats";
 
 const hhmm = z.string().regex(/^\d{2}:\d{2}$/);
 const range = z.object({ start: hhmm, end: hhmm }).strict().refine((r) => r.start < r.end, "Each range must start before it ends.");
@@ -38,8 +38,9 @@ export const profileSchema = z
             description: text(1000),
             durationMin: z.number().int().min(15).max(480),
             price: text(40),
-            format: z.enum(["Video call", "Audio call", "Phone", "Written reading", "In person"]),
+            format: z.enum(["Live session", "Recorded reading", "Written reading", "Video call", "Audio call", "Phone", "In person"]),
             deliveryDays: z.number().int().min(1).max(90).optional(),
+            recording: z.enum(["audio", "video"]).optional(),
             active: z.boolean(),
             /** The intake form sent when someone books this service. */
             intakeFormId: z.string().regex(/^[A-Za-z0-9_-]{1,80}$/).optional(),
@@ -59,7 +60,7 @@ export const profileSchema = z
       .strict(),
     autoInvite: z.boolean(),
     searchable: z.boolean().optional(),
-    instructions: z.object({ "Video call": text(2000).optional(), "Audio call": text(2000).optional(), Phone: text(2000).optional(), "Written reading": text(2000).optional() }).strict().optional(),
+    instructions: z.object({ "Live session": text(2000).optional(), "Recorded reading": text(2000).optional(), "Written reading": text(2000).optional(), Phone: text(2000).optional(), "Video call": text(2000).optional(), "Audio call": text(2000).optional() }).strict().optional(),
     // A square photo resized in the browser (about 400px): a data URL, kept small.
     photo: z.string().max(250_000).regex(/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/, "Use a JPEG, PNG or WebP photo.").optional(),
     links: z
@@ -81,7 +82,8 @@ async function ownerEmail(practiceId: string) {
 }
 
 /** Settings saved before a rule existed get its default. */
-const withDefaults = (p: BookingProfile): BookingProfile => ({ ...p, rules: { ...DEFAULT_RULES, ...p.rules } });
+// Services saved as "Video call" / "Audio call" are live sessions under today's name.
+const withDefaults = (p: BookingProfile): BookingProfile => ({ ...p, services: p.services.map((x) => ({ ...x, format: currentFormat(x.format) as BookingService["format"] })), rules: { ...DEFAULT_RULES, ...p.rules } });
 
 const slugify = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
 
@@ -150,23 +152,24 @@ export function publicView(b: Awaited<ReturnType<typeof publicBooking>>) {
     practice: b.practitioner.practice ?? "",
     tz: b.tz,
     maxAdvanceDays: profile.rules.maxAdvanceDays,
-    services: profile.services.filter((s) => s.active).map(({ id, name, description, durationMin, price, format, deliveryDays }) => ({ id, name, description, durationMin, price, format, ...(isWritten(format) ? { deliveryDays: deliveryDays ?? 7 } : {}) })),
+    services: profile.services.filter((s) => s.active).map(({ id, name, description, durationMin, price, format, deliveryDays, recording }) => ({ id, name, description, durationMin, price, format, ...(isDelivered(format) ? { deliveryDays: deliveryDays ?? 7 } : {}), ...(format === "Recorded reading" ? { recording: recording ?? "audio" } : {}) })),
   };
 }
 
 /** What the client needs to know for this format: the astrologer's words, or a sensible default. */
 function instructionsFor(profile: BookingProfile, format: string) {
-  if (!(format in DEFAULT_INSTRUCTIONS)) return "";
-  const f = format as keyof typeof DEFAULT_INSTRUCTIONS;
-  const own = profile.instructions?.[f];
-  return (own === undefined ? DEFAULT_INSTRUCTIONS[f] : own).trim();
+  const key = instructionsKey(format);
+  if (!key) return "";
+  // Instructions saved under the earlier call names still apply to live sessions.
+  const own = profile.instructions?.[key] ?? (key === "Live session" ? profile.instructions?.["Video call"] ?? profile.instructions?.["Audio call"] : undefined);
+  return (own === undefined ? DEFAULT_INSTRUCTIONS[key] : own).trim();
 }
 
 async function busyTimes(practiceId: string, tz: string, excludeId?: string) {
   const ks = await listCollection(practiceId, "consultations");
   return ks
     // Written readings have a delivery date, not a time on the calendar.
-    .filter((k) => k.status === "scheduled" && k.id !== excludeId && !isWritten(String(k.location)))
+    .filter((k) => k.status === "scheduled" && k.id !== excludeId && !isDelivered(String(k.location)))
     .map((k) => {
       const start = zonedToUtc(String(k.start), tz).getTime();
       return { start, end: start + Number(k.durationMin) * 60_000 };
@@ -238,7 +241,7 @@ export async function book(slug: string, input: z.infer<typeof bookingRequest>) 
   const { practiceId, profile, tz } = b;
   const service = profile.services.find((s) => s.id === input.serviceId && s.active);
   if (!service) throw new HttpError(404, "That service isn’t available.");
-  const written = isWritten(service.format);
+  const written = isDelivered(service.format);
   if (service.format === "Phone" && !input.phone.trim()) throw new HttpError(422, "Add a phone number so your astrologer can call you.");
   let start: number;
   if (written) {
@@ -312,8 +315,7 @@ export async function book(slug: string, input: z.infer<typeof bookingRequest>) 
   const astro = profile.displayName || b.practitioner.name || "Your astrologer";
   const owner = await ownerEmail(practiceId);
   const visitorTz = ianaZone(input.tz) || tz;
-  const callName = service.format === "Audio call" ? "Audio call" : "Video call";
-  const place = isCall(service.format) ? (meetingUrl ? `${callName}: ${meetingUrl}` : `${callName} (${astro} will send the link)`) : service.format === "Phone" ? `Phone call: ${astro} will call you at ${input.phone.trim()}` : `In person${profile.location ? `: ${profile.location}` : ""}`;
+  const place = isCall(service.format) ? (meetingUrl ? `Live session: ${meetingUrl}` : `Live session (${astro} will send the link)`) : service.format === "Phone" ? `Phone call: ${astro} will call you at ${input.phone.trim()}` : `In person${profile.location ? `: ${profile.location}` : ""}`;
   const price = service.price ? `\nPrice: ${service.price} (payment arranged directly with ${astro})` : "";
   const how = instructions ? `\n\n${instructions}` : "";
   await sendMail(
@@ -353,7 +355,7 @@ async function lookup(token: string) {
   const deadline = start - profile.rules.changeNoticeHours * 3_600_000;
   const service = profile.services.find((x) => x.id === row.serviceId);
   const canChange = k.status === "scheduled" && Date.now() <= deadline;
-  const written = isWritten(String(k.location));
+  const written = isDelivered(String(k.location));
   return { row, k, profile, practitioner: p, tz, start, deadline, service, written, canChange, canReschedule: canChange && profile.enabled && !!service && !written };
 }
 

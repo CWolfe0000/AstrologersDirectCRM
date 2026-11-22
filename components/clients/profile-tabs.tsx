@@ -23,7 +23,7 @@ import { AddPersonDialog, relationshipLabel } from "./dialogs";
 import { ActivationCard } from "./activation-card";
 import { formatLabel } from "@/lib/booking/formats";
 
-const LOC = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones } as const;
+const LOC = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones, "Live session": Video, "Recorded reading": Mic } as const;
 
 function useClientData(clientId: string) {
   const s = useStore();

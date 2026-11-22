@@ -16,7 +16,7 @@ import { cn, fmtDate, fmtLong, fmtTime, fmtDuration, stripHtml, relDay } from "@
 import { AutosaveTextarea } from "./autosave-textarea";
 import { formatLabel, isCall } from "@/lib/booking/formats";
 
-const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones } as const;
+const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones, "Live session": Video, "Recorded reading": Mic } as const;
 const SCOPE_LABEL = { natal: "Natal", relationship: "Relationship", timing: "Timing" } as const;
 
 export function ConsultationDetail({ id }: { id: string }) {

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Video, Phone, MapPin, Lock, FileText, Clock, CalendarPlus, PenLine, Headphones } from "lucide-react";
+import { Video, Phone, MapPin, Lock, FileText, Clock, CalendarPlus, PenLine, Headphones, Mic } from "lucide-react";
 import { mediaUrl } from "@/lib/upload";
 import { useStore } from "@/lib/store";
 import { cn, fmtDate, fmtTime, monthName, sameDay } from "@/lib/utils";
@@ -13,7 +13,7 @@ import { practiceOf, useMyConsultations, useMyReadings, usePortalPractices, useS
 import { AddToCalendar, SessionActions } from "@/components/portal/session-actions";
 import { formatLabel } from "@/lib/booking/formats";
 
-const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones } as const;
+const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones, "Live session": Video, "Recorded reading": Mic } as const;
 
 export default function PortalConsultations() {
   const all = useMyConsultations();
