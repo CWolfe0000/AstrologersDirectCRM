@@ -95,7 +95,7 @@ function ChartDirectory() {
       <div className="mb-3 flex flex-col gap-2.5 lg:flex-row lg:items-center">
         <SearchInput placeholder="Search by title, person, client or configuration…" value={q} onChange={(e) => setQ(e.target.value)} className="lg:max-w-sm lg:flex-1" />
         <div className="flex flex-wrap items-center gap-2">
-          <Select value={client} onChange={(e) => setClient(e.target.value)} className="w-[190px]" aria-label="Filter by client">
+          <Select value={client} onChange={(e) => setClient(e.target.value)} className="w-[190px]" aria-label="Filter by Client">
             <option value="all">All Clients</option>
             {clients.map((c) => (
               <option key={c.id} value={c.id}>
@@ -110,8 +110,8 @@ function ChartDirectory() {
             value={view}
             onChange={setView}
             options={[
-              { value: "grid", label: <LayoutGrid aria-label="Grid view" /> },
-              { value: "list", label: <List aria-label="List view" /> },
+              { value: "grid", label: <LayoutGrid aria-label="Grid View" /> },
+              { value: "list", label: <List aria-label="List View" /> },
             ]}
           />
         </div>
@@ -223,7 +223,7 @@ function ChartDirectory() {
                     <td className="px-4 py-2.5 text-muted">{fmtDate(c.updatedAt)}</td>
                     <td className="px-4 py-2.5">
                       <div className="flex items-center justify-end gap-1">
-                        <button onClick={(e) => { e.stopPropagation(); updateChart(c.id, { favorite: !c.favorite }); }} className="rounded-md p-1.5 text-muted hover:bg-canvas-2" aria-label="Toggle favorite">
+                        <button onClick={(e) => { e.stopPropagation(); updateChart(c.id, { favorite: !c.favorite }); }} className="rounded-md p-1.5 text-muted hover:bg-canvas-2" aria-label="Toggle Favorite">
                           <Star className={cn("size-4", c.favorite && "fill-accent text-accent")} />
                         </button>
                         <ChartActionsMenu chart={c} />

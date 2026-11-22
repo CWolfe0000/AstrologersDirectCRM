@@ -2,19 +2,20 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeft, CalendarCheck, Check, ChevronRight, Clock, Globe, Loader2, MapPin, Phone, Video } from "lucide-react";
+import { ArrowLeft, CalendarCheck, Check, ChevronRight, Clock, Globe, Loader2, MapPin, Phone, Video, PenLine, Headphones } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Checkbox, Field, Input, Textarea } from "@/components/ui/input";
 import { PlaceLookup, type PlaceValue } from "@/components/clients/place-lookup";
 import { BookingShell, TimePicker, browserZone, longWhen } from "./shared";
 import { accentVars } from "@/lib/brand";
+import { formatLabel, isWritten } from "@/lib/booking/formats";
 
-type Service = { id: string; name: string; description: string; durationMin: number; price: string; format: "Video call" | "Phone" | "In person" };
+type Service = { id: string; name: string; description: string; durationMin: number; price: string; format: "Video call" | "Audio call" | "Phone" | "Written reading" | "In person"; deliveryDays?: number };
 type Profile = { slug: string; displayName: string; headline: string; about: string; location: string; practice: string; tz: string; photo: string | null; links: { label: string; url: string }[]; accent: string | null; services: Service[] };
-type Booked = { start: string; service: string; durationMin: number; format: string; displayName: string; meetingUrl: string | null; manage: string };
+type Booked = { start: string; service: string; durationMin: number; format: string; written?: boolean; instructions?: string; displayName: string; meetingUrl: string | null; manage: string };
 
-const FORMAT_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin } as const;
+const FORMAT_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones } as const;
 /** The public booking page: profile and services → time → details → booked. */
 export function BookingPage({ slug }: { slug: string }) {
   const [profile, setProfile] = React.useState<Profile | null>(null);
@@ -64,8 +65,8 @@ export function BookingPage({ slug }: { slug: string }) {
                             <span className="min-w-0 flex-1">
                               <span className="block text-[16px] font-semibold text-ink">{s.name}</span>
                               <span className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[12.5px] text-muted">
-                                <span className="inline-flex items-center gap-1"><Clock className="size-3.5" /> {s.durationMin} min</span>
-                                <span className="inline-flex items-center gap-1"><Icon className="size-3.5" /> {s.format}</span>
+                                {isWritten(s.format) ? <span className="inline-flex items-center gap-1"><Clock className="size-3.5" /> Ready in {s.deliveryDays ?? 7} days</span> : <span className="inline-flex items-center gap-1"><Clock className="size-3.5" /> {s.durationMin} min</span>}
+                                <span className="inline-flex items-center gap-1"><Icon className="size-3.5" /> {formatLabel(s.format)}</span>
                               </span>
                             </span>
                             {s.price && <span className="shrink-0 rounded-full bg-accent-50 px-3 py-1 text-[14px] font-medium text-accent">{s.price}</span>}
@@ -90,10 +91,10 @@ export function BookingPage({ slug }: { slug: string }) {
                   <h1 className="font-serif text-[24px] leading-tight text-ink">{service.name}</h1>
                 </div>
               </div>
-              {!start ? (
+              {!start && !isWritten(service.format) ? (
                 <>
                   <button type="button" onClick={() => setService(null)} className="inline-flex items-center gap-1 text-[13px] text-muted hover:text-ink"><ArrowLeft className="size-4" /> All Sessions</button>
-                  <p className="mt-2 text-[13px] text-muted">{service.durationMin} minutes · {service.format}{service.price ? ` · ${service.price}` : ""}</p>
+                  <p className="mt-2 text-[13px] text-muted">{service.durationMin} minutes · {formatLabel(service.format)}{service.price ? ` · ${service.price}` : ""}</p>
                   <div className="mt-5">
                     <TimePicker
                       slots={slots}
@@ -105,7 +106,7 @@ export function BookingPage({ slug }: { slug: string }) {
                   </div>
                 </>
               ) : (
-                <Details slug={slug} profile={profile} service={service} start={start} tz={tz} onBack={() => setStart(null)} onBooked={setBooked} onTaken={() => { setStart(null); setService({ ...service }); }} />
+                <Details slug={slug} profile={profile} service={service} start={start ?? ""} tz={tz} onBack={() => (isWritten(service.format) ? setService(null) : setStart(null))} onBooked={setBooked} onTaken={() => { setStart(null); setService({ ...service }); }} />
               )}
             </section>
           )}
@@ -173,7 +174,9 @@ function Details({ slug, profile, service, start, tz, onBack, onBooked, onTaken 
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF((x) => ({ ...x, [k]: e.target.value }));
-  const ok = f.firstName.trim() && /\S+@\S+\.\S+/.test(f.email) && f.date && (unknownTime || f.time) && place && consent;
+  const written = isWritten(service.format);
+  const phoneCall = service.format === "Phone";
+  const ok = f.firstName.trim() && /\S+@\S+\.\S+/.test(f.email) && (!phoneCall || f.phone.trim()) && f.date && (unknownTime || f.time) && place && consent;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -207,10 +210,10 @@ function Details({ slug, profile, service, start, tz, onBack, onBooked, onTaken 
 
   return (
     <form onSubmit={submit} className="relative">
-      <button type="button" onClick={onBack} className="inline-flex items-center gap-1 text-[13px] text-muted hover:text-ink"><ArrowLeft className="size-4" /> Choose another time</button>
+      <button type="button" onClick={onBack} className="inline-flex items-center gap-1 text-[13px] text-muted hover:text-ink"><ArrowLeft className="size-4" /> {written ? "All Sessions" : "Choose Another Time"}</button>
       <div className="mt-3 rounded-xl border border-accent-100 bg-accent-50/60 px-4 py-3">
         <p className="text-[15px] font-semibold text-ink">{service.name}</p>
-        <p className="text-[13.5px] text-ink-3">{longWhen(start, tz)} · {service.durationMin} minutes · {service.format}</p>
+        <p className="text-[13.5px] text-ink-3">{written ? `Written Reading · Ready in ${service.deliveryDays ?? 7} days` : `${longWhen(start, tz)} · ${service.durationMin} minutes · ${formatLabel(service.format)}`}</p>
       </div>
       <div aria-hidden className="absolute -left-[9999px] size-px overflow-hidden">
         <label>Website <input tabIndex={-1} autoComplete="off" value={f.website} onChange={set("website")} /></label>
@@ -219,10 +222,10 @@ function Details({ slug, profile, service, start, tz, onBack, onBooked, onTaken 
         <Field label="First Name" htmlFor="bk-fn"><Input id="bk-fn" autoComplete="given-name" required maxLength={100} value={f.firstName} onChange={set("firstName")} /></Field>
         <Field label="Last Name" htmlFor="bk-ln"><Input id="bk-ln" autoComplete="family-name" maxLength={100} value={f.lastName} onChange={set("lastName")} /></Field>
         <Field label="Email" htmlFor="bk-em"><Input id="bk-em" type="email" autoComplete="email" required maxLength={254} value={f.email} onChange={set("email")} /></Field>
-        <Field label="Phone" htmlFor="bk-ph" optional><Input id="bk-ph" type="tel" autoComplete="tel" maxLength={60} value={f.phone} onChange={set("phone")} /></Field>
+        <Field label="Phone" htmlFor="bk-ph" optional={!phoneCall} hint={phoneCall ? `${profile.displayName} will call you on this number.` : undefined}><Input id="bk-ph" type="tel" autoComplete="tel" required={phoneCall} maxLength={60} value={f.phone} onChange={set("phone")} /></Field>
       </div>
       <p className="mb-3 mt-6 text-[14px] font-semibold text-ink">Your Birth Details</p>
-      <p className="mb-3 -mt-2 text-[12.5px] text-muted">{profile.displayName} uses these to prepare your chart before the session.</p>
+      <p className="mb-3 -mt-2 text-[12.5px] text-muted">{profile.displayName} uses these to prepare your chart{written ? "." : " before the session."}</p>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Date of Birth" htmlFor="bk-bd"><Input id="bk-bd" type="date" required value={f.date} onChange={set("date")} /></Field>
         <Field label="Time of Birth" htmlFor="bk-bt" hint={unknownTime ? "That’s fine: your astrologer will work with what you know." : "As exact as you can, ideally from a birth certificate."}>
@@ -243,7 +246,7 @@ function Details({ slug, profile, service, start, tz, onBack, onBooked, onTaken 
       </div>
       {error && <p role="alert" className="mt-4 rounded-lg bg-danger-50 px-3 py-2 text-[13px] text-danger">{error}</p>}
       <Button type="submit" size="lg" className="mt-5 w-full sm:w-auto" disabled={!ok || busy}>
-        {busy ? <Loader2 className="animate-spin" /> : <CalendarCheck />} Book {service.name}
+        {busy ? <Loader2 className="animate-spin" /> : <CalendarCheck />} {written ? "Order" : "Book"} {service.name}
       </Button>
     </form>
   );
@@ -254,21 +257,31 @@ function Confirmation({ booked, tz }: { booked: Booked; tz: string }) {
     const s = new Date(booked.start);
     const e = new Date(s.getTime() + booked.durationMin * 60_000);
     const f = (d: Date) => d.toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z";
-    const body = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//AstrologersDirect//Booking//EN", "BEGIN:VEVENT", `UID:${f(s)}-${Math.random().toString(36).slice(2)}@astrologersdirect.com`, `DTSTAMP:${f(new Date())}`, `DTSTART:${f(s)}`, `DTEND:${f(e)}`, `SUMMARY:${booked.service} with ${booked.displayName}`, `LOCATION:${booked.meetingUrl ?? booked.format}`, "END:VEVENT", "END:VCALENDAR", ""].join("\r\n");
+    const body = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//AstrologersDirect//Booking//EN", "BEGIN:VEVENT", `UID:${f(s)}-${Math.random().toString(36).slice(2)}@astrologersdirect.com`, `DTSTAMP:${f(new Date())}`, `DTSTART:${f(s)}`, `DTEND:${f(e)}`, `SUMMARY:${booked.service} with ${booked.displayName}`, `LOCATION:${booked.meetingUrl ?? formatLabel(booked.format)}`, "END:VEVENT", "END:VCALENDAR", ""].join("\r\n");
     return `data:text/calendar;charset=utf-8,${encodeURIComponent(body)}`;
   }, [booked]);
+  const day = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "long", month: "long", day: "numeric" }).format(new Date(booked.start));
   return (
     <div className="mx-auto max-w-xl rounded-2xl border border-line bg-surface p-8 text-center">
       <span className="mx-auto flex size-12 items-center justify-center rounded-full bg-sage-50 text-sage-dark"><Check className="size-6" /></span>
-      <h1 className="mt-4 font-serif text-[30px] text-ink">You’re Booked</h1>
-      <p className="mt-2 text-[15px] text-ink-3">{booked.service} with {booked.displayName}</p>
-      <p className="text-[15px] font-medium text-ink">{longWhen(booked.start, tz)}</p>
-      <p className="mt-1 text-[13px] text-muted">{booked.durationMin} minutes · {booked.format}</p>
-      <p className="mt-5 text-[13.5px] leading-relaxed text-muted">We’ve emailed your confirmation, with a link to reschedule or cancel if you need to.</p>
-      <a href={ics} download="session.ics" className="mt-5 inline-flex h-10 items-center gap-2 rounded-lg border border-line px-4 text-[14px] font-medium text-ink hover:bg-canvas-2">
-        <CalendarCheck className="size-4" /> Add to Calendar
-      </a>
-      <p className="mt-4"><a href={booked.manage} className="text-[13px] text-accent underline">Manage this booking</a></p>
+      <h1 className="mt-4 font-serif text-[30px] text-ink">{booked.written ? "Thank You" : "You’re Booked"}</h1>
+      <p className="mt-2 text-[15px] text-ink-3">{booked.service} {booked.written ? "from" : "with"} {booked.displayName}</p>
+      {booked.written ? (
+        <p className="text-[15px] font-medium text-ink">Ready by {day}</p>
+      ) : (
+        <>
+          <p className="text-[15px] font-medium text-ink">{longWhen(booked.start, tz)}</p>
+          <p className="mt-1 text-[13px] text-muted">{booked.durationMin} minutes · {formatLabel(booked.format)}</p>
+        </>
+      )}
+      {booked.instructions && <p className="mx-auto mt-5 max-w-md whitespace-pre-line rounded-xl bg-canvas-2 px-4 py-3 text-left text-[13.5px] leading-relaxed text-ink-3">{booked.instructions}</p>}
+      <p className="mt-5 text-[13.5px] leading-relaxed text-muted">{booked.written ? "We’ve emailed your confirmation, with a link to cancel if you need to." : "We’ve emailed your confirmation, with a link to reschedule or cancel if you need to."}</p>
+      {!booked.written && (
+        <a href={ics} download="session.ics" className="mt-5 inline-flex h-10 items-center gap-2 rounded-lg border border-line px-4 text-[14px] font-medium text-ink hover:bg-canvas-2">
+          <CalendarCheck className="size-4" /> Add to Calendar
+        </a>
+      )}
+      <p className="mt-4"><a href={booked.manage} className="text-[13px] text-accent underline">Manage This Booking</a></p>
     </div>
   );
 }

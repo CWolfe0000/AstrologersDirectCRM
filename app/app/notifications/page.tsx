@@ -57,7 +57,7 @@ export default function NotificationsPage() {
         <div>
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <Segmented value={view} onChange={setView} size="sm" options={[{ value: "all", label: "All", count: s.notifications.length }, { value: "unread", label: "Unread", count: unread }]} />
-            <Select value={type} onChange={(e) => setType(e.target.value as typeof type)} className="w-56" aria-label="Filter by type">
+            <Select value={type} onChange={(e) => setType(e.target.value as typeof type)} className="w-56" aria-label="Filter by Type">
               <option value="all">All Types</option>
               {TYPES.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
             </Select>

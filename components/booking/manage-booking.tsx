@@ -9,6 +9,7 @@ import { BookingShell, TimePicker, browserZone, longWhen } from "./shared";
 import { IntakeFill } from "@/components/intake/intake-fill";
 import type { IntakeSection } from "@/lib/data/types";
 import type { BirthData } from "@/lib/astro/types";
+import { formatLabel } from "@/lib/booking/formats";
 
 type View = {
   service: string;
@@ -24,6 +25,8 @@ type View = {
   deadline: string;
   noticeHours: number;
   intake: { title: string; status: "sent" | "submitted" } | null;
+  written?: boolean;
+  instructions?: string;
 };
 
 /** The client's private page for a booked session: see it, reschedule or cancel. */
@@ -92,10 +95,17 @@ export function ManageBooking({ token }: { token: string }) {
         )}
         <div className={`mt-5 rounded-2xl border bg-surface p-5 ${v.status === "canceled" ? "border-line opacity-80" : "border-accent-100"}`}>
           <p className="text-[16px] font-semibold text-ink">{v.service}</p>
-          <p className={`mt-1 text-[15px] ${v.status === "canceled" ? "text-muted line-through" : "text-ink"}`}>{longWhen(v.start, tz)}</p>
-          <p className="mt-0.5 text-[13px] text-muted">{v.durationMin} minutes · {v.format}</p>
-          {v.status === "canceled" && <p className="mt-3 text-[13.5px] font-medium text-ink">This session is canceled.</p>}
-          {v.status === "past" && <p className="mt-3 text-[13.5px] text-muted">This session has taken place.</p>}
+          {v.written ? (
+            <p className={`mt-1 text-[15px] ${v.status === "canceled" ? "text-muted line-through" : "text-ink"}`}>Written Reading · Ready by {new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "long", month: "long", day: "numeric" }).format(new Date(v.start))}</p>
+          ) : (
+            <>
+              <p className={`mt-1 text-[15px] ${v.status === "canceled" ? "text-muted line-through" : "text-ink"}`}>{longWhen(v.start, tz)}</p>
+              <p className="mt-0.5 text-[13px] text-muted">{v.durationMin} minutes · {formatLabel(v.format)}</p>
+            </>
+          )}
+          {v.status === "canceled" && <p className="mt-3 text-[13.5px] font-medium text-ink">{v.written ? "This order is canceled." : "This session is canceled."}</p>}
+          {v.status === "past" && <p className="mt-3 text-[13.5px] text-muted">{v.written ? "Your reading is in your client portal, or on its way." : "This session has taken place."}</p>}
+          {v.status === "scheduled" && v.instructions && <p className="mt-3 whitespace-pre-line rounded-lg bg-canvas-2 px-3 py-2 text-[13px] leading-relaxed text-ink-3">{v.instructions}</p>}
           {v.status === "scheduled" && v.meetingUrl && (
             <a href={v.meetingUrl} target="_blank" rel="noreferrer" className="mt-4 inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-[14px] font-medium text-white hover:bg-accent-hover"><Video className="size-4" /> Join Video Call</a>
           )}
@@ -108,7 +118,7 @@ export function ManageBooking({ token }: { token: string }) {
                 {v.canReschedule && <Button variant="secondary" onClick={startReschedule}><CalendarClock /> Reschedule</Button>}
                 <Button variant="ghost" className="text-danger hover:bg-danger-50" onClick={() => { setMode("cancel"); setError(null); }}><XCircle /> Cancel Session</Button>
               </div>
-              <p className="mt-2 text-[12.5px] text-muted">You can make changes here until {deadline}.{!v.canReschedule && ` To move it, please contact ${v.displayName}.`}</p>
+              <p className="mt-2 text-[12.5px] text-muted">You can make changes here until {deadline}.{!v.canReschedule && !v.written && ` To move it, please contact ${v.displayName}.`}</p>
             </div>
           ) : (
             <p className="mt-5 text-[13.5px] text-muted">Changes can be made online up to {v.noticeHours} hours before the session. To change it now, please reply to your confirmation email to contact {v.displayName}.</p>
@@ -138,7 +148,7 @@ export function ManageBooking({ token }: { token: string }) {
         {mode === "cancel" && (
           <div className="mt-6 rounded-2xl border border-line bg-surface p-5">
             <p className="text-[15px] font-semibold text-ink">Cancel This Session?</p>
-            <label htmlFor="mb-reason" className="mt-3 block text-[13px] text-ink-3">Anything you’d like {v.displayName} to know? (optional)</label>
+            <label htmlFor="mb-reason" className="mt-3 block text-[13px] text-ink-3">Anything you’d like {v.displayName} to know? (Optional)</label>
             <Textarea id="mb-reason" rows={3} maxLength={1000} value={reason} onChange={(e) => setReason(e.target.value)} className="mt-1.5" />
             <div className="mt-4 flex flex-wrap gap-2">
               <Button variant="danger" onClick={() => act("cancel", { reason }, "Your session is canceled. We’ve let " + v.displayName + " know.")} disabled={busy}>{busy && <Loader2 className="animate-spin" />} Cancel Session</Button>

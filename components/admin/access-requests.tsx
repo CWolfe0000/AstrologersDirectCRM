@@ -51,7 +51,7 @@ export function AccessRequests() {
           <Switch
             checked={d.inviteOnly}
             disabled={d.forced}
-            aria-label="Sign-up needs approval"
+            aria-label="Sign-Up Needs Approval"
             onCheckedChange={async (v) => {
               await api("/api/admin/settings", { method: "PUT", body: { inviteOnly: v } });
               load();

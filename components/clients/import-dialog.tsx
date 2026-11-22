@@ -361,7 +361,7 @@ function InviteImported({ clients, onChange, onDone }: { clients: Imported[]; on
         <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_260px]">
           <div>
             <span className="mb-1 block text-[12.5px] font-medium text-ink-3">Paste Emails</span>
-            <textarea aria-label="Paste emails" value={paste} onChange={(e) => setPaste(e.target.value)} rows={3} className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-[13px]" placeholder={"Amelia Hart, amelia@example.com\nTheo Brandt <theo@example.com>"} />
+            <textarea aria-label="Paste Emails" value={paste} onChange={(e) => setPaste(e.target.value)} rows={3} className="w-full rounded-lg border border-line bg-surface px-3 py-2 text-[13px]" placeholder={"Amelia Hart, amelia@example.com\nTheo Brandt <theo@example.com>"} />
             <Button size="sm" variant="secondary" onClick={matchPaste} disabled={!paste.trim()}>Match to Names</Button>
           </div>
           {forms.length > 0 && (

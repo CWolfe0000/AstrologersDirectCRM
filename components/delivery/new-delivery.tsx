@@ -337,7 +337,7 @@ export function NewDeliveryDialog({
                           </p>
                         </div>
                         {progress >= 100 ? <FileCheck2 className="size-5 text-sage-dark" /> : null}
-                        <button onClick={() => { abort.current?.abort(); stored.current = null; setFile(null); setProgress(0); }} className="rounded p-1 text-muted hover:text-ink" aria-label="Remove file"><X className="size-4" /></button>
+                        <button onClick={() => { abort.current?.abort(); stored.current = null; setFile(null); setProgress(0); }} className="rounded p-1 text-muted hover:text-ink" aria-label="Remove File"><X className="size-4" /></button>
                       </div>
                       <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-canvas-2">
                         <div className={cn("h-full transition-all", progress >= 100 ? "bg-sage" : "bg-accent")} style={{ width: `${progress}%` }} />
@@ -380,7 +380,7 @@ export function NewDeliveryDialog({
                   />
                 </Field>
                 <div className="space-y-4">
-                  <p className="text-[13px] font-medium">Client access</p>
+                  <p className="text-[13px] font-medium">Client Access</p>
                   <label className="flex items-start justify-between gap-4 rounded-lg border border-line p-3">
                     <span>
                       <span className="block text-[13.5px]">Allow download</span>

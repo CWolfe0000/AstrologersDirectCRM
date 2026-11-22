@@ -30,7 +30,8 @@ export default function ClientsPage() {
   const [tag, setTag] = React.useState("all");
   const [sort, setSort] = React.useState<Sort>("name");
   const [view, setView] = React.useState<"table" | "cards">("table");
-  const [importOpen, setImportOpen] = React.useState(false);
+  // ?import=1 (from the setup walkthrough) opens the import straight away.
+  const [importOpen, setImportOpen] = React.useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("import") === "1");
 
   const allTags = Array.from(new Set(s.clients.flatMap((c) => c.tags))).sort();
 
@@ -88,7 +89,7 @@ export default function ClientsPage() {
   const RowMenu = ({ id, archived }: { id: string; archived: boolean }) => (
     <Dropdown>
       <DropdownTrigger asChild>
-        <Button variant="ghost" size="icon-sm" aria-label="Client actions" onClick={(e) => e.stopPropagation()}>
+        <Button variant="ghost" size="icon-sm" aria-label="Client Actions" onClick={(e) => e.stopPropagation()}>
           <MoreHorizontal />
         </Button>
       </DropdownTrigger>
@@ -144,7 +145,7 @@ export default function ClientsPage() {
         </div>
         </div>
         <div className="flex items-center gap-2 lg:justify-end 2xl:ml-auto">
-          <Select value={tag} onChange={(e) => setTag(e.target.value)} className="min-w-0 flex-1 sm:w-40 sm:flex-none" aria-label="Filter by tag">
+          <Select value={tag} onChange={(e) => setTag(e.target.value)} className="min-w-0 flex-1 sm:w-40 sm:flex-none" aria-label="Filter by Tag">
             <option value="all">All Tags</option>
             {allTags.map((t) => (
               <option key={t}>{t}</option>
@@ -162,8 +163,8 @@ export default function ClientsPage() {
             onChange={setView}
             className="hidden md:inline-flex"
             options={[
-              { value: "table", label: <LayoutList aria-label="Table view" /> },
-              { value: "cards", label: <LayoutGrid aria-label="Card view" /> },
+              { value: "table", label: <LayoutList aria-label="Table View" /> },
+              { value: "cards", label: <LayoutGrid aria-label="Card View" /> },
             ]}
           />
         </div>

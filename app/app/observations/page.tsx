@@ -198,8 +198,8 @@ function Observations() {
       <div>
         <span className="mb-1 block text-[12px] text-muted">Last edited</span>
         <div className="grid grid-cols-2 gap-2">
-          <Input type="date" value={f.from} onChange={(e) => setF({ ...f, from: e.target.value })} aria-label="From date" className="px-2 text-[12px]" />
-          <Input type="date" value={f.to} onChange={(e) => setF({ ...f, to: e.target.value })} aria-label="To date" className="px-2 text-[12px]" />
+          <Input type="date" value={f.from} onChange={(e) => setF({ ...f, from: e.target.value })} aria-label="From Date" className="px-2 text-[12px]" />
+          <Input type="date" value={f.to} onChange={(e) => setF({ ...f, to: e.target.value })} aria-label="To Date" className="px-2 text-[12px]" />
         </div>
       </div>
       <div>

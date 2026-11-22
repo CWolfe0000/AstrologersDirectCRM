@@ -29,7 +29,7 @@ export async function createPractice(input: { name: string; practice: string; em
   const first = input.name.split(/\s+/)[0] ?? input.name;
   await putSettings(
     practiceId,
-    { name: input.name, firstName: first, title: "Consulting Astrologer", email, phone: "", practice: input.practice, website: "", timezone: ianaZone(input.timezone), bio: "", plan: "Beta", reminders: { clients: false, hoursBefore: 24 } },
+    { name: input.name, firstName: first, title: "Consulting Astrologer", email, phone: "", practice: input.practice, website: "", timezone: ianaZone(input.timezone), bio: "", plan: "Beta", reminders: { clients: false, hoursBefore: 24 }, onboarding: { step: 0, done: false } },
     DEFAULT_SETTINGS,
   );
   await sendVerification(userId, email, first);

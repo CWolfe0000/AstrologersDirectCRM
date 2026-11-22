@@ -60,7 +60,7 @@ export function ChartControls({
       <Section title="Chart">
         <p className="font-medium text-ink">{meta.name}</p>
         <p className="mt-0.5 text-[12px] leading-snug text-muted">{meta.description}</p>
-        <Select className="mt-3" value={chart.id} onChange={(e) => router.push(`/app/charts/${e.target.value}`)} aria-label="Switch chart">
+        <Select className="mt-3" value={chart.id} onChange={(e) => router.push(`/app/charts/${e.target.value}`)} aria-label="Switch Chart">
           {siblings.map((c) => (
             <option key={c.id} value={c.id}>{c.title}</option>
           ))}
@@ -117,15 +117,15 @@ export function ChartControls({
 
       <Section title="Houses, Zodiac & Rulership">
         <div className="space-y-2">
-          <Select value={settings.houseSystem} onChange={(e) => onChange({ houseSystem: e.target.value as HouseSystem })} aria-label="House system">
+          <Select value={settings.houseSystem} onChange={(e) => onChange({ houseSystem: e.target.value as HouseSystem })} aria-label="House System">
             {HOUSE_SYSTEMS.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}
           </Select>
           <Select value={settings.zodiac} onChange={(e) => onChange({ zodiac: e.target.value as ZodiacType })} aria-label="Zodiac">
             {ZODIACS.map((z) => <option key={z.id} value={z.id}>{z.name}</option>)}
           </Select>
           <Select value={settings.rulership ?? "traditional"} onChange={(e) => onChange({ rulership: e.target.value as "traditional" | "modern" })} aria-label="Rulership">
-            <option value="traditional">Traditional rulers</option>
-            <option value="modern">Modern rulers</option>
+            <option value="traditional">Traditional Rulers</option>
+            <option value="modern">Modern Rulers</option>
           </Select>
         </div>
       </Section>
@@ -202,14 +202,14 @@ export function ChartControls({
           ))}
           <label className="flex items-center justify-between gap-2 text-[12.5px]">
             Wheel Style
-            <select aria-label="Wheel style" value={settings.wheelStyle ?? "detailed"} onChange={(e) => onChange({ wheelStyle: e.target.value as "detailed" | "classic" })} className="h-8 rounded-md border border-line bg-surface px-2 text-[12.5px]">
+            <select aria-label="Wheel Style" value={settings.wheelStyle ?? "detailed"} onChange={(e) => onChange({ wheelStyle: e.target.value as "detailed" | "classic" })} className="h-8 rounded-md border border-line bg-surface px-2 text-[12.5px]">
               <option value="detailed">Detailed</option>
               <option value="classic">Classic</option>
             </select>
           </label>
           <label className="flex items-center justify-between gap-2 text-[12.5px]">
             Wheel Colors
-            <select aria-label="Wheel colors" value={settings.wheelColors ?? "color"} onChange={(e) => onChange({ wheelColors: e.target.value as "color" | "muted" | "custom" })} className="h-8 rounded-md border border-line bg-surface px-2 text-[12.5px]">
+            <select aria-label="Wheel Colors" value={settings.wheelColors ?? "color"} onChange={(e) => onChange({ wheelColors: e.target.value as "color" | "muted" | "custom" })} className="h-8 rounded-md border border-line bg-surface px-2 text-[12.5px]">
               <option value="color">Color</option>
               <option value="muted">Muted</option>
               <option value="custom">Custom (Settings)</option>
@@ -246,7 +246,7 @@ export function ChartControls({
             <Button size="sm" className="flex-1" onClick={() => setNaming(true)}>
               <Bookmark /> Save as Configuration
             </Button>
-            <Button variant="secondary" size="icon-sm" onClick={onReset} disabled={!dirty} title="Reset to saved settings" aria-label="Reset to saved settings">
+            <Button variant="secondary" size="icon-sm" onClick={onReset} disabled={!dirty} title="Reset to Saved Settings" aria-label="Reset to Saved Settings">
               <RotateCcw />
             </Button>
           </div>

@@ -58,7 +58,7 @@ await page.getByRole("dialog").getByRole("button", { name: /New Client/ }).click
 // Make it the astrologer's own: rename, require life events, add a custom choice question.
 await page.getByLabel("Form Name").fill("Welcome Questions");
 await page.getByRole("button", { name: "Custom Question" }).click();
-const q = page.getByRole("list", { name: "Form parts" }).getByRole("listitem").last();
+const q = page.getByRole("list", { name: "Form Parts" }).getByRole("listitem").last();
 await q.getByLabel("Question", { exact: true }).fill("Have you had a reading before?");
 await q.getByLabel("Answer").selectOption("choice");
 await q.getByLabel("Choices").fill("Yes\nNo");
@@ -159,7 +159,7 @@ await v.getByLabel("Started").fill("2019-03");
 await v.getByRole("checkbox", { name: "Still going" }).check();
 await v.getByLabel("A Few Words").fill("Living in Lisbon");
 await v.getByRole("button", { name: "Add Event" }).click();
-await v.getByRole("list", { name: "Life events added" }).getByText("Mar 2019 – Present · Living in Lisbon").waitFor();
+await v.getByRole("list", { name: "Life Events Added" }).getByText("Mar 2019 – Present · Living in Lisbon").waitFor();
 await v.getByLabel("Have you had a reading before?").selectOption("No");
 if (SHOTS) await v.screenshot({ path: `${SHOTS}/intake-portal.png`, fullPage: true });
 await v.getByRole("button", { name: /Send to Your Astrologer/ }).click();

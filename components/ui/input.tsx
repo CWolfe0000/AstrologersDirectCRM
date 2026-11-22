@@ -70,7 +70,7 @@ export function Field({
     <div className={className}>
       <Label htmlFor={id}>
         {label}
-        {optional && <span className="ml-1 font-normal text-muted">(optional)</span>}
+        {optional && <span className="ml-1 font-normal text-muted">(Optional)</span>}
       </Label>
       <FieldIdContext.Provider value={id}>{children}</FieldIdContext.Provider>
       {hint && <p className="mt-1.5 text-xs text-muted">{hint}</p>}

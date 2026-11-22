@@ -79,7 +79,7 @@ export function RichEditor({
           suppressContentEditableWarning
           role="textbox"
           aria-multiline
-          aria-label="Observation text"
+          aria-label="Observation Text"
           onInput={emit}
           className="prose-obs px-3.5 py-3 text-[14px] leading-relaxed text-ink outline-none [&_h4]:mb-2 [&_h4]:font-semibold"
           style={{ minHeight }}

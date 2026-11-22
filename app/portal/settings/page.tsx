@@ -126,7 +126,7 @@ export default function PortalSettings() {
                   <p className="text-[12.5px] text-muted">Require a code from an authenticator app when signing in.</p>
                 </div>
               </div>
-              <Switch checked={twoFA} onCheckedChange={(v) => { setTwoFA(v); toast(v ? "Two-factor authentication enabled" : "Two-factor authentication disabled", "Simulated in the prototype.", "success"); }} aria-label="Two-factor authentication" />
+              <Switch checked={twoFA} onCheckedChange={(v) => { setTwoFA(v); toast(v ? "Two-factor authentication enabled" : "Two-factor authentication disabled", "Simulated in the prototype.", "success"); }} aria-label="Two-Factor Authentication" />
             </div>
           </CardBody>
         </Card>

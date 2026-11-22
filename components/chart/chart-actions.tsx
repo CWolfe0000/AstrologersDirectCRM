@@ -36,7 +36,7 @@ export function ChartActionsMenu({ chart, svg, inWorkspace, view }: { chart: Cha
   return (
     <Dropdown>
       <DropdownTrigger asChild>
-        <Button variant={inWorkspace ? "secondary" : "ghost"} size="icon-sm" aria-label="Chart actions" onClick={(e) => e.stopPropagation()}>
+        <Button variant={inWorkspace ? "secondary" : "ghost"} size="icon-sm" aria-label="Chart Actions" onClick={(e) => e.stopPropagation()}>
           <MoreHorizontal />
         </Button>
       </DropdownTrigger>

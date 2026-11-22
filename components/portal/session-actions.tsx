@@ -38,7 +38,7 @@ export function SessionActions({ k, today, who, className }: { k: Session; today
     }
   };
 
-  const join = k.location === "Video call" && k.meetingUrl;
+  const join = (k.location === "Video call" || k.location === "Audio call") && k.meetingUrl;
   return (
     <div className={cn("flex flex-wrap gap-2", className)}>
       {join && (
@@ -70,7 +70,7 @@ export function SessionActions({ k, today, who, className }: { k: Session; today
               </>
             }
           >
-            <label htmlFor="resched-msg" className="mb-1.5 block text-[13px] font-medium text-ink">Message (optional)</label>
+            <label htmlFor="resched-msg" className="mb-1.5 block text-[13px] font-medium text-ink">Message (Optional)</label>
             <Textarea id="resched-msg" rows={4} maxLength={2000} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="e.g. Could we move to the following week? Weekday mornings work best for me." />
           </DialogContent>
         )}

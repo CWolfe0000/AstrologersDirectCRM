@@ -35,7 +35,7 @@ await page.getByLabel("Name").fill("Rosa Test");
 await page.getByLabel("Email").fill(`rosa-${stamp}@example.com`);
 await page.getByLabel("Topic").selectOption("early");
 await page.getByLabel("Message").fill(`Hello from the contact test ${stamp}`);
-await page.getByRole("button", { name: "Send message" }).click();
+await page.getByRole("button", { name: "Send Message" }).click();
 await page.getByText("Thank You — Message Received.").waitFor();
 const m = await mail(`contact test ${stamp}`);
 assert.ok(m, "email queued to CONTACT_EMAIL");
@@ -44,7 +44,7 @@ assert.ok(m.body.includes(`rosa-${stamp}@example.com`));
 
 step("advisory group sign-up sends to the inbox");
 await page.goto(BASE + "/about");
-await page.getByLabel("Your name").fill(`Ada ${stamp}`);
+await page.getByLabel("Your Name").fill(`Ada ${stamp}`);
 await page.getByLabel("Email").fill(`ada-${stamp}@example.com`);
 await page.getByRole("button", { name: "Join the advisory group" }).click();
 await page.getByText("You’re on the list.").waitFor();

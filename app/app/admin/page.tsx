@@ -120,7 +120,7 @@ export default function AdminPage() {
       <div className="mb-3 flex items-center gap-2">
         <div className="relative w-full max-w-sm">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
-          <Input aria-label="Search practices" placeholder="Search by practice, name or email" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
+          <Input aria-label="Search Practices" placeholder="Search by practice, name or email" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
         </div>
       </div>
 
@@ -163,7 +163,7 @@ export default function AdminPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     {!mine && (
-                      <Button variant="ghost" size="icon-sm" aria-label={`Delete ${p.name}`} title="Delete practice" onClick={() => { setConfirm(""); setDeleting(p); }}>
+                      <Button variant="ghost" size="icon-sm" aria-label={`Delete ${p.name}`} title="Delete Practice" onClick={() => { setConfirm(""); setDeleting(p); }}>
                         <Trash2 className="text-danger" />
                       </Button>
                     )}

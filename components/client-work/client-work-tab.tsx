@@ -315,13 +315,13 @@ function WorkEditor({ client, first, editing, onClose, defaultConsultation }: { 
                   <Select id="w-tpl" value={template} onChange={(e) => pickTemplate(e.target.value)}>
                     <option value="">Blank</option>
                     {mine.length > 0 && (
-                      <optgroup label="Your templates">
+                      <optgroup label="Your Templates">
                         {mine.map((t) => (
                           <option key={t.id} value={t.id}>{t.title}</option>
                         ))}
                       </optgroup>
                     )}
-                    <optgroup label="Starter templates">
+                    <optgroup label="Starter Templates">
                       {STARTER_TEMPLATES.map((t) => (
                         <option key={t.id} value={t.id}>{t.title}</option>
                       ))}

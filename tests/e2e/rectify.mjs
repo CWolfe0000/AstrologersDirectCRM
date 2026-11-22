@@ -99,8 +99,8 @@ assert.equal(await page.getByRole("button", { name: /Rising.*\(Recorded Time\)/ 
 await page.getByText(/Only times with .* rising are tested/).waitFor();
 await page.getByLabel(/C-Section/).check();
 for (const e of events.slice(0, 3)) {
-  await page.getByLabel("Event date").fill(e.date);
-  await page.getByLabel("Event type").selectOption(e.type);
+  await page.getByLabel("Event Date").fill(e.date);
+  await page.getByLabel("Event Type").selectOption(e.type);
   await page.getByRole("button", { name: "Add Event" }).click();
 }
 await page.getByRole("button", { name: /Test .* Candidate Times/ }).click();

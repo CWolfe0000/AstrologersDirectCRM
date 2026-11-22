@@ -126,7 +126,7 @@ export function DetailedWheel({ view, className, selected, onSelect, highlightAs
   };
 
   return (
-    <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox="-62 -62 724 724" className={cn("h-auto w-full select-none", className)} onClick={() => onSelect?.(null)} role="img" aria-label="Chart wheel">
+    <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox="-62 -62 724 724" className={cn("h-auto w-full select-none", className)} onClick={() => onSelect?.(null)} role="img" aria-label="Chart Wheel">
       {/* sign band */}
       {SIGNS.map((s, i) => {
         const a0 = ang(i * 30), a1 = ang(i * 30 + 30);

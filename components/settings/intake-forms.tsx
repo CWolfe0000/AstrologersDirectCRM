@@ -147,14 +147,14 @@ function FormEditor({ form, isNew, onSave, onCancel }: { form: IntakeForm; isNew
           <Field label="Form Name" htmlFor="if-title" hint="Clients see this as the form’s title."><Input id="if-title" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} maxLength={120} /></Field>
           <Field label="Introduction" htmlFor="if-intro" optional><Textarea id="if-intro" value={f.intro ?? ""} onChange={(e) => setF({ ...f, intro: e.target.value })} rows={2} maxLength={2000} placeholder="A sentence or two shown above the questions." /></Field>
         </div>
-        <ol className="space-y-3" aria-label="Form parts">
+        <ol className="space-y-3" aria-label="Form Parts">
           {f.sections.map((s, i) => (
             <li key={s.id} className="rounded-lg border border-line p-4">
               <div className="mb-3 flex items-center gap-2">
                 <Badge tone={s.kind === "question" ? "neutral" : "accent"}>{s.kind === "question" ? "Custom Question" : SECTION_INFO[s.kind].label}</Badge>
                 <span className="flex-1" />
-                <Button size="icon-sm" variant="ghost" aria-label="Move up" disabled={i === 0} onClick={() => move(i, -1)}><ArrowUp /></Button>
-                <Button size="icon-sm" variant="ghost" aria-label="Move down" disabled={i === f.sections.length - 1} onClick={() => move(i, 1)}><ArrowDown /></Button>
+                <Button size="icon-sm" variant="ghost" aria-label="Move Up" disabled={i === 0} onClick={() => move(i, -1)}><ArrowUp /></Button>
+                <Button size="icon-sm" variant="ghost" aria-label="Move Down" disabled={i === f.sections.length - 1} onClick={() => move(i, 1)}><ArrowDown /></Button>
                 <Button size="icon-sm" variant="ghost" aria-label={`Remove ${sectionLabel(s)}`} onClick={() => setF({ ...f, sections: f.sections.filter((x) => x.id !== s.id) })}><Trash2 /></Button>
               </div>
               {s.kind !== "question" && <p className="mb-3 text-[12.5px] text-muted">{SECTION_INFO[s.kind].describe}</p>}

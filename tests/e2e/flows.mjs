@@ -51,11 +51,11 @@ assert.ok((await state()).tasks.some((t) => t.title === `Follow-up ${stamp}` && 
 
 step("write an observation (autosave + revision)");
 await page.goto(BASE + "/app/observations?new=1&chart=ch1");
-await page.getByPlaceholder("Observation title").fill(`Moon notes ${stamp}`);
+await page.getByPlaceholder("Observation Title").fill(`Moon notes ${stamp}`);
 const body = page.locator("[contenteditable=true]").first();
 await body.click();
 await page.keyboard.type("Tested from the flows script.");
-await page.getByPlaceholder("Observation title").click();
+await page.getByPlaceholder("Observation Title").click();
 await page.waitForTimeout(1500);
 await saved();
 const o = (await state()).observations.find((x) => x.title === `Moon notes ${stamp}`);

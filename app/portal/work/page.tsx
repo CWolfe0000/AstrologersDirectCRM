@@ -25,7 +25,7 @@ export default function BetweenSessions() {
         Assignments, journaling prompts, goals and activities from {names}. Write as much or as little as you like: only you and the astrologer who shared it can see what you write.
       </p>
       {practices.length > 1 && (
-        <div className="mt-5 flex flex-wrap gap-2" role="group" aria-label="Filter by astrologer">
+        <div className="mt-5 flex flex-wrap gap-2" role="group" aria-label="Filter by Astrologer">
           {[{ id: "", label: "Everyone" }, ...practices.map((p) => ({ id: p.id, label: p.name || p.practice }))].map((o) => (
             <button key={o.id || "all"} type="button" aria-pressed={from === o.id} onClick={() => setFrom(o.id)} className={cn("rounded-full border px-3.5 py-1.5 text-[13px] transition-colors", from === o.id ? "border-ink bg-ink text-white" : "border-line bg-surface text-ink-3 hover:border-line-strong")}>
               {o.label}

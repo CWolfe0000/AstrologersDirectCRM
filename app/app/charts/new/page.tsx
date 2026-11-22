@@ -250,7 +250,7 @@ function NewChart() {
                 <Field label="Person B (Outer Wheel)" hint={`${name(clientId)}’s associated people are listed first. Not on file yet? Choose “Add a new person”.`}>
                   <Select value={personB} onChange={(e) => (e.target.value === NEW ? setAdding("B") : setPersonB(e.target.value))}>
                     {/* A placeholder, so "Add a New Person" is always a change, even when it's the only choice. */}
-                    {!others.some((p) => p.id === personB) && <option value="">Choose a person…</option>}
+                    {!others.some((p) => p.id === personB) && <option value="">Choose a Person…</option>}
                     {[...others].sort((a, b) => Number(b.clientId === clientId) - Number(a.clientId === clientId)).map((p) => (
                       <option key={p.id} value={p.id}>
                         {personName(p)}{p.relationship ? ` (${relationshipLabel(p.relationship)})` : ""}

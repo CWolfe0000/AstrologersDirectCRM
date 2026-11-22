@@ -3,8 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import {
-  CalendarDays, Clock, Video, Phone, MapPin, CheckCircle2, XCircle, Mic, Send, ListPlus, NotebookPen, History, FileText, ArrowUpRight, Pin, Mail, RotateCcw, Sprout,
-} from "lucide-react";
+  CalendarDays, Clock, Video, Phone, MapPin, CheckCircle2, XCircle, Mic, Send, ListPlus, NotebookPen, History, FileText, ArrowUpRight, Pin, Mail, RotateCcw, Sprout, PenLine, Headphones } from "lucide-react";
 import { useStore, personName } from "@/lib/store";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
@@ -15,8 +14,9 @@ import { ChartTypeBadge } from "@/components/chart/chart-helpers";
 import { NewTaskDialog } from "@/components/tasks/new-task-dialog";
 import { cn, fmtDate, fmtLong, fmtTime, fmtDuration, stripHtml, relDay } from "@/lib/utils";
 import { AutosaveTextarea } from "./autosave-textarea";
+import { formatLabel, isCall } from "@/lib/booking/formats";
 
-const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin } as const;
+const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones } as const;
 const SCOPE_LABEL = { natal: "Natal", relationship: "Relationship", timing: "Timing" } as const;
 
 export function ConsultationDetail({ id }: { id: string }) {
@@ -72,8 +72,8 @@ export function ConsultationDetail({ id }: { id: string }) {
         <div className="mt-3 space-y-1.5 text-[13.5px] text-ink-3">
           <p className="flex items-center gap-2"><CalendarDays className="size-4 text-muted" /> {fmtLong(k.start)}</p>
           <p className="flex items-center gap-2"><Clock className="size-4 text-muted" /> {fmtTime(k.start)} – {fmtTime(end)} <span className="text-muted">({relDay(k.start)})</span></p>
-          <p className="flex items-center gap-2"><LocIcon className="size-4 text-muted" /> {k.location}</p>
-          {k.location === "Video call" && k.status === "scheduled" && <MeetingLink url={k.meetingUrl} onSave={(meetingUrl) => { update(k.id, { meetingUrl }); toast(meetingUrl ? "Video link saved" : "Video link removed", meetingUrl ? "Your client can join from their portal." : undefined, "success"); }} />}
+          <p className="flex items-center gap-2"><LocIcon className="size-4 text-muted" /> {formatLabel(k.location)}</p>
+          {isCall(k.location) && k.status === "scheduled" && <MeetingLink url={k.meetingUrl} onSave={(meetingUrl) => { update(k.id, { meetingUrl }); toast(meetingUrl ? "Video link saved" : "Video link removed", meetingUrl ? "Your client can join from their portal." : undefined, "success"); }} />}
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {k.status === "scheduled" && (
@@ -129,10 +129,10 @@ export function ConsultationDetail({ id }: { id: string }) {
         )}
       </div>
 
-      <AutosaveTextarea key={k.id + "prep"} label="Preparation notes" value={k.prepNotes ?? ""} onSave={(v) => update(k.id, { prepNotes: v })} placeholder="What to revisit before the session…" />
+      <AutosaveTextarea key={k.id + "prep"} label="Preparation Notes" value={k.prepNotes ?? ""} onSave={(v) => update(k.id, { prepNotes: v })} placeholder="What to revisit before the session…" />
       <AutosaveTextarea
         key={k.id + "session"}
-        label="Session notes"
+        label="Session Notes"
         value={k.sessionNotes ?? ""}
         onSave={(v) => update(k.id, { sessionNotes: v })}
         placeholder="Private notes from the session. Not visible to the client."
@@ -238,7 +238,7 @@ export function ConsultationDetail({ id }: { id: string }) {
         onOpenChange={setTaskOpen}
         defaultClientId={k.clientId}
         defaultConsultationId={k.id}
-        title="Create follow-up task"
+        title="Create Follow-Up Task"
         description={`Linked to ${k.type} with ${name}.`}
       />
     </div>
@@ -270,7 +270,7 @@ function MeetingLink({ url, onSave }: { url?: string; onSave: (url: string | und
         setEditing(false);
       }}
     >
-      <input aria-label="Video call link" type="url" inputMode="url" autoFocus placeholder="https://" value={v} onChange={(e) => setV(e.target.value)} className="h-8 min-w-0 flex-1 rounded-md border border-line bg-surface px-2.5 text-[13px] focus:border-accent focus:outline-none" />
+      <input aria-label="Video Call Link" type="url" inputMode="url" autoFocus placeholder="https://" value={v} onChange={(e) => setV(e.target.value)} className="h-8 min-w-0 flex-1 rounded-md border border-line bg-surface px-2.5 text-[13px] focus:border-accent focus:outline-none" />
       <Button size="xs" type="submit" disabled={!ok}>Save</Button>
       <Button size="xs" variant="ghost" type="button" onClick={() => { setV(url ?? ""); setEditing(false); }}>Cancel</Button>
       {!ok && <span className="w-full text-[12px] text-danger">Use the full link, starting with https://</span>}

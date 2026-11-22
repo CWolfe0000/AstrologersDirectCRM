@@ -29,7 +29,7 @@ export function ExpandedWheel({
           <div className="flex items-center justify-between gap-4 border-b border-line px-4 py-2.5 sm:px-5">
             <D.Title className="min-w-0 truncate font-serif text-[18px] text-ink">{title}</D.Title>
             <D.Description className="sr-only">The chart wheel, enlarged. Select a planet to see its aspects.</D.Description>
-            <D.Close className="-mr-1.5 rounded-md p-1.5 text-muted hover:bg-canvas-2 hover:text-ink" aria-label="Close expanded wheel">
+            <D.Close className="-mr-1.5 rounded-md p-1.5 text-muted hover:bg-canvas-2 hover:text-ink" aria-label="Close Expanded Wheel">
               <X className="size-5" />
             </D.Close>
           </div>

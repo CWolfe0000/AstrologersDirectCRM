@@ -21,7 +21,7 @@ function DemoLoginPage() {
   };
   return (
     <>
-      <AuthHeading title="Welcome back to your practice." body="Your clients, charts, observations and the work between sessions, together in one place." />
+      <AuthHeading title="Welcome Back to Your Practice." body="Your clients, charts, observations and the work between sessions, together in one place." />
       <Button variant="secondary" className="w-full" onClick={() => router.push("/app")}>
         <GoogleMark /> Continue with Google
       </Button>
@@ -43,7 +43,7 @@ function DemoLoginPage() {
         >
           <Input id="password" type="password" defaultValue="demo-password" autoComplete="current-password" required />
         </Field>
-        <Checkbox label="Keep me signed in on this device" defaultChecked />
+        <Checkbox label="Keep Me Signed In on This Device" defaultChecked />
         <Button type="submit" size="lg" className="w-full" disabled={loading}>
           {loading ? <Loader2 className="animate-spin" /> : null} Sign In
         </Button>

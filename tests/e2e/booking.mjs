@@ -44,11 +44,11 @@ await call(page, "/api/v1/settings", { method: "PUT", body: JSON.stringify({ pra
 await page.goto(BASE + "/app/settings?section=booking");
 await page.getByLabel("Page Address").fill(slug);
 await page.getByLabel("Headline", { exact: false }).fill("Evolutionary astrologer");
-await page.getByLabel("Video Call Link", { exact: false }).fill(MEET);
+await page.getByLabel("Call Link", { exact: false }).fill(MEET);
 for (const d of ["Saturday", "Sunday"]) await page.getByRole("checkbox", { name: d }).check();
 await page.getByRole("button", { name: "Save Booking Settings" }).click();
 await page.getByText("Booking Settings Saved").waitFor();
-await page.getByRole("switch", { name: "Accept online bookings" }).click();
+await page.getByRole("switch", { name: "Accept Online Bookings" }).click();
 await page.getByText("Your page is live.").waitFor();
 let prof = (await call(page, "/api/v1/booking")).body.profile;
 assert.equal(prof.enabled, true);
@@ -63,7 +63,13 @@ step("link-in-bio profile: a photo (cropped and resized in the browser) and link
 await page.goto(BASE + "/app/settings?section=booking");
 // A 600×300 photo, made in the page: it should come back as a 400px square JPEG.
 const png = await page.evaluate(() => { const c = document.createElement("canvas"); c.width = 600; c.height = 300; const x = c.getContext("2d"); x.fillStyle = "#824B59"; x.fillRect(0, 0, 600, 300); return c.toDataURL("image/png"); });
-await page.getByLabel("Profile photo").setInputFiles({ name: "me.png", mimeType: "image/png", buffer: Buffer.from(png.split(",")[1], "base64") });
+// The address is checked as it's typed.
+await page.getByLabel("Page Address").fill("pricing");
+await page.getByText("That address is reserved. Try another.").waitFor();
+await page.getByLabel("Page Address").fill(`${slug}-x`);
+await page.getByText("Available", { exact: true }).waitFor();
+await page.getByLabel("Page Address").fill(slug);
+await page.getByLabel("Profile Photo").setInputFiles({ name: "me.png", mimeType: "image/png", buffer: Buffer.from(png.split(",")[1], "base64") });
 await page.getByRole("img", { name: "Your profile photo" }).waitFor();
 await page.getByRole("button", { name: "Add Link" }).click();
 await page.getByLabel("Link 1 label").fill("Instagram");
@@ -211,6 +217,45 @@ await v.getByText(/Changes can be made online up to 336 hours/).waitFor();
 await v.goto(`${BASE}/book/manage/not-a-real-token-123456789`);
 await v.getByText("This Booking Link Isn’t Valid").waitFor();
 await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify(prof) });
+
+step("formats: a written reading has a ready-by date instead of a time; an existing phone service still needs a number");
+prof = (await call(page, "/api/v1/booking")).body.profile;
+const svc = [...prof.services, { id: "written", name: "Written Year Ahead", description: "", durationMin: 60, price: "$120", format: "Written reading", deliveryDays: 10, active: true }, { id: "phone", name: "Phone Check-In", description: "", durationMin: 30, price: "", format: "Phone", active: true }];
+assert.equal((await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify({ ...prof, services: svc, instructions: { "Written reading": "Look out for an email from me with your PDF." } }) })).status, 200);
+await page.goto(BASE + "/app/settings?section=booking");
+await page.getByLabel("Written Reading", { exact: true }).waitFor();
+assert.equal(await page.getByLabel("Written Reading", { exact: true }).inputValue(), "Look out for an email from me with your PDF.");
+const formats = await page.locator('select[id^="sv-f-"]').first().locator("option").allTextContents();
+assert.deepEqual(formats, ["Video Call", "Audio Call", "Written Reading"], "phone and in person are no longer offered");
+const writer = `bk-written-${stamp}@example.com`;
+await v.goto(`${BASE}/book/${slug}`);
+await v.getByRole("button", { name: /Written Year Ahead/ }).getByText("Ready in 10 days").waitFor();
+await v.getByRole("button", { name: /Written Year Ahead/ }).click();
+// Straight to the details: no time to choose.
+await v.getByLabel("First Name").fill("Wren");
+await v.getByLabel("Email").fill(writer);
+await v.getByLabel("Date of Birth").fill("1991-02-03");
+await v.getByRole("checkbox", { name: "I don’t know my birth time" }).check();
+await v.locator("#bk-bp").fill("Par");
+await v.locator("button", { hasText: "Paris, France" }).first().click();
+await v.getByRole("checkbox", { name: /will keep my details/ }).check();
+await v.getByRole("button", { name: /Order Written Year Ahead/ }).click();
+await v.getByRole("heading", { name: "Thank You" }).waitFor();
+await v.getByText(/^Ready by /).waitFor();
+await v.getByText("Look out for an email from me with your PDF.").waitFor();
+const wm = (await mail(writer)).find((m) => m.subject.startsWith("Booked:"));
+assert.ok(wm.body.includes("will be ready by") && wm.body.includes("Look out for an email from me with your PDF."), "the email has the ready-by date and the instructions");
+s3 = (await call(page, "/api/v1/bootstrap?view=app")).body;
+const wc = s3.clients.find((c) => c.email === writer);
+const wk = s3.consultations.find((x) => x.clientId === wc.id);
+assert.equal(wk.location, "Written reading");
+const dueDays = Math.round((Date.parse(wk.start) - Date.now()) / 86_400_000);
+assert.ok(dueDays >= 9 && dueDays <= 11, `due in about 10 days (${dueDays})`);
+const phoneReq = { ...req(after[2], `bk-phone-${stamp}@example.com`), serviceId: "phone" };
+const pslots = (await call(v, `/api/public/book/${slug}/slots?service=phone`)).body.slots;
+assert.equal((await call(v, `/api/public/book/${slug}`, { method: "POST", body: JSON.stringify({ ...phoneReq, start: pslots[0] }) })).status, 422, "phone sessions need a number");
+assert.equal((await call(v, `/api/public/book/${slug}`, { method: "POST", body: JSON.stringify({ ...phoneReq, start: pslots[0], phone: "+1 208 555 0100" }) })).status, 200);
+assert.ok((await mail(`bk-phone-${stamp}@example.com`)).some((m) => m.body.includes("will call you at +1 208 555 0100")));
 
 step("spam trap, and a page that's off");
 assert.equal((await call(v, `/api/public/book/${slug}`, { method: "POST", body: JSON.stringify({ ...req(after[3], `bot-${stamp}@example.com`), website: "http://spam" }) })).status, 422);

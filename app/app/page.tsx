@@ -5,8 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Users, CalendarDays, CircleDot, Send, UserPlus, CalendarPlus, NotebookPen, Mic, ArrowRight, Video, Phone, MapPin, Clock,
-  ListChecks, AlertCircle, Activity as ActivityIcon, User,
-} from "lucide-react";
+  ListChecks, AlertCircle, Activity as ActivityIcon, User, PenLine, Headphones } from "lucide-react";
 import { useStore, personName } from "@/lib/store";
 import { cn, DEMO_TODAY, fmtLong, fmtTime, fmtDay, fmtShort, relTime, relDay, sameDay } from "@/lib/utils";
 import { Card, CardHeader, CardBody } from "@/components/ui/card";
@@ -20,6 +19,7 @@ import { MiniCalendar } from "@/components/dashboard/mini-calendar";
 import { TwoFactorNudge } from "@/components/dashboard/two-factor-nudge";
 import { isUpcoming, lastConsultation, nextConsultation, TODAY_ISO } from "@/components/clients/helpers";
 import type { Activity, Consultation } from "@/lib/data/types";
+import { formatLabel } from "@/lib/booking/formats";
 
 const ACTIONS = [
   { label: "Add Client", href: "/app/clients/new", icon: UserPlus },
@@ -30,7 +30,7 @@ const ACTIONS = [
   { label: "Deliver Reading", href: "/app/delivery?new=1", icon: Send },
 ];
 
-const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin } as const;
+const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones } as const;
 
 const ACT_ICON: Record<Activity["kind"], { i: React.ElementType; c: string }> = {
   observation: { i: NotebookPen, c: "bg-sage-50 text-sage-dark" },
@@ -105,6 +105,16 @@ export default function DashboardPage() {
           </ButtonLink>
         </div>
       </div>
+
+      {s.practitioner.onboarding && !s.practitioner.onboarding.done && (
+        <div className="flex flex-wrap items-center gap-4 rounded-xl border border-accent-100 bg-accent-50/60 px-5 py-4">
+          <div className="min-w-0 flex-1">
+            <p className="text-[15px] font-semibold text-ink">Finish Setting Up Your Practice</p>
+            <p className="text-[13px] text-ink-3">Your profile, services, intake forms, hours and booking page: a few minutes, and you’re ready for clients. Step {Math.min(s.practitioner.onboarding.step + 1, 5)} of 5.</p>
+          </div>
+          <ButtonLink href="/app/welcome" size="sm">Continue Setup</ButtonLink>
+        </div>
+      )}
 
       {/* Summary */}
       <div className="grid grid-cols-2 gap-3 md:gap-4 xl:grid-cols-4">
@@ -321,7 +331,7 @@ function TodayRow({ k, name }: { k: Consultation; name: string }) {
             {name}
           </Link>
           <p className="flex items-center gap-1.5 truncate text-[12.5px] text-muted">
-            {k.type} · <Loc className="size-3.5" /> {k.location}
+            {k.type} · <Loc className="size-3.5" /> {formatLabel(k.location)}
           </p>
         </div>
       </div>

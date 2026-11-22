@@ -144,7 +144,7 @@ export default function NewClientPage() {
         <CardBody className="p-5 md:p-8">
           {step === 0 && (
             <div className="space-y-5">
-              <StepTitle title="Contact details" body="How you'll reach this client. Only name and email are required." />
+              <StepTitle title="Contact Details" body="How you'll reach this client. Only name and email are required." />
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="First Name" htmlFor="fn"><Input id="fn" value={contact.firstName} onChange={c("firstName")} autoFocus /></Field>
                 <Field label="Last Name" htmlFor="ln"><Input id="ln" value={contact.lastName} onChange={c("lastName")} /></Field>
@@ -167,7 +167,7 @@ export default function NewClientPage() {
 
           {step === 1 && (
             <div className="space-y-5">
-              <StepTitle title="Birth data" body={`Used to calculate ${contact.firstName || "the client"}'s natal chart. You can refine this later.`} />
+              <StepTitle title="Birth Data" body={`Used to calculate ${contact.firstName || "the client"}'s natal chart. You can refine this later.`} />
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Date of Birth" htmlFor="bd"><Input id="bd" type="date" value={birth.date} onChange={(e) => setBirth((b) => ({ ...b, date: e.target.value }))} max={TODAY} /></Field>
                 <Field label="Time of Birth" htmlFor="bt" hint={birth.timeAccuracy === "unknown" ? "A noon chart with whole-sign houses will be used." : "Local time at the place of birth."}>
@@ -239,11 +239,11 @@ export default function NewClientPage() {
 
           {step === 3 && (
             <div className="space-y-6">
-              <StepTitle title="Review & save" body="Everything below will be created together." />
+              <StepTitle title="Review & Save" body="Everything below will be created together." />
               <div className="grid gap-4 md:grid-cols-3">
-                <Summary title="Client record" rows={[["Name", fullName], ["Email", contact.email], ["Phone", contact.phone || "—"], ["Status", "New"]]} />
-                <Summary title="Birth data" rows={[["Date", fmtDate(birth.date)], ["Time", birth.timeAccuracy === "unknown" ? "Unknown" : `${fmtClock(birth.time)} (${birth.timeAccuracy})`], ["Place", place?.place ?? ""], ["Time zone", place?.tz ?? ""]]} />
-                <Summary title="Natal chart" rows={[["Chart", `${fullName} — Natal`], ["House system", HOUSE_SYSTEMS.find((h) => h.id === effectiveHouse)!.name], ["Zodiac", "Tropical"], ["Engine", "Demonstration"]]} />
+                <Summary title="Client Record" rows={[["Name", fullName], ["Email", contact.email], ["Phone", contact.phone || "—"], ["Status", "New"]]} />
+                <Summary title="Birth Data" rows={[["Date", fmtDate(birth.date)], ["Time", birth.timeAccuracy === "unknown" ? "Unknown" : `${fmtClock(birth.time)} (${birth.timeAccuracy})`], ["Place", place?.place ?? ""], ["Time zone", place?.tz ?? ""]]} />
+                <Summary title="Natal Chart" rows={[["Chart", `${fullName} — Natal`], ["House system", HOUSE_SYSTEMS.find((h) => h.id === effectiveHouse)!.name], ["Zodiac", "Tropical"], ["Engine", "Demonstration"]]} />
               </div>
               <div className="rounded-lg border border-line bg-canvas/60 p-4">
                 <Checkbox checked={invite} onChange={(e) => setInvite(e.target.checked)} label={<span>Invite {contact.firstName} to the client portal{DATA_MODE === "demo" && <span className="text-muted"> (email invitation is simulated in the demo)</span>}</span>} />

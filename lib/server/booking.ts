@@ -14,6 +14,7 @@ import { nowLocal } from "@/lib/utils";
 import { availableSlots } from "@/lib/booking/slots";
 import { DEFAULT_RULES, RESERVED_SLUGS, SLUG_RE, type BookingProfile } from "@/lib/booking/types";
 import type { IntakeRequest } from "@/lib/data/types";
+import { DEFAULT_INSTRUCTIONS, isCall, isWritten } from "@/lib/booking/formats";
 
 const hhmm = z.string().regex(/^\d{2}:\d{2}$/);
 const range = z.object({ start: hhmm, end: hhmm }).strict().refine((r) => r.start < r.end, "Each range must start before it ends.");
@@ -37,7 +38,8 @@ export const profileSchema = z
             description: text(1000),
             durationMin: z.number().int().min(15).max(480),
             price: text(40),
-            format: z.enum(["Video call", "Phone", "In person"]),
+            format: z.enum(["Video call", "Audio call", "Phone", "Written reading", "In person"]),
+            deliveryDays: z.number().int().min(1).max(90).optional(),
             active: z.boolean(),
             /** The intake form sent when someone books this service. */
             intakeFormId: z.string().regex(/^[A-Za-z0-9_-]{1,80}$/).optional(),
@@ -57,6 +59,7 @@ export const profileSchema = z
       .strict(),
     autoInvite: z.boolean(),
     searchable: z.boolean().optional(),
+    instructions: z.object({ "Video call": text(2000).optional(), "Audio call": text(2000).optional(), Phone: text(2000).optional(), "Written reading": text(2000).optional() }).strict().optional(),
     // A square photo resized in the browser (about 400px): a data URL, kept small.
     photo: z.string().max(250_000).regex(/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/, "Use a JPEG, PNG or WebP photo.").optional(),
     links: z
@@ -147,14 +150,23 @@ export function publicView(b: Awaited<ReturnType<typeof publicBooking>>) {
     practice: b.practitioner.practice ?? "",
     tz: b.tz,
     maxAdvanceDays: profile.rules.maxAdvanceDays,
-    services: profile.services.filter((s) => s.active).map(({ id, name, description, durationMin, price, format }) => ({ id, name, description, durationMin, price, format })),
+    services: profile.services.filter((s) => s.active).map(({ id, name, description, durationMin, price, format, deliveryDays }) => ({ id, name, description, durationMin, price, format, ...(isWritten(format) ? { deliveryDays: deliveryDays ?? 7 } : {}) })),
   };
+}
+
+/** What the client needs to know for this format: the astrologer's words, or a sensible default. */
+function instructionsFor(profile: BookingProfile, format: string) {
+  if (!(format in DEFAULT_INSTRUCTIONS)) return "";
+  const f = format as keyof typeof DEFAULT_INSTRUCTIONS;
+  const own = profile.instructions?.[f];
+  return (own === undefined ? DEFAULT_INSTRUCTIONS[f] : own).trim();
 }
 
 async function busyTimes(practiceId: string, tz: string, excludeId?: string) {
   const ks = await listCollection(practiceId, "consultations");
   return ks
-    .filter((k) => k.status === "scheduled" && k.id !== excludeId)
+    // Written readings have a delivery date, not a time on the calendar.
+    .filter((k) => k.status === "scheduled" && k.id !== excludeId && !isWritten(String(k.location)))
     .map((k) => {
       const start = zonedToUtc(String(k.start), tz).getTime();
       return { start, end: start + Number(k.durationMin) * 60_000 };
@@ -226,13 +238,23 @@ export async function book(slug: string, input: z.infer<typeof bookingRequest>) 
   const { practiceId, profile, tz } = b;
   const service = profile.services.find((s) => s.id === input.serviceId && s.active);
   if (!service) throw new HttpError(404, "That service isn’t available.");
-  const start = Date.parse(input.start);
-  const end = start + service.durationMin * 60_000;
-  const busy = await busyTimes(practiceId, tz);
-  const open = availableSlots({ rules: profile.rules, tz, durationMin: service.durationMin, busy, now: Date.now() });
-  if (!open.includes(new Date(start).toISOString())) throw new HttpError(409, "That time is no longer available. Please choose another.");
-
-  await claimTime(practiceId, tz, start, end, profile.rules.bufferMin);
+  const written = isWritten(service.format);
+  if (service.format === "Phone" && !input.phone.trim()) throw new HttpError(422, "Add a phone number so your astrologer can call you.");
+  let start: number;
+  if (written) {
+    // No time slot: due at midday in the astrologer's time zone, the delivery time from today.
+    const dueDay = wallTime(Date.now() + (service.deliveryDays ?? 7) * 86_400_000, tz).slice(0, 10);
+    start = zonedToUtc(`${dueDay}T12:00:00`, tz).getTime();
+  } else {
+    start = Date.parse(input.start);
+    const end = start + service.durationMin * 60_000;
+    const busy = await busyTimes(practiceId, tz);
+    const open = availableSlots({ rules: profile.rules, tz, durationMin: service.durationMin, busy, now: Date.now() });
+    if (!open.includes(new Date(start).toISOString())) throw new HttpError(409, "That time is no longer available. Please choose another.");
+    await claimTime(practiceId, tz, start, end, profile.rules.bufferMin);
+  }
+  const instructions = instructionsFor(profile, service.format);
+  const dueText = (zone: string) => new Intl.DateTimeFormat("en-US", { timeZone: zone, weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(new Date(start));
 
   const now = nowLocal();
   const clients = await listCollection(practiceId, "clients");
@@ -251,7 +273,7 @@ export async function book(slug: string, input: z.infer<typeof bookingRequest>) 
     chartId = newId("ch");
     await upsertRecord(practiceId, "charts", { id: chartId, title: `${name} — Natal`, type: "natal", personIds: [clientId], clientId, createdAt: now, updatedAt: now });
   }
-  const meetingUrl = service.format === "Video call" && profile.meetingUrl ? profile.meetingUrl : undefined;
+  const meetingUrl = isCall(service.format) && profile.meetingUrl ? profile.meetingUrl : undefined;
   const consultationId = newId("k");
   const note = [`Booked online (${service.name}).`, input.notes ? `Their note: ${input.notes}` : "", existing ? "" : `New client. Birth details as given: ${input.birth.date}, ${input.birth.timeAccuracy === "unknown" ? "time unknown" : input.birth.time}, ${input.birth.place}.`]
     .filter(Boolean)
@@ -281,7 +303,7 @@ export async function book(slug: string, input: z.infer<typeof bookingRequest>) 
     id: newId("n"),
     type: "consultation",
     title: existing ? "New booking" : "New booking from a new client",
-    body: `${name} booked ${service.name} for ${when(start, tz)}.`,
+    body: written ? `${name} ordered ${service.name}, due ${dueText(tz)}.` : `${name} booked ${service.name} for ${when(start, tz)}.`,
     at: now,
     read: false,
     href: `/app/consultations?id=${consultationId}`,
@@ -290,25 +312,30 @@ export async function book(slug: string, input: z.infer<typeof bookingRequest>) 
   const astro = profile.displayName || b.practitioner.name || "Your astrologer";
   const owner = await ownerEmail(practiceId);
   const visitorTz = ianaZone(input.tz) || tz;
-  const place = service.format === "Video call" ? (meetingUrl ? `Video call: ${meetingUrl}` : `Video call (${astro} will send the link)`) : service.format === "Phone" ? "Phone call" : `In person${profile.location ? `: ${profile.location}` : ""}`;
+  const callName = service.format === "Audio call" ? "Audio call" : "Video call";
+  const place = isCall(service.format) ? (meetingUrl ? `${callName}: ${meetingUrl}` : `${callName} (${astro} will send the link)`) : service.format === "Phone" ? `Phone call: ${astro} will call you at ${input.phone.trim()}` : `In person${profile.location ? `: ${profile.location}` : ""}`;
+  const price = service.price ? `\nPrice: ${service.price} (payment arranged directly with ${astro})` : "";
+  const how = instructions ? `\n\n${instructions}` : "";
   await sendMail(
     input.email,
     `Booked: ${service.name} with ${astro}`,
-    `Hi ${input.firstName},\n\nYour ${service.name} with ${astro} is booked for ${when(start, visitorTz)}${visitorTz !== tz ? ` (${when(start, tz)} for ${astro})` : ""}.\n\n${service.durationMin} minutes · ${place}${service.price ? `\nPrice: ${service.price} (payment arranged directly with ${astro})` : ""}${formText}\n\nNeed to reschedule or cancel? Use your booking link${profile.rules.changeNoticeHours ? ` (up to ${noticeText(profile.rules.changeNoticeHours)} before)` : ""}:\n${manage}\n\nOr reply to this email.\n${profile.autoInvite && !existing ? `\nYou’ll also get an invitation to your private client portal, where ${astro} can share your readings.\n` : ""}`,
+    written
+      ? `Hi ${input.firstName},\n\nThank you for ordering a ${service.name} from ${astro}. It will be ready by ${dueText(visitorTz)}.${price}${how}${formText}\n\nNeed to cancel? Use your booking link:\n${manage}\n\nOr reply to this email.\n${profile.autoInvite && !existing ? `\nYou’ll also get an invitation to your private client portal, where your reading will be delivered.\n` : ""}`
+      : `Hi ${input.firstName},\n\nYour ${service.name} with ${astro} is booked for ${when(start, visitorTz)}${visitorTz !== tz ? ` (${when(start, tz)} for ${astro})` : ""}.\n\n${service.durationMin} minutes · ${place}${price}${how}${formText}\n\nNeed to reschedule or cancel? Use your booking link${profile.rules.changeNoticeHours ? ` (up to ${noticeText(profile.rules.changeNoticeHours)} before)` : ""}:\n${manage}\n\nOr reply to this email.\n${profile.autoInvite && !existing ? `\nYou’ll also get an invitation to your private client portal, where ${astro} can share your readings.\n` : ""}`,
     owner ? { replyTo: owner } : {},
   );
   if (owner)
     await sendMail(
       owner,
       `New booking: ${name}, ${service.name}`,
-      `${name} booked ${service.name} for ${when(start, tz)}.\n\n${existing ? "They’re an existing client." : "New client: their record and natal chart are ready."}${input.notes ? `\n\nTheir note:\n${input.notes}` : ""}\n\nOpen the session:\n${link(`/app/consultations?id=${consultationId}`)}\n\nReply to this email to reach them.`,
+      `${name} ${written ? `ordered ${service.name}, due ${dueText(tz)}` : `booked ${service.name} for ${when(start, tz)}`}.${input.phone.trim() ? `\nPhone: ${input.phone.trim()}` : ""}\n\n${existing ? "They’re an existing client." : "New client: their record and natal chart are ready."}${input.notes ? `\n\nTheir note:\n${input.notes}` : ""}\n\nOpen the session:\n${link(`/app/consultations?id=${consultationId}`)}\n\nReply to this email to reach them.`,
       { replyTo: input.email },
     );
   if (profile.autoInvite && (!existing || existing.portalAccess === "none")) {
     // Best effort: an address that can't be invited (e.g. a practitioner's) just isn't.
     await inviteClient({ practiceId }, clientId).catch(() => {});
   }
-  return { start: new Date(start).toISOString(), service: service.name, durationMin: service.durationMin, format: service.format, displayName: astro, meetingUrl: meetingUrl ?? null, manage: `/book/manage/${token}` };
+  return { start: new Date(start).toISOString(), service: service.name, durationMin: service.durationMin, format: service.format, written, instructions, displayName: astro, meetingUrl: meetingUrl ?? null, manage: `/book/manage/${token}` };
 }
 
 // ——— Managing a booking (the client's private link) ————————————————————
@@ -326,7 +353,8 @@ async function lookup(token: string) {
   const deadline = start - profile.rules.changeNoticeHours * 3_600_000;
   const service = profile.services.find((x) => x.id === row.serviceId);
   const canChange = k.status === "scheduled" && Date.now() <= deadline;
-  return { row, k, profile, practitioner: p, tz, start, deadline, service, canChange, canReschedule: canChange && profile.enabled && !!service };
+  const written = isWritten(String(k.location));
+  return { row, k, profile, practitioner: p, tz, start, deadline, service, written, canChange, canReschedule: canChange && profile.enabled && !!service && !written };
 }
 
 /** What the client sees on their booking page. */
@@ -345,6 +373,8 @@ export async function manageView(token: string) {
     canReschedule: b.canReschedule,
     deadline: new Date(b.deadline).toISOString(),
     noticeHours: b.profile.rules.changeNoticeHours,
+    written: b.written,
+    instructions: instructionsFor(b.profile, String(b.k.location)),
     intake: await intakeFor(b).then((r) => (r ? { title: r.title, status: r.status } : null)),
   };
 }

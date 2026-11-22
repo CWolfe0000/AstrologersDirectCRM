@@ -79,7 +79,7 @@ assert.ok(icsText.includes("BEGIN:VEVENT") && icsText.includes("SUMMARY:") && /D
 
 step("request to reschedule reaches the practitioner");
 await cp.getByRole("button", { name: "Request to reschedule" }).first().click();
-await cp.getByLabel("Message (optional)").fill("Could we do Thursday instead?");
+await cp.getByLabel("Message (Optional)").fill("Could we do Thursday instead?");
 await cp.getByRole("button", { name: "Send Request" }).click();
 await cp.getByText("Request Sent").waitFor();
 s = (await api("/api/v1/bootstrap?view=app")).body;

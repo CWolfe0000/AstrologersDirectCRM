@@ -20,7 +20,7 @@ function DemoResetPage() {
         <span className="mb-6 flex size-12 items-center justify-center rounded-full bg-sage-50 text-sage-dark">
           <Send className="size-5" />
         </span>
-        <AuthHeading title="Check your inbox" body={<>If an account exists for <span className="font-medium text-ink">{email}</span>, you’ll receive a link to reset your password within a few minutes.</>} />
+        <AuthHeading title="Check Your Inbox" body={<>If an account exists for <span className="font-medium text-ink">{email}</span>, you’ll receive a link to reset your password within a few minutes.</>} />
         <Button variant="secondary" className="w-full" onClick={() => setStage("new")}>
           Open Reset Link (Demo)
         </Button>
@@ -35,7 +35,7 @@ function DemoResetPage() {
   if (stage === "new" || stage === "done")
     return (
       <>
-        <AuthHeading title="Choose a new password" body="Use at least 12 characters. You’ll be signed out of other devices." />
+        <AuthHeading title="Choose a New Password" body="Use at least 12 characters. You’ll be signed out of other devices." />
         {stage === "done" ? (
           <div className="rounded-xl border border-sage-100 bg-sage-50 p-4 text-[14px] text-sage-dark">
             Password updated. <Link href="/auth/login" className="font-medium underline">Sign in</Link>
@@ -67,7 +67,7 @@ function DemoResetPage() {
       <Link href="/auth/login" className="mb-6 inline-flex items-center gap-1.5 text-[13px] text-muted hover:text-ink">
         <ArrowLeft className="size-3.5" /> Back to sign in
       </Link>
-      <AuthHeading title="Reset your password" body="Enter the email you use for AstrologersDirect and we’ll send you a reset link." />
+      <AuthHeading title="Reset Your Password" body="Enter the email you use for AstrologersDirect and we’ll send you a reset link." />
       <form
         className="space-y-4"
         onSubmit={(e) => {

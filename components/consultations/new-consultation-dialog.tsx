@@ -8,6 +8,7 @@ import { Field, Input, Select, Textarea, Checkbox } from "@/components/ui/input"
 import { ChartTypeBadge } from "@/components/chart/chart-helpers";
 import type { Consultation } from "@/lib/data/types";
 import { daysFromToday } from "@/lib/utils";
+import { OFFERED_FORMATS, formatLabel, isCall } from "@/lib/booking/formats";
 
 export const CONSULTATION_TYPES = [
   "Natal Reading",
@@ -77,7 +78,7 @@ export function NewConsultationDialog({
       durationMin: duration,
       status: "scheduled",
       location,
-      meetingUrl: location === "Video call" && meetingUrl.trim() ? meetingUrl.trim() : undefined,
+      meetingUrl: isCall(location) && meetingUrl.trim() ? meetingUrl.trim() : undefined,
       chartIds,
       prepNotes: prep || undefined,
       readingIds: [],
@@ -117,12 +118,10 @@ export function NewConsultationDialog({
           </Field>
           <Field label="Location">
             <Select value={location} onChange={(e) => setLocation(e.target.value as Consultation["location"])}>
-              <option>Video call</option>
-              <option>Phone</option>
-              <option>In person</option>
+              {[...OFFERED_FORMATS, ...(OFFERED_FORMATS.includes(location) ? [] : [location])].map((f) => <option key={f} value={f}>{formatLabel(f)}</option>)}
             </Select>
           </Field>
-          {location === "Video call" && (
+          {isCall(location) && (
             <Field label="Video Call Link (Optional)" className="sm:col-span-2" hint={urlOk ? "Zoom, Google Meet or similar. Your client joins from their portal and reminder email." : "Use the full link, starting with https://"}>
               <Input type="url" inputMode="url" placeholder="https://" value={meetingUrl} onChange={(e) => setMeetingUrl(e.target.value)} />
             </Field>

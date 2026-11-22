@@ -107,7 +107,7 @@ function Profile() {
                   {b.timeAccuracy === "exact" ? (
                     <Badge tone="sage" className="ml-1">Exact</Badge>
                   ) : (
-                    <Badge tone="warn" className="ml-1" title="Angles and house placements are uncertain"><AlertTriangle className="size-3" /> {b.timeAccuracy === "approximate" ? "Approximate" : "Unknown"}</Badge>
+                    <Badge tone="warn" className="ml-1" title="Angles and House Placements Are Uncertain"><AlertTriangle className="size-3" /> {b.timeAccuracy === "approximate" ? "Approximate" : "Unknown"}</Badge>
                   )}
                   {b.rectifiedFrom && <Badge tone="outline" className="ml-1" title={`Rectified${b.rectifiedAt ? ` on ${fmtDate(b.rectifiedAt)}` : ""}; previously ${b.rectifiedFrom}`}>Rectified</Badge>}
                   <Link href={`/app/clients/${client.id}/rectify`} className="ml-1.5 text-[12px] font-medium text-accent hover:underline">Rectify</Link>
@@ -131,7 +131,7 @@ function Profile() {
             <ButtonLink href={`/app/timeline?client=${id}`} variant="secondary" size="sm"><Waves /> Timeline</ButtonLink>
             <Dropdown>
               <DropdownTrigger asChild>
-                <Button variant="secondary" size="icon-sm" aria-label="More actions"><MoreHorizontal /></Button>
+                <Button variant="secondary" size="icon-sm" aria-label="More Actions"><MoreHorizontal /></Button>
               </DropdownTrigger>
               <DropdownContent>
                 <DropdownItem onSelect={() => router.push(`/app/studio?client=${id}`)}><Mic /> Record a Reading</DropdownItem>

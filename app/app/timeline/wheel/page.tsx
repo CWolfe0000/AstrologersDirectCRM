@@ -161,11 +161,11 @@ function MultiWheelView() {
             <Segmented value={step} onChange={setStep} options={[{ value: "day", label: "Day" }, { value: "week", label: "Week" }, { value: "month", label: "Month" }, { value: "year", label: "Year" }]} />
           </div>
           <div className="flex items-center gap-1.5">
-            <Button variant="secondary" size="icon" aria-label="Previous session" title={prevSession ? `Previous session (${prevSession})` : "No earlier session"} disabled={!prevSession} onClick={() => prevSession && setDate(prevSession)}><ChevronsLeft /></Button>
+            <Button variant="secondary" size="icon" aria-label="Previous Session" title={prevSession ? `Previous session (${prevSession})` : "No earlier session"} disabled={!prevSession} onClick={() => prevSession && setDate(prevSession)}><ChevronsLeft /></Button>
             <Button variant="secondary" size="icon" aria-label={`Back one ${step}`} onClick={() => setDate((d) => addStep(d, step, -1))}><ChevronLeft /></Button>
             <Button size="icon" aria-label={playing ? "Pause" : "Play"} onClick={() => setPlaying((x) => !x)}>{playing ? <Pause /> : <Play />}</Button>
             <Button variant="secondary" size="icon" aria-label={`Forward one ${step}`} onClick={() => setDate((d) => addStep(d, step, 1))}><ChevronRight /></Button>
-            <Button variant="secondary" size="icon" aria-label="Next session" title={nextSession ? `Next session (${nextSession})` : "No later session"} disabled={!nextSession} onClick={() => nextSession && setDate(nextSession)}><ChevronsRight /></Button>
+            <Button variant="secondary" size="icon" aria-label="Next Session" title={nextSession ? `Next session (${nextSession})` : "No later session"} disabled={!nextSession} onClick={() => nextSession && setDate(nextSession)}><ChevronsRight /></Button>
             <Button variant="ghost" size="sm" onClick={() => setDate(TODAY)}>Today</Button>
           </div>
           <div>

@@ -104,7 +104,7 @@ export function TagPicker({
               placeholder="Add tag"
               className="w-20 bg-transparent text-[12px] outline-none placeholder:text-muted/70"
             />
-            <button type="button" onClick={addTag} className="px-1.5 text-muted hover:text-ink" aria-label="Add tag">
+            <button type="button" onClick={addTag} className="px-1.5 text-muted hover:text-ink" aria-label="Add Tag">
               <Plus className="size-3.5" />
             </button>
           </span>

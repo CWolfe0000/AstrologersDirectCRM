@@ -4,6 +4,7 @@ import * as React from "react";
 import { Plus } from "lucide-react";
 import type { Consultation } from "@/lib/data/types";
 import { cn, dayName, fmtTime, sameDay, DEMO_TODAY, fmtDay, monthName } from "@/lib/utils";
+import { formatLabel } from "@/lib/booking/formats";
 
 export type CalView = "month" | "week" | "day";
 
@@ -77,7 +78,7 @@ export function MonthView({ date, items, nameOf, selectedId, onSelect, onCreate,
                 <button
                   onClick={() => onCreate(ymd(d))}
                   className="rounded p-0.5 text-muted opacity-0 hover:bg-canvas-2 hover:text-ink group-hover:opacity-100"
-                  aria-label="New consultation on this day"
+                  aria-label="New Consultation on This Day"
                 >
                   <Plus className="size-3.5" />
                 </button>
@@ -162,7 +163,7 @@ export function TimeGrid({ date, items, nameOf, selectedId, onSelect, onCreate, 
                     >
                       <p className="truncate text-[11.5px] font-semibold">{nameOf(k.clientId)}</p>
                       {height > 34 && <p className="truncate text-[11px] opacity-80">{fmtTime(k.start)} · {k.type}</p>}
-                      {days === 1 && height > 60 && <p className="truncate text-[11px] opacity-70">{k.location} · {k.durationMin} min</p>}
+                      {days === 1 && height > 60 && <p className="truncate text-[11px] opacity-70">{formatLabel(k.location)} · {k.durationMin} min</p>}
                     </button>
                   );
                 })}

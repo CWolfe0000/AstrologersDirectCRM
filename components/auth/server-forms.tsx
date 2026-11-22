@@ -58,7 +58,7 @@ function TwoFactorStep({ ticket, next, onCancel }: { ticket: string; next: strin
   const [code, setCode] = React.useState("");
   return (
     <>
-      <AuthHeading title="Enter your code" body="Open your authenticator app and enter the 6-digit code for AstrologersDirect. Lost your phone? Use one of your recovery codes." />
+      <AuthHeading title="Enter Your Code" body="Open your authenticator app and enter the 6-digit code for AstrologersDirect. Lost your phone? Use one of your recovery codes." />
       <form
         className="space-y-4"
         onSubmit={(e) => {
@@ -109,7 +109,7 @@ function Login() {
     return (
       <>
         <span className="mb-6 flex size-12 items-center justify-center rounded-full bg-accent-50 text-accent"><MailCheck className="size-6" /></span>
-        <AuthHeading title="Check your email" body={<>If there’s an account for <span className="font-medium text-ink">{email}</span>, we’ve sent a sign-in link and a 6-digit code. Click the link, or enter the code here.</>} />
+        <AuthHeading title="Check Your Email" body={<>If there’s an account for <span className="font-medium text-ink">{email}</span>, we’ve sent a sign-in link and a 6-digit code. Click the link, or enter the code here.</>} />
         <form
           className="space-y-4"
           onSubmit={(e) => {
@@ -140,7 +140,7 @@ function Login() {
   if (mode === "password")
     return (
       <>
-        <AuthHeading title="Sign in with your password" body={reset ? "Your password was changed. Sign in with your new password." : "Your clients, charts, observations and the work between sessions, together in one place."} />
+        <AuthHeading title="Sign In With Your Password" body={reset ? "Your password was changed. Sign in with your new password." : "Your clients, charts, observations and the work between sessions, together in one place."} />
         <form
           className="space-y-4"
           onSubmit={(e) => {
@@ -173,7 +173,7 @@ function Login() {
 
   return (
     <>
-      <AuthHeading title="Welcome back to your practice." body="Enter your email and we’ll send you a sign-in link. No password needed." />
+      <AuthHeading title="Welcome Back to Your Practice." body="Enter your email and we’ll send you a sign-in link. No password needed." />
       <form
         className="space-y-4"
         onSubmit={(e) => {
@@ -324,12 +324,12 @@ function Verify() {
       });
   }, [token]);
 
-  if (state === "checking") return <AuthHeading title="Confirming your email…" />;
+  if (state === "checking") return <AuthHeading title="Confirming Your Email…" />;
   if (state === "ok")
     return (
       <>
         <span className="mb-6 flex size-12 items-center justify-center rounded-full bg-sage-50 text-sage-dark"><CheckCircle2 className="size-6" /></span>
-        <AuthHeading title="Email confirmed" body="Thanks — your email address is verified." />
+        <AuthHeading title="Email Confirmed" body="Thanks — your email address is verified." />
         <Link href="/app" className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-accent text-[15px] font-medium text-white hover:bg-accent-hover">Open my workspace</Link>
       </>
     );
@@ -365,7 +365,7 @@ function Reset() {
   if (token)
     return (
       <>
-        <AuthHeading title="Choose a new password" body={`Use at least ${MIN_PW} characters. You’ll be signed out of your other devices.`} />
+        <AuthHeading title="Choose a New Password" body={`Use at least ${MIN_PW} characters. You’ll be signed out of your other devices.`} />
         <form
           className="space-y-4"
           onSubmit={(e) => {
@@ -388,14 +388,14 @@ function Reset() {
     return (
       <>
         <span className="mb-6 flex size-12 items-center justify-center rounded-full bg-sage-50 text-sage-dark"><Send className="size-5" /></span>
-        <AuthHeading title="Check your inbox" body={<>If an account exists for <span className="font-medium text-ink">{email}</span>, a reset link is on its way. It expires in one hour.</>} />
+        <AuthHeading title="Check Your Inbox" body={<>If an account exists for <span className="font-medium text-ink">{email}</span>, a reset link is on its way. It expires in one hour.</>} />
         <button className="text-[13.5px] text-accent hover:underline" onClick={() => setSent(false)}>Try a different email</button>
       </>
     );
   return (
     <>
       <Link href="/auth/login" className="mb-6 inline-flex items-center gap-1.5 text-[13px] text-muted hover:text-ink"><ArrowLeft className="size-3.5" /> Back to sign in</Link>
-      <AuthHeading title="Reset your password" body="Enter the email you use for AstrologersDirect and we’ll send you a reset link." />
+      <AuthHeading title="Reset Your Password" body="Enter the email you use for AstrologersDirect and we’ll send you a reset link." />
       <form
         className="space-y-4"
         onSubmit={(e) => {
@@ -428,8 +428,8 @@ function Invite() {
       .catch((e: ApiError) => setLoadError(e.message));
   }, [token]);
   if (ticket) return <TwoFactorStep ticket={ticket} next="/portal" onCancel={() => router.replace("/auth/login")} />;
-  if (loadError) return <AuthHeading title="This invitation can’t be used" body={loadError} />;
-  if (!info) return <AuthHeading title="Opening your invitation…" />;
+  if (loadError) return <AuthHeading title="This Invitation Can’t Be Used" body={loadError} />;
+  if (!info) return <AuthHeading title="Opening Your Invitation…" />;
   return (
     <>
       <div className="mb-7 flex items-center gap-3 rounded-xl border border-line bg-surface p-4">
@@ -440,7 +440,7 @@ function Invite() {
           <p className="truncate text-[12.5px] text-muted">{info.practice}</p>
         </div>
       </div>
-      <AuthHeading title="Accept your invitation" body="Your astrologer has set up a private client portal for your readings, recordings, sessions and the work you do between them." />
+      <AuthHeading title="Accept Your Invitation" body="Your astrologer has set up a private client portal for your readings, recordings, sessions and the work you do between them." />
       <ul className="mb-7 space-y-2.5 text-[13.5px] text-ink-3">
         <li className="flex items-center gap-2.5"><BookOpen className="size-4 text-accent" /> Read, listen to and watch your readings</li>
         <li className="flex items-center gap-2.5"><CalendarDays className="size-4 text-accent" /> See upcoming and past consultations</li>

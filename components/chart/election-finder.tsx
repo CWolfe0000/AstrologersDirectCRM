@@ -149,7 +149,7 @@ export function ElectionFinder({
         windows.length === 0 ? (
           <p className="rounded-lg border border-dashed border-line px-4 py-5 text-center text-[13px] text-muted">No moments pass in this range (the Moon is void of course throughout, or the window is very short). Try a wider range or longer days.</p>
         ) : (
-          <ol className="space-y-2" aria-label="Best times">
+          <ol className="space-y-2" aria-label="Best Times">
             {windows.map((w, i) => {
               const on = picked === w.best;
               const passes = w.results.filter((r) => r.ok && !r.required);

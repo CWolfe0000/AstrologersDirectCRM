@@ -4,8 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import {
   CalendarDays, CircleDot, NotebookPen, ListChecks, Clock, Video, Phone, MapPin, ArrowRight, Plus, Heart, Users, Info,
-  Lock, Globe, Upload, Download, Pin, Mic, Send, ExternalLink, Play,
-} from "lucide-react";
+  Lock, Globe, Upload, Download, Pin, Mic, Send, ExternalLink, Play, PenLine, Headphones } from "lucide-react";
 import { useStore, personName } from "@/lib/store";
 import { chartTypeMeta } from "@/lib/astro";
 import type { ChartRecord, Client, Consultation, Observation, Person } from "@/lib/data/types";
@@ -22,8 +21,9 @@ import { ChartThumb, ChartTypeBadge, EngineNotice } from "@/components/chart/cha
 import { isUpcoming, TODAY_ISO, fmtCoord } from "./helpers";
 import { AddPersonDialog, relationshipLabel } from "./dialogs";
 import { ActivationCard } from "./activation-card";
+import { formatLabel } from "@/lib/booking/formats";
 
-const LOC = { "Video call": Video, Phone: Phone, "In person": MapPin } as const;
+const LOC = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones } as const;
 
 function useClientData(clientId: string) {
   const s = useStore();
@@ -52,7 +52,7 @@ function ConsultationLine({ k }: { k: Consultation }) {
       <div className="min-w-0 flex-1">
         <p className="truncate text-[13.5px] font-medium">{k.type}</p>
         <p className="flex items-center gap-1.5 text-[12px] text-muted">
-          {fmtTime(k.start)} · {k.durationMin} min · <L className="size-3" /> {k.location}
+          {fmtTime(k.start)} · {k.durationMin} min · <L className="size-3" /> {formatLabel(k.location)}
         </p>
       </div>
       <ArrowRight className="size-4 text-muted" />
@@ -349,7 +349,7 @@ export function ConsultationsTab({ client }: { client: Client }) {
                   <div className="w-44 shrink-0">
                     <p className="text-[14px] font-semibold">{fmtDate(k.start)}</p>
                     <p className="text-[12.5px] text-muted">{fmtTime(k.start)} · {k.durationMin} min</p>
-                    <p className="mt-1 flex items-center gap-1.5 text-[12.5px] text-muted"><L className="size-3.5" /> {k.location}</p>
+                    <p className="mt-1 flex items-center gap-1.5 text-[12.5px] text-muted"><L className="size-3.5" /> {formatLabel(k.location)}</p>
                     <StatusBadge status={k.status} className="mt-2" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -577,9 +577,9 @@ export function FilesTab({ client }: { client: Client }) {
           <Lock className="size-3.5" /> Private files are visible only to you. Shared files appear in the client&apos;s portal.
         </div>
         <div className="flex items-center gap-2">
-          {DATA_MODE === "demo" && <SimulatedBadge label="Simulated storage" />}
+          {DATA_MODE === "demo" && <SimulatedBadge label="Simulated Storage" />}
           <Button size="sm" disabled={!!uploading} onClick={() => inputRef.current?.click()}><Upload /> {uploading ? `Uploading ${Math.round(uploading.pct)}%` : "Upload file"}</Button>
-          <input ref={inputRef} type="file" className="sr-only" aria-label="Upload a file" tabIndex={-1} onChange={(e) => onFile(e.target.files?.[0])} />
+          <input ref={inputRef} type="file" className="sr-only" aria-label="Upload a File" tabIndex={-1} onChange={(e) => onFile(e.target.files?.[0])} />
         </div>
       </div>
       <Card>
@@ -599,7 +599,7 @@ export function FilesTab({ client }: { client: Client }) {
                 </div>
                 <button
                   onClick={() => d.s.files && useStore.setState((st) => ({ files: st.files.map((x) => (x.id === f.id ? { ...x, private: !x.private } : x)) }))}
-                  title="Toggle visibility"
+                  title="Toggle Visibility"
                 >
                   {f.private ? <Badge tone="neutral"><Lock className="size-3" /> Private</Badge> : <Badge tone="sage"><Globe className="size-3" /> Shared with client</Badge>}
                 </button>

@@ -26,7 +26,7 @@ function DemoInvitePage() {
           <p className="truncate text-[12.5px] text-muted">{pr.practice}</p>
         </div>
       </div>
-      <AuthHeading title="Accept your invitation" body={`${pr.firstName} has invited you to a private client portal, where your readings, recordings and consultation details will be kept.`} />
+      <AuthHeading title="Accept Your Invitation" body={`${pr.firstName} has invited you to a private client portal, where your readings, recordings and consultation details will be kept.`} />
       <ul className="mb-7 space-y-2.5 text-[13.5px] text-ink-3">
         <li className="flex items-center gap-2.5"><BookOpen className="size-4 text-accent" /> Read, listen to and watch your readings</li>
         <li className="flex items-center gap-2.5"><CalendarDays className="size-4 text-accent" /> See upcoming and past consultations</li>

@@ -287,7 +287,7 @@ export default function RectifyPage() {
             <CardHeader title="Step 4: Life Events" description="Dated events with known dates. Five or more spread across life give the clearest result." />
             <CardBody className="space-y-3 pt-0">
               <div className="grid grid-cols-[1fr_auto] gap-2">
-                <Input type="date" aria-label="Event date" value={draft.date} max={TODAY} min={b.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} />
+                <Input type="date" aria-label="Event Date" value={draft.date} max={TODAY} min={b.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} />
                 <Button
                   size="sm"
                   disabled={!draft.date}
@@ -298,10 +298,10 @@ export default function RectifyPage() {
                 >
                   <Plus /> Add Event
                 </Button>
-                <Select aria-label="Event type" value={draft.type} onChange={(e) => setDraft({ ...draft, type: e.target.value })} className="col-span-2">
+                <Select aria-label="Event Type" value={draft.type} onChange={(e) => setDraft({ ...draft, type: e.target.value })} className="col-span-2">
                   {EVENT_TYPES.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
                 </Select>
-                <Input aria-label="Event note" placeholder="Note (optional), e.g. married Daniel" value={draft.note} onChange={(e) => setDraft({ ...draft, note: e.target.value })} className="col-span-2" />
+                <Input aria-label="Event Note" placeholder="Note (optional), e.g. married Daniel" value={draft.note} onChange={(e) => setDraft({ ...draft, note: e.target.value })} className="col-span-2" />
               </div>
               {sorted.length === 0 ? (
                 <p className="text-[12.5px] text-muted">No events yet.</p>
@@ -356,7 +356,7 @@ export default function RectifyPage() {
                 <CardHeader title="Score Across the Window" description="Higher means more, tighter contacts to the angles at the events. Select a peak to see its candidate." />
                 <CardBody className="pt-0">
                   <div className="relative h-[120px]">
-                    <svg viewBox={`0 0 ${result.curve.length} 100`} preserveAspectRatio="none" className="absolute inset-0 size-full" role="img" aria-label="Rectification score for each candidate time">
+                    <svg viewBox={`0 0 ${result.curve.length} 100`} preserveAspectRatio="none" className="absolute inset-0 size-full" role="img" aria-label="Rectification Score for Each Candidate Time">
                       <path d={`M0,100 ${result.curve.map((c, i) => `L${i + 0.5},${100 - (c.score / maxScore) * 94}`).join(" ")} L${result.curve.length},100 Z`} style={{ fill: "rgb(var(--accent) / 0.25)" }} />
                       {recorded && recorded >= result.curve[0]!.time && recorded <= result.curve[result.curve.length - 1]!.time && (
                         <line x1={result.curve.findIndex((c) => c.time >= recorded) + 0.5} x2={result.curve.findIndex((c) => c.time >= recorded) + 0.5} y1={0} y2={100} stroke="#29272B" strokeWidth={1} vectorEffect="non-scaling-stroke" strokeDasharray="3 3" />

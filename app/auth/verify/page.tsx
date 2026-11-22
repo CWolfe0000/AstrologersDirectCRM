@@ -37,7 +37,7 @@ function Verify() {
       <span className="mb-6 flex size-12 items-center justify-center rounded-full bg-accent-50 text-accent">
         <MailCheck className="size-6" />
       </span>
-      <AuthHeading title="Verify your email" body={<>We sent a six-digit code to <span className="font-medium text-ink">{email}</span>. Enter it below, or use the link in the email.</>} />
+      <AuthHeading title="Verify Your Email" body={<>We sent a six-digit code to <span className="font-medium text-ink">{email}</span>. Enter it below, or use the link in the email.</>} />
       <div className="flex justify-between gap-2">
         {code.map((c, i) => (
           <input

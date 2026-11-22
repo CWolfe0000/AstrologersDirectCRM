@@ -26,7 +26,7 @@ export function MidpointsPanel({ view }: { view: ChartView }) {
       <section>
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-[13px] font-semibold text-ink">Midpoint Pictures</h3>
-          <Select aria-label="Focus point" value={focus} onChange={(e) => setFocus(e.target.value as MidPointId | "all")} className="h-8 w-auto text-[12.5px]">
+          <Select aria-label="Focus Point" value={focus} onChange={(e) => setFocus(e.target.value as MidPointId | "all")} className="h-8 w-auto text-[12.5px]">
             <option value="all">All Points</option>
             {ids.map((id) => <option key={id} value={id}>{label(id)}</option>)}
           </Select>

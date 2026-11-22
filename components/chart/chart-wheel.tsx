@@ -139,7 +139,7 @@ function ClassicWheel({ view, compact, className, selected, onSelect, highlightA
   };
 
   return (
-    <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox={compact ? "0 0 600 600" : "-22 -22 644 644"} className={cn("h-auto w-full select-none", className)} onClick={() => onSelect?.(null)} role="img" aria-label="Chart wheel">
+    <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox={compact ? "0 0 600 600" : "-22 -22 644 644"} className={cn("h-auto w-full select-none", className)} onClick={() => onSelect?.(null)} role="img" aria-label="Chart Wheel">
       {/* zodiac ring */}
       <circle cx={C} cy={C} r={R_OUT} fill="#FFFFFF" stroke="#D6CFC6" strokeWidth={1.2} />
       {SIGNS.map((s, i) => {

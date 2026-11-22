@@ -54,7 +54,7 @@ assert.equal((await post("/api/v1/astro/forecast", { birth: me, settings, from: 
 step("chart: Midpoints tab and Fixed Stars");
 await page.goto(BASE + `/app/charts/${natal.id}`);
 // The detailed wheel (default): minutes beside each planet and cusp positions around the outside.
-const wheelText = await page.getByRole("img", { name: "Chart wheel" }).first().textContent();
+const wheelText = await page.getByRole("img", { name: "Chart Wheel" }).first().textContent();
 assert.match(wheelText, /\d\d′/);
 assert.match(wheelText, /AC \d+/);
 await page.getByRole("tab", { name: "Midpoints" }).click();
@@ -103,7 +103,7 @@ for (let i = 0; i < 20; i++) {
 assert.equal(saved.defaults.wheelPalette?.planets?.sun, "#ff00aa");
 assert.equal(saved.defaults.wheelColors, "custom");
 await page.goto(BASE + `/app/charts/${natal.id}`);
-const sunFill = await page.getByRole("img", { name: "Chart wheel" }).first().locator("g", { has: page.locator("title", { hasText: /^Sun / }) }).locator("text.glyph").first().getAttribute("fill");
+const sunFill = await page.getByRole("img", { name: "Chart Wheel" }).first().locator("g", { has: page.locator("title", { hasText: /^Sun / }) }).locator("text.glyph").first().getAttribute("fill");
 assert.equal(sunFill, "#ff00aa");
 
 assert.deepEqual(errors, []);

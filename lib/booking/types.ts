@@ -14,7 +14,9 @@ export interface BookingService {
   durationMin: number;
   /** Shown as written, e.g. "$150". Payment is arranged directly for now. */
   price: string;
-  format: "Video call" | "Phone" | "In person";
+  format: "Video call" | "Audio call" | "Phone" | "Written reading" | "In person";
+  /** Written readings: delivered within this many days (instead of a time slot). */
+  deliveryDays?: number;
   active: boolean;
   /** The intake form sent to whoever books this service. */
   intakeFormId?: string;
@@ -50,6 +52,8 @@ export interface BookingProfile {
   autoInvite: boolean;
   /** Profile photo: a small square image, stored as a data URL. */
   photo?: string;
+  /** What clients need to know for each format (sent with the booking and shown on their booking page). */
+  instructions?: { "Video call"?: string; "Audio call"?: string; Phone?: string; "Written reading"?: string };
   /** Let search engines list the page (off: reachable by link only). */
   searchable?: boolean;
   /** Links shown under the name, link-in-bio style (website, Instagram, newsletter…). */

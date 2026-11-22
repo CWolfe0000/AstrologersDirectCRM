@@ -55,7 +55,7 @@ await page.getByLabel("Check Every").selectOption("30");
 await page.locator("#election-place").fill("Par");
 await page.locator("button", { hasText: "Paris, France" }).first().click();
 await page.getByRole("button", { name: "Find Times" }).click();
-const results = page.getByRole("list", { name: "Best times" });
+const results = page.getByRole("list", { name: "Best Times" });
 await results.waitFor({ timeout: 60000 });
 await results.getByRole("button").first().click();
 await page.getByText("Signing the studio lease").first().waitFor();

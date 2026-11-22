@@ -41,7 +41,7 @@ function Settings() {
       <PageHeader title="Settings" description="Your profile, practice configuration and chart defaults." breadcrumbs={[{ label: "Dashboard", href: "/app" }, { label: "Settings" }, { label: current.label }]} />
       <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
         <div className="lg:hidden">
-          <Select value={current.id} onChange={(e) => go(e.target.value)} aria-label="Settings section">
+          <Select value={current.id} onChange={(e) => go(e.target.value)} aria-label="Settings Section">
             {SECTIONS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
           </Select>
         </div>

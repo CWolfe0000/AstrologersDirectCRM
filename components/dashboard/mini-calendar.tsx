@@ -23,10 +23,10 @@ export function MiniCalendar({ consultations }: { consultations: Consultation[] 
           {monthName(m, true)} {y}
         </p>
         <div className="flex gap-0.5">
-          <button className="rounded p-1 text-muted hover:bg-canvas-2 hover:text-ink" onClick={() => setCursor(new Date(y, m - 1, 1))} aria-label="Previous month">
+          <button className="rounded p-1 text-muted hover:bg-canvas-2 hover:text-ink" onClick={() => setCursor(new Date(y, m - 1, 1))} aria-label="Previous Month">
             <ChevronLeft className="size-4" />
           </button>
-          <button className="rounded p-1 text-muted hover:bg-canvas-2 hover:text-ink" onClick={() => setCursor(new Date(y, m + 1, 1))} aria-label="Next month">
+          <button className="rounded p-1 text-muted hover:bg-canvas-2 hover:text-ink" onClick={() => setCursor(new Date(y, m + 1, 1))} aria-label="Next Month">
             <ChevronRight className="size-4" />
           </button>
         </div>

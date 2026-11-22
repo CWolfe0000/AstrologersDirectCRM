@@ -62,7 +62,7 @@ assert.equal(await B.getByText("Follow up with Theo about returning").count(), 0
 
 step("observation clash: the newer text stays, the other device's text is kept as a revision");
 await B.goto(BASE + "/app/observations?id=o2");
-await B.getByPlaceholder("Observation title").waitFor();
+await B.getByPlaceholder("Observation Title").waitFor();
 s = await state(A);
 const o2 = s.observations.find((o) => o.id === "o2");
 await put(A, "observations", { ...o2, body: "<p>Text written on device A.</p>" }, s.versions.observations.o2);
@@ -70,7 +70,7 @@ const editor = B.locator("[contenteditable=true]").first();
 await editor.click();
 await B.keyboard.press("End");
 await B.keyboard.type(" Text typed on device B.");
-await B.getByPlaceholder("Observation title").click();
+await B.getByPlaceholder("Observation Title").click();
 await B.getByText("also edited on another device").first().waitFor({ timeout: 15000 });
 await B.getByText("All changes saved").waitFor({ timeout: 15000 });
 s = await state(A);

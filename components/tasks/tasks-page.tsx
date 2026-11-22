@@ -109,7 +109,7 @@ export function TasksPage() {
         <div className="min-w-0">
           <div className="mb-3 flex flex-col gap-2 sm:flex-row">
             <SearchInput value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search tasks or clients…" className="flex-1" />
-            <Select value={priority} onChange={(e) => setPriority(e.target.value)} className="sm:w-44" aria-label="Filter by priority">
+            <Select value={priority} onChange={(e) => setPriority(e.target.value)} className="sm:w-44" aria-label="Filter by Priority">
               <option value="">All Priorities</option>
               <option value="high">High Priority</option>
               <option value="medium">Medium Priority</option>
@@ -131,7 +131,7 @@ export function TasksPage() {
                   const cd = t.checklist.filter((c) => c.done).length;
                   return (
                     <li key={t.id} className={cn("flex items-center gap-3 px-4 py-3 transition-colors hover:bg-canvas/70", selectedId === t.id && "bg-accent-50/40")}>
-                      <Checkbox checked={t.status === "done"} onChange={(e) => complete(t, e.target.checked)} aria-label="Complete task" />
+                      <Checkbox checked={t.status === "done"} onChange={(e) => complete(t, e.target.checked)} aria-label="Complete Task" />
                       <button onClick={() => select(t.id)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
                         <div className="min-w-0 flex-1">
                           <p className={cn("truncate text-[13.5px] font-medium", t.status === "done" && "text-muted line-through")}>{t.title}</p>

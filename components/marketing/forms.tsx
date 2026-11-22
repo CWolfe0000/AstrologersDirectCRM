@@ -72,11 +72,11 @@ export function ContactForm() {
       </div>
       <Field label="Topic" htmlFor="c-topic">
         <Select id="c-topic" value={f.topic} onChange={set("topic")}>
-          <option value="general">General inquiry</option>
-          <option value="support">Product support</option>
-          <option value="early">The beta & pricing</option>
-          <option value="partnership">Partnerships & press</option>
-          <option value="data">Privacy & data</option>
+          <option value="general">General Inquiry</option>
+          <option value="support">Product Support</option>
+          <option value="early">The Beta & Pricing</option>
+          <option value="partnership">Partnerships & Press</option>
+          <option value="data">Privacy & Data</option>
         </Select>
       </Field>
       <Field label="Message" htmlFor="c-msg">
@@ -111,7 +111,7 @@ export function AdvisoryForm() {
       }}
     >
       <Honeypot value={f.website} onChange={(website) => setF((x) => ({ ...x, website }))} />
-      <Input required maxLength={120} placeholder="Your name" value={f.name} onChange={(e) => setF((x) => ({ ...x, name: e.target.value }))} className="border-white/15 bg-white/5 text-white placeholder:text-white/40" aria-label="Your name" />
+      <Input required maxLength={120} placeholder="Your name" value={f.name} onChange={(e) => setF((x) => ({ ...x, name: e.target.value }))} className="border-white/15 bg-white/5 text-white placeholder:text-white/40" aria-label="Your Name" />
       <Input required type="email" maxLength={254} placeholder="Email address" value={f.email} onChange={(e) => setF((x) => ({ ...x, email: e.target.value }))} className="border-white/15 bg-white/5 text-white placeholder:text-white/40" aria-label="Email" />
       <Button type="submit" size="md" disabled={busy}>
         {busy ? "Sending…" : "Join the advisory group"}

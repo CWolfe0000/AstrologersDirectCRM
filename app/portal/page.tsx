@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowRight, Video, Phone, MapPin, Mail, Globe, FileText, Headphones, Film, Bell, Check, FolderOpen, MessagesSquare, CalendarPlus, ClipboardList } from "lucide-react";
+import { ArrowRight, Video, Phone, MapPin, Mail, Globe, FileText, Headphones, Film, Bell, Check, FolderOpen, MessagesSquare, CalendarPlus, ClipboardList, PenLine } from "lucide-react";
 import { useStore, personName } from "@/lib/store";
 import { cn, titleCase, fmtDay, fmtDate, fmtLong, fmtTime, relTime, sameDay, fmtDuration } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
@@ -17,8 +17,9 @@ import { WorkCard } from "@/components/portal/work-card";
 import { workState } from "@/components/client-work/work-meta";
 import { ReadingCard } from "@/components/portal/reading-card";
 import { AddToCalendar } from "@/components/portal/session-actions";
+import { formatLabel, isCall } from "@/lib/booking/formats";
 
-const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin } as const;
+const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones } as const;
 
 export default function PortalHome() {
   const PORTAL_CLIENT_ID = usePortalClientId();
@@ -83,10 +84,10 @@ export default function PortalHome() {
                         <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted">
                           <span>{fmtDay(k.start)} · {fmtTime(k.start)}</span>
                           <span>{k.durationMin} min</span>
-                          <span className="inline-flex items-center gap-1"><Icon className="size-3.5" />{k.location}</span>
+                          <span className="inline-flex items-center gap-1"><Icon className="size-3.5" />{formatLabel(k.location)}</span>
                         </p>
                       </div>
-                      {today && k.location === "Video call" && k.meetingUrl ? (
+                      {today && isCall(k.location) && k.meetingUrl ? (
                         <a href={k.meetingUrl} target="_blank" rel="noreferrer" className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-accent px-5 text-[15px] font-medium text-white hover:bg-accent-hover sm:w-auto">
                           <Video className="size-[18px]" /> Join video call
                         </a>
@@ -248,7 +249,7 @@ export default function PortalHome() {
                     <p className="mt-1 text-[11px] text-muted">{relTime(n.at)}</p>
                   </Link>
                   {!n.read && (
-                    <button onClick={() => markRead(n.id)} className="h-fit rounded p-1 text-muted hover:bg-canvas-2 hover:text-ink" aria-label="Mark as read" title="Mark as read">
+                    <button onClick={() => markRead(n.id)} className="h-fit rounded p-1 text-muted hover:bg-canvas-2 hover:text-ink" aria-label="Mark as Read" title="Mark as Read">
                       <Check className="size-3.5" />
                     </button>
                   )}

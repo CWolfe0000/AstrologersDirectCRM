@@ -188,7 +188,7 @@ export function ObservationEditor({ observationId, initial, lockChart, onCreated
               <Button
                 variant="ghost"
                 size="icon-sm"
-                aria-label="Delete observation"
+                aria-label="Delete Observation"
                 title="Delete"
                 onClick={() => {
                   if (!confirm("Delete this observation? This can’t be undone.")) return;
@@ -221,7 +221,7 @@ export function ObservationEditor({ observationId, initial, lockChart, onCreated
           change({ title: e.target.value.replace(/\n/g, " ") });
         }}
         placeholder="Observation title"
-        aria-label="Observation title"
+        aria-label="Observation Title"
         className="w-full resize-none overflow-hidden bg-transparent font-serif text-[24px] leading-tight text-ink outline-none placeholder:text-muted/50"
       />
 
@@ -313,7 +313,7 @@ export function ObservationEditor({ observationId, initial, lockChart, onCreated
         <ol className="relative px-6 py-5">
           <li className="relative border-l border-line pb-6 pl-5">
             <span className="absolute -left-[5px] top-1 size-2.5 rounded-full bg-accent" />
-            <p className="text-[13px] font-medium text-ink">Current version</p>
+            <p className="text-[13px] font-medium text-ink">Current Version</p>
             <p className="text-[12px] text-muted">{savedAt ? `${fmtDate(savedAt)} · ${fmtTime(savedAt)}` : "Unsaved"}</p>
           </li>
           {revisions.map((r, i) => (

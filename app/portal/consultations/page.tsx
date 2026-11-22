@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Video, Phone, MapPin, Lock, FileText, Clock, CalendarPlus } from "lucide-react";
+import { Video, Phone, MapPin, Lock, FileText, Clock, CalendarPlus, PenLine, Headphones } from "lucide-react";
 import { mediaUrl } from "@/lib/upload";
 import { useStore } from "@/lib/store";
 import { cn, fmtDate, fmtTime, monthName, sameDay } from "@/lib/utils";
@@ -11,8 +11,9 @@ import { Segmented } from "@/components/ui/tabs";
 import { FileKindIcon } from "@/components/ui/misc";
 import { practiceOf, useMyConsultations, useMyReadings, usePortalPractices, useSharedFiles, PORTAL_NOW } from "@/components/portal/portal-data";
 import { AddToCalendar, SessionActions } from "@/components/portal/session-actions";
+import { formatLabel } from "@/lib/booking/formats";
 
-const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin } as const;
+const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones } as const;
 
 export default function PortalConsultations() {
   const all = useMyConsultations();
@@ -77,7 +78,7 @@ export default function PortalConsultations() {
                   <p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-muted">
                     <span>{fmtDate(k.start)} · {fmtTime(k.start)}</span>
                     <span className="inline-flex items-center gap-1"><Clock className="size-3.5" />{k.durationMin} min</span>
-                    <span className="inline-flex items-center gap-1"><Icon className="size-3.5" />{k.location}</span>
+                    <span className="inline-flex items-center gap-1"><Icon className="size-3.5" />{formatLabel(k.location)}</span>
                   </p>
                 </div>
               </div>

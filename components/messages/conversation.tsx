@@ -71,7 +71,7 @@ export function Conversation({ messages, me, theirName, onSend, disabled, placeh
                 placeholder={placeholder ?? `Write to ${theirName}…`}
                 className="min-h-[44px] flex-1 resize-y rounded-lg border border-line bg-surface px-3 py-2 text-[14px] text-ink outline-none focus:border-accent"
               />
-              <Button onClick={submit} disabled={!draft.trim() || sending} aria-label="Send message">{sending ? <Loader2 className="animate-spin" /> : <Send />} Send</Button>
+              <Button onClick={submit} disabled={!draft.trim() || sending} aria-label="Send Message">{sending ? <Loader2 className="animate-spin" /> : <Send />} Send</Button>
             </div>
             <p className="mt-1 text-[11px] text-muted">Ctrl or ⌘ + Enter to send.</p>
             {error && <p className="mt-1 text-[12.5px] text-danger" role="alert">{error}</p>}

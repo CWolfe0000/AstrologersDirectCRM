@@ -66,7 +66,7 @@ await page.goto(BASE + "/auth/login?method=password");
 await page.fill("#email", email);
 await page.fill("#password", password);
 await page.click('button[type="submit"]');
-await page.getByText("Enter your code").waitFor();
+await page.getByText("Enter Your Code").waitFor();
 assert.equal(await page.evaluate(() => fetch("/api/v1/bootstrap?view=app").then((r) => r.status)), 401, "password alone does not sign in");
 await page.fill("#code", "123456");
 await page.click('button[type="submit"]');

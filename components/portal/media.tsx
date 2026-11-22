@@ -79,7 +79,7 @@ export function AudioPlayer({ duration, title }: { duration: number; title: stri
           {p.speed}×
         </button>
         <div className="flex items-center gap-3 sm:gap-5">
-          <button onClick={() => p.seek(p.t - 15)} className="relative flex size-12 items-center justify-center rounded-full text-ink-3 hover:bg-canvas-2" aria-label="Back 15 seconds">
+          <button onClick={() => p.seek(p.t - 15)} className="relative flex size-12 items-center justify-center rounded-full text-ink-3 hover:bg-canvas-2" aria-label="Back 15 Seconds">
             <RotateCcw className="size-6" />
             <span className="absolute text-[8.5px] font-bold">15</span>
           </button>
@@ -90,7 +90,7 @@ export function AudioPlayer({ duration, title }: { duration: number; title: stri
           >
             {p.playing ? <Pause className="size-7" fill="currentColor" /> : <Play className="ml-1 size-7" fill="currentColor" />}
           </button>
-          <button onClick={() => p.seek(p.t + 15)} className="relative flex size-12 items-center justify-center rounded-full text-ink-3 hover:bg-canvas-2" aria-label="Forward 15 seconds">
+          <button onClick={() => p.seek(p.t + 15)} className="relative flex size-12 items-center justify-center rounded-full text-ink-3 hover:bg-canvas-2" aria-label="Forward 15 Seconds">
             <RotateCw className="size-6" />
             <span className="absolute text-[8.5px] font-bold">15</span>
           </button>
@@ -135,8 +135,8 @@ export function VideoPlayer({ duration, title, poster }: { duration: number; tit
           <button onClick={() => p.setPlaying(!p.playing)} className="rounded-md p-2 hover:bg-white/10" aria-label={p.playing ? "Pause" : "Play"}>
             {p.playing ? <Pause className="size-5" fill="currentColor" /> : <Play className="size-5" fill="currentColor" />}
           </button>
-          <button onClick={() => p.seek(p.t - 15)} className="rounded-md p-2 hover:bg-white/10" aria-label="Back 15 seconds"><RotateCcw className="size-[18px]" /></button>
-          <button onClick={() => p.seek(p.t + 15)} className="rounded-md p-2 hover:bg-white/10" aria-label="Forward 15 seconds"><RotateCw className="size-[18px]" /></button>
+          <button onClick={() => p.seek(p.t - 15)} className="rounded-md p-2 hover:bg-white/10" aria-label="Back 15 Seconds"><RotateCcw className="size-[18px]" /></button>
+          <button onClick={() => p.seek(p.t + 15)} className="rounded-md p-2 hover:bg-white/10" aria-label="Forward 15 Seconds"><RotateCw className="size-[18px]" /></button>
           <button onClick={() => setMuted(!muted)} className="rounded-md p-2 hover:bg-white/10" aria-label={muted ? "Unmute" : "Mute"}>
             {muted ? <VolumeX className="size-[18px]" /> : <Volume2 className="size-[18px]" />}
           </button>
@@ -145,8 +145,8 @@ export function VideoPlayer({ duration, title, poster }: { duration: number; tit
             <button onClick={() => p.setSpeed(SPEEDS[(SPEEDS.indexOf(p.speed) + 1) % SPEEDS.length]!)} className="rounded-md px-2 py-1.5 text-[12px] font-semibold tabular-nums hover:bg-white/10" aria-label={`Playback speed ${p.speed}×`}>
               {p.speed}×
             </button>
-            <button className="hidden rounded-md p-2 text-white/50 sm:block" aria-label="Captions (coming soon)" title="Captions — planned feature" disabled><Captions className="size-[18px]" /></button>
-            <button className="rounded-md p-2 hover:bg-white/10" aria-label="Full screen"><Maximize2 className="size-[18px]" /></button>
+            <button className="hidden rounded-md p-2 text-white/50 sm:block" aria-label="Captions (Coming Soon)" title="Captions — Planned Feature" disabled><Captions className="size-[18px]" /></button>
+            <button className="rounded-md p-2 hover:bg-white/10" aria-label="Full Screen"><Maximize2 className="size-[18px]" /></button>
           </div>
         </div>
       </div>
@@ -163,13 +163,13 @@ export function DocumentViewer({ pages, title, author }: { pages: number; title:
   return (
     <div className="overflow-hidden rounded-2xl border border-line bg-canvas-2">
       <div className="flex items-center gap-2 border-b border-line bg-surface px-3 py-2">
-        <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="rounded-md p-2 text-ink-3 hover:bg-canvas-2 disabled:opacity-40" aria-label="Previous page"><ChevronLeft className="size-4" /></button>
+        <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="rounded-md p-2 text-ink-3 hover:bg-canvas-2 disabled:opacity-40" aria-label="Previous Page"><ChevronLeft className="size-4" /></button>
         <span className="text-[12.5px] tabular-nums text-ink-3">Page {page} of {pages}</span>
-        <button onClick={() => setPage((p) => Math.min(pages, p + 1))} disabled={page === pages} className="rounded-md p-2 text-ink-3 hover:bg-canvas-2 disabled:opacity-40" aria-label="Next page"><ChevronRight className="size-4" /></button>
+        <button onClick={() => setPage((p) => Math.min(pages, p + 1))} disabled={page === pages} className="rounded-md p-2 text-ink-3 hover:bg-canvas-2 disabled:opacity-40" aria-label="Next Page"><ChevronRight className="size-4" /></button>
         <div className="ml-auto flex items-center gap-1">
-          <button onClick={() => setZoom((z) => Math.max(0.8, +(z - 0.1).toFixed(1)))} className="rounded-md p-2 text-ink-3 hover:bg-canvas-2" aria-label="Zoom out"><ZoomOut className="size-4" /></button>
+          <button onClick={() => setZoom((z) => Math.max(0.8, +(z - 0.1).toFixed(1)))} className="rounded-md p-2 text-ink-3 hover:bg-canvas-2" aria-label="Zoom Out"><ZoomOut className="size-4" /></button>
           <span className="w-11 text-center text-[12px] tabular-nums text-muted">{Math.round(zoom * 100)}%</span>
-          <button onClick={() => setZoom((z) => Math.min(1.4, +(z + 0.1).toFixed(1)))} className="rounded-md p-2 text-ink-3 hover:bg-canvas-2" aria-label="Zoom in"><ZoomIn className="size-4" /></button>
+          <button onClick={() => setZoom((z) => Math.min(1.4, +(z + 0.1).toFixed(1)))} className="rounded-md p-2 text-ink-3 hover:bg-canvas-2" aria-label="Zoom In"><ZoomIn className="size-4" /></button>
         </div>
       </div>
       <div className="flex">

@@ -14,6 +14,7 @@ import { sameId, usePractitionerFor } from "@/components/portal/portal-data";
 import { readingMeta, useSimulatedDownload } from "@/components/portal/reading-card";
 import { mediaUrl } from "@/lib/upload";
 import { AudioPlayer, DocumentViewer, VideoPlayer } from "@/components/portal/media";
+import { formatLabel } from "@/lib/booking/formats";
 
 export default function ReadingDetail() {
   const PORTAL_CLIENT_ID = usePortalClientId();
@@ -87,7 +88,7 @@ export default function ReadingDetail() {
         {media && (
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-[13px] font-semibold text-ink">{r.kind === "audio" ? "Listen" : "Watch"}</h2>
-            {!r.fileKey && <SimulatedBadge label="Simulated playback" />}
+            {!r.fileKey && <SimulatedBadge label="Simulated Playback" />}
           </div>
         )}
         {r.fileKey && r.kind === "audio" && (
@@ -123,7 +124,7 @@ export default function ReadingDetail() {
           <>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-[13px] font-semibold text-ink">Read</h2>
-              <SimulatedBadge label="Document preview" />
+              <SimulatedBadge label="Document Preview" />
             </div>
             <DocumentViewer pages={r.pages ?? 8} title={r.title} author={pr.name} />
           </>
@@ -172,7 +173,7 @@ export default function ReadingDetail() {
             <span className="flex size-11 items-center justify-center rounded-xl bg-canvas-2 text-ink-3"><CalendarDays className="size-5" /></span>
             <div className="min-w-0">
               <p className="text-[14px] font-medium text-ink">{consultation.type}</p>
-              <p className="text-[12.5px] text-muted">{fmtDate(consultation.start)} · {fmtTime(consultation.start)} · {consultation.location}</p>
+              <p className="text-[12.5px] text-muted">{fmtDate(consultation.start)} · {fmtTime(consultation.start)} · {formatLabel(consultation.location)}</p>
             </div>
           </Link>
         </section>

@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useStore } from "@/lib/store";
 import * as D from "@radix-ui/react-dialog";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
@@ -12,6 +13,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = React.useState(false);
   const path = usePathname();
   React.useEffect(() => setOpen(false), [path]);
+  // A brand-new practice starts with the setup walkthrough (once; after that it's on the dashboard).
+  const router = useRouter();
+  const onboarding = useStore((s) => s.practitioner.onboarding);
+  const ready = useStore((s) => s.session.status === "ready");
+  React.useEffect(() => {
+    if (!ready || !onboarding || onboarding.done || onboarding.step !== 0 || path !== "/app") return;
+    let shown = false;
+    try { shown = sessionStorage.getItem("ad-welcome") === "1"; sessionStorage.setItem("ad-welcome", "1"); } catch {}
+    if (!shown) router.replace("/app/welcome");
+  }, [ready, onboarding, path, router]);
 
   return (
     <ServerGate view="app">

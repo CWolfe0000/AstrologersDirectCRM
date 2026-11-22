@@ -2,17 +2,19 @@
 
 import { selectIntakeForms } from "@/lib/intake";
 import * as React from "react";
-import { Copy, ExternalLink, ImagePlus, Loader2, Plus, Trash2 } from "lucide-react";
+import { Check, Copy, ExternalLink, ImagePlus, Loader2, Plus, Trash2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useStore } from "@/lib/store";
 import { DATA_MODE, uid } from "@/lib/utils";
 import { SITE_URL } from "@/lib/site";
+import { squarePhoto } from "@/lib/photo";
 import { DAYS, type BookingProfile, type BookingService, type Day } from "@/lib/booking/types";
 import { Card, CardBody, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox, Field, Input, Select, Textarea } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { SimulatedNote } from "@/components/ui/misc";
+import { DEFAULT_INSTRUCTIONS, DELIVERY_DAYS, OFFERED_FORMATS, formatLabel, isWritten } from "@/lib/booking/formats";
 
 const DURATIONS = [30, 45, 60, 75, 90, 120];
 
@@ -75,23 +77,24 @@ export function BookingSection() {
         <CardBody className="space-y-4">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-[14px] font-medium text-ink">Accept online bookings</p>
+              <p className="text-[14px] font-medium text-ink">Accept Online Bookings</p>
               <p className="text-[12.5px] text-muted">{p.enabled ? "Your page is live." : "Your page is off: the link shows “not available”."}</p>
             </div>
-            <Switch checked={p.enabled} onCheckedChange={(v) => void save({ enabled: v })} aria-label="Accept online bookings" disabled={busy} />
+            <Switch checked={p.enabled} onCheckedChange={(v) => void save({ enabled: v })} aria-label="Accept Online Bookings" disabled={busy} />
           </div>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-[14px] font-medium text-ink">Let search engines list my page</p>
+              <p className="text-[14px] font-medium text-ink">Let Search Engines List My Page</p>
               <p className="text-[12.5px] text-muted">{p.searchable ? "Google and others can show your page in search results." : "Off: only people with the link can find your page."}</p>
             </div>
-            <Switch checked={!!p.searchable} onCheckedChange={(v) => set({ searchable: v })} aria-label="Let search engines list my page" />
+            <Switch checked={!!p.searchable} onCheckedChange={(v) => set({ searchable: v })} aria-label="Let Search Engines List My Page" />
           </div>
           <Field label="Page Address" htmlFor="bk-slug" hint="Lowercase letters, numbers and hyphens. Save to apply.">
             <div className="flex items-center gap-1.5">
               <span className="hidden shrink-0 text-[13px] text-muted sm:inline">{base.replace(/^https?:\/\//, "")}/</span>
-              <Input id="bk-slug" value={p.slug} maxLength={40} onChange={(e) => set({ slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })} />
+              <Input id="bk-slug" value={p.slug} maxLength={40} onChange={(e) => set({ slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })} aria-describedby="bk-slug-status" />
             </div>
+            <AddressStatus slug={p.slug} saved={saved?.slug} />
           </Field>
           <div className="flex flex-wrap gap-2">
             <Button variant="secondary" size="sm" onClick={() => navigator.clipboard?.writeText(url).then(() => toast("Link Copied", url, "success"))}><Copy /> Copy Link</Button>
@@ -108,7 +111,7 @@ export function BookingSection() {
             <div className="flex flex-wrap gap-2">
               <label className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-line px-3 text-[13px] font-medium text-ink hover:bg-canvas-2 focus-within:ring-2 focus-within:ring-accent/40">
                 <ImagePlus className="size-4" /> {p.photo ? "Change Photo" : "Add Photo"}
-                <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" aria-label="Profile photo" onChange={async (e) => {
+                <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" aria-label="Profile Photo" onChange={async (e) => {
                   const f = e.target.files?.[0];
                   e.target.value = "";
                   if (!f) return;
@@ -123,7 +126,7 @@ export function BookingSection() {
           <Field label="Headline" htmlFor="bk-head" optional><Input id="bk-head" maxLength={160} value={p.headline} onChange={(e) => set({ headline: e.target.value })} placeholder="e.g. Evolutionary astrologer" /></Field>
           <Field label="About" htmlFor="bk-about" optional className="sm:col-span-2"><Textarea id="bk-about" rows={4} maxLength={4000} value={p.about} onChange={(e) => set({ about: e.target.value })} /></Field>
           <Field label="In-Person Location" htmlFor="bk-loc" optional hint="Shown for in-person sessions."><Input id="bk-loc" maxLength={200} value={p.location} onChange={(e) => set({ location: e.target.value })} /></Field>
-          <Field label="Video Call Link" htmlFor="bk-meet" optional hint="Your Zoom or Meet room, sent with video bookings."><Input id="bk-meet" type="url" placeholder="https://" maxLength={500} value={p.meetingUrl} onChange={(e) => set({ meetingUrl: e.target.value.trim() })} /></Field>
+          <Field label="Call Link" htmlFor="bk-meet" optional hint="Your Zoom or Meet room, sent with video and audio call bookings."><Input id="bk-meet" type="url" placeholder="https://" maxLength={500} value={p.meetingUrl} onChange={(e) => set({ meetingUrl: e.target.value.trim() })} /></Field>
           <div className="space-y-2 sm:col-span-2">
             <p className="text-[13px] font-medium text-ink">Links</p>
             <p className="-mt-1 text-[12px] text-muted">Your website, Instagram, newsletter, podcast: shown as buttons under your name.</p>
@@ -140,6 +143,20 @@ export function BookingSection() {
       </Card>
 
       <Card>
+        <CardHeader title="Client Instructions" description="What clients need to know for each kind of session. Sent with their booking confirmation and shown on their booking page." />
+        <CardBody className="space-y-4">
+          {OFFERED_FORMATS.map((f) => {
+            const key = f as keyof typeof DEFAULT_INSTRUCTIONS;
+            return (
+              <Field key={f} label={formatLabel(f)} htmlFor={`bk-in-${f}`} hint={f === "Video call" || f === "Audio call" ? "Your call link is added automatically." : f === "Phone" ? "Clients booking a phone session must give a phone number." : "Written readings have no time slot: clients get a ready-by date instead."}>
+                <Textarea id={`bk-in-${f}`} rows={2} maxLength={2000} value={p.instructions?.[key] ?? DEFAULT_INSTRUCTIONS[key]} onChange={(e) => set({ instructions: { ...(p.instructions ?? {}), [key]: e.target.value } })} />
+              </Field>
+            );
+          })}
+        </CardBody>
+      </Card>
+
+      <Card>
         <CardHeader title="Services" description="Each one is a bookable session. Prices are shown as written; payment is arranged directly for now." action={<Button size="sm" variant="secondary" onClick={() => set({ services: [...p.services, { id: uid("svc"), name: "", description: "", durationMin: 60, price: "", format: "Video call", active: true }] })}><Plus /> Add Service</Button>} />
         <CardBody className="space-y-3">
           {p.services.length === 0 && <p className="text-[13px] text-muted">No services yet. Add one to start taking bookings.</p>}
@@ -148,26 +165,36 @@ export function BookingSection() {
               <legend className="sr-only">Service {i + 1}</legend>
               <div className="grid gap-3 sm:grid-cols-[1fr_120px_140px]">
                 <Field label="Service Name" htmlFor={`sv-n-${s.id}`}><Input id={`sv-n-${s.id}`} maxLength={120} value={s.name} onChange={(e) => setService(s.id, { name: e.target.value })} /></Field>
-                <Field label="Length" htmlFor={`sv-d-${s.id}`}>
-                  <Select id={`sv-d-${s.id}`} value={s.durationMin} onChange={(e) => setService(s.id, { durationMin: +e.target.value })}>
-                    {Array.from(new Set([...DURATIONS, s.durationMin])).sort((a, b) => a - b).map((d) => <option key={d} value={d}>{d} min</option>)}
-                  </Select>
-                </Field>
+                {isWritten(s.format) ? (
+                  <Field label="Ready Within" htmlFor={`sv-d-${s.id}`}>
+                    <Select id={`sv-d-${s.id}`} value={s.deliveryDays ?? 7} onChange={(e) => setService(s.id, { deliveryDays: +e.target.value })}>
+                      {Array.from(new Set([...DELIVERY_DAYS, s.deliveryDays ?? 7])).sort((a, b) => a - b).map((d) => <option key={d} value={d}>{d} days</option>)}
+                    </Select>
+                  </Field>
+                ) : (
+                  <Field label="Length" htmlFor={`sv-d-${s.id}`}>
+                    <Select id={`sv-d-${s.id}`} value={s.durationMin} onChange={(e) => setService(s.id, { durationMin: +e.target.value })}>
+                      {Array.from(new Set([...DURATIONS, s.durationMin])).sort((a, b) => a - b).map((d) => <option key={d} value={d}>{d} min</option>)}
+                    </Select>
+                  </Field>
+                )}
                 <Field label="Format" htmlFor={`sv-f-${s.id}`}>
                   <Select id={`sv-f-${s.id}`} value={s.format} onChange={(e) => setService(s.id, { format: e.target.value as BookingService["format"] })}>
-                    <option>Video call</option>
-                    <option>Phone</option>
-                    <option>In person</option>
+                    {[...OFFERED_FORMATS, ...(OFFERED_FORMATS.includes(s.format) ? [] : [s.format])].map((f) => <option key={f} value={f}>{formatLabel(f)}</option>)}
                   </Select>
                 </Field>
                 <Field label="Description" htmlFor={`sv-ds-${s.id}`} optional className="sm:col-span-2"><Input id={`sv-ds-${s.id}`} maxLength={1000} value={s.description} onChange={(e) => setService(s.id, { description: e.target.value })} /></Field>
                 <Field label="Price" htmlFor={`sv-p-${s.id}`} optional><Input id={`sv-p-${s.id}`} maxLength={40} placeholder="e.g. $150" value={s.price} onChange={(e) => setService(s.id, { price: e.target.value })} /></Field>
-                <Field label="Intake Form" htmlFor={`sv-i-${s.id}`} optional className="sm:col-span-3" hint={intakeForms.length ? "Sent automatically when someone books this service. They fill it in from their booking link, no sign-in needed." : "Create intake forms under Settings › Intake Forms, then choose one here."}>
-                  <Select id={`sv-i-${s.id}`} value={s.intakeFormId ?? ""} onChange={(e) => setService(s.id, { intakeFormId: e.target.value || undefined })} disabled={!intakeForms.length && !s.intakeFormId}>
-                    <option value="">No Form</option>
-                    {intakeForms.map((f) => <option key={f.id} value={f.id}>{f.title}</option>)}
-                    {s.intakeFormId && !intakeForms.some((f) => f.id === s.intakeFormId) && <option value={s.intakeFormId}>(Deleted Form)</option>}
-                  </Select>
+                <Field label="Intake Form" htmlFor={`sv-i-${s.id}`} optional className="sm:col-span-3" hint={intakeForms.length ? "Sent automatically when someone books this service. They fill it in from their booking link, no sign-in needed." : "You don’t have any intake forms yet. Save your booking settings first, then create one."}>
+                  {intakeForms.length || s.intakeFormId ? (
+                    <Select id={`sv-i-${s.id}`} value={s.intakeFormId ?? ""} onChange={(e) => setService(s.id, { intakeFormId: e.target.value || undefined })}>
+                      <option value="">No Form</option>
+                      {intakeForms.map((f) => <option key={f.id} value={f.id}>{f.title}</option>)}
+                      {s.intakeFormId && !intakeForms.some((f) => f.id === s.intakeFormId) && <option value={s.intakeFormId}>(Deleted Form)</option>}
+                    </Select>
+                  ) : (
+                    <a id={`sv-i-${s.id}`} href="/app/settings?section=intake" className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-line px-3 text-[13px] font-medium text-ink hover:bg-canvas-2"><Plus className="size-4" /> Create an Intake Form</a>
+                  )}
                 </Field>
               </div>
               <div className="mt-2 flex items-center justify-between">
@@ -241,25 +268,24 @@ export function BookingSection() {
   );
 }
 
-/** Crop the middle square of a photo and shrink it to 400px (a small JPEG the public page can carry). */
-async function squarePhoto(file: File): Promise<string> {
-  if (!/^image\/(jpeg|png|webp)$/.test(file.type)) throw new Error("Use a JPEG, PNG or WebP photo.");
-  if (file.size > 15 * 1024 * 1024) throw new Error("That photo is over 15 MB. Try a smaller one.");
-  const url = URL.createObjectURL(file);
-  try {
-    const img = await new Promise<HTMLImageElement>((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error("We couldn’t read that photo.")); i.src = url; });
-    const side = Math.min(img.naturalWidth, img.naturalHeight);
-    const canvas = document.createElement("canvas");
-    canvas.width = canvas.height = 400;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("We couldn’t read that photo.");
-    ctx.drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, 400, 400);
-    for (const q of [0.85, 0.7, 0.55]) {
-      const out = canvas.toDataURL("image/jpeg", q);
-      if (out.length < 240_000) return out;
-    }
-    throw new Error("That photo is too detailed to shrink. Try another.");
-  } finally {
-    URL.revokeObjectURL(url);
-  }
+
+/** Whether the typed address is free, checked shortly after typing stops. */
+export function AddressStatus({ slug, saved }: { slug: string; saved?: string }) {
+  const [state, setState] = React.useState<{ slug: string; available: boolean; reason?: string } | null>(null);
+  React.useEffect(() => {
+    if (DATA_MODE !== "server" || !slug || slug === saved) return setState(null);
+    let live = true;
+    const t = setTimeout(() => {
+      api<{ available: boolean; reason?: string }>(`/api/v1/booking/address?slug=${encodeURIComponent(slug)}`)
+        .then((r) => live && setState({ slug, ...r }))
+        .catch(() => live && setState(null));
+    }, 400);
+    return () => { live = false; clearTimeout(t); };
+  }, [slug, saved]);
+  if (!state || state.slug !== slug) return <p id="bk-slug-status" className="sr-only" aria-live="polite" />;
+  return (
+    <p id="bk-slug-status" aria-live="polite" className={`mt-1 inline-flex items-center gap-1 text-[12.5px] ${state.available ? "text-sage-dark" : "text-danger"}`}>
+      {state.available ? <><Check className="size-3.5" /> Available</> : state.reason}
+    </p>
+  );
 }

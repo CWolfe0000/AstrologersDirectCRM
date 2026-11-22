@@ -139,7 +139,7 @@ export interface Consultation {
   start: string;
   durationMin: number;
   status: ConsultationStatus;
-  location: "Video call" | "Phone" | "In person";
+  location: "Video call" | "Audio call" | "Phone" | "Written reading" | "In person";
   /** Video call link (Zoom, Meet…) the client joins from their portal and reminder email. */
   meetingUrl?: string;
   chartIds: string[];
@@ -275,6 +275,8 @@ export interface Practitioner {
   workTemplates?: WorkTemplate[];
   /** The practice's intake forms (as many as the astrologer likes). */
   intakeForms?: IntakeForm[];
+  /** First-run setup: set at sign-up; `done` once finished or dismissed. */
+  onboarding?: { step: number; done: boolean };
 }
 
 /**

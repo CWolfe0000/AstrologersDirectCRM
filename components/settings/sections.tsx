@@ -108,7 +108,7 @@ export function PracticeSection() {
           </Field>
         </div>
         <div>
-          <div className="mb-2 flex items-center gap-2"><Palette className="size-4 text-muted" /><p className="text-[13.5px] font-medium">Client portal color</p></div>
+          <div className="mb-2 flex items-center gap-2"><Palette className="size-4 text-muted" /><p className="text-[13.5px] font-medium">Client Portal Color</p></div>
           <div className="grid gap-4 sm:grid-cols-[1fr_260px]">
             <div className="space-y-3">
               <p className="text-[12.5px] text-muted">Buttons, links and highlights in your clients’ portal use this color. Clients who see more than one astrologer get the standard color.</p>

@@ -274,7 +274,7 @@ function Workspace() {
           >
             <Star className={cn(chart.favorite && "fill-accent text-accent")} />
           </Button>
-          <ButtonLink href={`/app/clients/${chart.clientId}`} variant="secondary" aria-label="Client profile">
+          <ButtonLink href={`/app/clients/${chart.clientId}`} variant="secondary" aria-label="Client Profile">
             <UserRound /> <span className="hidden sm:inline xl:hidden 2xl:inline">Client Profile</span>
           </ButtonLink>
           {chart.personIds.length === 1 && chart.personIds[0] === chart.clientId && chart.type !== "horary" && chart.type !== "election" && (
@@ -282,7 +282,7 @@ function Workspace() {
               <Waves /> <span className="hidden sm:inline xl:hidden 2xl:inline">Timeline</span>
             </ButtonLink>
           )}
-          <ButtonLink href={`/app/studio?client=${chart.clientId}&chart=${chart.id}`} variant="secondary" aria-label="Record reading">
+          <ButtonLink href={`/app/studio?client=${chart.clientId}&chart=${chart.id}`} variant="secondary" aria-label="Record Reading">
             <Mic /> <span className="hidden sm:inline">Record Reading</span>
           </ButtonLink>
           <ButtonLink href={`/app/delivery?new=1&client=${chart.clientId}&chart=${chart.id}`}>
@@ -334,7 +334,7 @@ function Workspace() {
           {chart.type === "horary" && chart.horary && <HoraryPanel horary={chart.horary} view={view} className="mb-4" chart={chart} onSave={(h) => updateChart(chart.id, { horary: h })} />}
           {chart.type === "election" && chart.election && <ElectionPanel election={chart.election} view={view} client={people.find((p) => p.id === chart.clientId)} className="mb-4" />}
           <div className="ws-wheel relative rounded-xl border border-line bg-surface p-3 shadow-card sm:p-5">
-            <Button variant="secondary" size="sm" className="ws-noprint absolute right-3 top-3 z-10 sm:right-4 sm:top-4" onClick={() => setExpanded(true)} aria-label="Expand chart wheel" title="Expand">
+            <Button variant="secondary" size="sm" className="ws-noprint absolute right-3 top-3 z-10 sm:right-4 sm:top-4" onClick={() => setExpanded(true)} aria-label="Expand Chart Wheel" title="Expand">
               <Maximize2 /> <span className="hidden sm:inline">Expand</span>
             </Button>
             {view.outer && (

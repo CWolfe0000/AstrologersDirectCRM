@@ -28,7 +28,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-line bg-canvas/90 px-4 backdrop-blur md:px-6 lg:px-8">
-      <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenu} aria-label="Open navigation">
+      <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenu} aria-label="Open Navigation">
         <Menu />
       </Button>
 
@@ -125,7 +125,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
 
         <Dropdown>
           <DropdownTrigger asChild>
-            <button className="ml-1 rounded-full focus-visible:ring-2 focus-visible:ring-accent/40" aria-label="Profile menu">
+            <button className="ml-1 rounded-full focus-visible:ring-2 focus-visible:ring-accent/40" aria-label="Profile Menu">
               <Avatar name={p.name} size="sm" />
             </button>
           </DropdownTrigger>

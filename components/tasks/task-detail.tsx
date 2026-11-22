@@ -60,7 +60,7 @@ export function TaskDetail({ id, onDeleted }: { id: string; onDeleted?: () => vo
         onChange={(e) => setTitle(e.target.value)}
         onBlur={() => title.trim() && title !== t.title && update(t.id, { title: title.trim() }, "Renamed")}
         className="h-auto border-transparent px-0 font-serif text-[22px] hover:border-line focus:px-2"
-        aria-label="Task title"
+        aria-label="Task Title"
       />
       <Field label="Description">
         <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} onBlur={() => desc !== (t.description ?? "") && update(t.id, { description: desc })} placeholder="Add details…" className="min-h-[80px]" />
@@ -136,7 +136,7 @@ export function TaskDetail({ id, onDeleted }: { id: string; onDeleted?: () => vo
               <button
                 onClick={() => update(t.id, { checklist: t.checklist.filter((x) => x.id !== c.id) })}
                 className="rounded p-1 text-muted opacity-0 hover:text-danger group-hover:opacity-100"
-                aria-label="Remove item"
+                aria-label="Remove Item"
               >
                 <Trash2 className="size-3.5" />
               </button>
@@ -144,7 +144,7 @@ export function TaskDetail({ id, onDeleted }: { id: string; onDeleted?: () => vo
           ))}
         </ul>
         <div className="mt-2 flex gap-2">
-          <Input value={newItem} onChange={(e) => setNewItem(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addItem()} placeholder="Add checklist item" aria-label="New checklist item" className="h-8 text-[13px]" />
+          <Input value={newItem} onChange={(e) => setNewItem(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addItem()} placeholder="Add checklist item" aria-label="New Checklist Item" className="h-8 text-[13px]" />
           <Button size="sm" variant="secondary" onClick={addItem}><Plus /> Add</Button>
         </div>
       </div>

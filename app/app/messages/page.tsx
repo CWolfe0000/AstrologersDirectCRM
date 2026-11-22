@@ -99,9 +99,9 @@ function MessagesPage() {
           <div className="space-y-2 border-b border-line p-3">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
-              <Input aria-label="Search conversations" placeholder="Search conversations" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
+              <Input aria-label="Search Conversations" placeholder="Search conversations" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
             </div>
-            <Select aria-label="Start a conversation" value="" onChange={(e) => e.target.value && select(e.target.value)}>
+            <Select aria-label="Start a Conversation" value="" onChange={(e) => e.target.value && select(e.target.value)}>
               <option value="">New Message To…</option>
               {startable.map((c) => <option key={c.id} value={c.id}>{name(c.id)}</option>)}
             </Select>

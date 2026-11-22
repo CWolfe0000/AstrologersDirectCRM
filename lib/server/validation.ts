@@ -240,7 +240,7 @@ const consultation = z
     start: iso,
     durationMin: z.number().int().min(5).max(24 * 60),
     status: z.enum(["scheduled", "completed", "cancelled", "no-show"]),
-    location: z.enum(["Video call", "Phone", "In person"]),
+    location: z.enum(["Video call", "Audio call", "Phone", "Written reading", "In person"]),
     meetingUrl: opt(z.string().max(500).regex(/^https:\/\/[^\s]+$/, "Use a full https:// link")),
     chartIds: z.array(id).max(30),
     prepNotes: opt(str(50_000)),
@@ -377,6 +377,7 @@ export const practitionerSchema = z
         .max(50),
     ),
     intakeForms: opt(z.array(intakeForm).max(30)),
+    onboarding: opt(z.object({ step: z.number().int().min(0).max(20), done: z.boolean() }).strict()),
   })
   .strict();
 

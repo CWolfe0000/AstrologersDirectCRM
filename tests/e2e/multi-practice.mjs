@@ -94,7 +94,7 @@ assert.ok(pv.readings.some((r) => r.practiceId === A.practiceId) && pv.readings.
 await cp.goto(BASE + "/portal");
 await cp.getByText("Your astrologer").nth(1).waitFor();
 await cp.goto(BASE + "/portal/work");
-const filter = cp.getByRole("group", { name: "Filter by astrologer" });
+const filter = cp.getByRole("group", { name: "Filter by Astrologer" });
 await filter.waitFor();
 const before = await cp.locator('a[href^="/portal/work/"]').count();
 await filter.getByRole("button").nth(1).click();

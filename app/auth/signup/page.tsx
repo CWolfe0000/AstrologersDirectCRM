@@ -19,7 +19,7 @@ function SignupForm() {
   const [email, setEmail] = React.useState("");
   return (
     <>
-      <AuthHeading title="Build stronger client relationships." body="Create your practice and join the early practitioner community shaping AstrologersDirect. It takes a few minutes." />
+      <AuthHeading title="Build Stronger Client Relationships." body="Create your practice and join the early practitioner community shaping AstrologersDirect. It takes a few minutes." />
       {plan && (
         <p className="-mt-4 mb-6 text-[13px] text-muted">
           Interested in <Badge tone="accent" className="capitalize">{plan}</Badge> — pricing to be announced.
@@ -51,7 +51,7 @@ function SignupForm() {
         <Field label="Practice Name" htmlFor="pn" optional>
           <Input id="pn" placeholder="e.g. Morrow Astrological Consulting" />
         </Field>
-        <Field label="How many clients do you see each month?" htmlFor="vol">
+        <Field label="How Many Clients Do You See Each Month?" htmlFor="vol">
           <Select id="vol" defaultValue="10-30">
             <option value="0-10">Fewer than 10</option>
             <option value="10-30">10 – 30</option>

@@ -70,7 +70,7 @@ step("sign in with the emailed link (needs a click)");
 await page.goto(BASE + "/auth/login");
 await page.fill("#email", email);
 await page.getByRole("button", { name: "Email Me a Sign-In Link" }).click();
-await page.getByRole("heading", { name: "Check your email" }).waitFor();
+await page.getByRole("heading", { name: "Check Your Email" }).waitFor();
 const m1 = await lastMail(email);
 await page.goto(m1.url);
 assert.equal(await page.evaluate(() => fetch("/api/auth/me").then((r) => r.json()).then((j) => j.user)), null, "opening the link alone doesn't sign in");

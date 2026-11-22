@@ -49,7 +49,7 @@ await page.waitForURL(/\/auth\/verify/);
 
 step("verify email from outbox link");
 await page.goto(await lastLink(owner.email, "/auth/verify"));
-await page.getByText("Email confirmed").waitFor();
+await page.getByText("Email Confirmed").waitFor();
 
 step("empty workspace loads");
 await page.goto(BASE + "/app");

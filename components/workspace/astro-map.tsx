@@ -95,7 +95,7 @@ export function AstroMap({ birth, settings, compact }: { birth: BirthData; setti
 
   const map = (
     <div className="relative overflow-hidden rounded-lg border border-line bg-[#F4F7F9]">
-      <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" role="img" aria-label={`Astrocartography map: ${shown.length} planetary lines`}>
+      <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" role="img" aria-label={`Astrocartography Map: ${shown.length} Planetary Lines`}>
         {[-60, -30, 0, 30, 60].map((lat) => <line key={`lat${lat}`} x1={0} x2={W} y1={y(lat)} y2={y(lat)} stroke="#D9E0E4" strokeWidth={lat === 0 ? 1 : 0.6} />)}
         {[-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150].map((lon) => <line key={`lon${lon}`} y1={0} y2={H} x1={x(lon)} x2={x(lon)} stroke="#D9E0E4" strokeWidth={lon === 0 ? 1 : 0.6} />)}
         {land && <path d={land} fill="#E4DDD1" stroke="#B3A897" strokeWidth={0.7} />}
@@ -125,7 +125,7 @@ export function AstroMap({ birth, settings, compact }: { birth: BirthData; setti
       </svg>
       {!lines && (
         <div className="absolute inset-0 flex items-center justify-center bg-white/40">
-          <Loader2 className="size-5 animate-spin text-muted" aria-label="Calculating lines" />
+          <Loader2 className="size-5 animate-spin text-muted" aria-label="Calculating Lines" />
         </div>
       )}
     </div>
@@ -144,7 +144,7 @@ export function AstroMap({ birth, settings, compact }: { birth: BirthData; setti
           </button>
         ))}
       </div>
-      <div className="flex flex-wrap gap-1.5" role="group" aria-label="Planets shown">
+      <div className="flex flex-wrap gap-1.5" role="group" aria-label="Planets Shown">
         {bodies.map((b) => (
           <button
             key={b}

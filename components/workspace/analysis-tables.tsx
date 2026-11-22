@@ -309,7 +309,7 @@ export function HousesTable({ view }: { view: ChartView }) {
                 <span className="flex items-center gap-1">
                   <Glyph id={r.traditional} />
                   {r.modern && (
-                    <span className="text-muted" title="Modern ruler">
+                    <span className="text-muted" title="Modern Ruler">
                       / <span className="glyph">{BODIES[r.modern].glyph}</span>
                     </span>
                   )}

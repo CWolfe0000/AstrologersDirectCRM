@@ -45,7 +45,7 @@ export function TraditionalPanel({ view, birthUtc, zodiac }: { view: ChartView; 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[320px]">
             <thead className="border-b border-line">
-              <tr><th className={th}>Planet</th><th className={th} title="Domicile ruler">Dom.</th><th className={th} title="Exaltation">Exalt.</th><th className={th} title="Triplicity: day, night, participating">Trip.</th><th className={th}>Term</th><th className={th}>Face</th><th className={cn(th, "text-right")} title="Lilly’s points">Pts</th></tr>
+              <tr><th className={th}>Planet</th><th className={th} title="Domicile Ruler">Dom.</th><th className={th} title="Exaltation">Exalt.</th><th className={th} title="Triplicity: Day, Night, Participating">Trip.</th><th className={th}>Term</th><th className={th}>Face</th><th className={cn(th, "text-right")} title="Lilly’s Points">Pts</th></tr>
             </thead>
             <tbody>
               {rows.map((r) => (

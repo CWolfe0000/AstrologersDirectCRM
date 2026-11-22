@@ -434,20 +434,20 @@ export function StudioPage() {
                   <div>
                     <p className="mb-1 flex items-center gap-1 text-[11.5px] text-muted"><Camera className="size-3.5" /> Camera</p>
                     <Select value={cam} onChange={(e) => setCam(e.target.value)} disabled={!m.cam || live} aria-label="Camera" className="[&_select]:h-8 [&_select]:text-[12.5px]">
-                      {m.cam ? cams.map((x) => <option key={x}>{x}</option>) : <option>Not used in this mode</option>}
+                      {m.cam ? cams.map((x) => <option key={x}>{x}</option>) : <option value="Not used in this mode">Not Used in This Mode</option>}
                     </Select>
                   </div>
                   <div>
                     <p className="mb-1 flex items-center gap-1 text-[11.5px] text-muted"><MonitorSmartphone className="size-3.5" /> Screen share</p>
-                    <Select value={shareTarget} onChange={(e) => setShareTarget(e.target.value)} disabled={!m.screen || (live && useReal)} aria-label="Screen to share" className="[&_select]:h-8 [&_select]:text-[12.5px]">
+                    <Select value={shareTarget} onChange={(e) => setShareTarget(e.target.value)} disabled={!m.screen || (live && useReal)} aria-label="Screen to Share" className="[&_select]:h-8 [&_select]:text-[12.5px]">
                       {m.screen ? (
                         <>
-                          <option>AstrologersDirect — Chart workspace</option>
-                          <option>Entire screen</option>
-                          <option>Browser window</option>
+                          <option value="AstrologersDirect — Chart workspace">AstrologersDirect — Chart Workspace</option>
+                          <option value="Entire screen">Entire Screen</option>
+                          <option value="Browser window">Browser Window</option>
                         </>
                       ) : (
-                        <option>Not used in this mode</option>
+                        <option value="Not used in this mode">Not Used in This Mode</option>
                       )}
                     </Select>
                   </div>

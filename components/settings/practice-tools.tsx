@@ -26,14 +26,14 @@ export function RemindersCard() {
       <CardBody className="space-y-4">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-[13.5px] font-medium">Email clients a reminder</p>
+            <p className="text-[13.5px] font-medium">Email Clients a Reminder</p>
             <p className="text-[12.5px] text-muted">Includes the date, time in your time zone, length and how you’re meeting. Never includes notes or chart details.</p>
           </div>
-          <Switch checked={r.clients} onCheckedChange={(v) => set({ clients: v }, v ? "Client reminders on" : "Client reminders off")} aria-label="Email clients a reminder" />
+          <Switch checked={r.clients} onCheckedChange={(v) => set({ clients: v }, v ? "Client reminders on" : "Client reminders off")} aria-label="Email Clients a Reminder" />
         </div>
         <div className="flex items-center justify-between gap-4">
           <p className="text-[13.5px]">Send it</p>
-          <Select value={String(r.hoursBefore)} onChange={(e) => set({ hoursBefore: Number(e.target.value) }, "Reminder timing updated")} className="w-48" aria-label="When to send reminders">
+          <Select value={String(r.hoursBefore)} onChange={(e) => set({ hoursBefore: Number(e.target.value) }, "Reminder timing updated")} className="w-48" aria-label="When to Send Reminders">
             <option value="3">3 Hours Before</option>
             <option value="24">24 Hours Before</option>
             <option value="48">48 Hours Before</option>

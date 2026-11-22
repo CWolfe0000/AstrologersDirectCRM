@@ -95,7 +95,7 @@ await page.getByText("Imported 2 clients").waitFor();
 
 step("after the import: add an email by pasting a list, and invite");
 await dlg.getByText("Invite Them to Their Portal").waitFor();
-await dlg.getByLabel("Paste emails").fill(`Claire Moreau${stamp}, claire-${stamp}@example.com`);
+await dlg.getByLabel("Paste Emails").fill(`Claire Moreau${stamp}, claire-${stamp}@example.com`);
 await dlg.getByRole("button", { name: "Match to Names" }).click();
 await page.getByText("Matched 1 Email").waitFor();
 assert.equal(await dlg.getByLabel(`Email for Claire Moreau${stamp}`).inputValue(), `claire-${stamp}@example.com`);
@@ -148,7 +148,7 @@ await page.evaluate(async ([email]) => {
 await sendReminders(true);
 const none = await db.query(`select count(*)::int n from outbox where "to"=$1`, [ameliaEmail]);
 assert.equal(none.rows[0].n, 0, "reminders are off until the practitioner turns them on");
-await page.getByRole("switch", { name: "Email clients a reminder" }).click();
+await page.getByRole("switch", { name: "Email Clients a Reminder" }).click();
 await page.getByText("All changes saved").waitFor({ timeout: 10000 });
 const r1 = await (await sendReminders(true)).json();
 assert.ok(r1.sent >= 1);

@@ -73,8 +73,8 @@ let st, chart;
 for (let i = 0; i < 30 && !chart; i++) { st = (await api("/api/v1/bootstrap?view=app")).body; chart = st.charts.find((c) => c.clientId === clientId); if (!chart) await sleep(300); }
 assert.ok(chart, "natal chart saved");
 await page.goto(BASE + `/app/charts/${chart.id}`);
-await page.getByRole("img", { name: "Chart wheel" }).first().waitFor();
-await page.getByRole("button", { name: "Chart actions" }).click();
+await page.getByRole("img", { name: "Chart Wheel" }).first().waitFor();
+await page.getByRole("button", { name: "Chart Actions" }).click();
 await page.getByRole("menuitem", { name: "Share With Client" }).click();
 await page.getByText("Shared With Client").first().waitFor();
 for (let i = 0; i < 20; i++) { st = (await api("/api/v1/bootstrap?view=app")).body; if (st.charts.find((c) => c.id === chart.id)?.shared) break; await sleep(300); }
@@ -84,7 +84,7 @@ step("practitioner messages Mia");
 await page.goto(BASE + `/app/messages?client=${clientId}`);
 await page.getByText("Portal invitation sent, not yet accepted").waitFor();
 await page.getByLabel("Message", { exact: true }).fill("Hi Mia, welcome! Your natal chart is in your portal.");
-await page.getByRole("button", { name: "Send message" }).click();
+await page.getByRole("button", { name: "Send Message" }).click();
 await page.getByText("Hi Mia, welcome!").waitFor();
 
 step("Mia accepts the invitation and sees the message, chart and booking link");
@@ -101,13 +101,13 @@ await cp.getByRole("link", { name: /Message Pia/ }).click();
 await cp.waitForURL(/\/portal\/messages/);
 await cp.getByText("Hi Mia, welcome!").waitFor();
 await cp.getByLabel("Message", { exact: true }).fill("Thank you! Quick question about my Moon.");
-await cp.getByRole("button", { name: "Send message" }).click();
+await cp.getByRole("button", { name: "Send Message" }).click();
 await cp.getByText("Quick question about my Moon").waitFor();
 if (SHOTS) await cp.screenshot({ path: `${SHOTS}/portal-messages.png` });
 assert.equal((await mailTo(ownerEmail, "New message from Mia")).length, 1, "practitioner emailed");
 await cp.goto(BASE + "/portal/charts");
 await cp.getByText(chart.title).click();
-await cp.getByRole("img", { name: "Chart wheel" }).first().waitFor();
+await cp.getByRole("img", { name: "Chart Wheel" }).first().waitFor();
 await cp.getByRole("cell", { name: /Sun/ }).first().waitFor();
 if (SHOTS) await cp.screenshot({ path: `${SHOTS}/portal-chart.png`, fullPage: true });
 
@@ -120,7 +120,7 @@ if (SHOTS) await page.screenshot({ path: `${SHOTS}/app-messages.png` });
 for (let i = 0; i < 20 && (await api("/api/v1/messages?count=1")).body.unread !== 0; i++) await sleep(300);
 assert.equal((await api("/api/v1/messages?count=1")).body.unread, 0, "marked read");
 await page.getByLabel("Message", { exact: true }).fill("Good question: let's look at it together.");
-await page.getByRole("button", { name: "Send message" }).click();
+await page.getByRole("button", { name: "Send Message" }).click();
 await page.getByText("let's look at it together").waitFor();
 assert.equal((await mailTo(miaEmail, "New message from %")).length, 1, "second message within 20 minutes isn't emailed again while the first was unread");
 await cp.goto(BASE + "/portal/messages");

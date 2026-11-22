@@ -87,14 +87,14 @@ export function ChartThumb({ chart, className }: { chart: ChartRecord; className
   const locked = state.locked || (isMap && !premium);
   if (isMap && !locked)
     return (
-      <div className={cn("flex aspect-square items-center justify-center rounded-full border border-sage-100 bg-sage-50", className)} title="Astrocartography map">
-        <Globe2 className="size-1/3 text-sage-dark" aria-label="Astrocartography map" />
+      <div className={cn("flex aspect-square items-center justify-center rounded-full border border-sage-100 bg-sage-50", className)} title="Astrocartography Map">
+        <Globe2 className="size-1/3 text-sage-dark" aria-label="Astrocartography Map" />
       </div>
     );
   if (locked)
     return (
-      <div className={cn("flex aspect-square items-center justify-center rounded-full border border-dashed border-[#E6D3B3] bg-[#FBF4E8]/60", className)} title="Premium chart">
-        <Lock className="size-4 text-[#7A5A1E]" aria-label="Premium chart" />
+      <div className={cn("flex aspect-square items-center justify-center rounded-full border border-dashed border-[#E6D3B3] bg-[#FBF4E8]/60", className)} title="Premium Chart">
+        <Lock className="size-4 text-[#7A5A1E]" aria-label="Premium Chart" />
       </div>
     );
   if (!view) return <div className={cn("aspect-square rounded-full bg-canvas-2", className)} />;
