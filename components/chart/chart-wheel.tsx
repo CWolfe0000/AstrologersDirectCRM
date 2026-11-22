@@ -139,7 +139,7 @@ function ClassicWheel({ view, compact, className, selected, onSelect, highlightA
   };
 
   return (
-    <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox={compact ? "0 0 600 600" : "-22 -22 644 644"} className={cn("h-auto w-full select-none", className)} onClick={() => onSelect?.(null)} role="img" aria-label="Chart Wheel">
+    <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" viewBox={compact ? "0 0 600 600" : "-68 -48 736 696"} className={cn("h-auto w-full select-none", className)} onClick={() => onSelect?.(null)} role="img" aria-label="Chart Wheel">
       {/* zodiac ring */}
       <circle cx={C} cy={C} r={R_OUT} fill="#FFFFFF" stroke="#D6CFC6" strokeWidth={1.2} />
       {SIGNS.map((s, i) => {
@@ -205,7 +205,7 @@ function ClassicWheel({ view, compact, className, selected, onSelect, highlightA
           { lon: norm(inner.mc + 180), label: "IC", key: "inner:mc", name: "IC (the Midheaven axis)" },
         ].map((x) => {
           // Angles are selectable like planets: the Descendant and IC select their axis.
-          const [lx, ly] = pt(R_OUT + 16, ang(x.lon));
+          const [lx, ly] = pt(R_OUT + 22 + 22 * Math.abs(Math.cos((ang(x.lon) * Math.PI) / 180)), ang(x.lon));
           const on = focus === x.key;
           return (
             <g
@@ -218,8 +218,11 @@ function ClassicWheel({ view, compact, className, selected, onSelect, highlightA
             >
               <title>{x.name}</title>
               {on && <circle cx={lx} cy={ly} r={13} fill="#EFF3F0" stroke="#29272B" strokeOpacity={0.4} />}
-              <text x={lx} y={ly} textAnchor="middle" dominantBaseline="central" fontSize={12.5} fontWeight={600} fill="#29272B" fontFamily="Inter Variable, Inter, sans-serif">
-                {x.label}
+              <text x={lx} y={ly - 7} textAnchor="middle" fill="#29272B" fontFamily="Inter Variable, Inter, sans-serif">
+                <tspan x={lx} dy="0" fontSize={12.5} fontWeight={600}>{x.label}</tspan>
+                <tspan x={lx} dy="14" fontSize={11} fontWeight={500}>{angleDeg(x.lon).deg}</tspan>
+                <tspan className="glyph" fontSize={12}>{angleDeg(x.lon).glyph}</tspan>
+                <tspan fontSize={11} fontWeight={500}>{angleDeg(x.lon).min}</tspan>
               </text>
             </g>
           );
@@ -259,4 +262,11 @@ function ClassicWheel({ view, compact, className, selected, onSelect, highlightA
       <circle cx={C} cy={C} r={2.5} fill="#D6CFC6" />
     </svg>
   );
+}
+
+/** An angle's degree, sign glyph and minute ("28°", "♈", "48′"). */
+function angleDeg(lon: number) {
+  const l = ((lon % 360) + 360) % 360;
+  const d = l % 30;
+  return { deg: `${Math.floor(d)}°`, glyph: SIGNS[Math.floor(l / 30)]!.glyph, min: `${String(Math.floor((d % 1) * 60)).padStart(2, "0")}′` };
 }

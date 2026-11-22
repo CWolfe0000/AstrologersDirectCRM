@@ -94,7 +94,7 @@ export function MultiWheel({ natal, rings, contacts, selected, onSelect }: { nat
   };
 
   return (
-    <svg viewBox="-24 -24 648 648" className="h-auto w-full select-none" onClick={() => onSelect(null)} role="img" aria-label={`Natal chart with ${rings.map((r) => r.label.toLowerCase()).join(", ") || "no moving"} rings`}>
+    <svg viewBox="-68 -48 736 696" className="h-auto w-full select-none" onClick={() => onSelect(null)} role="img" aria-label={`Natal chart with ${rings.map((r) => r.label.toLowerCase()).join(", ") || "no moving"} rings`}>
       <circle cx={C} cy={C} r={R_OUT} fill="#FFFFFF" stroke="#D6CFC6" strokeWidth={1.2} />
       {SIGNS.map((s, i) => {
         const a0 = ang(i * 30), a1 = ang(i * 30 + 30);
@@ -133,9 +133,21 @@ export function MultiWheel({ natal, rings, contacts, selected, onSelect }: { nat
           </g>
         );
       })}
-      {[["AC", natal.asc], ["DC", natal.asc + 180], ["MC", natal.mc], ["IC", natal.mc + 180]].map(([l, lon]) => {
-        const [x, y] = pt(R_OUT + 15, ang(lon as number));
-        return <text key={l as string} x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={13} fontWeight={700} fill="#29272B" fontFamily="Inter Variable, Inter, sans-serif">{l}</text>;
+      {([["AC", natal.asc], ["DC", norm(natal.asc + 180)], ["MC", natal.mc], ["IC", norm(natal.mc + 180)]] as [string, number][]).map(([l, lon]) => {
+        // The angle's name, and its degree, sign and minute below it.
+        // Further out toward the sides, so a label at the Ascendant or Descendant clears the axis line.
+        const [x, y] = pt(R_OUT + 24 + 22 * Math.abs(Math.cos((ang(lon) * Math.PI) / 180)), ang(lon));
+        const d = degInSign(lon);
+        const sign = SIGNS[Math.floor(norm(lon) / 30)]!;
+        return (
+          <text key={l} x={x} y={y - 8} textAnchor="middle" fontFamily="Inter Variable, Inter, sans-serif" fill="#29272B">
+            <title>{`${l} ${Math.floor(d)}°${String(Math.floor((d % 1) * 60)).padStart(2, "0")}′ ${sign.name}`}</title>
+            <tspan x={x} dy="0" fontSize={13} fontWeight={700}>{l}</tspan>
+            <tspan x={x} dy="15" fontSize={12} fontWeight={600}>{Math.floor(d)}°</tspan>
+            <tspan className="glyph" fontSize={13} fill={pal.strong[sign.element]}>{sign.glyph}</tspan>
+            <tspan fontSize={11} fontWeight={600}>{String(Math.floor((d % 1) * 60)).padStart(2, "0")}′</tspan>
+          </text>
+        );
       })}
       <circle cx={C} cy={C} r={R_HOUSE} fill="none" stroke="#E7E2DC" strokeWidth={1} />
       <circle cx={C} cy={C} r={R_ASP} fill="#FFFFFF" stroke="#E7E2DC" strokeWidth={1} />
