@@ -56,6 +56,7 @@ export const profileSchema = z
       })
       .strict(),
     autoInvite: z.boolean(),
+    searchable: z.boolean().optional(),
     // A square photo resized in the browser (about 400px): a data URL, kept small.
     photo: z.string().max(250_000).regex(/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/, "Use a JPEG, PNG or WebP photo.").optional(),
     links: z

@@ -6,6 +6,7 @@ import { Copy, ExternalLink, ImagePlus, Loader2, Plus, Trash2 } from "lucide-rea
 import { api } from "@/lib/api";
 import { useStore } from "@/lib/store";
 import { DATA_MODE, uid } from "@/lib/utils";
+import { SITE_URL } from "@/lib/site";
 import { DAYS, type BookingProfile, type BookingService, type Day } from "@/lib/booking/types";
 import { Card, CardBody, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,7 +43,9 @@ export function BookingSection() {
     );
   if (!p) return <div className="h-64 animate-pulse rounded-xl bg-canvas-2">{error && <p className="p-6 text-[13px] text-danger">{error}</p>}</div>;
 
-  const url = `${typeof window !== "undefined" ? window.location.origin : "https://app.astrologersdirect.com"}/book/${p.slug}`;
+  // The short address on the website host (astrologersdirect.com/<address>); /book/<address> also works.
+  const base = SITE_URL || (typeof window !== "undefined" ? `${window.location.origin}/book` : "/book");
+  const url = `${base}/${p.slug}`;
   const dirty = JSON.stringify(p) !== JSON.stringify(saved);
   const set = (patch: Partial<BookingProfile>) => setP({ ...p, ...patch });
   const setService = (id: string, patch: Partial<BookingService>) => set({ services: p.services.map((s) => (s.id === id ? { ...s, ...patch } : s)) });
@@ -77,15 +80,22 @@ export function BookingSection() {
             </div>
             <Switch checked={p.enabled} onCheckedChange={(v) => void save({ enabled: v })} aria-label="Accept online bookings" disabled={busy} />
           </div>
-          <Field label="Page Address" htmlFor="bk-slug" hint="Lowercase letters, numbers and hyphens.">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[14px] font-medium text-ink">Let search engines list my page</p>
+              <p className="text-[12.5px] text-muted">{p.searchable ? "Google and others can show your page in search results." : "Off: only people with the link can find your page."}</p>
+            </div>
+            <Switch checked={!!p.searchable} onCheckedChange={(v) => set({ searchable: v })} aria-label="Let search engines list my page" />
+          </div>
+          <Field label="Page Address" htmlFor="bk-slug" hint="Lowercase letters, numbers and hyphens. Save to apply.">
             <div className="flex items-center gap-1.5">
-              <span className="hidden shrink-0 text-[13px] text-muted sm:inline">{url.replace(/\/book\/.*/, "")}/book/</span>
+              <span className="hidden shrink-0 text-[13px] text-muted sm:inline">{base.replace(/^https?:\/\//, "")}/</span>
               <Input id="bk-slug" value={p.slug} maxLength={40} onChange={(e) => set({ slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })} />
             </div>
           </Field>
           <div className="flex flex-wrap gap-2">
             <Button variant="secondary" size="sm" onClick={() => navigator.clipboard?.writeText(url).then(() => toast("Link Copied", url, "success"))}><Copy /> Copy Link</Button>
-            <a href={`/book/${saved?.slug ?? p.slug}`} target="_blank" rel="noreferrer" className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-line px-3 text-[13px] font-medium text-ink hover:bg-canvas-2"><ExternalLink className="size-4" /> Open Page</a>
+            <a href={`${base}/${saved?.slug ?? p.slug}`} target="_blank" rel="noreferrer" className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-line px-3 text-[13px] font-medium text-ink hover:bg-canvas-2"><ExternalLink className="size-4" /> Open Page</a>
           </div>
         </CardBody>
       </Card>

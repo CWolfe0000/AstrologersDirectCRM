@@ -87,6 +87,24 @@ assert.equal(await v.getByRole("link", { name: /Instagram/ }).getAttribute("href
 assert.match(await v.locator("header img").first().getAttribute("src"), /^data:image\/jpeg/);
 assert.match(await v.title(), /Maya Lin · Book a Session/);
 if (SHOTS) await v.screenshot({ path: `${SHOTS}/booking-profile.png`, fullPage: true });
+
+step("the short address shows the same profile; search engines only if the astrologer opts in");
+await v.goto(`${BASE}/${slug}`);
+await v.getByRole("heading", { name: "Maya Lin" }).waitFor();
+assert.match(await v.locator('meta[name="robots"]').getAttribute("content"), /noindex/);
+let sm = await (await fetch(`${BASE}/sitemap.xml`)).text();
+assert.ok(!sm.includes(`/${slug}<`), "not in the sitemap while unlisted");
+assert.equal((await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify({ ...prof, searchable: true }) })).status, 200);
+await v.goto(`${BASE}/${slug}`);
+assert.match(await v.locator('meta[name="robots"]').getAttribute("content"), /^index/);
+sm = await (await fetch(`${BASE}/sitemap.xml`)).text();
+if (sm.includes("<url>")) assert.ok(sm.includes(`/${slug}<`), "listed in the sitemap");
+assert.equal((await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify({ ...prof, searchable: false }) })).status, 200);
+assert.equal((await fetch(`${BASE}/no-such-astrologer-${stamp}`)).status, 404, "unknown address is a 404");
+assert.equal((await fetch(`${BASE}/pricing`)).status, 200, "website pages still win");
+assert.equal((await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify({ ...prof, slug: "how-it-works" }) })).status, 422, "website addresses are reserved");
+await v.goto(`${BASE}/book/${slug}`);
+await v.getByRole("heading", { name: "Maya Lin" }).waitFor();
 await v.getByRole("button", { name: /Natal Chart Reading/ }).click();
 const times = v.getByRole("group", { name: "Times" });
 await times.getByRole("button").first().waitFor();
