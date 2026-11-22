@@ -50,8 +50,8 @@ const ASPECTS: { name: AspectName; angle: number; cls: AspectClass }[] = [
 ];
 
 export type Orbs = Record<AspectName, number>;
-/** Within one chart. */
-export const NATAL_ORBS: Orbs = { conjunction: 8, opposition: 8, square: 7, trine: 7, sextile: 4 };
+/** Within one chart: the orbs Sue Tompkins recommends in "Aspects in Astrology" (8° for the major aspects, 4° for the sextile). */
+export const NATAL_ORBS: Orbs = { conjunction: 8, opposition: 8, square: 8, trine: 8, sextile: 4 };
 /** Between two charts: tighter, so that a contact means something. */
 export const SYNASTRY_ORBS: Orbs = { conjunction: 6, opposition: 5, square: 5, trine: 5, sextile: 3 };
 

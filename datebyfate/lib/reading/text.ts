@@ -115,7 +115,11 @@ export interface Dynamic {
   flowing: string;
 }
 
-/** Recurring relationship dynamics shown by aspects in your own chart. Keys: "<faster>-<slower>". */
+/**
+ * Recurring relationship dynamics shown by aspects in your own chart. Keys: "<faster>-<slower>".
+ * The choice of planet pairs and their themes follows Sue Tompkins, "Aspects in Astrology";
+ * the wording is our own and is limited to what each pair means in relationships.
+ */
 export const DYNAMICS: Record<string, Dynamic> = {
   "venus-saturn": {
     name: "The slow thaw",
@@ -260,6 +264,86 @@ export const DYNAMICS: Record<string, Dynamic> = {
     conj: "hard",
     hard: "You want intensely and you do not back down. Relationships can become contests of will, and you are attracted to people who are as forceful as you are.",
     flowing: "You have strong desire and strong will, and you put them into the relationship. You are not easily discouraged.",
+  },  "sun-mars": {
+    name: "Has to win",
+    them: "They compete and push without meaning to, and anger comes quickly.",
+    easyName: "Self-starter",
+    themEasy: "They are direct and energetic, and a partner knows where they stand.",
+    conj: "hard",
+    hard: "You assert yourself hard and compete without meaning to, including with the person you love. You are quick to anger and need a partner who can stand their ground without turning every difference into a fight.",
+    flowing: "You go after what you want with confidence and energy. You are direct, and partners tend to know where they stand with you.",
+  },
+  "sun-jupiter": {
+    name: "Larger than life",
+    them: "They promise big, and can take goodwill for granted or get restless with ordinary life.",
+    easyName: "Good faith",
+    themEasy: "They are confident, generous and good for a partner’s morale.",
+    conj: "flowing",
+    hard: "You think big and promise big. Confidence can tip into taking a partner’s goodwill for granted, or into restlessness when ordinary life sets in.",
+    flowing: "You are confident and generous, and you expect things to work out. That optimism is easy to be around and tends to lift a partner.",
+  },
+  "sun-saturn": {
+    name: "Never quite enough",
+    them: "They doubt their own worth and work to prove it, which can come out as control or as holding back.",
+    easyName: "The dependable one",
+    themEasy: "They are responsible and realistic, and a partner can depend on them.",
+    conj: "hard",
+    hard: "You doubt whether you are good enough, and you work hard to prove it. In love that can look like control, self-criticism, or holding back until you feel you have earned your place. You take commitment seriously and come into your own with time.",
+    flowing: "You are responsible and realistic, and you finish what you start. A partner can depend on you.",
+  },
+  "sun-uranus": {
+    name: "Not like the others",
+    them: "They need to be free to be different, and may break the rules to prove they still can.",
+    easyName: "Their own person",
+    themEasy: "They are independent and original, and give a partner freedom too.",
+    conj: "hard",
+    hard: "You need to be free to be different. You resist being told who to be, and you may break a relationship’s rules, or the relationship, to prove you still can.",
+    flowing: "You are independent and original without having to fight for it, and you give a partner the same freedom.",
+  },
+  "sun-neptune": {
+    name: "The shape-shifter",
+    them: "Their sense of self is fluid: they can become what a partner wants, or drift when things get hard.",
+    easyName: "The gentle one",
+    themEasy: "They are imaginative, compassionate and gentle.",
+    conj: "hard",
+    hard: "Your sense of who you are is fluid. You can become what a partner wants, idealise them, or drift away when reality gets hard. You are sensitive and compassionate, and you need to keep hold of your own outline.",
+    flowing: "You are imaginative and compassionate, and you sense what other people need. You bring gentleness to a relationship.",
+  },
+  "sun-pluto": {
+    name: "All the way down",
+    them: "They live intensely, do not give up control easily, and trust slowly.",
+    easyName: "Staying power",
+    themEasy: "They have depth and stamina, and are not afraid of what is difficult.",
+    conj: "hard",
+    hard: "You live intensely and do not give up control easily. You may test a partner, hide what matters most, or reinvent yourself completely after a loss. Trust, once given, is total.",
+    flowing: "You have depth and stamina, and you can remake yourself when you need to. You are not afraid of what is difficult in a relationship.",
+  },
+  "moon-jupiter": {
+    name: "Big feelings",
+    them: "Their feelings run large: generous and protective, and prone to over-reacting.",
+    easyName: "Big-hearted",
+    themEasy: "They are warm and emotionally generous, and people feel looked after around them.",
+    conj: "flowing",
+    hard: "Your feelings run large. You are generous and protective, and you can over-react, over-give, or expect more emotional return than a partner has to offer.",
+    flowing: "You are warm and emotionally generous, and you trust that things will be all right. People feel looked after around you.",
+  },
+  "mars-jupiter": {
+    name: "Too much, too fast",
+    them: "They throw themselves in, overdo it and take risks.",
+    easyName: "Wholehearted",
+    themEasy: "They act with enthusiasm and bring energy and fun.",
+    conj: "flowing",
+    hard: "You throw yourself in. Your appetite for life and for people is large, and you can overdo it, take risks, or move on to the next thing before this one is finished.",
+    flowing: "You act with enthusiasm and confidence, and things you start tend to go well. You bring energy and fun to a relationship.",
+  },
+  "mars-neptune": {
+    name: "Chasing a dream",
+    them: "Their desire is tied to fantasy, and they find it hard to say plainly what they want.",
+    easyName: "The romantic pursuer",
+    themEasy: "They are a gentle, romantic and inventive lover.",
+    conj: "hard",
+    hard: "Your desire is tied to fantasy. You can pursue an ideal instead of a person, lose your drive when things turn ordinary, or find it hard to say plainly what you want.",
+    flowing: "Imagination and desire work together in you. You are a gentle, romantic and inventive lover.",
   },
 };
 

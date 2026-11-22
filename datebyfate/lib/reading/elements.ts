@@ -147,13 +147,17 @@ export function attunement(you: Chart, them: Chart, name: string): Attunement {
 
 /* ---------- Aspects, defined ---------- */
 
-/** What each aspect is, whatever planets are involved. */
+/**
+ * What each kind of aspect is, whatever planets are involved. The framing follows Sue Tompkins,
+ * "Aspects in Astrology" (unity, polarity and projection, challenge, ease, opportunity), with the
+ * element relationship of the signs from Arroyo. The wording is our own.
+ */
 export const ASPECT_DEFINITION: Record<AspectName, string> = {
-  conjunction: "A conjunction fuses the two energies. They act as one, intensely, and neither person is neutral about it.",
-  opposition: "An opposition is felt across the relationship. Each person stimulates the other and sees in them what they lack, and because the signs are in compatible elements it can become a balance.",
-  square: "A square is a challenge. The two energies work at cross purposes, and the tension has to be released through effort and adjustment. It is where a relationship generates the most energy.",
-  trine: "A trine is an easy flow. The two energies are in the same element and support each other without effort, which also makes it easy to take for granted.",
-  sextile: "A sextile is an opening. The two energies are in compatible elements and cooperate when you make use of it.",
+  conjunction: "A conjunction is the strongest aspect: the two planets act as one. It is so much a part of the person that it is hard to see from the inside, and between two people it is felt at once.",
+  opposition: "An opposition is a polarity. The two planets pull against each other, and one side is often handed to the other person to carry. The signs are in compatible elements, so with awareness it becomes a balance.",
+  square: "A square is a challenge. The two planets are in elements that do not mix, so they work at cross purposes and create tension that pushes for action. It is the aspect people work hardest at and build the most from.",
+  trine: "A trine is ease. The two planets are in the same element and accept each other, so this comes naturally and is easy to take for granted.",
+  sextile: "A sextile is an opportunity. The two planets are in compatible elements and work together well, with a little effort.",
 };
 
 /** The elements an aspect normally joins. Near a sign boundary the real elements can differ, which changes the aspect. */

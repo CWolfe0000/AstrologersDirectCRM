@@ -21,13 +21,13 @@ export default function Method() {
         <P>If a birth time is unknown we calculate for noon, leave out the rising sign and houses, and leave out anything that depends on the Moon’s exact position, which moves about 13° a day.</P>
 
         <H>Your own pattern</H>
-        <P>Your reading looks at Venus (how you love), the Moon (what you need), Mars (what you go after), your Descendant and 7th house (who you are drawn to), and the close aspects between those planets and Saturn, Uranus, Neptune and Pluto. Those aspects are the recurring dynamics.</P>
+        <P>Your reading looks at Venus (how you love), the Moon (what you need), Mars (what you go after), your Descendant and 7th house (who you are drawn to), and the close aspects your Sun, Moon, Venus and Mars make to each other and to Jupiter, Saturn, Uranus, Neptune and Pluto. Those aspects are the recurring dynamics.</P>
 
         <H>The elements</H>
         <P>The element readings follow the approach Stephen Arroyo set out in <em>Astrology, Psychology, and the Four Elements</em>. Each element is a kind of energy a person is attuned to. Your balance counts the Sun, Moon and rising sign most, then Mercury, Venus and Mars, then Jupiter and Saturn. Uranus, Neptune and Pluto describe a generation and are not counted. Two people are compared planet by planet: the same element matches, fire with air and earth with water feed each other, and every other mix works at cross purposes. The wording throughout is our own.</P>
 
         <H>The aspects</H>
-        <P>An aspect is read first by the planets involved and then by its kind. A conjunction fuses two energies. An opposition is felt across the relationship and can become a balance. A square is a challenge that generates energy and has to be worked through. A trine is an easy flow, and a sextile is an opening that works when it is used. Each kind normally joins signs of particular elements, so when an aspect falls across a sign boundary and the elements are different, the reading says so.</P>
+        <P>Aspects are read in the way Sue Tompkins sets out in <em>Aspects in Astrology</em>: first by the two planets involved, then by the kind of aspect. A conjunction is unity, the strongest contact. An opposition is a polarity, often lived out through the other person. A square is a challenge that pushes for action. A trine is ease, and a sextile is an opportunity that takes a little effort. Within one chart we use orbs of 8° for the conjunction, opposition, square and trine and 4° for the sextile; between two charts the orbs are tighter. Each kind of aspect normally joins signs of particular elements, so when one falls across a sign boundary and the elements are different, the reading says so. The wording throughout is our own.</P>
 
         <H>The pattern across your partners</H>
         <P>Each partner is reduced to a list of signatures: the signs of their Sun, Moon, Venus and Mars, the houses of your chart their planets fall in, and every aspect between their planets and yours. There are several hundred possible signatures.</P>
