@@ -58,6 +58,22 @@ const allDay = Object.fromEntries(["mon", "tue", "wed", "thu", "fri", "sat", "su
 const r1 = await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify({ ...prof, rules: { ...prof.rules, weekly: allDay, minNoticeHours: 2, maxAdvanceDays: 14, stepMin: 60, bufferMin: 15, changeNoticeHours: 1 } }) });
 assert.equal(r1.status, 200);
 prof = r1.body.profile;
+
+step("link-in-bio profile: a photo (cropped and resized in the browser) and links");
+await page.goto(BASE + "/app/settings?section=booking");
+// A 600×300 photo, made in the page: it should come back as a 400px square JPEG.
+const png = await page.evaluate(() => { const c = document.createElement("canvas"); c.width = 600; c.height = 300; const x = c.getContext("2d"); x.fillStyle = "#824B59"; x.fillRect(0, 0, 600, 300); return c.toDataURL("image/png"); });
+await page.getByLabel("Profile photo").setInputFiles({ name: "me.png", mimeType: "image/png", buffer: Buffer.from(png.split(",")[1], "base64") });
+await page.getByRole("img", { name: "Your profile photo" }).waitFor();
+await page.getByRole("button", { name: "Add Link" }).click();
+await page.getByLabel("Link 1 label").fill("Instagram");
+await page.getByLabel("Link 1 address").fill("https://instagram.com/mayalin.astro");
+await page.getByRole("button", { name: "Save Booking Settings" }).click();
+await page.getByText("Booking Settings Saved").waitFor();
+prof = (await call(page, "/api/v1/booking")).body.profile;
+assert.match(prof.photo, /^data:image\/jpeg;base64,/);
+assert.deepEqual(prof.links, [{ label: "Instagram", url: "https://instagram.com/mayalin.astro" }]);
+assert.equal((await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify({ ...prof, links: [{ label: "Bad", url: "javascript:alert(1)" }] }) })).status, 422, "only https links");
 assert.equal((await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify({ ...prof, slug: "admin" }) })).status, 422, "reserved address");
 
 step("a visitor books from the public page");
@@ -67,6 +83,10 @@ v.on("pageerror", (e) => errors.push("visitor: " + e.message));
 await v.goto(`${BASE}/book/${slug}`);
 await v.getByRole("heading", { name: "Maya Lin" }).waitFor();
 await v.getByText("Evolutionary astrologer").waitFor();
+assert.equal(await v.getByRole("link", { name: /Instagram/ }).getAttribute("href"), "https://instagram.com/mayalin.astro");
+assert.match(await v.locator("header img").first().getAttribute("src"), /^data:image\/jpeg/);
+assert.match(await v.title(), /Maya Lin · Book a Session/);
+if (SHOTS) await v.screenshot({ path: `${SHOTS}/booking-profile.png`, fullPage: true });
 await v.getByRole("button", { name: /Natal Chart Reading/ }).click();
 const times = v.getByRole("group", { name: "Times" });
 await times.getByRole("button").first().waitFor();
@@ -179,7 +199,7 @@ assert.equal((await call(v, `/api/public/book/${slug}`, { method: "POST", body: 
 await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify({ ...prof, enabled: false }) });
 assert.equal((await call(v, `/api/public/book/${slug}`)).status, 404);
 await v.goto(`${BASE}/book/${slug}`);
-await v.getByText("This booking page isn’t available").waitFor();
+await v.getByText("This Booking Page Isn’t Available").waitFor();
 
 assert.deepEqual(errors, []);
 await browser.close();

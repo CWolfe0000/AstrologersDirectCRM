@@ -2,7 +2,7 @@
 
 import { selectIntakeForms } from "@/lib/intake";
 import * as React from "react";
-import { Copy, ExternalLink, Loader2, Plus, Trash2 } from "lucide-react";
+import { Copy, ExternalLink, ImagePlus, Loader2, Plus, Trash2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useStore } from "@/lib/store";
 import { DATA_MODE, uid } from "@/lib/utils";
@@ -91,13 +91,41 @@ export function BookingSection() {
       </Card>
 
       <Card>
-        <CardHeader title="Public Profile" description="What visitors see beside your services." />
+        <CardHeader title="Public Profile" description="Your link-in-bio page: photo, name, links, your services as a menu, and a short bio." />
         <CardBody className="grid gap-4 sm:grid-cols-2">
+          <div className="flex items-center gap-4 sm:col-span-2">
+            {p.photo ? <img src={p.photo} alt="Your profile photo" className="size-20 rounded-full object-cover" /> : <span className="flex size-20 items-center justify-center rounded-full bg-canvas-2 text-[12px] text-muted">No Photo</span>}
+            <div className="flex flex-wrap gap-2">
+              <label className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-line px-3 text-[13px] font-medium text-ink hover:bg-canvas-2 focus-within:ring-2 focus-within:ring-accent/40">
+                <ImagePlus className="size-4" /> {p.photo ? "Change Photo" : "Add Photo"}
+                <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" aria-label="Profile photo" onChange={async (e) => {
+                  const f = e.target.files?.[0];
+                  e.target.value = "";
+                  if (!f) return;
+                  try { set({ photo: await squarePhoto(f) }); } catch (err) { toast("Photo Not Added", (err as Error).message, "error"); }
+                }} />
+              </label>
+              {p.photo && <Button variant="ghost" size="sm" onClick={() => set({ photo: undefined })}><Trash2 /> Remove</Button>}
+              <p className="w-full text-[12px] text-muted">A square crop from the middle of the photo, resized for the page. Remember to save.</p>
+            </div>
+          </div>
           <Field label="Name" htmlFor="bk-name"><Input id="bk-name" maxLength={120} value={p.displayName} onChange={(e) => set({ displayName: e.target.value })} /></Field>
           <Field label="Headline" htmlFor="bk-head" optional><Input id="bk-head" maxLength={160} value={p.headline} onChange={(e) => set({ headline: e.target.value })} placeholder="e.g. Evolutionary astrologer" /></Field>
           <Field label="About" htmlFor="bk-about" optional className="sm:col-span-2"><Textarea id="bk-about" rows={4} maxLength={4000} value={p.about} onChange={(e) => set({ about: e.target.value })} /></Field>
           <Field label="In-Person Location" htmlFor="bk-loc" optional hint="Shown for in-person sessions."><Input id="bk-loc" maxLength={200} value={p.location} onChange={(e) => set({ location: e.target.value })} /></Field>
           <Field label="Video Call Link" htmlFor="bk-meet" optional hint="Your Zoom or Meet room, sent with video bookings."><Input id="bk-meet" type="url" placeholder="https://" maxLength={500} value={p.meetingUrl} onChange={(e) => set({ meetingUrl: e.target.value.trim() })} /></Field>
+          <div className="space-y-2 sm:col-span-2">
+            <p className="text-[13px] font-medium text-ink">Links</p>
+            <p className="-mt-1 text-[12px] text-muted">Your website, Instagram, newsletter, podcast: shown as buttons under your name.</p>
+            {(p.links ?? []).map((l, i) => (
+              <div key={i} className="grid gap-2 sm:grid-cols-[180px_minmax(0,1fr)_auto]">
+                <Input aria-label={`Link ${i + 1} label`} placeholder="e.g. Instagram" maxLength={60} value={l.label} onChange={(e) => set({ links: (p.links ?? []).map((x, k) => (k === i ? { ...x, label: e.target.value } : x)) })} />
+                <Input aria-label={`Link ${i + 1} address`} type="url" placeholder="https://" maxLength={500} value={l.url} onChange={(e) => set({ links: (p.links ?? []).map((x, k) => (k === i ? { ...x, url: e.target.value.trim() } : x)) })} />
+                <Button variant="ghost" size="icon-sm" aria-label={`Remove link ${i + 1}`} onClick={() => set({ links: (p.links ?? []).filter((_, k) => k !== i) })}><Trash2 /></Button>
+              </div>
+            ))}
+            {(p.links ?? []).length < 8 && <Button variant="secondary" size="sm" onClick={() => set({ links: [...(p.links ?? []), { label: "", url: "" }] })}><Plus /> Add Link</Button>}
+          </div>
         </CardBody>
       </Card>
 
@@ -201,4 +229,27 @@ export function BookingSection() {
       </Card>
     </div>
   );
+}
+
+/** Crop the middle square of a photo and shrink it to 400px (a small JPEG the public page can carry). */
+async function squarePhoto(file: File): Promise<string> {
+  if (!/^image\/(jpeg|png|webp)$/.test(file.type)) throw new Error("Use a JPEG, PNG or WebP photo.");
+  if (file.size > 15 * 1024 * 1024) throw new Error("That photo is over 15 MB. Try a smaller one.");
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error("We couldn’t read that photo.")); i.src = url; });
+    const side = Math.min(img.naturalWidth, img.naturalHeight);
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 400;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("We couldn’t read that photo.");
+    ctx.drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, 400, 400);
+    for (const q of [0.85, 0.7, 0.55]) {
+      const out = canvas.toDataURL("image/jpeg", q);
+      if (out.length < 240_000) return out;
+    }
+    throw new Error("That photo is too detailed to shrink. Try another.");
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }

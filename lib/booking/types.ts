@@ -48,6 +48,10 @@ export interface BookingProfile {
   rules: BookingRules;
   /** Invite new clients to their portal when they book. */
   autoInvite: boolean;
+  /** Profile photo: a small square image, stored as a data URL. */
+  photo?: string;
+  /** Links shown under the name, link-in-bio style (website, Instagram, newsletter…). */
+  links?: { label: string; url: string }[];
 }
 
 export const DEFAULT_RULES: BookingRules = {

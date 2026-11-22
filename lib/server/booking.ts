@@ -56,13 +56,19 @@ export const profileSchema = z
       })
       .strict(),
     autoInvite: z.boolean(),
+    // A square photo resized in the browser (about 400px): a data URL, kept small.
+    photo: z.string().max(250_000).regex(/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/, "Use a JPEG, PNG or WebP photo.").optional(),
+    links: z
+      .array(z.object({ label: text(60).min(1, "Give each link a label."), url: z.string().trim().max(500).regex(/^https:\/\/\S+$/, "Links must start with https://.") }).strict())
+      .max(8)
+      .optional(),
   })
   .strict();
 
 async function practitionerOf(practiceId: string) {
   const s = await getSettings(practiceId);
-  const p = (s?.practitioner ?? {}) as { name?: string; firstName?: string; title?: string; bio?: string; practice?: string; timezone?: string; email?: string };
-  return { ...p, tz: ianaZone(p.timezone) };
+  const p = (s?.practitioner ?? {}) as { name?: string; firstName?: string; title?: string; bio?: string; practice?: string; timezone?: string; email?: string; portalAccent?: string };
+  return { ...p, tz: ianaZone(p.timezone), accent: p.portalAccent };
 }
 
 async function ownerEmail(practiceId: string) {
@@ -134,6 +140,9 @@ export function publicView(b: Awaited<ReturnType<typeof publicBooking>>) {
     headline: profile.headline,
     about: profile.about,
     location: profile.location,
+    photo: profile.photo ?? null,
+    links: profile.links ?? [],
+    accent: b.practitioner.accent ?? null,
     practice: b.practitioner.practice ?? "",
     tz: b.tz,
     maxAdvanceDays: profile.rules.maxAdvanceDays,

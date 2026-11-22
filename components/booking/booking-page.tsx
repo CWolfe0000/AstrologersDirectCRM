@@ -2,16 +2,16 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeft, CalendarCheck, Check, Clock, Loader2, MapPin, Phone, Video } from "lucide-react";
+import { ArrowLeft, CalendarCheck, Check, ChevronRight, Clock, Globe, Loader2, MapPin, Phone, Video } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Checkbox, Field, Input, Textarea } from "@/components/ui/input";
-import { Avatar } from "@/components/ui/avatar";
 import { PlaceLookup, type PlaceValue } from "@/components/clients/place-lookup";
 import { BookingShell, TimePicker, browserZone, longWhen } from "./shared";
+import { accentVars } from "@/lib/brand";
 
 type Service = { id: string; name: string; description: string; durationMin: number; price: string; format: "Video call" | "Phone" | "In person" };
-type Profile = { slug: string; displayName: string; headline: string; about: string; location: string; practice: string; tz: string; services: Service[] };
+type Profile = { slug: string; displayName: string; headline: string; about: string; location: string; practice: string; tz: string; photo: string | null; links: { label: string; url: string }[]; accent: string | null; services: Service[] };
 type Booked = { start: string; service: string; durationMin: number; format: string; displayName: string; meetingUrl: string | null; manage: string };
 
 const FORMAT_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin } as const;
@@ -38,59 +38,62 @@ export function BookingPage({ slug }: { slug: string }) {
   }, [service, slug]);
 
   return (
-    <BookingShell>
-        {error && !profile && (
-          <div className="rounded-2xl border border-line bg-surface px-6 py-12 text-center">
-            <p className="font-serif text-[26px] text-ink">This booking page isn’t available</p>
-            <p className="mt-2 text-[14px] text-muted">The link may be mistyped, or bookings may be paused. Please check with your astrologer.</p>
-          </div>
-        )}
-        {!profile && !error && <div className="h-64 animate-pulse rounded-2xl bg-canvas-2" />}
-        {profile && booked && <Confirmation booked={booked} tz={tz} />}
-        {profile && !booked && (
-          <div className="grid gap-8 md:grid-cols-[280px_1fr]">
-            <aside>
-              <Avatar name={profile.displayName} size="lg" />
-              <h1 className="mt-4 font-serif text-[30px] leading-tight text-ink">{profile.displayName}</h1>
-              {profile.headline && <p className="mt-1 text-[14px] text-ink-3">{profile.headline}</p>}
-              {profile.practice && <p className="mt-0.5 text-[13px] text-muted">{profile.practice}</p>}
-              {profile.about && <p className="mt-4 whitespace-pre-line text-[14px] leading-relaxed text-muted">{profile.about}</p>}
-              {profile.location && (
-                <p className="mt-4 flex items-start gap-2 text-[13px] text-ink-3"><MapPin className="mt-0.5 size-4 shrink-0 text-muted" /> {profile.location}</p>
-              )}
-            </aside>
-
+    <BookingShell profile style={accentVars(profile?.accent ?? undefined) as React.CSSProperties | undefined}>
+      {error && !profile && (
+        <div className="rounded-2xl border border-line bg-surface px-6 py-12 text-center">
+          <p className="font-serif text-[26px] text-ink">This Booking Page Isn’t Available</p>
+          <p className="mt-2 text-[14px] text-muted">The link may be mistyped, or bookings may be paused. Please check with your astrologer.</p>
+        </div>
+      )}
+      {!profile && !error && <div className="mx-auto h-64 max-w-[520px] animate-pulse rounded-2xl bg-canvas-2" />}
+      {profile && booked && <div className="mx-auto max-w-[560px]"><Confirmation booked={booked} tz={tz} /></div>}
+      {profile && !booked && (
+        <div className="mx-auto max-w-[520px]">
+          {!service ? (
+            <>
+              <ProfileHeader profile={profile} />
+              <section aria-labelledby="bk-services" className="mt-8">
+                <h2 id="bk-services" className="mb-3 text-center text-[12px] font-semibold uppercase tracking-[0.14em] text-muted">Book a Session</h2>
+                <ul className="space-y-3">
+                  {profile.services.map((s) => {
+                    const Icon = FORMAT_ICON[s.format];
+                    return (
+                      <li key={s.id}>
+                        <button type="button" onClick={() => setService(s)} className="group w-full rounded-2xl border border-line bg-surface px-5 py-4 text-left shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-all hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-md">
+                          <span className="flex items-center gap-3">
+                            <span className="min-w-0 flex-1">
+                              <span className="block text-[16px] font-semibold text-ink">{s.name}</span>
+                              <span className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[12.5px] text-muted">
+                                <span className="inline-flex items-center gap-1"><Clock className="size-3.5" /> {s.durationMin} min</span>
+                                <span className="inline-flex items-center gap-1"><Icon className="size-3.5" /> {s.format}</span>
+                              </span>
+                            </span>
+                            {s.price && <span className="shrink-0 rounded-full bg-accent-50 px-3 py-1 text-[14px] font-medium text-accent">{s.price}</span>}
+                            <ChevronRight className="size-4 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-accent" />
+                          </span>
+                          {s.description && <span className="mt-2 block text-[13.5px] leading-relaxed text-ink-3">{s.description}</span>}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+                {profile.services.some((s) => s.price) && <p className="mt-3 text-center text-[12.5px] text-muted">Payment is arranged directly with {profile.displayName}.</p>}
+              </section>
+              {profile.about && <About text={profile.about} name={profile.displayName} />}
+            </>
+          ) : (
             <section aria-live="polite">
-              {!service ? (
+              <div className="mb-6 flex items-center gap-3">
+                <Photo profile={profile} size={44} />
+                <div className="min-w-0">
+                  <p className="text-[13px] text-muted">{profile.displayName}</p>
+                  <h1 className="font-serif text-[24px] leading-tight text-ink">{service.name}</h1>
+                </div>
+              </div>
+              {!start ? (
                 <>
-                  <h2 className="font-serif text-[24px] text-ink">Choose a Session</h2>
-                  <ul className="mt-4 space-y-3">
-                    {profile.services.map((s) => {
-                      const Icon = FORMAT_ICON[s.format];
-                      return (
-                        <li key={s.id}>
-                          <button type="button" onClick={() => setService(s)} className="w-full rounded-2xl border border-line bg-surface p-5 text-left transition-colors hover:border-accent/50">
-                            <span className="flex flex-wrap items-baseline justify-between gap-2">
-                              <span className="text-[16px] font-semibold text-ink">{s.name}</span>
-                              {s.price && <span className="text-[15px] text-ink">{s.price}</span>}
-                            </span>
-                            {s.description && <span className="mt-1 block text-[13.5px] leading-relaxed text-muted">{s.description}</span>}
-                            <span className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[12.5px] text-ink-3">
-                              <span className="inline-flex items-center gap-1.5"><Clock className="size-3.5 text-muted" /> {s.durationMin} minutes</span>
-                              <span className="inline-flex items-center gap-1.5"><Icon className="size-3.5 text-muted" /> {s.format}</span>
-                            </span>
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  {profile.services.some((s) => s.price) && <p className="mt-4 text-[12.5px] text-muted">Payment is arranged directly with {profile.displayName}.</p>}
-                </>
-              ) : !start ? (
-                <>
-                  <button type="button" onClick={() => setService(null)} className="inline-flex items-center gap-1 text-[13px] text-muted hover:text-ink"><ArrowLeft className="size-4" /> All sessions</button>
-                  <h2 className="mt-3 font-serif text-[24px] text-ink">{service.name}</h2>
-                  <p className="text-[13px] text-muted">{service.durationMin} minutes · {service.format}{service.price ? ` · ${service.price}` : ""}</p>
+                  <button type="button" onClick={() => setService(null)} className="inline-flex items-center gap-1 text-[13px] text-muted hover:text-ink"><ArrowLeft className="size-4" /> All Sessions</button>
+                  <p className="mt-2 text-[13px] text-muted">{service.durationMin} minutes · {service.format}{service.price ? ` · ${service.price}` : ""}</p>
                   <div className="mt-5">
                     <TimePicker
                       slots={slots}
@@ -105,9 +108,60 @@ export function BookingPage({ slug }: { slug: string }) {
                 <Details slug={slug} profile={profile} service={service} start={start} tz={tz} onBack={() => setStart(null)} onBooked={setBooked} onTaken={() => { setStart(null); setService({ ...service }); }} />
               )}
             </section>
-          </div>
-        )}
+          )}
+        </div>
+      )}
     </BookingShell>
+  );
+}
+
+function Photo({ profile, size }: { profile: Profile; size: number }) {
+  if (profile.photo) return <img src={profile.photo} alt="" width={size} height={size} className="shrink-0 rounded-full object-cover ring-4 ring-surface" style={{ width: size, height: size }} />;
+  const initials = profile.displayName.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join("");
+  return <span className="flex shrink-0 items-center justify-center rounded-full bg-accent font-serif text-white ring-4 ring-surface" style={{ width: size, height: size, fontSize: size * 0.38 }} aria-hidden>{initials}</span>;
+}
+
+const linkHost = (url: string) => { try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url; } };
+
+/** Photo, name, headline, and the astrologer's own links: link-in-bio style. */
+function ProfileHeader({ profile }: { profile: Profile }) {
+  return (
+    <header className="flex flex-col items-center text-center">
+      <Photo profile={profile} size={104} />
+      <h1 className="mt-4 font-serif text-[30px] leading-tight text-ink">{profile.displayName}</h1>
+      {profile.headline && <p className="mt-1 text-[15px] text-ink-3">{profile.headline}</p>}
+      {(profile.practice || profile.location) && (
+        <p className="mt-1 flex flex-wrap items-center justify-center gap-x-3 text-[13px] text-muted">
+          {profile.practice && <span>{profile.practice}</span>}
+          {profile.location && <span className="inline-flex items-center gap-1"><MapPin className="size-3.5" /> {profile.location}</span>}
+        </p>
+      )}
+      {profile.links.length > 0 && (
+        <ul className="mt-5 flex w-full flex-col gap-2" aria-label="Links">
+          {profile.links.map((l) => (
+            <li key={l.url}>
+              <a href={l.url} target="_blank" rel="noopener noreferrer nofollow" className="flex w-full items-center justify-center gap-2 rounded-full border border-line-strong bg-surface px-5 py-3 text-[14px] font-medium text-ink transition-colors hover:border-accent hover:text-accent">
+                <Globe className="size-4 text-muted" aria-hidden /> {l.label}
+                <span className="sr-only"> ({linkHost(l.url)}, opens in a new tab)</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </header>
+  );
+}
+
+/** The bio: a short preview, with the rest a tap away. */
+function About({ text, name }: { text: string; name: string }) {
+  const long = text.length > 320;
+  const [open, setOpen] = React.useState(false);
+  return (
+    <section aria-labelledby="bk-about" className="mt-8 rounded-2xl border border-line bg-surface px-5 py-5">
+      <h2 id="bk-about" className="text-[12px] font-semibold uppercase tracking-[0.14em] text-muted">About {name.split(" ")[0]}</h2>
+      <p className="mt-2 whitespace-pre-line text-[14px] leading-relaxed text-ink-3">{long && !open ? `${text.slice(0, 300).trimEnd()}…` : text}</p>
+      {long && <button type="button" onClick={() => setOpen(!open)} className="mt-2 text-[13px] font-medium text-accent hover:underline">{open ? "Show Less" : "Read More"}</button>}
+    </section>
   );
 }
 

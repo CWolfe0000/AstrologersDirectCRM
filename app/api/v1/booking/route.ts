@@ -9,5 +9,5 @@ export const GET = handler(async () => {
 
 export const PUT = handler(async (req: Request) => {
   const user = await requireUser("owner");
-  return json({ profile: await saveBookingProfile(user.practiceId, await readJson(req, 200_000)) });
+  return json({ profile: await saveBookingProfile(user.practiceId, await readJson(req, 500_000)) });
 });

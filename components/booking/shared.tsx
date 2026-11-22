@@ -23,18 +23,20 @@ export function browserZone() {
 }
 
 /** Header and footer for the public booking pages. */
-export function BookingShell({ children }: { children: React.ReactNode }) {
+export function BookingShell({ children, profile, style }: { children: React.ReactNode; /** The public profile: no header bar, just the page. */ profile?: boolean; style?: React.CSSProperties }) {
   return (
-    <div className="min-h-screen bg-canvas">
-      <header className="border-b border-line bg-surface">
-        <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
-          <span className="text-[13px] text-muted">Online booking</span>
-          <Link href={SITE_URL || "/"} className="opacity-80 hover:opacity-100" aria-label="AstrologersDirect"><Wordmark compact /></Link>
-        </div>
-      </header>
-      <main id="main" className="mx-auto max-w-4xl px-4 py-8 md:py-12">{children}</main>
+    <div className="min-h-screen bg-canvas" style={style}>
+      {!profile && (
+        <header className="border-b border-line bg-surface">
+          <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
+            <span className="text-[13px] text-muted">Online Booking</span>
+            <Link href={SITE_URL || "/"} className="opacity-80 hover:opacity-100" aria-label="AstrologersDirect"><Wordmark compact /></Link>
+          </div>
+        </header>
+      )}
+      <main id="main" className={profile ? "mx-auto max-w-4xl px-4 pb-8 pt-10 md:pt-16" : "mx-auto max-w-4xl px-4 py-8 md:py-12"}>{children}</main>
       <footer className="mx-auto max-w-4xl px-4 pb-10 text-center text-[12px] text-muted">
-        Booking by AstrologersDirect · <Link href="/legal/privacy" className="underline">Privacy</Link>
+        {profile ? <>Booking by <Link href={SITE_URL || "/"} className="font-medium text-ink-3 hover:text-ink">AstrologersDirect</Link></> : "Booking by AstrologersDirect"} · <Link href="/legal/privacy" className="underline">Privacy</Link>
       </footer>
     </div>
   );
