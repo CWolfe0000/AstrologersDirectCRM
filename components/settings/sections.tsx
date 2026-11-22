@@ -14,7 +14,7 @@ import { api } from "@/lib/api";
 import { TwoFactorCard } from "./two-factor";
 import { WheelPaletteEditor } from "./wheel-palette-editor";
 import { LabelledByContext } from "@/components/ui/label-context";
-import { CalendarFeedCard, RemindersCard } from "./practice-tools";
+import { CalendarFeedCard, NewsEmailsCard, RemindersCard } from "./practice-tools";
 import { allZones } from "@/lib/timezones";
 import { bootstrap, loadSampleData } from "@/lib/sync";
 import { Card, CardHeader, CardBody, CardFooter } from "@/components/ui/card";
@@ -277,6 +277,7 @@ function ServerNotifications() {
     <div className="space-y-6">
       <RemindersCard />
       <CalendarFeedCard />
+      <NewsEmailsCard />
       <DemoNotifications />
     </div>
   );

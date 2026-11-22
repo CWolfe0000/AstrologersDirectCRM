@@ -4,7 +4,8 @@ import * as React from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Field, Input, Select, Textarea } from "@/components/ui/input";
+import Link from "next/link";
+import { Checkbox, Field, Input, Select, Textarea } from "@/components/ui/input";
 
 const EXPERIENCE = ["", "Under 2 years", "2–5 years", "5–10 years", "10+ years"];
 
@@ -31,7 +32,7 @@ export function RequestAccessForm() {
         setBusy(true);
         setError(null);
         try {
-          await api("/api/public/access-request", { body: f });
+          await api("/api/public/access-request", { body: { ...f, emailConsent: true } });
           setDone(true);
         } catch (err) {
           setError((err as Error).message);
@@ -55,8 +56,11 @@ export function RequestAccessForm() {
       <Field label="Tell Us About Your Practice" htmlFor="ra-about" optional className="sm:col-span-2">
         <Textarea id="ra-about" rows={4} maxLength={2000} value={f.about} onChange={set("about")} placeholder="The work you do, the tools you use now, and what you’d most like AstrologersDirect to help with." />
       </Field>
+      <div className="sm:col-span-2">
+        <Checkbox required label={<span className="text-[13px] text-muted">I agree to receive emails from AstrologersDirect about my request, the beta, new features and offers, as described in the <Link href="/legal/privacy" className="text-accent underline">Privacy Policy</Link>. I can unsubscribe at any time.</span>} />
+      </div>
       <div className="flex flex-col-reverse items-start justify-between gap-3 sm:col-span-2 sm:flex-row sm:items-center">
-        <p className="text-[12.5px] text-muted" role={error ? "alert" : undefined}>{error ? <span className="text-danger">{error}</span> : "Free during the beta. We’ll only use your details to review your request."}</p>
+        <p className="text-[12.5px] text-muted" role={error ? "alert" : undefined}>{error ? <span className="text-danger">{error}</span> : "Free during the beta."}</p>
         <Button type="submit" size="lg" disabled={busy}>{busy && <Loader2 className="animate-spin" />} Request Access</Button>
       </div>
     </form>

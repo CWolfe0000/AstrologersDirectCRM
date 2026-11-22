@@ -280,7 +280,7 @@ function Signup() {
           e.preventDefault();
           run(async () => {
             const name = `${f.first.trim()} ${f.last.trim()}`.trim();
-            await api("/api/auth/signup", { body: { name, practice: f.practice.trim() || `${name}'s practice`, email: f.email, password: f.password || undefined, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, invite: inviteToken || undefined } });
+            await api("/api/auth/signup", { body: { name, practice: f.practice.trim() || `${name}'s practice`, email: f.email, password: f.password || undefined, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, invite: inviteToken || undefined, emailConsent: true } });
             router.replace(`/auth/verify?sent=1&email=${encodeURIComponent(f.email)}`);
           });
         }}
@@ -295,7 +295,7 @@ function Signup() {
         <Field label="Password" htmlFor="pw" optional hint={`Leave blank to sign in with emailed links instead. Otherwise at least ${MIN_PW} characters.`}>
           <Input id="pw" type="password" minLength={MIN_PW} autoComplete="new-password" value={f.password} onChange={set("password")} />
         </Field>
-        <Checkbox required label={<span className="text-[13px] text-muted">I agree to the <Link href="/legal/terms" className="text-accent underline">Terms</Link> and <Link href="/legal/privacy" className="text-accent underline">Privacy Policy</Link>.</span>} />
+        <Checkbox required label={<span className="text-[13px] text-muted">I agree to the <Link href="/legal/terms" className="text-accent underline">Terms</Link> and <Link href="/legal/privacy" className="text-accent underline">Privacy Policy</Link>, and to receive emails from AstrologersDirect about my account, the beta, new features and offers. I can unsubscribe from non-essential emails at any time.</span>} />
         <Button type="submit" size="lg" className="w-full" disabled={loading}>
           {loading && <Loader2 className="animate-spin" />} Create Account
         </Button>

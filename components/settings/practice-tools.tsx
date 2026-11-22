@@ -95,3 +95,33 @@ export function CalendarFeedCard() {
     </Card>
   );
 }
+
+/** News and offers from AstrologersDirect: agreed to at sign-up, switch off any time. */
+export function NewsEmailsCard() {
+  const toast = useStore((s) => s.toast);
+  const [d, setD] = React.useState<{ on: boolean; consentAt: string | null } | null>(null);
+  React.useEffect(() => { api<{ on: boolean; consentAt: string | null }>("/api/v1/account/email").then(setD, () => {}); }, []);
+  if (!d) return null;
+  const set = async (on: boolean) => {
+    try {
+      setD(await api<{ on: boolean; consentAt: string | null }>("/api/v1/account/email", { method: "PUT", body: { on } }));
+      toast(on ? "News Emails On" : "Unsubscribed", on ? "You’ll hear about new features, the beta and offers." : "You won’t get news or offers emails. Account emails still arrive.", "success");
+    } catch (e) {
+      toast("Couldn’t Update", (e as Error).message, "error");
+    }
+  };
+  return (
+    <Card>
+      <CardHeader title="Emails From AstrologersDirect" description="News about new features, the beta and offers. Emails about your account, like sign-in links, always arrive." />
+      <CardBody>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-[13.5px] font-medium">News, Features and Offers</p>
+            <p className="text-[12.5px] text-muted">{d.consentAt ? `You agreed to these when you joined (${new Date(d.consentAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}).` : "Every email also has a one-click unsubscribe link."}</p>
+          </div>
+          <Switch checked={d.on} onCheckedChange={(v) => void set(v)} aria-label="News, Features and Offers" />
+        </div>
+      </CardBody>
+    </Card>
+  );
+}

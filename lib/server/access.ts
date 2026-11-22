@@ -33,6 +33,7 @@ export const accessRequestSchema = z
     experience: z.enum(["", "Under 2 years", "2–5 years", "5–10 years", "10+ years"]),
     about: text(2000),
     company: z.string().max(200).optional(), // hidden field: bots fill it
+    emailConsent: z.literal(true, { errorMap: () => ({ message: "Please agree to receive emails from AstrologersDirect." }) }),
   })
   .strict();
 
@@ -47,7 +48,7 @@ export async function requestAccess(input: z.infer<typeof accessRequestSchema>) 
   }
   const [existing] = await db().select().from(schema.accessRequests).where(eq(schema.accessRequests.email, email));
   if (existing) return; // already received; no duplicates or repeat emails
-  await db().insert(schema.accessRequests).values({ id: newId("req"), email, name: input.name, practice: input.practice, website: input.website, experience: input.experience, about: input.about });
+  await db().insert(schema.accessRequests).values({ id: newId("req"), email, name: input.name, practice: input.practice, website: input.website, experience: input.experience, about: input.about, emailConsentAt: new Date() });
   await sendMail(email, "We’ve received your request for AstrologersDirect", `Hi ${first},\n\nThank you for your interest in the AstrologersDirect beta. We review every request personally and will email you as soon as there’s a place for you.\n\n— The AstrologersDirect team\n`);
   if (env.contactEmail)
     await sendMail(

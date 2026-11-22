@@ -47,23 +47,26 @@ try {
   v.on("pageerror", (e) => errors.push("visitor: " + e.message));
   await v.goto(BASE + "/auth/signup");
   await v.getByRole("heading", { name: "AstrologersDirect Is in Private Beta" }).waitFor();
-  const blocked = await call(v, "/api/auth/signup", { method: "POST", body: JSON.stringify({ name: "Sneaky", practice: "X", email: `sneaky-${stamp}@example.com` }) });
+  const blocked = await call(v, "/api/auth/signup", { method: "POST", body: JSON.stringify({ name: "Sneaky", practice: "X", email: `sneaky-${stamp}@example.com`, emailConsent: true }) });
   assert.equal(blocked.status, 403);
 
   step("a practitioner requests access on the website");
   await v.getByRole("link", { name: "Request Access" }).click();
   await v.waitForURL(/request-access/);
   await v.getByLabel("Your Name").fill("Iris Moon");
-  await v.getByLabel("Email").fill(applicant);
+  await v.getByLabel("Email", { exact: true }).fill(applicant);
   await v.getByLabel(/Practice Name/).fill("Moonlit Charts");
   await v.getByLabel(/Years in Practice/).selectOption("5–10 years");
   await v.getByLabel(/Tell Us About Your Practice/).fill("Evolutionary astrology, mostly video sessions.");
+  await v.getByRole("checkbox", { name: /receive emails from AstrologersDirect/ }).check();
   await v.getByRole("button", { name: "Request Access" }).click();
   await v.getByText("Thank You. Your Request Is In.").waitFor();
+  const { rows: [reqRow] } = await db.query("select email_consent_at from access_requests where email=$1", [applicant]);
+  assert.ok(reqRow?.email_consent_at, "email consent recorded with the request");
   assert.ok((await mail(applicant)).some((m) => m.subject === "We’ve received your request for AstrologersDirect"));
   assert.ok((await mail(CONTACT)).some((m) => m.subject === "Beta request: Iris Moon" && m.body.includes("Moonlit Charts")));
   // Asking twice doesn't duplicate.
-  await call(v, "/api/public/access-request", { method: "POST", body: JSON.stringify({ name: "Iris Moon", email: applicant, practice: "", website: "", experience: "", about: "" }) });
+  await call(v, "/api/public/access-request", { method: "POST", body: JSON.stringify({ name: "Iris Moon", email: applicant, practice: "", website: "", experience: "", about: "", emailConsent: true }) });
   assert.equal((await db.query("select count(*)::int n from access_requests where email=$1", [applicant])).rows[0].n, 1);
 
   step("the admin approves it");
@@ -78,7 +81,7 @@ try {
 
   step("the link creates their account, once");
   const token = new URL(link).searchParams.get("invite");
-  assert.equal((await call(v, "/api/auth/signup", { method: "POST", body: JSON.stringify({ name: "Someone Else", practice: "X", email: `other-${stamp}@example.com`, invite: token }) })).status, 403, "only for the invited address");
+  assert.equal((await call(v, "/api/auth/signup", { method: "POST", body: JSON.stringify({ name: "Someone Else", practice: "X", email: `other-${stamp}@example.com`, invite: token, emailConsent: true }) })).status, 403, "only for the invited address");
   await v.goto(link);
   await v.getByRole("heading", { name: "Welcome, Iris" }).waitFor();
   assert.equal(await v.locator("#em").inputValue(), applicant);
@@ -93,10 +96,10 @@ try {
   await again.getByText(/already been used/).waitFor();
 
   step("existing accounts and bots get no special treatment");
-  const r1 = await call(v, "/api/public/access-request", { method: "POST", body: JSON.stringify({ name: "Admin", email: ADMIN, practice: "", website: "", experience: "", about: "" }) });
+  const r1 = await call(v, "/api/public/access-request", { method: "POST", body: JSON.stringify({ name: "Admin", email: ADMIN, practice: "", website: "", experience: "", about: "", emailConsent: true }) });
   assert.equal(r1.status, 200, "same response whether or not an account exists");
   assert.ok((await mail(ADMIN)).some((m) => m.subject === "You already have an AstrologersDirect account"));
-  await call(v, "/api/public/access-request", { method: "POST", body: JSON.stringify({ name: "Bot", email: `bot-${stamp}@example.com`, practice: "", website: "", experience: "", about: "", company: "spam" }) });
+  await call(v, "/api/public/access-request", { method: "POST", body: JSON.stringify({ name: "Bot", email: `bot-${stamp}@example.com`, practice: "", website: "", experience: "", about: "", company: "spam", emailConsent: true }) });
   assert.equal((await db.query("select count(*)::int n from access_requests where email=$1", [`bot-${stamp}@example.com`])).rows[0].n, 0);
 } finally {
   // Other tests sign up freely: always reopen sign-up.

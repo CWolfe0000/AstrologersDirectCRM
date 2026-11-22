@@ -48,6 +48,10 @@ export const users = pgTable(
     /** Consecutive failed sign-in attempts (password or code) and the resulting lockout. */
     failedLogins: integer("failed_logins").notNull().default(0),
     lockedUntil: timestamp("locked_until", { withTimezone: true }),
+    /** When they agreed (at sign-up) to emails from AstrologersDirect: account, beta, product news. */
+    emailConsentAt: timestamp("email_consent_at", { withTimezone: true }),
+    /** Unsubscribed from non-essential emails (account and security emails still go out). */
+    emailUnsubscribedAt: timestamp("email_unsubscribed_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [uniqueIndex("users_email_idx").on(t.email), index("users_practice_idx").on(t.practiceId)],
@@ -282,6 +286,8 @@ export const accessRequests = pgTable(
     website: text("website").notNull(),
     experience: text("experience").notNull(),
     about: text("about").notNull(),
+    /** When they agreed to emails from AstrologersDirect on the request form. */
+    emailConsentAt: timestamp("email_consent_at", { withTimezone: true }),
     status: text("status").notNull().default("pending"),
     inviteHash: text("invite_hash"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

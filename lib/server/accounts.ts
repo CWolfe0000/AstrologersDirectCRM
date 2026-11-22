@@ -24,7 +24,8 @@ export async function createPractice(input: { name: string; practice: string; em
   const email = normEmail(input.email);
   await db().transaction(async (tx) => {
     await tx.insert(schema.practices).values({ id: practiceId, name: input.practice, plan: defaultPlan() });
-    await tx.insert(schema.users).values({ id: userId, practiceId, email, name: input.name, role: "owner", passwordHash: input.password ? await hashPassword(input.password) : null });
+    // Joining means agreeing to emails from us (recorded with the time, for our records and unsubscribes).
+    await tx.insert(schema.users).values({ id: userId, practiceId, email, name: input.name, role: "owner", passwordHash: input.password ? await hashPassword(input.password) : null, emailConsentAt: new Date() });
   });
   const first = input.name.split(/\s+/)[0] ?? input.name;
   await putSettings(

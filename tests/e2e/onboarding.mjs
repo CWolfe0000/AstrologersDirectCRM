@@ -94,6 +94,18 @@ await page.getByText("Finish Setting Up Your Practice").waitFor({ state: "detach
 assert.equal(await page.getByText("Finish Setting Up Your Practice").count(), 0);
 assert.match(page.url(), /\/app$/);
 
+step("they agreed to emails at sign-up, and can switch news off");
+let em = (await call("/api/v1/account/email")).body;
+assert.equal(em.on, true);
+assert.ok(em.consentAt, "consent recorded with its time");
+await page.goto(BASE + "/app/settings?section=notifications");
+await page.getByRole("switch", { name: "News, Features and Offers" }).click();
+await page.getByText("Unsubscribed", { exact: true }).waitFor();
+em = (await call("/api/v1/account/email")).body;
+assert.equal(em.on, false);
+const bad = await fetch(`${BASE}/api/public/unsubscribe?u=nobody&t=forged`);
+assert.match(await bad.text(), /This Link Isn’t Valid/);
+
 step("the public page shows the services");
 await page.goto(`${BASE}/book/orla-${stamp}`);
 await page.getByRole("heading", { name: "Orla Finch" }).waitFor();

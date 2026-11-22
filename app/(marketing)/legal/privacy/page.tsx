@@ -7,12 +7,13 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy Policy"
-      updated="November 14, 2026"
+      updated="November 22, 2026"
       sections={[
         { h: "Who We Are", p: "AstrologersDirect provides practice-management software for astrologers. Practitioners are the controllers of their clients’ data; AstrologersDirect processes it on their behalf." },
         { h: "Information We Collect", p: "Account details for practitioners; client records, birth data, charts, notes and files that practitioners choose to store; and limited technical information needed to operate the service." },
         { h: "Private Practitioner Records", p: "Observations, preparation notes and session notes are visible only to the practitioner. They are never shown in the client portal." },
         { h: "How Information Is Used", p: "To provide and secure the service, deliver readings to clients, send notifications you’ve enabled, and improve the product. We do not sell personal information." },
+        { h: "Emails From Us", p: "When you create an account or request access to the beta, you agree to receive emails from AstrologersDirect: about your account, the beta, new features and offers. We record when you agreed. You can stop news and offers emails at any time with the unsubscribe link in each one, or in Settings › Notifications. Emails needed to run your account, such as sign-in links and security notices, still arrive. We don’t share your email address with anyone to market to you." },
         { h: "Intelligent Assistance", p: "Assistance features operate on the practitioner’s own data, at the practitioner’s request. Any future anonymized research features will be opt-in." },
         { h: "Your Rights", p: "Practitioners can export or delete their data at any time. Clients can contact their practitioner, or us, to exercise their rights." },
         { h: "Contact", p: "Questions about privacy can be sent through the contact page." },

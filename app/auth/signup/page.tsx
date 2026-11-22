@@ -62,7 +62,7 @@ function SignupForm() {
         <Field label="Password" htmlFor="pw" hint="At least 12 characters.">
           <Input id="pw" type="password" required minLength={12} autoComplete="new-password" />
         </Field>
-        <Checkbox required label={<span className="text-[13px] text-muted">I agree to the <Link href="/legal/terms" className="text-accent underline">Terms</Link> and <Link href="/legal/privacy" className="text-accent underline">Privacy Policy</Link>.</span>} />
+        <Checkbox required label={<span className="text-[13px] text-muted">I agree to the <Link href="/legal/terms" className="text-accent underline">Terms</Link> and <Link href="/legal/privacy" className="text-accent underline">Privacy Policy</Link>, and to receive emails from AstrologersDirect about my account, the beta, new features and offers. I can unsubscribe from non-essential emails at any time.</span>} />
         <Button type="submit" size="lg" className="w-full" disabled={loading}>
           {loading && <Loader2 className="animate-spin" />} Create Account
         </Button>

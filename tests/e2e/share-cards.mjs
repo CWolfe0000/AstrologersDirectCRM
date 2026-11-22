@@ -48,7 +48,7 @@ async function save(name, w, h) {
   const [d] = await Promise.all([page.waitForEvent("download"), dl.click()]);
   const path = await d.path();
   assert.deepEqual(pngSize(path), [w, h], name);
-  if (SHOTS) await page.locator("canvas").screenshot({ path: `${SHOTS}/card-${name}.png` });
+  if (SHOTS) await d.saveAs(`${SHOTS}/card-${name}.png`);
 }
 await save("big-three", 1080, 1080);
 
