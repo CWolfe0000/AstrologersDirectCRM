@@ -60,6 +60,9 @@ export function handler<A extends unknown[]>(fn: (req: Request, ...rest: A) => P
       if (e instanceof ValidationError) return json({ error: "Some fields are invalid.", details: e.issues }, 422);
       if (e instanceof ConflictError) return json({ error: e.message, details: { current: e.current, version: e.version } }, 409);
       console.error(e);
+      // Unexpected failures are recorded (and the team alerted); expected ones above are not.
+      const err = e instanceof Error ? e : new Error(String(e));
+      await import("./errors").then((m) => m.recordError("server", { message: err.message, stack: err.stack, url: new URL(req.url).pathname })).catch(() => {});
       return json({ error: "Something went wrong. Please try again." }, 500);
     }
   };

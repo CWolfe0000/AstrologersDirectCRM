@@ -6,6 +6,7 @@ import "./globals.css";
 import { StoreHydrator } from "@/lib/store";
 import { ServiceWorkerRegister } from "@/components/sw-register";
 import { UpdateNotice } from "@/components/app/update-notice";
+import { ErrorReporter } from "@/components/app/error-reporter";
 
 export const metadata: Metadata = {
   title: { default: "AstrologersDirect — Your Practice. Connected.", template: "%s · AstrologersDirect" },
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ServiceWorkerRegister />
         {children}
         <UpdateNotice />
+        <ErrorReporter />
       </body>
     </html>
   );

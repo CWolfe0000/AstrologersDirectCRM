@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { db, schema } from "./db";
 import { env } from "./env";
 import { link } from "./mail";
+import { BUSINESS_ADDRESS_LINE } from "@/lib/site";
 
 /**
  * News, tips and offers from AstrologersDirect: opt-in (an unticked box at
@@ -16,6 +17,16 @@ const sign = (userId: string) => createHmac("sha256", env.encryptionKey).update(
 /** The link to put at the foot of every news or offers email. */
 export function unsubscribeLink(userId: string) {
   return link(`/api/public/unsubscribe?u=${encodeURIComponent(userId)}&t=${sign(userId)}`);
+}
+
+/** The footer every news, tips or offers email must carry: who sent it, our postal address, and a one-click unsubscribe. */
+export function newsEmailFooter(userId: string) {
+  return `\n\n—\nYou’re getting this because you asked for news, tips and offers from AstrologersDirect.\nUnsubscribe: ${unsubscribeLink(userId)}\nAstrologersDirect · ${BUSINESS_ADDRESS_LINE}\n`;
+}
+
+/** Headers so mail apps show their own one-click unsubscribe button (RFC 8058). */
+export function newsEmailHeaders(userId: string) {
+  return { "List-Unsubscribe": `<${unsubscribeLink(userId)}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" };
 }
 
 export function validUnsubscribe(userId: string, token: string) {

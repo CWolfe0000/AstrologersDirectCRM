@@ -127,6 +127,13 @@
       "when": 1795462554623,
       "tag": "0017_profile_single_source",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1795473003571,
+      "tag": "0018_app_errors",
+      "breakpoints": true
     }
   ]
 }

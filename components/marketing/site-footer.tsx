@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Wordmark } from "@/components/ui/misc";
-import { APP_URL, SIGNUP_URL } from "@/lib/site";
+import { APP_URL, BUSINESS_ADDRESS_LINE, SIGNUP_URL } from "@/lib/site";
 
 const COLS = [
   { title: "Product", links: [["Features", "/features"], ["How It Works", "/how-it-works"], ["Pricing", "/pricing"], ["What’s New", "/whats-new"]] },
@@ -34,7 +34,7 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-line">
         <div className="container flex flex-col gap-3 py-5 text-[12.5px] text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 AstrologersDirect. Beta.</p>
+          <p>© 2026 AstrologersDirect. Beta. <span className="block sm:inline sm:before:mx-1.5 sm:before:content-['·']">{BUSINESS_ADDRESS_LINE}</span></p>
           <div className="flex gap-5">
             <Link href="/legal/privacy" className="hover:text-ink">Privacy Policy</Link>
             <Link href="/legal/terms" className="hover:text-ink">Terms of Service</Link>

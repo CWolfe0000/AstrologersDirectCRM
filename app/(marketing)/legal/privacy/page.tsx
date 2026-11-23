@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/marketing/legal";
+import { BUSINESS_ADDRESS_LINE } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Privacy Policy" };
 
@@ -16,7 +17,7 @@ export default function PrivacyPage() {
         { h: "Emails From Us", p: "We email you about your account and the service: sign-in links, verification, security notices, your beta request and important changes to AstrologersDirect. News, tips and offers are optional: we send them only if you choose to receive them (when you sign up or in Settings › Notifications), and every one has an unsubscribe link. We don’t share your email address with anyone to market to you." },
         { h: "Intelligent Assistance", p: "Assistance features operate on the practitioner’s own data, at the practitioner’s request. Any future anonymized research features will be opt-in." },
         { h: "Your Rights", p: "Practitioners can export or delete their data at any time. Clients can contact their practitioner, or us, to exercise their rights." },
-        { h: "Contact", p: "Questions about privacy can be sent through the contact page." },
+        { h: "Contact", p: `Questions about privacy can be sent through the contact page, or by mail to AstrologersDirect, ${BUSINESS_ADDRESS_LINE}.` },
       ]}
     />
   );

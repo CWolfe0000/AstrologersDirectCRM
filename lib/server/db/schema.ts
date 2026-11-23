@@ -339,3 +339,20 @@ export const featureRequests = pgTable(
   },
   (t) => [index("feature_requests_created_idx").on(t.createdAt)],
 );
+
+/** Errors from the server and from people's browsers, grouped by fingerprint (built-in error monitoring). */
+export const appErrors = pgTable(
+  "app_errors",
+  {
+    fingerprint: text("fingerprint").primaryKey(),
+    source: text("source").notNull(),
+    message: text("message").notNull(),
+    stack: text("stack"),
+    url: text("url"),
+    count: integer("count").notNull().default(1),
+    firstAt: timestamp("first_at", { withTimezone: true }).defaultNow().notNull(),
+    lastAt: timestamp("last_at", { withTimezone: true }).defaultNow().notNull(),
+    alertedAt: timestamp("alerted_at", { withTimezone: true }),
+  },
+  (t) => [index("app_errors_last_idx").on(t.lastAt)],
+);
