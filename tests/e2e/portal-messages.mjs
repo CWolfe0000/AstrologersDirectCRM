@@ -64,7 +64,7 @@ if (!(await invite.isChecked())) await invite.check();
 await page.getByRole("button", { name: /Save Client & Chart/ }).click();
 await page.waitForURL((u) => /\/app\/clients\/[^/]+$/.test(u.pathname) && !u.pathname.endsWith("/new"));
 const clientId = page.url().split("/").pop();
-const inv = await mailTo(miaEmail, "%invited you to your client portal");
+const inv = await mailTo(miaEmail, "%Invited You to Your Client Portal%");
 assert.equal(inv.length, 1, "invitation emailed from the New Client form");
 const inviteLink = inv[0].body.match(/https?:\/\/[^\s]+\/auth\/invite\?token=[A-Za-z0-9_-]+/)[0].replace(/^https?:\/\/[^/]+/, BASE);
 
@@ -104,7 +104,7 @@ await cp.getByLabel("Message", { exact: true }).fill("Thank you! Quick question 
 await cp.getByRole("button", { name: "Send Message" }).click();
 await cp.getByText("Quick question about my Moon").waitFor();
 if (SHOTS) await cp.screenshot({ path: `${SHOTS}/portal-messages.png` });
-assert.equal((await mailTo(ownerEmail, "New message from Mia")).length, 1, "practitioner emailed");
+assert.equal((await mailTo(ownerEmail, "New Message From Mia")).length, 1, "practitioner emailed");
 await cp.goto(BASE + "/portal/charts");
 await cp.getByText(chart.title).click();
 await cp.getByRole("img", { name: "Chart Wheel" }).first().waitFor();
@@ -122,7 +122,7 @@ assert.equal((await api("/api/v1/messages?count=1")).body.unread, 0, "marked rea
 await page.getByLabel("Message", { exact: true }).fill("Good question: let's look at it together.");
 await page.getByRole("button", { name: "Send Message" }).click();
 await page.getByText("let's look at it together").waitFor();
-assert.equal((await mailTo(miaEmail, "New message from %")).length, 1, "second message within 20 minutes isn't emailed again while the first was unread");
+assert.equal((await mailTo(miaEmail, "New Message From %")).length, 1, "second message within 20 minutes isn't emailed again while the first was unread");
 await cp.goto(BASE + "/portal/messages");
 await cp.getByText("let's look at it together").waitFor();
 await cp.getByText(/^Seen /).waitFor();

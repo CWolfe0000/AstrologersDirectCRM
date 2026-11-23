@@ -158,9 +158,9 @@ assert.ok(k.prepNotes.includes("Career change this year."));
 assert.ok(s.notifications.some((n) => n.title === "New booking from a new client"));
 const mail = async (to) => (await db.query('select subject, body from outbox where "to"=$1 order by created_at', [to])).rows;
 const vm = await mail(visitor);
-assert.ok(vm.some((m) => m.subject === "Booked: Natal Chart Reading with Maya Lin" && m.body.includes(MEET) && /GMT|BST/.test(m.body)), "visitor confirmation in their time zone");
-assert.ok(vm.some((m) => /invited you to your client portal/.test(m.subject)), "portal invitation");
-assert.ok((await mail(ownerEmail)).some((m) => m.subject === "New booking: Rosa Vale, Natal Chart Reading"));
+assert.ok(vm.some((m) => m.subject === "Booked: Natal Chart Reading With Maya Lin" && m.body.includes(MEET) && /GMT|BST/.test(m.body)), "visitor confirmation in their time zone");
+assert.ok(vm.some((m) => /Invited You to Your Client Portal/.test(m.subject)), "portal invitation");
+assert.ok((await mail(ownerEmail)).some((m) => m.subject === "New Booking: Rosa Vale, Natal Chart Reading"));
 
 step("the time is gone; overlapping and duplicate bookings are refused");
 const after = (await call(v, `/api/public/book/${slug}/slots?service=natal`)).body.slots;
@@ -198,7 +198,7 @@ assert.ok(moved.prepNotes.includes("Rescheduled online by the client"));
 const NYp = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(moveSlots[moveSlots.length - 1])).map((x) => [x.type, x.value]));
 assert.equal(moved.start, `${NYp.year}-${NYp.month}-${NYp.day}T${NYp.hour}:${NYp.minute}:00`, "moved to the chosen time");
 assert.ok(s3.notifications.some((n) => n.title === "Session Rescheduled"));
-assert.ok((await mail(visitor)).some((m) => m.subject === "Rescheduled: Natal Chart Reading with Maya Lin"));
+assert.ok((await mail(visitor)).some((m) => m.subject === "Rescheduled: Natal Chart Reading With Maya Lin"));
 assert.ok((await call(v, `/api/public/book/${slug}/slots?service=natal`)).body.slots.includes(bookedStart), "the old time is free again");
 
 step("…and cancels");

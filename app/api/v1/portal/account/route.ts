@@ -38,7 +38,7 @@ export const DELETE = handler(async (req: Request) => {
     if (owner)
       await sendMail(
         owner.email,
-        deleteRecords ? `${name} asked you to delete their records` : `${name} closed their client portal`,
+        deleteRecords ? `${name} Asked You to Delete Their Records` : `${name} Closed Their Client Portal`,
         `${name} closed their AstrologersDirect client portal account. Their portal access is now off; your records are unchanged.${
           deleteRecords
             ? `\n\nThey also asked you to delete the records you hold about them. As their astrologer, that decision and any legal obligations are yours. You can archive or delete the client from their record:\n${link(`/app/clients/${l.clientId}`)}`

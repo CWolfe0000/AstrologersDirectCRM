@@ -20,7 +20,7 @@ import { DEFAULT_INSTRUCTIONS, DELIVERY_DAYS, OFFERED_FORMATS, formatLabel, isCa
 const DURATIONS = [30, 45, 60, 75, 90, 120];
 
 /** The booking settings, loaded once per page and saved together. */
-function useBookingProfile() {
+export function useBookingProfile() {
   const toast = useStore((s) => s.toast);
   const [p, setP] = React.useState<BookingProfile | null>(null);
   const [saved, setSaved] = React.useState<BookingProfile | null>(null);
@@ -51,7 +51,7 @@ function useBookingProfile() {
   return { p, saved, set, save, busy, error, dirty, discard: () => { setP(saved); setError(null); } };
 }
 
-function Unavailable({ error }: { error: string | null }) {
+export function Unavailable({ error }: { error: string | null }) {
   if (DATA_MODE === "demo")
     return (
       <Card>

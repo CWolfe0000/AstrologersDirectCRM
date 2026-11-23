@@ -43,7 +43,7 @@ export async function inviteClient(owner: { practiceId: string }, clientId: stri
   const p = (s?.practitioner ?? {}) as { name?: string; practice?: string };
   await sendMail(
     email,
-    `${p.name ?? "Your astrologer"} invited you to your client portal`,
+    `${p.name ?? "Your Astrologer"} Invited You to Your Client Portal ✨`,
     `Hi ${person.firstName},\n\n${p.name ?? "Your astrologer"} (${p.practice ?? "AstrologersDirect"}) has set up a private portal for your readings, recordings, sessions and the work you do between them.${extra ? `\n\n${extra}` : ""}\n\nOpen your portal:\n${link(`/auth/invite?token=${token}`)}\n\nNo password needed: whenever you want to come back, enter your email on the sign-in page and we’ll send you a link. This invitation expires in 7 days.`,
   );
   if (client.portalAccess !== "active") await upsertRecord(owner.practiceId, "clients", { ...client, portalAccess: "invited" });

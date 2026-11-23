@@ -28,7 +28,7 @@ export async function sendSignInEmail(email: string) {
   const first = user.name.split(/\s+/)[0] || "there";
   await sendMail(
     user.email,
-    `Your AstrologersDirect sign-in link`,
+    `Your Astrologers Direct Sign-In Link`,
     `Hi ${first},\n\nUse this link to sign in${user.role === "client" ? " to your client portal" : ""}:\n${link(`/auth/link?token=${token}`)}\n\nOr enter this code on the sign-in page: ${code.slice(0, 3)} ${code.slice(3)}\n\nThe link and code work once and expire in ${LINK_MINUTES} minutes. If you didn’t ask to sign in, you can ignore this email.`,
   );
 }

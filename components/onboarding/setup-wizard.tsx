@@ -17,8 +17,10 @@ import type { IntakeForm } from "@/lib/data/types";
 import { Button } from "@/components/ui/button";
 import { Checkbox, Field, Input, Select, Textarea } from "@/components/ui/input";
 import { AddressStatus } from "@/components/settings/booking-section";
+import { ConnectStripeButton, RefundPolicyFields, usePaymentStatus } from "@/components/settings/payments-section";
+import { DEFAULT_REFUND_POLICY } from "@/lib/booking/payments";
 
-const STEPS = ["About You", "Your Services", "Intake Forms", "Your Hours", "Your Page"] as const;
+const STEPS = ["About You", "Your Services", "Intake Forms", "Your Hours", "Payments", "Your Page"] as const;
 const DAY_NAMES: Record<Day, string> = { mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri", sat: "Sat", sun: "Sun" };
 const DAY_IDS: Day[] = DAYS.map((d) => d.id);
 
@@ -45,7 +47,7 @@ export function SetupWizard() {
   const practitioner = useStore((s) => s.practitioner);
   const update = useStore((s) => s.updatePractitioner);
   const toast = useStore((s) => s.toast);
-  const step = Math.min(practitioner.onboarding?.step ?? 0, STEPS.length);
+  const step = practitioner.onboarding?.done ? STEPS.length : Math.min(practitioner.onboarding?.step ?? 0, STEPS.length);
   const setStep = (n: number, done = false) => update({ onboarding: { step: n, done } });
   const [profile, setProfile] = React.useState<BookingProfile | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -83,7 +85,7 @@ export function SetupWizard() {
         {step < STEPS.length && <Button variant="ghost" size="sm" onClick={finishLater}>Finish Later</Button>}
       </div>
       {step < STEPS.length && (
-        <ol className="mb-8 grid grid-cols-5 gap-1.5" aria-label="Setup steps">
+        <ol className="mb-8 grid grid-cols-6 gap-1.5" aria-label="Setup steps">
           {STEPS.map((s, i) => (
             <li key={s} className="min-w-0">
               <span className={cn("block h-1.5 rounded-full", i < step ? "bg-accent" : i === step ? "bg-accent/60" : "bg-canvas-3")} aria-hidden />
@@ -107,7 +109,9 @@ export function SetupWizard() {
       ) : step === 3 ? (
         <Hours profile={profile} busy={busy} onBack={() => setStep(2)} onNext={async (rules) => { if (await saveProfile({ rules })) setStep(4); }} />
       ) : step === 4 ? (
-        <YourPage profile={profile} busy={busy} onBack={() => setStep(3)} onNext={async (patch, links) => { update({ links }); if (await saveProfile(patch)) { setStep(5, true); toast("Setup Complete", "Your practice is ready.", "success"); } }} />
+        <Payments profile={profile} busy={busy} onBack={() => setStep(3)} onSave={saveProfile} onNext={() => setStep(5)} />
+      ) : step === 5 ? (
+        <YourPage profile={profile} busy={busy} onBack={() => setStep(4)} onNext={async (patch, links) => { update({ links }); if (await saveProfile(patch)) { setStep(6, true); toast("Setup Complete", "Your practice is ready.", "success"); } }} />
       ) : (
         <Done profile={profile} />
       )}
@@ -280,7 +284,34 @@ function Hours({ profile, busy, onBack, onNext }: { profile: BookingProfile; bus
   );
 }
 
-// ——— 5. Your page ——————————————————————————————————————————————
+// ——— 5. Payments ——————————————————————————————————————————————
+
+function Payments({ profile, busy, onBack, onSave, onNext }: { profile: BookingProfile; busy: boolean; onBack: () => void; onSave: (p: Partial<BookingProfile>) => Promise<boolean>; onNext: () => void }) {
+  const [policy, setPolicy] = React.useState(profile.refundPolicy ?? DEFAULT_REFUND_POLICY);
+  const { s } = usePaymentStatus();
+  return (
+    <form onSubmit={async (e) => { e.preventDefault(); if (await onSave({ refundPolicy: policy })) onNext(); }}>
+      <p className="mb-5 text-[14px] text-ink-3">Clients can pay when they book, straight into your own Stripe account. First, your cancellation policy: when a client cancels a paid session, they’re refunded automatically under it.</p>
+      <RefundPolicyFields value={policy} onChange={setPolicy} />
+      {s?.available && (
+        <div className="mt-6 rounded-xl border border-line bg-surface p-4">
+          {s.ready ? (
+            <p className="flex items-center gap-2 text-[14px] font-medium text-sage-dark"><Check className="size-4" /> Stripe is connected: clients pay when they book.</p>
+          ) : (
+            <>
+              <p className="text-[14px] font-medium text-ink">{s.connected ? "Finish Setting Up Stripe" : "Get Paid When Clients Book"}</p>
+              <p className="mb-3 mt-1 text-[12.5px] text-muted">About five minutes with Stripe: your details and the bank account for payouts. You’ll come straight back here. Or skip it and set it up later in Settings › Payments; until then, payment is arranged directly with you.</p>
+              <ConnectStripeButton variant="secondary" label={s.connected ? "Continue With Stripe" : "Connect Stripe"} returnTo="setup" beforeLeave={() => onSave({ refundPolicy: policy })} />
+            </>
+          )}
+        </div>
+      )}
+      <Nav onBack={onBack} busy={busy} />
+    </form>
+  );
+}
+
+// ——— 6. Your page ——————————————————————————————————————————————
 
 function YourPage({ profile, busy, onBack, onNext }: { profile: BookingProfile; busy: boolean; onBack: () => void; onNext: (p: Partial<BookingProfile>, links: { label: string; url: string }[]) => void }) {
   const [slug, setSlug] = React.useState(profile.slug);

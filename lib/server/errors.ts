@@ -28,7 +28,7 @@ export async function recordError(source: "server" | "browser", e: { message: st
     const quiet = row?.alertedAt && Date.now() - row.alertedAt.getTime() < 24 * 3_600_000;
     if (row && !quiet && env.contactEmail) {
       await db().update(schema.appErrors).set({ alertedAt: new Date() }).where(eq(schema.appErrors.fingerprint, fingerprint));
-      await sendMail(env.contactEmail, `Error on AstrologersDirect (${source}): ${message.slice(0, 80)}`, `Source: ${source}\nSeen: ${row.count} time${row.count === 1 ? "" : "s"}\n${url ? `Page: ${url}\n` : ""}\n${message}\n\n${stack ?? ""}\n`).catch(() => {});
+      await sendMail(env.contactEmail, `Error on Astrologers Direct (${source}): ${message.slice(0, 80)}`, `Source: ${source}\nSeen: ${row.count} time${row.count === 1 ? "" : "s"}\n${url ? `Page: ${url}\n` : ""}\n${message}\n\n${stack ?? ""}\n`).catch(() => {});
     }
   } catch (err) {
     console.error("[errors] couldn’t record an error", err);

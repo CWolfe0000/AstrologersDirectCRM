@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { sendDueReminders, sendDueWorkReminders } from "@/lib/server/reminders";
+import { expireAbandoned } from "@/lib/server/payments";
 
 /**
  * Scheduled job (Vercel Cron calls it with "Authorization: Bearer $CRON_SECRET").
@@ -13,5 +14,6 @@ export async function GET(req: Request) {
   if (given.length !== expected.length || !timingSafeEqual(given, expected)) return new Response("Unauthorized", { status: 401 });
   const consultations = await sendDueReminders();
   const work = await sendDueWorkReminders();
-  return Response.json({ sent: consultations.sent + work.sent, consultations: consultations.sent, work: work.sent });
+  const expired = await expireAbandoned();
+  return Response.json({ expired, sent: consultations.sent + work.sent, consultations: consultations.sent, work: work.sent });
 }

@@ -2,6 +2,7 @@ import "server-only";
 import { db, schema } from "./db";
 import { env } from "./env";
 import { newId } from "./crypto";
+import { emailHtml } from "./email-html";
 
 /**
  * Transactional email. With RESEND_API_KEY set, sends through Resend.
@@ -17,7 +18,7 @@ export async function sendMail(to: string, subject: string, body: string, opts: 
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: `Bearer ${env.resendApiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ from: env.emailFrom, to, subject, text: body, ...(opts.replyTo ? { reply_to: opts.replyTo } : {}) }),
+        body: JSON.stringify({ from: env.emailFrom, to, subject, text: body, html: emailHtml(subject, body), ...(opts.replyTo ? { reply_to: opts.replyTo } : {}) }),
       });
       status = res.ok ? "sent" : `failed:${res.status}`;
     } catch (e) {

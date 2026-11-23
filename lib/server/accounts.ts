@@ -41,7 +41,7 @@ export async function sendVerification(userId: string, email: string, firstName:
   const token = await issueToken(userId, "verify", 48);
   await sendMail(
     email,
-    "Confirm your AstrologersDirect email",
+    "Confirm Your Astrologers Direct Email ✨",
     `Hi ${firstName},\n\nConfirm your email address to finish setting up your practice:\n\n${link(`/auth/verify?token=${token}`)}\n\nThis link expires in 48 hours. If you didn't create an account, you can ignore this email.`,
   );
 }

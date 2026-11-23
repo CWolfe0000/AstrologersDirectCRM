@@ -12,7 +12,7 @@ export const POST = handler(async (req) => {
     const token = await issueToken(user.id, "reset", 1);
     await sendMail(
       user.email,
-      "Reset your AstrologersDirect password",
+      "Reset Your Astrologers Direct Password",
       `Hi ${user.name.split(/\s+/)[0]},\n\nUse this link to choose a new password:\n\n${link(`/auth/reset?token=${token}`)}\n\nThe link expires in 1 hour. If you didn't ask for this, you can ignore this email; your password hasn't changed.`,
     );
   }

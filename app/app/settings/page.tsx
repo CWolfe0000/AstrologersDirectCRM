@@ -2,12 +2,13 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Bell, Building2, CalendarCheck, CircleDot, ClipboardList, CreditCard, Database, Globe, Shield, UserRound, Waves } from "lucide-react";
+import { Banknote, Bell, Building2, CalendarCheck, CircleDot, ClipboardList, CreditCard, Database, Globe, Shield, UserRound, Waves } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/ui/misc";
 import { Select } from "@/components/ui/input";
 import { BookingPageSection, ServicesSection } from "@/components/settings/booking-section";
 import { IntakeFormsSection } from "@/components/settings/intake-forms";
+import { PaymentsSection } from "@/components/settings/payments-section";
 import { YourProfileSection } from "@/components/settings/profile-section";
 import { AstrologySection, DataSection, NotificationsSection, PracticeSection, SecuritySection, SubscriptionSection, TimelineSection } from "@/components/settings/sections";
 
@@ -30,6 +31,7 @@ const GROUPS = [
       { id: "practice", label: "Practice", icon: Building2, C: PracticeSection, description: "Your practice name, time zone and client portal color." },
       { id: "booking", label: "Booking Page", icon: Globe, C: BookingPageSection, description: "Turn online booking on, choose your page address, and decide who can find it." },
       { id: "services", label: "Services & Availability", icon: CalendarCheck, C: ServicesSection, description: "What clients can book, your weekly hours, booking rules and how sessions happen." },
+      { id: "payments", label: "Payments", icon: Banknote, C: PaymentsSection, description: "Get paid when clients book, through your own Stripe account, and set your cancellation and refund policy." },
       { id: "intake", label: "Intake Forms", icon: ClipboardList, C: IntakeFormsSection, description: "Questions clients answer before a session. Link a form to a service and it goes out when someone books." },
     ],
   },

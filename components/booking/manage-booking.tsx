@@ -27,6 +27,7 @@ type View = {
   intake: { title: string; status: "sent" | "submitted" } | null;
   written?: boolean;
   instructions?: string;
+  payment: { paid: string; refunded: string | null; policy: string; refundIfCanceledNow: string | null } | null;
 };
 
 /** The client's private page for a booked session: see it, reschedule or cancel. */
@@ -103,6 +104,7 @@ export function ManageBooking({ token }: { token: string }) {
               <p className="mt-0.5 text-[13px] text-muted">{v.durationMin} minutes · {formatLabel(v.format)}</p>
             </>
           )}
+          {v.payment && <p className="mt-2 text-[13px] text-muted">Paid {v.payment.paid}{v.payment.refunded ? ` · Refunded ${v.payment.refunded}` : ""}</p>}
           {v.status === "canceled" && <p className="mt-3 text-[13.5px] font-medium text-ink">{v.written ? "This order is canceled." : "This session is canceled."}</p>}
           {v.status === "past" && <p className="mt-3 text-[13.5px] text-muted">{v.written ? "Your reading is in your client portal, or on its way." : "This session has taken place."}</p>}
           {v.status === "scheduled" && v.instructions && <p className="mt-3 whitespace-pre-line rounded-lg bg-canvas-2 px-3 py-2 text-[13px] leading-relaxed text-ink-3">{v.instructions}</p>}
@@ -150,6 +152,11 @@ export function ManageBooking({ token }: { token: string }) {
             <p className="text-[15px] font-semibold text-ink">Cancel This Session?</p>
             <label htmlFor="mb-reason" className="mt-3 block text-[13px] text-ink-3">Anything you’d like {v.displayName} to know? (Optional)</label>
             <Textarea id="mb-reason" rows={3} maxLength={1000} value={reason} onChange={(e) => setReason(e.target.value)} className="mt-1.5" />
+            {v.payment?.refundIfCanceledNow && (
+              <p className="mt-3 rounded-lg bg-canvas-2 px-3 py-2 text-[13px] text-ink-3">
+                {v.payment.refundIfCanceledNow === "$0" ? "Under the cancellation policy, canceling now isn’t refunded." : `You’ll be refunded ${v.payment.refundIfCanceledNow} to your card.`} <span className="text-muted">{v.payment.policy}</span>
+              </p>
+            )}
             <div className="mt-4 flex flex-wrap gap-2">
               <Button variant="danger" onClick={() => act("cancel", { reason }, "Your session is canceled. We’ve let " + v.displayName + " know.")} disabled={busy}>{busy && <Loader2 className="animate-spin" />} Cancel Session</Button>
               <Button variant="ghost" onClick={() => setMode("view")}>Keep My Session</Button>

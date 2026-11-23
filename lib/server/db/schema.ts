@@ -356,3 +356,51 @@ export const appErrors = pgTable(
   },
   (t) => [index("app_errors_last_idx").on(t.lastAt)],
 );
+
+/** An astrologer's Stripe account (Stripe Connect): clients' payments go straight to it. */
+export const paymentAccounts = pgTable("payment_accounts", {
+  practiceId: text("practice_id").primaryKey().references(() => practices.id, { onDelete: "cascade" }),
+  stripeAccountId: text("stripe_account_id").notNull(),
+  /** Stripe has approved the account to take card payments. */
+  chargesEnabled: integer("charges_enabled").notNull().default(0),
+  /** The astrologer finished Stripe's onboarding form. */
+  detailsSubmitted: integer("details_submitted").notNull().default(0),
+  currency: text("currency").notNull().default("usd"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [uniqueIndex("payment_accounts_stripe_idx").on(t.stripeAccountId)]);
+
+/**
+ * A payment taken when a client books. While pending, the time is held and
+ * the booking details wait here (sealed) until Stripe confirms payment.
+ */
+export const bookingPayments = pgTable(
+  "booking_payments",
+  {
+    id: text("id").primaryKey(),
+    practiceId: text("practice_id").notNull().references(() => practices.id, { onDelete: "cascade" }),
+    stripeAccountId: text("stripe_account_id").notNull(),
+    checkoutSessionId: text("checkout_session_id"),
+    paymentIntentId: text("payment_intent_id"),
+    /** pending → paid (→ refunded / partially_refunded), or expired. */
+    status: text("status").notNull(),
+    amount: integer("amount").notNull(),
+    refunded: integer("refunded").notNull().default(0),
+    currency: text("currency").notNull(),
+    serviceName: text("service_name").notNull(),
+    clientName: text("client_name").notNull(),
+    /** Held time (live sessions), so nobody else books it while the client pays. */
+    startAt: timestamp("start_at", { withTimezone: true }),
+    endAt: timestamp("end_at", { withTimezone: true }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    /** The booking request while pending; then the manage-link token. Sealed. */
+    sealed: text("sealed").notNull(),
+    consultationId: text("consultation_id"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    paidAt: timestamp("paid_at", { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex("booking_payments_session_idx").on(t.checkoutSessionId),
+    index("booking_payments_practice_idx").on(t.practiceId, t.createdAt),
+    index("booking_payments_consultation_idx").on(t.practiceId, t.consultationId),
+  ],
+);

@@ -56,7 +56,7 @@ export async function sendDueReminders(now = new Date()) {
       const portal = client.portalAccess === "active" ? `\n\nYour readings and session details are in your client portal:\n${link("/portal")}` : "";
       await sendMail(
         email,
-        `Reminder: your ${k.type} with ${p.name ?? "your astrologer"}`,
+        `Reminder: Your ${k.type} With ${p.name ?? "Your Astrologer"}`,
         `Hi ${person.firstName},\n\nThis is a reminder of your ${k.type} on ${when(String(k.start), zone)} (${k.durationMin} minutes, ${String(k.location).toLowerCase()}).${join}${portal}\n\nIf you need to reschedule, reply to ${p.name ?? "your astrologer"} directly.\n\n— ${p.practice ?? "AstrologersDirect"}`,
       );
       if (client.portalAccess === "active") {
@@ -124,7 +124,7 @@ export async function sendDueWorkReminders(now = new Date()) {
       const when = w.dueDate === today ? "today" : "tomorrow";
       await sendMail(
         email,
-        `A gentle reminder: “${w.title}”`,
+        `A Gentle Reminder: “${w.title}”`,
         `Hi ${person.firstName},\n\n${who} suggested “${w.title}” for ${when}. There’s no pressure: write as much or as little as you like, whenever you’re ready.\n\nOpen it in your client portal:\n${link(`/portal/work/${scope(practiceId, String(w.id))}`)}\n\n— ${p.practice ?? "AstrologersDirect"}`,
       );
       await upsertRecord(practiceId, "portalNotifications", {

@@ -44,17 +44,17 @@ export async function requestAccess(input: z.infer<typeof accessRequestSchema>) 
   const first = input.name.split(/\s+/)[0];
   if (await findUserByEmail(email)) {
     // Don't reveal accounts on the page; tell the owner of the address by email instead.
-    await sendMail(email, "You already have an AstrologersDirect account", `Hi ${first},\n\nThere’s already an account for this email address. Sign in here:\n${link("/auth/login")}\n`);
+    await sendMail(email, "You Already Have an Astrologers Direct Account", `Hi ${first},\n\nThere’s already an account for this email address. Sign in here:\n${link("/auth/login")}\n`);
     return;
   }
   const [existing] = await db().select().from(schema.accessRequests).where(eq(schema.accessRequests.email, email));
   if (existing) return; // already received; no duplicates or repeat emails
   await db().insert(schema.accessRequests).values({ id: newId("req"), email, name: input.name, practice: input.practice, website: input.website, experience: input.experience, about: input.about, emailConsentAt: input.emailConsent ? new Date() : null });
-  await sendMail(email, "We’ve received your request for AstrologersDirect", `Hi ${first},\n\nThank you for your interest in the AstrologersDirect beta. We review every request personally and will email you as soon as there’s a place for you.\n\n— The AstrologersDirect team\n`);
+  await sendMail(email, "We’ve Received Your Request for Astrologers Direct ✨", `Hi ${first},\n\nThank you for your interest in the AstrologersDirect beta. We review every request personally and will email you as soon as there’s a place for you.\n\n— The AstrologersDirect team\n`);
   if (env.contactEmail)
     await sendMail(
       env.contactEmail,
-      `Beta request: ${input.name}`,
+      `Beta Request: ${input.name}`,
       `${input.name} <${email}> asked to join the beta.\n\nPractice: ${input.practice || "—"}\nWebsite: ${input.website || "—"}\nExperience: ${input.experience || "—"}\n\n${input.about || ""}\n\nReview requests in Admin:\n${link("/app/admin")}\n`,
       { replyTo: email },
     );
@@ -78,7 +78,7 @@ export async function decide(id: string, action: "approve" | "decline", adminEma
   await db().update(schema.accessRequests).set({ status: "approved", inviteHash: hash, decidedAt: new Date(), decidedBy: adminEmail }).where(eq(schema.accessRequests.id, id));
   await sendMail(
     r.email,
-    "You’re in: welcome to the AstrologersDirect beta",
+    "You’re In: Welcome to the Astrologers Direct Beta ✨",
     `Hi ${r.name.split(/\s+/)[0]},\n\nGood news: your place in the AstrologersDirect beta is ready.\n\nCreate your account here (this link is just for you):\n${link(`/auth/signup?invite=${raw}`)}\n\nThe beta is free. We’d love to hear what works for you and what doesn’t: just reply to any of our emails.\n\n— The AstrologersDirect team\n`,
     env.contactEmail ? { replyTo: env.contactEmail } : {},
   );

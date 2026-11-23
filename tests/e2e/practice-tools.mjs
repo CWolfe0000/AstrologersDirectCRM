@@ -154,7 +154,7 @@ const r1 = await (await sendReminders(true)).json();
 assert.ok(r1.sent >= 1);
 // (The sample data may also have a session for Amelia in the next 24 hours; that one is reminded too.)
 const mail = await db.query(`select subject, body from outbox where "to"=$1`, [ameliaEmail]);
-const mine = mail.rows.filter((m) => /Reminder: your Reminder Test/.test(m.subject));
+const mine = mail.rows.filter((m) => /Reminder: Your Reminder Test/.test(m.subject));
 assert.equal(mine.length, 1, "the test consultation was reminded");
 assert.ok(mail.rows.every((m) => !m.body.includes("PRIVATE PREP") && !m.body.includes("Saturn now within")), "no practitioner notes in reminders");
 await sendReminders(true);

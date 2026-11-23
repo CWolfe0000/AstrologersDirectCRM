@@ -22,7 +22,7 @@ const errors = [];
 
 async function lastMail(to, after) {
   for (let i = 0; i < 40; i++) {
-    const { rows } = await db.query('select body, created_at from outbox where "to"=$1 and subject like $2 order by created_at desc limit 1', [to, "%sign-in link%"]);
+    const { rows } = await db.query('select body, created_at from outbox where "to"=$1 and subject like $2 order by created_at desc limit 1', [to, "%Sign-In Link%"]);
     if (rows[0] && (!after || rows[0].created_at > after)) {
       const body = rows[0].body;
       const url = body.match(/https?:\/\/[^\s]+\/auth\/link\?token=[A-Za-z0-9_-]+/)?.[0].replace(/^https?:\/\/[^/]+/, BASE);

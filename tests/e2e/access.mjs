@@ -63,8 +63,8 @@ try {
   await v.getByText("Thank You. Your Request Is In.").waitFor();
   const { rows: [reqRow] } = await db.query("select email_consent_at from access_requests where email=$1", [applicant]);
   assert.ok(reqRow?.email_consent_at, "the news opt-in is recorded with the request");
-  assert.ok((await mail(applicant)).some((m) => m.subject === "We’ve received your request for AstrologersDirect"));
-  assert.ok((await mail(CONTACT)).some((m) => m.subject === "Beta request: Iris Moon" && m.body.includes("Moonlit Charts")));
+  assert.ok((await mail(applicant)).some((m) => m.subject === "We’ve Received Your Request for Astrologers Direct ✨"));
+  assert.ok((await mail(CONTACT)).some((m) => m.subject === "Beta Request: Iris Moon" && m.body.includes("Moonlit Charts")));
   // Asking twice doesn't duplicate.
   await call(v, "/api/public/access-request", { method: "POST", body: JSON.stringify({ name: "Iris Moon", email: applicant, practice: "", website: "", experience: "", about: "", emailConsent: true }) });
   assert.equal((await db.query("select count(*)::int n from access_requests where email=$1", [applicant])).rows[0].n, 1);
@@ -75,7 +75,7 @@ try {
   await row.waitFor();
   await row.getByRole("button", { name: "Approve" }).click();
   await admin.getByText("Invitation Sent").waitFor();
-  const invite = (await mail(applicant)).find((m) => m.subject.startsWith("You’re in"));
+  const invite = (await mail(applicant)).find((m) => m.subject.startsWith("You’re In"));
   assert.ok(invite, "invitation emailed");
   const link = invite.body.match(/https?:\/\/[^\s]+\/auth\/signup\?invite=[A-Za-z0-9_-]+/)[0].replace(/^https?:\/\/[^/]+/, BASE);
 
@@ -98,7 +98,7 @@ try {
   step("existing accounts and bots get no special treatment");
   const r1 = await call(v, "/api/public/access-request", { method: "POST", body: JSON.stringify({ name: "Admin", email: ADMIN, practice: "", website: "", experience: "", about: "", emailConsent: true }) });
   assert.equal(r1.status, 200, "same response whether or not an account exists");
-  assert.ok((await mail(ADMIN)).some((m) => m.subject === "You already have an AstrologersDirect account"));
+  assert.ok((await mail(ADMIN)).some((m) => m.subject === "You Already Have an Astrologers Direct Account"));
   await call(v, "/api/public/access-request", { method: "POST", body: JSON.stringify({ name: "Bot", email: `bot-${stamp}@example.com`, practice: "", website: "", experience: "", about: "", company: "spam", emailConsent: true }) });
   assert.equal((await db.query("select count(*)::int n from access_requests where email=$1", [`bot-${stamp}@example.com`])).rows[0].n, 0);
 } finally {

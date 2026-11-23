@@ -62,7 +62,16 @@ await page.getByRole("button", { name: "Sat" }).click();
 await page.getByLabel("From").fill("10:00");
 await page.getByRole("button", { name: /Continue/ }).click();
 
-step("5. your page: address, a link, live");
+step("5. payments: their own refund policy, Stripe optional");
+await page.getByRole("heading", { name: "Payments" }).waitFor();
+await page.getByText("Cancel at least 1 day before your session for a full refund; after that, no refund.").waitFor();
+await page.getByLabel("Later Cancellations Get Back").selectOption("25");
+await page.getByText("after that, a 25% refund.", { exact: false }).waitFor();
+await page.getByRole("button", { name: "Connect Stripe" }).waitFor();
+if (SHOTS) await page.screenshot({ path: `${SHOTS}/onboarding-payments.png`, fullPage: true });
+await page.getByRole("button", { name: /Continue/ }).click();
+
+step("6. your page: address, a link, live");
 await page.getByRole("heading", { name: "Your Page" }).waitFor();
 await page.getByLabel("Your Page Address").fill(`orla-${stamp}`);
 await page.getByText("Available", { exact: true }).waitFor();
@@ -81,6 +90,7 @@ const forms = s.practitioner.intakeForms;
 assert.deepEqual(forms.map((f) => f.title).sort(), ["Horary Question", "New Client Intake"]);
 const prof = (await call("/api/v1/booking")).body.profile;
 assert.equal(prof.enabled, true);
+assert.deepEqual(prof.refundPolicy, { fullRefundHours: 24, lateRefundPercent: 25 });
 assert.equal(prof.slug, `orla-${stamp}`);
 assert.equal(s.practitioner.name, "Orla Finch");
 assert.deepEqual(prof.services.map((x) => [x.name, x.price, x.format]), [["Natal Chart Reading", "$160", "Live session"], ["Horary Question", "$60", "Live session"]]);

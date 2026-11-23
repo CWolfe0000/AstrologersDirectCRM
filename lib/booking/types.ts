@@ -56,6 +56,10 @@ export interface BookingProfile {
   photo?: string;
   /** What clients need to know for each format (sent with the booking and shown on their booking page). */
   instructions?: { "Live session"?: string; "Recorded reading"?: string; "Written reading"?: string; Phone?: string; "Video call"?: string; "Audio call"?: string };
+  /** Take payment when clients book priced services (once Stripe is set up). Default on. */
+  takePayments?: boolean;
+  /** What a client gets back when they cancel a paid booking. */
+  refundPolicy?: import("./payments").RefundPolicy;
   /** Let search engines list the page (off: reachable by link only). */
   searchable?: boolean;
   /** Links shown under the name, link-in-bio style (website, Instagram, newsletter…). */

@@ -10,10 +10,11 @@ import { PlaceLookup, type PlaceValue } from "@/components/clients/place-lookup"
 import { BookingShell, TimePicker, browserZone, longWhen } from "./shared";
 import { accentVars } from "@/lib/brand";
 import { formatLabel, isDelivered } from "@/lib/booking/formats";
+import { priceCents } from "@/lib/booking/payments";
 
 type Service = { id: string; name: string; description: string; durationMin: number; price: string; format: "Live session" | "Recorded reading" | "Written reading" | "Video call" | "Audio call" | "Phone" | "In person"; deliveryDays?: number; recording?: "audio" | "video" };
-type Profile = { slug: string; displayName: string; headline: string; about: string; location: string; practice: string; tz: string; photo: string | null; links: { label: string; url: string }[]; accent: string | null; services: Service[] };
-type Booked = { start: string; service: string; durationMin: number; format: string; written?: boolean; instructions?: string; displayName: string; meetingUrl: string | null; manage: string };
+type Profile = { slug: string; displayName: string; headline: string; about: string; location: string; practice: string; tz: string; photo: string | null; links: { label: string; url: string }[]; accent: string | null; services: Service[]; payments: { refundPolicy: string } | null };
+type Booked = { start: string; service: string; durationMin: number; format: string; written?: boolean; instructions?: string; displayName: string; meetingUrl: string | null; manage: string; paid?: boolean };
 
 const FORMAT_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones, "Live session": Video, "Recorded reading": Mic } as const;
 /** The public booking page: profile and services → time → details → booked. */
@@ -25,6 +26,37 @@ export function BookingPage({ slug }: { slug: string }) {
   const [tz, setTz] = React.useState("UTC");
   const [start, setStart] = React.useState<string | null>(null);
   const [booked, setBooked] = React.useState<Booked | null>(null);
+  /** Back from Stripe: confirming the payment, or they left without paying. */
+  const [returning, setReturning] = React.useState<"confirming" | "unpaid" | null>(null);
+  const [payError, setPayError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const paid = q.get("paid");
+    const unpaid = q.get("unpaid");
+    const clean = () => window.history.replaceState(null, "", window.location.pathname);
+    if (unpaid) {
+      setReturning("unpaid");
+      api(`/api/public/book/${encodeURIComponent(slug)}/release`, { body: { id: unpaid } }).catch(() => {});
+      clean();
+    }
+    if (!paid) return;
+    setReturning("confirming");
+    let stop = false;
+    (async () => {
+      // Stripe usually confirms instantly; allow a little time for the bank.
+      for (let i = 0; i < 20 && !stop; i++) {
+        try {
+          const r = await api<Booked | { pending: true }>(`/api/public/book/${encodeURIComponent(slug)}/confirm`, { body: { session: paid } });
+          if (!("pending" in r)) { setBooked({ ...r, paid: true }); setReturning(null); clean(); return; }
+        } catch (e) { setPayError((e as Error).message); setReturning(null); clean(); return; }
+        await new Promise((res) => setTimeout(res, 1500));
+      }
+      setPayError("Your payment is still being confirmed. You’ll get an email as soon as it’s through.");
+      setReturning(null);
+    })();
+    return () => { stop = true; };
+  }, [slug]);
 
   React.useEffect(() => {
     setTz(browserZone());
@@ -48,7 +80,19 @@ export function BookingPage({ slug }: { slug: string }) {
       )}
       {!profile && !error && <div className="mx-auto h-64 max-w-[520px] animate-pulse rounded-2xl bg-canvas-2" />}
       {profile && booked && <div className="mx-auto max-w-[560px]"><Confirmation booked={booked} tz={tz} /></div>}
-      {profile && !booked && (
+      {profile && !booked && returning === "confirming" && (
+        <div className="mx-auto max-w-[520px] rounded-2xl border border-line bg-surface px-6 py-12 text-center" role="status">
+          <Loader2 className="mx-auto size-6 animate-spin text-accent" />
+          <p className="mt-3 font-serif text-[22px] text-ink">Confirming Your Payment…</p>
+        </div>
+      )}
+      {profile && !booked && payError && (
+        <p role="alert" className="mx-auto mb-4 max-w-[520px] rounded-lg bg-danger-50 px-3 py-2 text-[13px] text-danger">{payError}</p>
+      )}
+      {profile && !booked && returning === "unpaid" && !service && (
+        <p role="status" className="mx-auto mb-4 max-w-[520px] rounded-lg bg-canvas-2 px-4 py-3 text-center text-[13.5px] text-ink-3">Your payment wasn’t completed, so nothing was booked. Choose a session to try again.</p>
+      )}
+      {profile && !booked && returning !== "confirming" && (
         <div className="mx-auto max-w-[520px]">
           {!service ? (
             <>
@@ -78,7 +122,11 @@ export function BookingPage({ slug }: { slug: string }) {
                     );
                   })}
                 </ul>
-                {profile.services.some((s) => s.price) && <p className="mt-3 text-center text-[12.5px] text-muted">Payment is arranged directly with {profile.displayName}.</p>}
+                {profile.services.some((s) => s.price) && (
+                  <p className="mt-3 text-center text-[12.5px] text-muted">
+                    {profile.payments ? <>Pay securely when you book. {profile.payments.refundPolicy}</> : <>Payment is arranged directly with {profile.displayName}.</>}
+                  </p>
+                )}
               </section>
               {profile.about && <About text={profile.about} name={profile.displayName} />}
             </>
@@ -176,6 +224,7 @@ function Details({ slug, profile, service, start, tz, onBack, onBooked, onTaken 
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF((x) => ({ ...x, [k]: e.target.value }));
   const written = isDelivered(service.format);
   const phoneCall = service.format === "Phone";
+  const pays = !!profile.payments && priceCents(service.price) !== null;
   const ok = f.firstName.trim() && /\S+@\S+\.\S+/.test(f.email) && (!phoneCall || f.phone.trim()) && f.date && (unknownTime || f.time) && place && consent;
 
   const submit = async (e: React.FormEvent) => {
@@ -184,7 +233,7 @@ function Details({ slug, profile, service, start, tz, onBack, onBooked, onTaken 
     setBusy(true);
     setError(null);
     try {
-      const r = await api<Booked>(`/api/public/book/${encodeURIComponent(slug)}`, {
+      const r = await api<Booked | { checkout: string }>(`/api/public/book/${encodeURIComponent(slug)}`, {
         body: {
           serviceId: service.id,
           start,
@@ -198,6 +247,10 @@ function Details({ slug, profile, service, start, tz, onBack, onBooked, onTaken 
           website: f.website,
         },
       });
+      if ("checkout" in r) {
+        window.location.assign(r.checkout); // Stripe Checkout; they come back to this page
+        return;
+      }
       onBooked(r);
     } catch (err) {
       const m = (err as Error & { status?: number }).message;
@@ -244,9 +297,14 @@ function Details({ slug, profile, service, start, tz, onBack, onBooked, onTaken 
           label={<span className="text-[13px] text-ink-3">I agree that {profile.displayName} will keep my details and birth information to prepare and follow up on my session. <Link href="/legal/privacy" className="underline" target="_blank">Privacy</Link></span>}
         />
       </div>
+      {pays && profile.payments && (
+        <p className="mt-5 rounded-xl bg-canvas-2 px-4 py-3 text-[13px] leading-relaxed text-ink-3">
+          <span className="font-medium text-ink">{service.price}, paid securely with Stripe.</span> {profile.payments.refundPolicy}
+        </p>
+      )}
       {error && <p role="alert" className="mt-4 rounded-lg bg-danger-50 px-3 py-2 text-[13px] text-danger">{error}</p>}
       <Button type="submit" size="lg" className="mt-5 w-full sm:w-auto" disabled={!ok || busy}>
-        {busy ? <Loader2 className="animate-spin" /> : <CalendarCheck />} {written ? "Order" : "Book"} {service.name}
+        {busy ? <Loader2 className="animate-spin" /> : <CalendarCheck />} {pays ? `Continue to Payment` : `${written ? "Order" : "Book"} ${service.name}`}
       </Button>
     </form>
   );
@@ -266,6 +324,7 @@ function Confirmation({ booked, tz }: { booked: Booked; tz: string }) {
       <span className="mx-auto flex size-12 items-center justify-center rounded-full bg-sage-50 text-sage-dark"><Check className="size-6" /></span>
       <h1 className="mt-4 font-serif text-[30px] text-ink">{booked.written ? "Thank You" : "You’re Booked"}</h1>
       <p className="mt-2 text-[15px] text-ink-3">{booked.service} {booked.written ? "from" : "with"} {booked.displayName}</p>
+      {booked.paid && <p className="mt-1 text-[13px] font-medium text-sage-dark">Payment Received</p>}
       {booked.written ? (
         <p className="text-[15px] font-medium text-ink">Ready by {day}</p>
       ) : (

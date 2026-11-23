@@ -1,12 +1,13 @@
 import { handler, HttpError, json, rateLimit, readJson } from "@/lib/server/http";
-import { book, bookingRequest, publicBooking, publicView } from "@/lib/server/booking";
+import { book, bookingRequest, publicBooking, publicView, takesPayments } from "@/lib/server/booking";
 
 type Ctx = { params: Promise<{ slug: string }> };
 
 /** A published booking page (public). */
 export const GET = handler(async (req: Request, ctx: Ctx) => {
   rateLimit(req, "book-view", 300, 3_600_000);
-  return json(publicView(await publicBooking((await ctx.params).slug)));
+  const b = await publicBooking((await ctx.params).slug);
+  return json(publicView(b, await takesPayments(b)));
 });
 
 /** Book a session (public). */

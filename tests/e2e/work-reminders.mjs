@@ -85,12 +85,12 @@ await api("/api/v1/records/clientWork/wDone", { method: "PUT", body: JSON.string
 
 step("the job reminds once");
 await cron();
-let mail = (await outbox(amelia)).filter((m) => m.subject.startsWith("A gentle reminder"));
-assert.deepEqual(mail.map((m) => m.subject), ["A gentle reminder: “Three moments”"]);
+let mail = (await outbox(amelia)).filter((m) => m.subject.startsWith("A Gentle Reminder"));
+assert.deepEqual(mail.map((m) => m.subject), ["A Gentle Reminder: “Three moments”"]);
 assert.ok(/\/portal\/work\/[^\s]+~w_/.test(mail[0].body), "links to the scoped portal item");
 assert.ok(mail[0].body.includes("tomorrow"));
 await cron();
-mail = (await outbox(amelia)).filter((m) => m.subject.startsWith("A gentle reminder"));
+mail = (await outbox(amelia)).filter((m) => m.subject.startsWith("A Gentle Reminder"));
 assert.equal(mail.length, 1, "never twice");
 s = await api("/api/v1/bootstrap?view=app");
 assert.ok(s.portalNotifications.some((n) => n.title === "A Gentle Reminder" && n.clientId === "c1"), "portal notification too");

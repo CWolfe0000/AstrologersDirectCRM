@@ -128,7 +128,7 @@ await page.getByRole("button", { name: /Horary Question/ }).waitFor();
 await page.getByLabel("Form to Send").selectOption(welcome.id);
 await page.getByRole("button", { name: "Send to Nora" }).click();
 await page.getByText("Form Sent").waitFor();
-const inv = (await mailTo(visitor, "%invited you to your client portal"))[0];
+const inv = (await mailTo(visitor, "%Invited You to Your Client Portal%"))[0];
 assert.ok(inv.body.includes("fill in “Welcome Questions”"), "the invitation mentions the form");
 const inviteLink = inv.body.match(/https?:\/\/[^\s]+\/auth\/invite\?token=[A-Za-z0-9_-]+/)[0].replace(/^https?:\/\/[^/]+/, BASE);
 

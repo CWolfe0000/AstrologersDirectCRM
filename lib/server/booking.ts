@@ -1,10 +1,10 @@
 import "server-only";
-import { and, eq, inArray, lt, ne } from "drizzle-orm";
+import { and, eq, gt, inArray, lt, ne } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "./db";
 import { HttpError } from "./http";
 import { getRecord, getSettings, listCollection, upsertRecord } from "./records";
-import { newId, newToken, sha256 } from "./crypto";
+import { newId, newToken, seal, sha256, unseal } from "./crypto";
 import { link, sendMail } from "./mail";
 import { intakeFormsOf, requestFromForm, submitIntake } from "./intake";
 import { inviteClient } from "./invite";
@@ -15,6 +15,9 @@ import { availableSlots } from "@/lib/booking/slots";
 import { DEFAULT_RULES, RESERVED_SLUGS, SLUG_RE, type BookingProfile, type BookingService } from "@/lib/booking/types";
 import type { IntakeRequest } from "@/lib/data/types";
 import { DEFAULT_INSTRUCTIONS, currentFormat, instructionsKey, isCall, isDelivered } from "@/lib/booking/formats";
+import { DEFAULT_REFUND_POLICY, money, priceCents, refundFor, refundPolicyText } from "@/lib/booking/payments";
+import { paymentAccount, paymentForConsultation, refundPayment } from "./payments";
+import { platformFeePercent, stripe, stripeEnabled } from "./stripe";
 
 const hhmm = z.string().regex(/^\d{2}:\d{2}$/);
 const range = z.object({ start: hhmm, end: hhmm }).strict().refine((r) => r.start < r.end, "Each range must start before it ends.");
@@ -59,6 +62,9 @@ export const profileSchema = z
       })
       .strict(),
     autoInvite: z.boolean(),
+    /** Take payment when clients book (once the astrologer's Stripe account is ready). */
+    takePayments: z.boolean().optional(),
+    refundPolicy: z.object({ fullRefundHours: z.number().int().min(0).max(24 * 14), lateRefundPercent: z.number().int().min(0).max(100) }).strict().optional(),
     searchable: z.boolean().optional(),
     instructions: z.object({ "Live session": text(2000).optional(), "Recorded reading": text(2000).optional(), "Written reading": text(2000).optional(), Phone: text(2000).optional(), "Video call": text(2000).optional(), "Audio call": text(2000).optional() }).strict().optional(),
     // A square photo resized in the browser (about 400px): a data URL, kept small.
@@ -83,7 +89,7 @@ async function ownerEmail(practiceId: string) {
 
 /** Settings saved before a rule existed get its default. */
 // Services saved as "Video call" / "Audio call" are live sessions under today's name.
-const withDefaults = (p: BookingProfile): BookingProfile => ({ ...p, services: p.services.map((x) => ({ ...x, format: currentFormat(x.format) as BookingService["format"] })), rules: { ...DEFAULT_RULES, ...p.rules } });
+const withDefaults = (p: BookingProfile): BookingProfile => ({ ...p, refundPolicy: p.refundPolicy ?? DEFAULT_REFUND_POLICY, takePayments: p.takePayments ?? true, services: p.services.map((x) => ({ ...x, format: currentFormat(x.format) as BookingService["format"] })), rules: { ...DEFAULT_RULES, ...p.rules } });
 
 const slugify = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
 
@@ -125,13 +131,23 @@ export async function saveBookingProfile(practiceId: string, input: unknown) {
     .insert(schema.bookingProfiles)
     .values({ practiceId, slug, enabled: enabled ? 1 : 0, data })
     .onConflictDoUpdate({ target: schema.bookingProfiles.practiceId, set: { slug, enabled: enabled ? 1 : 0, data, updatedAt: new Date() } });
-  return p;
+  return withDefaults(p);
 }
 
 /** A published booking page by its address, or 404. */
 export async function publicBooking(slug: string) {
   const [row] = await db().select().from(schema.bookingProfiles).where(eq(schema.bookingProfiles.slug, slug.toLowerCase()));
   if (!row || !row.enabled) throw new HttpError(404, "This booking page isn’t available.");
+  return bookingContext(row);
+}
+
+/** Whether this page takes payment for priced services right now. */
+export async function takesPayments(b: Awaited<ReturnType<typeof publicBooking>>) {
+  if (!stripeEnabled() || b.profile.takePayments === false) return false;
+  return !!(await paymentAccount(b.practiceId))?.chargesEnabled;
+}
+
+async function bookingContext(row: typeof schema.bookingProfiles.$inferSelect) {
   const p = await practitionerOf(row.practiceId);
   // Who the astrologer is comes from their profile (Settings › Your Profile); what was saved on the booking page
   // before that existed is the fallback.
@@ -143,9 +159,11 @@ export async function publicBooking(slug: string) {
 }
 
 /** What a visitor may see: no internal ids beyond services, no practice id. */
-export function publicView(b: Awaited<ReturnType<typeof publicBooking>>) {
+export function publicView(b: Awaited<ReturnType<typeof publicBooking>>, paid = false) {
   const { profile } = b;
   return {
+    /** Clients pay when they book (priced services), with this refund policy. */
+    payments: paid ? { refundPolicy: refundPolicyText(profile.refundPolicy ?? DEFAULT_REFUND_POLICY) } : null,
     slug: profile.slug,
     displayName: profile.displayName,
     headline: profile.headline,
@@ -172,13 +190,17 @@ function instructionsFor(profile: BookingProfile, format: string) {
 
 async function busyTimes(practiceId: string, tz: string, excludeId?: string) {
   const ks = await listCollection(practiceId, "consultations");
-  return ks
+  // Times held while a client is paying.
+  const held = await db().select({ start: schema.bookingPayments.startAt, end: schema.bookingPayments.endAt }).from(schema.bookingPayments)
+    .where(and(eq(schema.bookingPayments.practiceId, practiceId), eq(schema.bookingPayments.status, "pending"), gt(schema.bookingPayments.expiresAt, new Date())));
+  const heldTimes = held.filter((h) => h.start && h.end).map((h) => ({ start: h.start!.getTime(), end: h.end!.getTime() }));
+  return [...heldTimes, ...ks
     // Written readings have a delivery date, not a time on the calendar.
     .filter((k) => k.status === "scheduled" && k.id !== excludeId && !isDelivered(String(k.location)))
     .map((k) => {
       const start = zonedToUtc(String(k.start), tz).getTime();
       return { start, end: start + Number(k.durationMin) * 60_000 };
-    });
+    })];
 }
 
 export async function slotsFor(slug: string, serviceId: string, now = Date.now()) {
@@ -261,6 +283,113 @@ export async function book(slug: string, input: z.infer<typeof bookingRequest>) 
     if (!open.includes(new Date(start).toISOString())) throw new HttpError(409, "That time is no longer available. Please choose another.");
     await claimTime(practiceId, tz, start, end, profile.rules.bufferMin);
   }
+  const pay = await startCheckout(b, service, input, start, written);
+  if (pay) return pay;
+  const { consultationId: _id, ...booked } = await createBooking(b, service, input, start, null);
+  void _id;
+  return booked;
+}
+
+type BookingInput = z.infer<typeof bookingRequest>;
+type Context = Awaited<ReturnType<typeof publicBooking>>;
+type Paid = { amount: number; currency: string };
+
+/**
+ * Priced service and the astrologer takes payments: hold the time, keep the
+ * request (sealed) and send the client to Stripe Checkout. The booking is
+ * made when Stripe confirms payment (confirmCheckout / the webhook).
+ */
+async function startCheckout(b: Context, service: BookingService, input: BookingInput, start: number, written: boolean) {
+  const cents = priceCents(service.price);
+  if (!cents || !(await takesPayments(b))) return null;
+  const acct = (await paymentAccount(b.practiceId))!;
+  const id = newId("pay");
+  const expires = Date.now() + 31 * 60_000; // Stripe's shortest checkout lifetime is 30 minutes
+  const name = `${input.firstName} ${input.lastName}`.trim();
+  await db().insert(schema.bookingPayments).values({
+    id, practiceId: b.practiceId, stripeAccountId: acct.stripeAccountId, status: "pending", amount: cents, currency: acct.currency, serviceName: service.name, clientName: name,
+    startAt: written ? null : new Date(start), endAt: written ? null : new Date(start + service.durationMin * 60_000), expiresAt: new Date(expires),
+    sealed: seal({ service, input, start }),
+  });
+  const astro = b.profile.displayName || b.practitioner.name || "your astrologer";
+  const back = (q: string) => link(`/book/${b.profile.slug}?${q}`);
+  const fee = Math.round((cents * platformFeePercent()) / 100);
+  try {
+    const session = await stripe<{ id: string; url: string }>(
+      "POST",
+      "/checkout/sessions",
+      {
+        mode: "payment",
+        customer_email: input.email,
+        line_items: [{ quantity: 1, price_data: { currency: acct.currency, unit_amount: cents, product_data: { name: `${service.name} with ${astro}`, description: written ? `Ready in ${service.deliveryDays ?? 7} days` : `${when(start, ianaZone(input.tz) || b.tz)} · ${service.durationMin} minutes` } } }],
+        payment_intent_data: { description: `${service.name}: ${name}`, metadata: { booking_payment: id }, ...(fee ? { application_fee_amount: fee } : {}) },
+        metadata: { booking_payment: id },
+        expires_at: Math.floor(expires / 1000) - 30,
+        success_url: back("paid={CHECKOUT_SESSION_ID}"),
+        cancel_url: back(`unpaid=${id}`),
+      },
+      { account: acct.stripeAccountId, idempotencyKey: `checkout-${id}` },
+    );
+    await db().update(schema.bookingPayments).set({ checkoutSessionId: session.id }).where(eq(schema.bookingPayments.id, id));
+    return { checkout: session.url };
+  } catch (e) {
+    await db().delete(schema.bookingPayments).where(eq(schema.bookingPayments.id, id));
+    console.error("checkout failed", e);
+    throw new HttpError(502, "Payment couldn’t be started. Please try again in a moment.");
+  }
+}
+
+/** Make the booking for a checkout Stripe says is paid (once, however many times it's called). */
+async function finishPaid(row: typeof schema.bookingPayments.$inferSelect, paymentIntent: string | null) {
+  const [claimed] = await db().update(schema.bookingPayments).set({ status: "paid", paidAt: new Date(), paymentIntentId: paymentIntent })
+    .where(and(eq(schema.bookingPayments.id, row.id), inArray(schema.bookingPayments.status, ["pending", "expired"]))).returning();
+  if (!claimed) return;
+  const req = unseal<{ service: BookingService; input: BookingInput; start: number }>(row.sealed);
+  const [prof] = await db().select().from(schema.bookingProfiles).where(eq(schema.bookingProfiles.practiceId, row.practiceId));
+  const b = await bookingContext(prof);
+  const booked = await createBooking(b, req.service, req.input, req.start, { amount: row.amount, currency: row.currency });
+  await db().update(schema.bookingPayments).set({ sealed: seal({ booked }), consultationId: booked.consultationId }).where(eq(schema.bookingPayments.id, row.id));
+}
+
+type CheckoutSession = { id: string; payment_status: string; payment_intent: string | null; status: string };
+
+/** Stripe's webhook: a checkout finished. */
+export async function checkoutCompleted(session: CheckoutSession) {
+  const [row] = await db().select().from(schema.bookingPayments).where(eq(schema.bookingPayments.checkoutSessionId, session.id));
+  if (!row) return;
+  if (session.payment_status === "paid") await finishPaid(row, session.payment_intent);
+  else if (session.status === "expired" && row.status === "pending") await db().update(schema.bookingPayments).set({ status: "expired", sealed: "" }).where(eq(schema.bookingPayments.id, row.id));
+}
+
+/** The client is back from Stripe: confirm with Stripe and show the booking. */
+export async function confirmCheckout(slug: string, sessionId: string) {
+  if (!/^cs_[A-Za-z0-9_]{10,200}$/.test(sessionId)) throw new HttpError(404, "We couldn’t find that payment.");
+  const [row] = await db().select().from(schema.bookingPayments).where(eq(schema.bookingPayments.checkoutSessionId, sessionId));
+  if (!row) throw new HttpError(404, "We couldn’t find that payment.");
+  if (row.status === "pending" || row.status === "expired") {
+    const s = await stripe<CheckoutSession>("GET", `/checkout/sessions/${sessionId}`, {}, { account: row.stripeAccountId });
+    if (s.payment_status === "paid") await finishPaid(row, s.payment_intent);
+  }
+  const [now] = await db().select().from(schema.bookingPayments).where(eq(schema.bookingPayments.id, row.id));
+  if (now.status === "expired") throw new HttpError(410, "This payment wasn’t completed in time, and the time was released. Please book again.");
+  if (now.status === "pending" || !now.consultationId) return { pending: true as const };
+  const { booked } = unseal<{ booked: Awaited<ReturnType<typeof createBooking>> }>(now.sealed);
+  const { consultationId: _omit, ...shown } = booked;
+  void _omit;
+  return shown;
+}
+
+/** The client came back without paying: release the time straight away. */
+export async function abandonCheckout(id: string) {
+  if (!/^[A-Za-z0-9_-]{4,80}$/.test(id)) return;
+  const [row] = await db().update(schema.bookingPayments).set({ status: "expired", sealed: "" }).where(and(eq(schema.bookingPayments.id, id), eq(schema.bookingPayments.status, "pending"))).returning();
+  if (row?.checkoutSessionId) await stripe("POST", `/checkout/sessions/${row.checkoutSessionId}/expire`, {}, { account: row.stripeAccountId }).catch(() => {});
+}
+
+/** File the booking in the practice and tell everyone: client, chart, session, notification, emails, invite. */
+async function createBooking(b: Context, service: BookingService, input: BookingInput, start: number, paid: Paid | null) {
+  const { practiceId, profile, tz } = b;
+  const written = isDelivered(service.format);
   const instructions = instructionsFor(profile, service.format);
   const dueText = (zone: string) => new Intl.DateTimeFormat("en-US", { timeZone: zone, weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(new Date(start));
 
@@ -283,7 +412,7 @@ export async function book(slug: string, input: z.infer<typeof bookingRequest>) 
   }
   const meetingUrl = isCall(service.format) && profile.meetingUrl ? profile.meetingUrl : undefined;
   const consultationId = newId("k");
-  const note = [`Booked online (${service.name}).`, input.notes ? `Their note: ${input.notes}` : "", existing ? "" : `New client. Birth details as given: ${input.birth.date}, ${input.birth.timeAccuracy === "unknown" ? "time unknown" : input.birth.time}, ${input.birth.place}.`]
+  const note = [`Booked online (${service.name}).${paid ? ` Paid ${money(paid.amount, paid.currency)} online.` : ""}`, input.notes ? `Their note: ${input.notes}` : "", existing ? "" : `New client. Birth details as given: ${input.birth.date}, ${input.birth.timeAccuracy === "unknown" ? "time unknown" : input.birth.time}, ${input.birth.place}.`]
     .filter(Boolean)
     .join("\n\n");
   await upsertRecord(practiceId, "consultations", {
@@ -321,11 +450,13 @@ export async function book(slug: string, input: z.infer<typeof bookingRequest>) 
   const owner = await ownerEmail(practiceId);
   const visitorTz = ianaZone(input.tz) || tz;
   const place = isCall(service.format) ? (meetingUrl ? `Live session: ${meetingUrl}` : `Live session (${astro} will send the link)`) : service.format === "Phone" ? `Phone call: ${astro} will call you at ${input.phone.trim()}` : `In person${profile.location ? `: ${profile.location}` : ""}`;
-  const price = service.price ? `\nPrice: ${service.price} (payment arranged directly with ${astro})` : "";
+  const price = paid
+    ? `\nPaid: ${money(paid.amount, paid.currency)}. ${refundPolicyText(profile.refundPolicy ?? DEFAULT_REFUND_POLICY)}`
+    : service.price ? `\nPrice: ${service.price} (payment arranged directly with ${astro})` : "";
   const how = instructions ? `\n\n${instructions}` : "";
   await sendMail(
     input.email,
-    `Booked: ${service.name} with ${astro}`,
+    `Booked: ${service.name} With ${astro}`,
     written
       ? `Hi ${input.firstName},\n\nThank you for ordering a ${service.name} from ${astro}. It will be ready by ${dueText(visitorTz)}.${price}${how}${formText}\n\nNeed to cancel? Use your booking link:\n${manage}\n\nOr reply to this email.\n${profile.autoInvite && !existing ? `\nYou’ll also get an invitation to your private client portal, where your reading will be delivered.\n` : ""}`
       : `Hi ${input.firstName},\n\nYour ${service.name} with ${astro} is booked for ${when(start, visitorTz)}${visitorTz !== tz ? ` (${when(start, tz)} for ${astro})` : ""}.\n\n${service.durationMin} minutes · ${place}${price}${how}${formText}\n\nNeed to reschedule or cancel? Use your booking link${profile.rules.changeNoticeHours ? ` (up to ${noticeText(profile.rules.changeNoticeHours)} before)` : ""}:\n${manage}\n\nOr reply to this email.\n${profile.autoInvite && !existing ? `\nYou’ll also get an invitation to your private client portal, where ${astro} can share your readings.\n` : ""}`,
@@ -334,15 +465,15 @@ export async function book(slug: string, input: z.infer<typeof bookingRequest>) 
   if (owner)
     await sendMail(
       owner,
-      `New booking: ${name}, ${service.name}`,
-      `${name} ${written ? `ordered ${service.name}, due ${dueText(tz)}` : `booked ${service.name} for ${when(start, tz)}`}.${input.phone.trim() ? `\nPhone: ${input.phone.trim()}` : ""}\n\n${existing ? "They’re an existing client." : "New client: their record and natal chart are ready."}${input.notes ? `\n\nTheir note:\n${input.notes}` : ""}\n\nOpen the session:\n${link(`/app/consultations?id=${consultationId}`)}\n\nReply to this email to reach them.`,
+      `New Booking: ${name}, ${service.name}`,
+      `${name} ${written ? `ordered ${service.name}, due ${dueText(tz)}` : `booked ${service.name} for ${when(start, tz)}`}.${paid ? ` They paid ${money(paid.amount, paid.currency)}.` : ""}${input.phone.trim() ? `\nPhone: ${input.phone.trim()}` : ""}\n\n${existing ? "They’re an existing client." : "New client: their record and natal chart are ready."}${input.notes ? `\n\nTheir note:\n${input.notes}` : ""}\n\nOpen the session:\n${link(`/app/consultations?id=${consultationId}`)}\n\nReply to this email to reach them.`,
       { replyTo: input.email },
     );
   if (profile.autoInvite && (!existing || existing.portalAccess === "none")) {
     // Best effort: an address that can't be invited (e.g. a practitioner's) just isn't.
     await inviteClient({ practiceId }, clientId).catch(() => {});
   }
-  return { start: new Date(start).toISOString(), service: service.name, durationMin: service.durationMin, format: service.format, written, instructions, displayName: astro, meetingUrl: meetingUrl ?? null, manage: `/book/manage/${token}` };
+  return { start: new Date(start).toISOString(), service: service.name, durationMin: service.durationMin, format: service.format, written, instructions, displayName: astro, meetingUrl: meetingUrl ?? null, manage: `/book/manage/${token}`, consultationId };
 }
 
 // ——— Managing a booking (the client's private link) ————————————————————
@@ -383,6 +514,11 @@ export async function manageView(token: string) {
     written: b.written,
     instructions: instructionsFor(b.profile, String(b.k.location)),
     intake: await intakeFor(b).then((r) => (r ? { title: r.title, status: r.status } : null)),
+    payment: await paymentForConsultation(b.row.practiceId, b.row.consultationId).then((p) =>
+      p && p.status !== "pending" && p.status !== "expired"
+        ? { paid: money(p.amount, p.currency), refunded: p.refunded ? money(p.refunded, p.currency) : null, policy: refundPolicyText(b.profile.refundPolicy ?? DEFAULT_REFUND_POLICY), refundIfCanceledNow: p.refunded ? null : money(refundFor(p.amount, b.profile.refundPolicy ?? DEFAULT_REFUND_POLICY, (b.start - Date.now()) / 3_600_000), p.currency) }
+        : null,
+    ),
   };
 }
 
@@ -447,7 +583,7 @@ export async function reschedule(token: string, startIso: string, visitorTz: str
   const vz = ianaZone(visitorTz) || b.tz;
   await tellBoth(
     b,
-    { subject: `Rescheduled: ${b.k.type} with ${astro}`, body: `Hi ${b.row.clientName.split(" ")[0]},\n\nYour ${b.k.type} with ${astro} is now ${when(start, vz)}.\n\nYour booking link still works if you need to change it again:\n${link(`/book/manage/${token}`)}\n` },
+    { subject: `Rescheduled: ${b.k.type} With ${astro}`, body: `Hi ${b.row.clientName.split(" ")[0]},\n\nYour ${b.k.type} with ${astro} is now ${when(start, vz)}.\n\nYour booking link still works if you need to change it again:\n${link(`/book/manage/${token}`)}\n` },
     { title: "Session Rescheduled", body: `${b.row.clientName} moved ${b.k.type} from ${when(b.start, b.tz)} to ${when(start, b.tz)}.`, email: `${b.row.clientName} moved ${b.k.type}:\n\nFrom: ${when(b.start, b.tz)}\nTo: ${when(start, b.tz)}\n\nOpen the session:\n${link(`/app/consultations?id=${b.row.consultationId}`)}\n` },
   );
   return manageView(token);
@@ -460,10 +596,28 @@ export async function cancelBooking(token: string, reason: string) {
   const why = reason.trim().slice(0, 1000);
   await upsertRecord(b.row.practiceId, "consultations", { ...fresh, status: "cancelled", prepNotes: [fresh.prepNotes, `Canceled online by the client.${why ? ` Their reason: ${why}` : ""}`].filter(Boolean).join("\n\n") });
   const astro = b.profile.displayName || b.practitioner.name || "your astrologer";
+  // Paid online: refund what the astrologer's policy gives back for this much notice.
+  let refundNote = "";
+  let astroRefund = "";
+  const pay = await paymentForConsultation(b.row.practiceId, b.row.consultationId);
+  if (pay && pay.status === "paid") {
+    const due = refundFor(pay.amount, b.profile.refundPolicy ?? DEFAULT_REFUND_POLICY, (b.start - Date.now()) / 3_600_000);
+    const given = due > 0 ? await refundPayment(b.row.practiceId, pay.id, due).catch((e) => { console.error("refund failed", e); return -1; }) : 0;
+    if (given > 0) {
+      refundNote = `\n\nA refund of ${money(given, pay.currency)} is on its way to your card. It usually arrives within 5–10 business days.`;
+      astroRefund = `\n\nThey were refunded ${money(given, pay.currency)} under your cancellation policy.`;
+    } else if (given === 0) {
+      refundNote = `\n\nUnder ${astro}’s cancellation policy, this late cancellation isn’t refunded. ${refundPolicyText(b.profile.refundPolicy ?? DEFAULT_REFUND_POLICY)}`;
+      astroRefund = `\n\nUnder your cancellation policy they weren’t refunded. You can still refund them in Settings › Payments.`;
+    } else {
+      refundNote = `\n\n${astro} will arrange your refund.`;
+      astroRefund = `\n\nThe automatic refund didn’t go through. Please refund them in Settings › Payments.`;
+    }
+  }
   await tellBoth(
     b,
-    { subject: `Canceled: ${b.k.type} with ${astro}`, body: `Hi ${b.row.clientName.split(" ")[0]},\n\nYour ${b.k.type} with ${astro} on ${when(b.start, b.tz)} is canceled.${b.profile.enabled && b.profile.slug ? `\n\nWhenever you’d like to book again:\n${link(`/book/${b.profile.slug}`)}` : ""}\n` },
-    { title: "Session Canceled", body: `${b.row.clientName} canceled ${b.k.type} on ${when(b.start, b.tz)}.${why ? ` “${why.slice(0, 140)}”` : ""}`, email: `${b.row.clientName} canceled ${b.k.type} on ${when(b.start, b.tz)}.${why ? `\n\nTheir reason:\n${why}` : ""}\n\nThe time is free again on your booking page.\n` },
+    { subject: `Canceled: ${b.k.type} With ${astro}`, body: `Hi ${b.row.clientName.split(" ")[0]},\n\nYour ${b.k.type} with ${astro} on ${when(b.start, b.tz)} is canceled.${refundNote}${b.profile.enabled && b.profile.slug ? `\n\nWhenever you’d like to book again:\n${link(`/book/${b.profile.slug}`)}` : ""}\n` },
+    { title: "Session Canceled", body: `${b.row.clientName} canceled ${b.k.type} on ${when(b.start, b.tz)}.${why ? ` “${why.slice(0, 140)}”` : ""}`, email: `${b.row.clientName} canceled ${b.k.type} on ${when(b.start, b.tz)}.${why ? `\n\nTheir reason:\n${why}` : ""}${astroRefund}\n\nThe time is free again on your booking page.\n` },
   );
   return manageView(token);
 }

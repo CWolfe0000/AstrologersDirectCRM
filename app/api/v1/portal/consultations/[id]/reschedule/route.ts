@@ -37,7 +37,7 @@ export const POST = handler(async (req: Request, ctx: { params: Promise<{ id: st
   if (to) {
     await sendMail(
       to,
-      `${name} asked to reschedule`,
+      `${name} Asked to Reschedule`,
       `Hi ${p.firstName || "there"},\n\n${name} asked to move their ${k.type} on ${String(k.start).replace("T", " at ").slice(0, 19)}.\n\n${note ? `Their message:\n${note}\n\n` : ""}Reply to this email to answer them directly, then update the session in your calendar:\n${link(`/app/consultations?id=${id}`)}\n`,
       { replyTo: user.email },
     );

@@ -84,7 +84,7 @@ await cp.getByRole("button", { name: "Send Request" }).click();
 await cp.getByText("Request Sent").waitFor();
 s = (await api("/api/v1/bootstrap?view=app")).body;
 assert.ok(s.notifications.some((n) => n.title === "Reschedule Request" && n.body.includes("Thursday")), "practitioner notified");
-const { rows: mail } = await db.query('select subject from outbox where "to"=$1 and subject like $2', [ownerEmail, "%asked to reschedule"]);
+const { rows: mail } = await db.query('select subject from outbox where "to"=$1 and subject like $2', [ownerEmail, "%Asked to Reschedule"]);
 assert.equal(mail.length, 1, "practitioner emailed");
 
 step("account page: real security settings and data download");

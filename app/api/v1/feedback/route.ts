@@ -18,6 +18,6 @@ export const POST = handler(async (req: Request) => {
   const [u] = await db().select({ email: schema.users.email, name: schema.users.name }).from(schema.users).where(eq(schema.users.id, user.id));
   const row = { id: newId("fr"), practiceId: user.practiceId, email: u?.email ?? "", name: u?.name ?? "", area: parsed.data.area, text: parsed.data.text };
   await db().insert(schema.featureRequests).values(row);
-  if (env.contactEmail) await sendMail(env.contactEmail, `Feature suggestion: ${row.area}`, `From ${row.name} <${row.email}>\nArea: ${row.area}\n\n${row.text}\n`).catch(() => {});
+  if (env.contactEmail) await sendMail(env.contactEmail, `Feature Suggestion: ${row.area}`, `From ${row.name} <${row.email}>\nArea: ${row.area}\n\n${row.text}\n`).catch(() => {});
   return json({ ok: true });
 });

@@ -50,7 +50,7 @@ export async function notifyIntake(practiceId: string, requestId: string) {
   if (client.portalAccess === "active" && u) {
     await upsertRecord(practiceId, "portalNotifications", { id: newId("pn"), clientId: req.clientId, title: `Please Fill In “${req.title}”`, body: `${p.firstName ?? astrologer} sent you a form to fill in.`, at: nowLocal(), read: false, href: `/portal/forms/${req.id}` });
     if (u.emailVerifiedAt)
-      await sendMail(u.email, `${astrologer} sent you a form: ${req.title}`, `Hi ${person.firstName},\n\n${astrologer} asked you to fill in “${req.title}”. It takes a few minutes and helps make the most of your time together.\n\nFill it in from your client portal:\n${link(`/portal/forms/${encodeURIComponent(`${practiceId}~${req.id}`)}`)}\n`);
+      await sendMail(u.email, `${astrologer} Sent You a Form: ${req.title}`, `Hi ${person.firstName},\n\n${astrologer} asked you to fill in “${req.title}”. It takes a few minutes and helps make the most of your time together.\n\nFill it in from your client portal:\n${link(`/portal/forms/${encodeURIComponent(`${practiceId}~${req.id}`)}`)}\n`);
     return { via: "portal" as const };
   }
   await inviteClient({ practiceId }, req.clientId, `${astrologer} also asked you to fill in “${req.title}”. You’ll find it on your portal’s home page.`);
@@ -164,7 +164,7 @@ export async function submitIntake(practiceId: string, clientId: string, request
   const s = await getSettings(practiceId);
   const pr = (s?.practitioner ?? {}) as { email?: string };
   const to = pr.email?.includes("@") ? pr.email : null;
-  if (to) await sendMail(to, `${name} filled in “${req.title}”`, `${name} filled in “${req.title}”.${bits.length ? `\n\n${bits.map((b) => `• ${b[0]!.toUpperCase()}${b.slice(1)}`).join("\n")}` : ""}\n\nSee their answers:\n${link(href)}\n`);
+  if (to) await sendMail(to, `${name} Filled In “${req.title}”`, `${name} filled in “${req.title}”.${bits.length ? `\n\n${bits.map((b) => `• ${b[0]!.toUpperCase()}${b.slice(1)}`).join("\n")}` : ""}\n\nSee their answers:\n${link(href)}\n`);
   return { ok: true, applied };
 }
 
