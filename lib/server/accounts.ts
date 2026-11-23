@@ -18,14 +18,14 @@ export async function findUserByEmail(email: string) {
   return u ?? null;
 }
 
-export async function createPractice(input: { name: string; practice: string; email: string; password?: string; timezone?: string }) {
+export async function createPractice(input: { name: string; practice: string; email: string; password?: string; timezone?: string; emailConsent?: boolean }) {
   const practiceId = newId("prc");
   const userId = newId("usr");
   const email = normEmail(input.email);
   await db().transaction(async (tx) => {
     await tx.insert(schema.practices).values({ id: practiceId, name: input.practice, plan: defaultPlan() });
-    // Joining means agreeing to emails from us (recorded with the time, for our records and unsubscribes).
-    await tx.insert(schema.users).values({ id: userId, practiceId, email, name: input.name, role: "owner", passwordHash: input.password ? await hashPassword(input.password) : null, emailConsentAt: new Date() });
+    // Opting in to news and offers is a separate, optional choice; when made, its time is recorded.
+    await tx.insert(schema.users).values({ id: userId, practiceId, email, name: input.name, role: "owner", passwordHash: input.password ? await hashPassword(input.password) : null, emailConsentAt: input.emailConsent ? new Date() : null });
   });
   const first = input.name.split(/\s+/)[0] ?? input.name;
   await putSettings(

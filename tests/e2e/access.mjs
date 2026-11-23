@@ -58,11 +58,11 @@ try {
   await v.getByLabel(/Practice Name/).fill("Moonlit Charts");
   await v.getByLabel(/Years in Practice/).selectOption("5–10 years");
   await v.getByLabel(/Tell Us About Your Practice/).fill("Evolutionary astrology, mostly video sessions.");
-  await v.getByRole("checkbox", { name: /receive emails from AstrologersDirect/ }).check();
+  await v.getByRole("checkbox", { name: /Send me news, tips and offers/ }).check();
   await v.getByRole("button", { name: "Request Access" }).click();
   await v.getByText("Thank You. Your Request Is In.").waitFor();
   const { rows: [reqRow] } = await db.query("select email_consent_at from access_requests where email=$1", [applicant]);
-  assert.ok(reqRow?.email_consent_at, "email consent recorded with the request");
+  assert.ok(reqRow?.email_consent_at, "the news opt-in is recorded with the request");
   assert.ok((await mail(applicant)).some((m) => m.subject === "We’ve received your request for AstrologersDirect"));
   assert.ok((await mail(CONTACT)).some((m) => m.subject === "Beta request: Iris Moon" && m.body.includes("Moonlit Charts")));
   // Asking twice doesn't duplicate.

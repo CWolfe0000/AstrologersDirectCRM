@@ -105,21 +105,21 @@ export function NewsEmailsCard() {
   const set = async (on: boolean) => {
     try {
       setD(await api<{ on: boolean; consentAt: string | null }>("/api/v1/account/email", { method: "PUT", body: { on } }));
-      toast(on ? "News Emails On" : "Unsubscribed", on ? "You’ll hear about new features, the beta and offers." : "You won’t get news or offers emails. Account emails still arrive.", "success");
+      toast(on ? "Subscribed" : "Unsubscribed", on ? "You’ll hear about new features, tips and offers." : "You won’t get news, tips or offers. Account emails still arrive.", "success");
     } catch (e) {
       toast("Couldn’t Update", (e as Error).message, "error");
     }
   };
   return (
     <Card>
-      <CardHeader title="Emails From AstrologersDirect" description="News about new features, the beta and offers. Emails about your account, like sign-in links, always arrive." />
+      <CardHeader title="Emails From AstrologersDirect" description="Optional news, tips and offers. Emails about your account and the service, like sign-in links, always arrive." />
       <CardBody>
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-[13.5px] font-medium">News, Features and Offers</p>
-            <p className="text-[12.5px] text-muted">{d.consentAt ? `You agreed to these when you joined (${new Date(d.consentAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}).` : "Every email also has a one-click unsubscribe link."}</p>
+            <p className="text-[13.5px] font-medium">News, Tips and Offers</p>
+            <p className="text-[12.5px] text-muted">{d.on && d.consentAt ? `On since ${new Date(d.consentAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}. Every one has an unsubscribe link.` : "Off. Turn on to hear about new features, tips and offers."}</p>
           </div>
-          <Switch checked={d.on} onCheckedChange={(v) => void set(v)} aria-label="News, Features and Offers" />
+          <Switch checked={d.on} onCheckedChange={(v) => void set(v)} aria-label="News, Tips and Offers" />
         </div>
       </CardBody>
     </Card>

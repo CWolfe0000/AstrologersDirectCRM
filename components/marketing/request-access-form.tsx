@@ -13,6 +13,7 @@ export function RequestAccessForm() {
   const [f, setF] = React.useState({ name: "", email: "", practice: "", website: "", experience: "", about: "", company: "" });
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [news, setNews] = React.useState(false);
   const [done, setDone] = React.useState(false);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setF((x) => ({ ...x, [k]: e.target.value }));
 
@@ -32,7 +33,7 @@ export function RequestAccessForm() {
         setBusy(true);
         setError(null);
         try {
-          await api("/api/public/access-request", { body: { ...f, emailConsent: true } });
+          await api("/api/public/access-request", { body: { ...f, emailConsent: news } });
           setDone(true);
         } catch (err) {
           setError((err as Error).message);
@@ -57,7 +58,7 @@ export function RequestAccessForm() {
         <Textarea id="ra-about" rows={4} maxLength={2000} value={f.about} onChange={set("about")} placeholder="The work you do, the tools you use now, and what you’d most like AstrologersDirect to help with." />
       </Field>
       <div className="sm:col-span-2">
-        <Checkbox required label={<span className="text-[13px] text-muted">I agree to receive emails from AstrologersDirect about my request, the beta, new features and offers, as described in the <Link href="/legal/privacy" className="text-accent underline">Privacy Policy</Link>. I can unsubscribe at any time.</span>} />
+        <Checkbox checked={news} onChange={(e) => setNews(e.target.checked)} label={<span className="text-[13px] text-muted">Send me news, tips and offers from AstrologersDirect. Unsubscribe at any time. See our <Link href="/legal/privacy" className="text-accent underline">Privacy Policy</Link>.</span>} />
       </div>
       <div className="flex flex-col-reverse items-start justify-between gap-3 sm:col-span-2 sm:flex-row sm:items-center">
         <p className="text-[12.5px] text-muted" role={error ? "alert" : undefined}>{error ? <span className="text-danger">{error}</span> : "Free during the beta."}</p>

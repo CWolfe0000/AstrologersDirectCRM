@@ -243,6 +243,7 @@ function Signup() {
   const inviteToken = useSearchParams().get("invite");
   const { loading, error, run } = useSubmit();
   const [f, setF] = React.useState({ first: "", last: "", email: "", practice: "", password: "" });
+  const [news, setNews] = React.useState(false);
   const [status, setStatus] = React.useState<{ open: boolean; invite: { email: string; name: string; practice: string } | null } | null>(null);
   React.useEffect(() => {
     api<{ open: boolean; invite: { email: string; name: string; practice: string } | null }>(`/api/auth/signup/status${inviteToken ? `?invite=${encodeURIComponent(inviteToken)}` : ""}`).then((r) => {
@@ -280,7 +281,7 @@ function Signup() {
           e.preventDefault();
           run(async () => {
             const name = `${f.first.trim()} ${f.last.trim()}`.trim();
-            await api("/api/auth/signup", { body: { name, practice: f.practice.trim() || `${name}'s practice`, email: f.email, password: f.password || undefined, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, invite: inviteToken || undefined, emailConsent: true } });
+            await api("/api/auth/signup", { body: { name, practice: f.practice.trim() || `${name}'s practice`, email: f.email, password: f.password || undefined, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, invite: inviteToken || undefined, emailConsent: news } });
             router.replace(`/auth/verify?sent=1&email=${encodeURIComponent(f.email)}`);
           });
         }}
@@ -295,7 +296,8 @@ function Signup() {
         <Field label="Password" htmlFor="pw" optional hint={`Leave blank to sign in with emailed links instead. Otherwise at least ${MIN_PW} characters.`}>
           <Input id="pw" type="password" minLength={MIN_PW} autoComplete="new-password" value={f.password} onChange={set("password")} />
         </Field>
-        <Checkbox required label={<span className="text-[13px] text-muted">I agree to the <Link href="/legal/terms" className="text-accent underline">Terms</Link> and <Link href="/legal/privacy" className="text-accent underline">Privacy Policy</Link>, and to receive emails from AstrologersDirect about my account, the beta, new features and offers. I can unsubscribe from non-essential emails at any time.</span>} />
+        <Checkbox required label={<span className="text-[13px] text-muted">I agree to the <Link href="/legal/terms" className="text-accent underline">Terms</Link> and <Link href="/legal/privacy" className="text-accent underline">Privacy Policy</Link>.</span>} />
+        <Checkbox checked={news} onChange={(e) => setNews(e.target.checked)} label={<span className="text-[13px] text-muted">Send me news, tips and offers from AstrologersDirect. Unsubscribe at any time.</span>} />
         <Button type="submit" size="lg" className="w-full" disabled={loading}>
           {loading && <Loader2 className="animate-spin" />} Create Account
         </Button>

@@ -6,10 +6,10 @@ import { env } from "./env";
 import { link } from "./mail";
 
 /**
- * Emails from AstrologersDirect itself (beta news, new features, offers).
- * Everyone agrees to them at sign-up; anyone can unsubscribe, from Settings or
- * with the one-click link at the foot of every such email. Account and
- * security emails (sign-in links, verification, receipts) still go out.
+ * News, tips and offers from AstrologersDirect: opt-in (an unticked box at
+ * sign-up, or Settings), with a one-click unsubscribe link at the foot of
+ * every such email. Account and service emails (sign-in links, verification,
+ * security and important service notices) go to everyone.
  */
 const sign = (userId: string) => createHmac("sha256", env.encryptionKey).update(`unsubscribe:${userId}`).digest("base64url").slice(0, 32);
 
@@ -24,10 +24,10 @@ export function validUnsubscribe(userId: string, token: string) {
 }
 
 export async function setNewsEmails(userId: string, on: boolean) {
-  await db().update(schema.users).set({ emailUnsubscribedAt: on ? null : new Date() }).where(eq(schema.users.id, userId));
+  await db().update(schema.users).set(on ? { emailConsentAt: new Date(), emailUnsubscribedAt: null } : { emailUnsubscribedAt: new Date() }).where(eq(schema.users.id, userId));
 }
 
 export async function newsEmailsOn(userId: string) {
   const [u] = await db().select({ consent: schema.users.emailConsentAt, off: schema.users.emailUnsubscribedAt }).from(schema.users).where(eq(schema.users.id, userId));
-  return { on: !u?.off, consentAt: u?.consent?.toISOString() ?? null };
+  return { on: !!u?.consent && !u.off, consentAt: u?.consent?.toISOString() ?? null };
 }

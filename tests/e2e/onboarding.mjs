@@ -94,12 +94,16 @@ await page.getByText("Finish Setting Up Your Practice").waitFor({ state: "detach
 assert.equal(await page.getByText("Finish Setting Up Your Practice").count(), 0);
 assert.match(page.url(), /\/app$/);
 
-step("they agreed to emails at sign-up, and can switch news off");
+step("news emails are opt-in: off unless ticked at sign-up; switch on and off in Settings");
 let em = (await call("/api/v1/account/email")).body;
-assert.equal(em.on, true);
-assert.ok(em.consentAt, "consent recorded with its time");
+assert.equal(em.on, false, "the optional box was left unticked");
 await page.goto(BASE + "/app/settings?section=notifications");
-await page.getByRole("switch", { name: "News, Features and Offers" }).click();
+await page.getByRole("switch", { name: "News, Tips and Offers" }).click();
+await page.getByText("Subscribed", { exact: true }).waitFor();
+em = (await call("/api/v1/account/email")).body;
+assert.equal(em.on, true);
+assert.ok(em.consentAt, "opt-in recorded with its time");
+await page.getByRole("switch", { name: "News, Tips and Offers" }).click();
 await page.getByText("Unsubscribed", { exact: true }).waitFor();
 em = (await call("/api/v1/account/email")).body;
 assert.equal(em.on, false);

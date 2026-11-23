@@ -17,6 +17,7 @@ function SignupForm() {
   const plan = useSearchParams().get("plan");
   const [loading, setLoading] = React.useState(false);
   const [email, setEmail] = React.useState("");
+  const [news, setNews] = React.useState(false);
   return (
     <>
       <AuthHeading title="Build Stronger Client Relationships." body="Create your practice and join the early practitioner community shaping AstrologersDirect. It takes a few minutes." />
@@ -62,7 +63,8 @@ function SignupForm() {
         <Field label="Password" htmlFor="pw" hint="At least 12 characters.">
           <Input id="pw" type="password" required minLength={12} autoComplete="new-password" />
         </Field>
-        <Checkbox required label={<span className="text-[13px] text-muted">I agree to the <Link href="/legal/terms" className="text-accent underline">Terms</Link> and <Link href="/legal/privacy" className="text-accent underline">Privacy Policy</Link>, and to receive emails from AstrologersDirect about my account, the beta, new features and offers. I can unsubscribe from non-essential emails at any time.</span>} />
+        <Checkbox required label={<span className="text-[13px] text-muted">I agree to the <Link href="/legal/terms" className="text-accent underline">Terms</Link> and <Link href="/legal/privacy" className="text-accent underline">Privacy Policy</Link>.</span>} />
+        <Checkbox checked={news} onChange={(e) => setNews(e.target.checked)} label={<span className="text-[13px] text-muted">Send me news, tips and offers from AstrologersDirect. Unsubscribe at any time.</span>} />
         <Button type="submit" size="lg" className="w-full" disabled={loading}>
           {loading && <Loader2 className="animate-spin" />} Create Account
         </Button>
