@@ -275,6 +275,10 @@ export interface Practitioner {
   workTemplates?: WorkTemplate[];
   /** The practice's intake forms (as many as the astrologer likes). */
   intakeForms?: IntakeForm[];
+  /** Profile photo (a small square image as a data URL): booking page, portal and readings. */
+  photo?: string;
+  /** Social and other links shown under your name on your booking page (your website is added first). */
+  links?: { label: string; url: string }[];
   /** First-run setup: set at sign-up; `done` once finished or dismissed. */
   onboarding?: { step: number; done: boolean };
 }

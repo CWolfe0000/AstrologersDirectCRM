@@ -15,7 +15,7 @@ const APP = [
   "/app/clients/c1?tab=observations", "/app/clients/c1?tab=work", "/app/clients/c1?tab=readings", "/app/clients/c1?tab=files", "/app/clients/new", "/app/charts", "/app/charts/new", "/app/charts/new?type=horary&client=c1", "/app/charts/new?type=astrocartography&client=c1", "/app/charts/new?type=election&client=c1", "/app/timeline?client=c1",
   "/app/charts/ch1", "/app/charts/ch3", "/app/observations?id=o6", "/app/consultations", "/app/consultations?id=k1", "/app/tasks", "/app/tasks?id=t1",
   "/app/delivery", "/app/delivery?id=r11", "/app/studio", "/app/reports", "/app/notifications", "/app/settings", "/app/settings?section=astrology",
-  "/app/settings?section=security", "/app/settings?section=booking", "/app/settings?section=notifications", "/app/settings?section=data",
+  "/app/settings?section=security", "/app/settings?section=booking", "/app/settings?section=services", "/app/settings?section=profile", "/app/settings?section=timeline", "/app/settings?section=notifications", "/app/settings?section=data",
   "/portal?as=c1", "/portal/readings", "/portal/readings/r3", "/portal/readings/r1", "/portal/consultations", "/portal/work", "/portal/work/w1", "/portal/settings",
 ];
 

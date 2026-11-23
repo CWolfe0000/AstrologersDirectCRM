@@ -82,11 +82,11 @@ assert.deepEqual(forms.map((f) => f.title).sort(), ["Horary Question", "New Clie
 const prof = (await call("/api/v1/booking")).body.profile;
 assert.equal(prof.enabled, true);
 assert.equal(prof.slug, `orla-${stamp}`);
-assert.equal(prof.displayName, "Orla Finch");
+assert.equal(s.practitioner.name, "Orla Finch");
 assert.deepEqual(prof.services.map((x) => [x.name, x.price, x.format]), [["Natal Chart Reading", "$160", "Live session"], ["Horary Question", "$60", "Live session"]]);
 assert.equal(prof.services[1].intakeFormId, forms.find((f) => f.title === "Horary Question").id);
 assert.deepEqual(prof.rules.weekly.sat, [{ start: "10:00", end: "17:00" }]);
-assert.deepEqual(prof.links, [{ label: "Website", url: "https://example.com" }]);
+assert.deepEqual(s.practitioner.links, [{ label: "Website", url: "https://example.com" }], "links live on the profile");
 
 step("the dashboard no longer sends them to setup");
 await page.goto(BASE + "/app");

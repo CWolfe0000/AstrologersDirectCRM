@@ -107,7 +107,7 @@ export function SetupWizard() {
       ) : step === 3 ? (
         <Hours profile={profile} busy={busy} onBack={() => setStep(2)} onNext={async (rules) => { if (await saveProfile({ rules })) setStep(4); }} />
       ) : step === 4 ? (
-        <YourPage profile={profile} busy={busy} onBack={() => setStep(3)} onNext={async (patch) => { if (await saveProfile(patch)) { setStep(5, true); toast("Setup Complete", "Your practice is ready.", "success"); } }} />
+        <YourPage profile={profile} busy={busy} onBack={() => setStep(3)} onNext={async (patch, links) => { update({ links }); if (await saveProfile(patch)) { setStep(5, true); toast("Setup Complete", "Your practice is ready.", "success"); } }} />
       ) : (
         <Done profile={profile} />
       )}
@@ -126,15 +126,16 @@ function Nav({ onBack, busy, next = "Continue", disabled }: { onBack?: () => voi
 
 // ——— 1. About you ———————————————————————————————————————————————
 
-function AboutYou({ profile, busy, onNext }: { profile: BookingProfile; busy: boolean; onNext: (p: { name: string; firstName: string; practice: string; title: string; timezone: string; bio: string }, patch: Partial<BookingProfile>) => void }) {
+function AboutYou({ profile, busy, onNext }: { profile: BookingProfile; busy: boolean; onNext: (p: { name: string; firstName: string; practice: string; title: string; timezone: string; bio: string; photo?: string }, patch: Partial<BookingProfile>) => void }) {
   const pr = useStore((s) => s.practitioner);
   const toast = useStore((s) => s.toast);
   const zones = React.useMemo(() => allZones(), []);
-  const [f, setF] = React.useState({ name: pr.name, practice: pr.practice, title: pr.title, timezone: pr.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone, headline: profile.headline || "", bio: profile.about || pr.bio || "" });
-  const [photo, setPhoto] = React.useState(profile.photo);
+  // Headline, bio and photo are the practitioner's profile (the booking page shows them).
+  const [f, setF] = React.useState({ name: pr.name, practice: pr.practice, timezone: pr.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone, headline: pr.title && pr.title !== "Consulting Astrologer" ? pr.title : profile.headline || "", bio: pr.bio || profile.about || "" });
+  const [photo, setPhoto] = React.useState(pr.photo ?? profile.photo);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => setF({ ...f, [k]: e.target.value });
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onNext({ name: f.name.trim(), firstName: f.name.trim().split(/\s+/)[0] ?? "", practice: f.practice.trim(), title: f.title.trim(), timezone: f.timezone, bio: f.bio.trim() }, { displayName: f.name.trim(), headline: f.headline.trim(), about: f.bio.trim(), photo }); }}>
+    <form onSubmit={(e) => { e.preventDefault(); onNext({ name: f.name.trim(), firstName: f.name.trim().split(/\s+/)[0] ?? "", practice: f.practice.trim(), title: f.headline.trim(), timezone: f.timezone, bio: f.bio.trim(), photo }, {}); }}>
       <p className="mb-5 text-[14px] text-ink-3">This is how clients will see you on your page, in emails and in their portal. You can change any of it later.</p>
       <div className="mb-5 flex items-center gap-4">
         {photo ? <img src={photo} alt="Your profile photo" className="size-20 rounded-full object-cover" /> : <span className="flex size-20 items-center justify-center rounded-full bg-canvas-2 text-[12px] text-muted">No Photo</span>}
@@ -258,7 +259,7 @@ function Hours({ profile, busy, onBack, onNext }: { profile: BookingProfile; bus
   const written = profile.services.every((s) => !s.active || isDelivered(s.format));
   return (
     <form onSubmit={(e) => { e.preventDefault(); onNext({ ...profile.rules, minNoticeHours: notice, weekly: Object.fromEntries(DAY_IDS.map((d) => [d, days[d] ? [range] : []])) as BookingProfile["rules"]["weekly"] }); }}>
-      <p className="mb-5 text-[14px] text-ink-3">{written ? "Your services are all written readings, so clients don’t pick a time. You can still set your hours for later." : "When can clients book sessions? Pick your days and hours. You can set different hours for each day later in Settings › Booking."}</p>
+      <p className="mb-5 text-[14px] text-ink-3">{written ? "Your services are all written readings, so clients don’t pick a time. You can still set your hours for later." : "When can clients book sessions? Pick your days and hours. You can set different hours for each day later in Settings › Services & Availability."}</p>
       <fieldset>
         <legend className="mb-2 text-[13px] font-medium text-ink">Days</legend>
         <div className="flex flex-wrap gap-2">
@@ -281,13 +282,14 @@ function Hours({ profile, busy, onBack, onNext }: { profile: BookingProfile; bus
 
 // ——— 5. Your page ——————————————————————————————————————————————
 
-function YourPage({ profile, busy, onBack, onNext }: { profile: BookingProfile; busy: boolean; onBack: () => void; onNext: (p: Partial<BookingProfile>) => void }) {
+function YourPage({ profile, busy, onBack, onNext }: { profile: BookingProfile; busy: boolean; onBack: () => void; onNext: (p: Partial<BookingProfile>, links: { label: string; url: string }[]) => void }) {
   const [slug, setSlug] = React.useState(profile.slug);
-  const [links, setLinks] = React.useState(profile.links?.length ? profile.links : [{ label: "", url: "" }]);
+  const savedLinks = useStore((s) => s.practitioner.links);
+  const [links, setLinks] = React.useState(savedLinks?.length ? savedLinks : profile.links?.length ? profile.links : [{ label: "", url: "" }]);
   const [live, setLive] = React.useState(true);
   const base = SITE_URL || (typeof window !== "undefined" ? `${window.location.origin}/book` : "/book");
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onNext({ slug, enabled: live, links: links.filter((l) => l.label.trim() && l.url.trim()).map((l) => ({ label: l.label.trim(), url: l.url.trim() })) }); }}>
+    <form onSubmit={(e) => { e.preventDefault(); onNext({ slug, enabled: live }, links.filter((l) => l.label.trim() && l.url.trim()).map((l) => ({ label: l.label.trim(), url: l.url.trim() }))); }}>
       <p className="mb-5 text-[14px] text-ink-3">Your page shows your photo, links, services and bio, and clients book from it. Put the link in your social bios, website and email signature.</p>
       <Field label="Your Page Address" htmlFor="ob-slug" hint="Lowercase letters, numbers and hyphens.">
         <div className="flex items-center gap-1.5">
@@ -308,7 +310,7 @@ function YourPage({ profile, busy, onBack, onNext }: { profile: BookingProfile; 
         {links.length < 8 && <Button type="button" variant="secondary" size="sm" onClick={() => setLinks([...links, { label: "", url: "" }])}><Plus /> Add Link</Button>}
       </div>
       <div className="mt-6 rounded-xl border border-line bg-surface p-4">
-        <Checkbox checked={live} onChange={(e) => setLive(e.target.checked)} label={<span className="text-[14px]"><span className="font-medium text-ink">Start Taking Bookings Now</span><span className="block text-[12.5px] text-muted">Untick to keep your page off until you’re ready. You can turn it on in Settings › Booking.</span></span>} />
+        <Checkbox checked={live} onChange={(e) => setLive(e.target.checked)} label={<span className="text-[14px]"><span className="font-medium text-ink">Start Taking Bookings Now</span><span className="block text-[12.5px] text-muted">Untick to keep your page off until you’re ready. You can turn it on in Settings › Booking Page.</span></span>} />
       </div>
       <Nav onBack={onBack} busy={busy} next="Finish Setup" />
     </form>

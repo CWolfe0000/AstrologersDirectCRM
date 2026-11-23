@@ -41,45 +41,53 @@ await page.click('button[type="submit"]');
 await page.waitForURL(/verify/);
 const st = (await call(page, "/api/v1/bootstrap?view=app")).body;
 await call(page, "/api/v1/settings", { method: "PUT", body: JSON.stringify({ practitioner: { ...st.practitioner, name: "Maya Lin", timezone: "America/New_York" }, defaults: st.defaults }) });
-await page.goto(BASE + "/app/settings?section=booking");
-await page.getByLabel("Page Address").fill(slug);
-await page.getByLabel("Headline", { exact: false }).fill("Evolutionary astrologer");
-await page.getByLabel("Call Link", { exact: false }).fill(MEET);
-for (const d of ["Saturday", "Sunday"]) await page.getByRole("checkbox", { name: d }).check();
-await page.getByRole("button", { name: "Save Booking Settings" }).click();
-await page.getByText("Booking Settings Saved").waitFor();
-await page.getByRole("switch", { name: "Accept Online Bookings" }).click();
-await page.getByText("Your page is live.").waitFor();
-let prof = (await call(page, "/api/v1/booking")).body.profile;
-assert.equal(prof.enabled, true);
-assert.equal(prof.slug, slug);
-// Wider hours so the test always finds times, whenever it runs.
-const allDay = Object.fromEntries(["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map((d) => [d, [{ start: "06:00", end: "22:00" }]]));
-const r1 = await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify({ ...prof, rules: { ...prof.rules, weekly: allDay, minNoticeHours: 2, maxAdvanceDays: 14, stepMin: 60, bufferMin: 15, changeNoticeHours: 1 } }) });
-assert.equal(r1.status, 200);
-prof = r1.body.profile;
-
-step("link-in-bio profile: a photo (cropped and resized in the browser) and links");
-await page.goto(BASE + "/app/settings?section=booking");
+// Settings: who you are (Your Profile), the page (Booking Page), and what's bookable (Services & Availability).
+await page.goto(BASE + "/app/settings?section=profile");
+await page.getByRole("heading", { name: "Your Profile" }).waitFor();
 // A 600×300 photo, made in the page: it should come back as a 400px square JPEG.
 const png = await page.evaluate(() => { const c = document.createElement("canvas"); c.width = 600; c.height = 300; const x = c.getContext("2d"); x.fillStyle = "#824B59"; x.fillRect(0, 0, 600, 300); return c.toDataURL("image/png"); });
+await page.getByLabel("Profile Photo").setInputFiles({ name: "me.png", mimeType: "image/png", buffer: Buffer.from(png.split(",")[1], "base64") });
+await page.getByRole("img", { name: "Your profile photo" }).waitFor();
+await page.getByLabel("Headline").fill("Evolutionary astrologer");
+await page.getByLabel("Website").fill("mayalin.example.com");
+await page.getByRole("button", { name: "Add Link" }).click();
+await page.getByLabel("Link 1 label").fill("Instagram");
+await page.getByLabel("Link 1 address").fill("https://instagram.com/mayalin.astro");
+await page.getByRole("button", { name: "Save Profile" }).click();
+await page.getByText("Profile Saved").waitFor();
+let me;
+for (let i = 0; i < 30; i++) { me = (await call(page, "/api/v1/bootstrap?view=app")).body.practitioner; if (me.links?.length) break; await new Promise((r) => setTimeout(r, 300)); }
+assert.match(me.photo, /^data:image\/jpeg;base64,/);
+assert.deepEqual(me.links, [{ label: "Instagram", url: "https://instagram.com/mayalin.astro" }]);
+assert.equal(me.title, "Evolutionary astrologer");
+
+await page.goto(BASE + "/app/settings?section=booking");
 // The address is checked as it's typed.
 await page.getByLabel("Page Address").fill("pricing");
 await page.getByText("That address is reserved. Try another.").waitFor();
 await page.getByLabel("Page Address").fill(`${slug}-x`);
 await page.getByText("Available", { exact: true }).waitFor();
 await page.getByLabel("Page Address").fill(slug);
-await page.getByLabel("Profile Photo").setInputFiles({ name: "me.png", mimeType: "image/png", buffer: Buffer.from(png.split(",")[1], "base64") });
-await page.getByRole("img", { name: "Your profile photo" }).waitFor();
-await page.getByRole("button", { name: "Add Link" }).click();
-await page.getByLabel("Link 1 label").fill("Instagram");
-await page.getByLabel("Link 1 address").fill("https://instagram.com/mayalin.astro");
-await page.getByRole("button", { name: "Save Booking Settings" }).click();
+await page.getByRole("button", { name: "Save Changes" }).click();
 await page.getByText("Booking Settings Saved").waitFor();
-prof = (await call(page, "/api/v1/booking")).body.profile;
-assert.match(prof.photo, /^data:image\/jpeg;base64,/);
-assert.deepEqual(prof.links, [{ label: "Instagram", url: "https://instagram.com/mayalin.astro" }]);
-assert.equal((await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify({ ...prof, links: [{ label: "Bad", url: "javascript:alert(1)" }] }) })).status, 422, "only https links");
+await page.goto(BASE + "/app/settings?section=services");
+await page.getByLabel("Call Link", { exact: false }).fill(MEET);
+for (const d of ["Saturday", "Sunday"]) await page.getByRole("checkbox", { name: d }).check();
+await page.getByRole("button", { name: "Save Changes" }).click();
+await page.getByText("Booking Settings Saved").waitFor();
+await page.goto(BASE + "/app/settings?section=booking");
+await page.getByRole("switch", { name: "Accept Online Bookings" }).click();
+await page.getByText("Your booking page is live.").waitFor();
+let prof = (await call(page, "/api/v1/booking")).body.profile;
+assert.equal(prof.enabled, true);
+assert.equal(prof.slug, slug);
+assert.equal(prof.meetingUrl, MEET);
+// Wider hours so the test always finds times, whenever it runs.
+const allDay = Object.fromEntries(["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map((d) => [d, [{ start: "06:00", end: "22:00" }]]));
+const r1 = await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify({ ...prof, rules: { ...prof.rules, weekly: allDay, minNoticeHours: 2, maxAdvanceDays: 14, stepMin: 60, bufferMin: 15, changeNoticeHours: 1 } }) });
+assert.equal(r1.status, 200);
+prof = r1.body.profile;
+assert.equal((await call(page, "/api/v1/settings", { method: "PUT", body: JSON.stringify({ practitioner: { ...me, links: [{ label: "Bad", url: "javascript:alert(1)" }] }, defaults: st.defaults }) })).status, 422, "only https links");
 assert.equal((await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify({ ...prof, slug: "admin" }) })).status, 422, "reserved address");
 
 step("a visitor books from the public page");
@@ -90,6 +98,7 @@ await v.goto(`${BASE}/book/${slug}`);
 await v.getByRole("heading", { name: "Maya Lin" }).waitFor();
 await v.getByText("Evolutionary astrologer").waitFor();
 assert.equal(await v.getByRole("link", { name: /Instagram/ }).getAttribute("href"), "https://instagram.com/mayalin.astro");
+assert.equal(await v.getByRole("link", { name: /Website/ }).getAttribute("href"), "https://mayalin.example.com", "the profile's website comes first");
 assert.match(await v.locator("header img").first().getAttribute("src"), /^data:image\/jpeg/);
 assert.match(await v.title(), /Maya Lin · Book a Session/);
 if (SHOTS) await v.screenshot({ path: `${SHOTS}/booking-profile.png`, fullPage: true });
@@ -222,9 +231,9 @@ step("formats: a written reading has a ready-by date instead of a time; an exist
 prof = (await call(page, "/api/v1/booking")).body.profile;
 const svc = [...prof.services, { id: "written", name: "Written Year Ahead", description: "", durationMin: 60, price: "$120", format: "Written reading", deliveryDays: 10, active: true }, { id: "phone", name: "Phone Check-In", description: "", durationMin: 30, price: "", format: "Phone", active: true }, { id: "rec", name: "Recorded Forecast", description: "", durationMin: 45, price: "$90", format: "Recorded reading", recording: "video", deliveryDays: 5, active: true }];
 assert.equal((await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify({ ...prof, services: svc, instructions: { "Written reading": "Look out for an email from me with your PDF." } }) })).status, 200);
-await page.goto(BASE + "/app/settings?section=booking");
-await page.getByLabel("Written Reading", { exact: true }).waitFor();
-assert.equal(await page.getByLabel("Written Reading", { exact: true }).inputValue(), "Look out for an email from me with your PDF.");
+await page.goto(BASE + "/app/settings?section=services");
+await page.getByLabel("Written Reading Instructions", { exact: true }).waitFor();
+assert.equal(await page.getByLabel("Written Reading Instructions", { exact: true }).inputValue(), "Look out for an email from me with your PDF.");
 const formats = await page.locator('select[id^="sv-f-"]').first().locator("option").allTextContents();
 assert.deepEqual(formats, ["Live Session", "Recorded Reading", "Written Reading"], "the three formats");
 const writer = `bk-written-${stamp}@example.com`;

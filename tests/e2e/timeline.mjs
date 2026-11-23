@@ -93,7 +93,7 @@ await page.waitForFunction(() => document.body.innerText.includes("All changes s
 const saved = await page.evaluate(() => fetch("/api/v1/bootstrap?view=app").then((r) => r.json()));
 assert.deepEqual(saved.defaults.timeline.orbs, { transit: 1.5, directed: 1, lunation: 3, eclipse: 5 });
 assert.deepEqual(saved.defaults.timeline.transitOrbs, { pluto: 2 });
-await page.goto(BASE + "/app/settings?section=astrology");
+await page.goto(BASE + "/app/settings?section=timeline");
 assert.equal(await page.getByLabel("Transits orb", { exact: true }).inputValue(), "1.5");
 assert.equal(await page.getByLabel("Pluto transit orb").inputValue(), "2");
 await page.getByRole("button", { name: "Restore Defaults" }).last().click();

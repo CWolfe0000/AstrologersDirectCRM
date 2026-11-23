@@ -83,7 +83,7 @@ let prof = (await call(page, "/api/v1/booking")).body.profile;
 const allDay = Object.fromEntries(["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map((d) => [d, [{ start: "06:00", end: "22:00" }]]));
 const r1 = await call(page, "/api/v1/booking", { method: "PUT", body: JSON.stringify({ ...prof, slug, enabled: true, displayName: "Iris Vale", services: [{ id: "horary", name: "Horary Question", description: "", durationMin: 30, price: "", format: "Video call", active: true, intakeFormId: horaryForm.id }], rules: { ...prof.rules, weekly: allDay, minNoticeHours: 2, maxAdvanceDays: 14, stepMin: 60 } }) });
 assert.equal(r1.status, 200, JSON.stringify(r1.body));
-await page.goto(BASE + "/app/settings?section=booking");
+await page.goto(BASE + "/app/settings?section=services");
 assert.equal(await page.getByLabel("Intake Form").first().inputValue(), horaryForm.id, "shown on the service");
 
 const vctx = await browser.newContext({ viewport: { width: 1280, height: 1000 } });

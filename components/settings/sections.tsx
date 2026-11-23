@@ -46,40 +46,6 @@ function useSaved() {
   return (what: string) => toast("Changes Saved", what, "success");
 }
 
-// ——— Profile ——————————————————————————————————————————————————————————
-export function ProfileSection() {
-  const p = useStore((s) => s.practitioner);
-  const update = useStore((s) => s.updatePractitioner);
-  const saved = useSaved();
-  const [f, setF] = React.useState(p);
-  React.useEffect(() => setF(p), [p]);
-  return (
-    <Card>
-      <CardHeader title="Profile" description="How you appear to clients in the portal and in delivered readings." />
-      <CardBody className="space-y-5">
-        <div className="flex items-center gap-4">
-          <Avatar name={f.name} size="xl" />
-          <div>
-            <Button variant="secondary" size="sm" onClick={() => saved("Photo upload is simulated in the prototype.")}><Camera /> Upload Photo</Button>
-            <p className="mt-1.5 text-[12px] text-muted">Square image, at least 400 × 400px.</p>
-          </div>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Full Name"><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value, firstName: e.target.value.split(" ")[0] ?? "" })} /></Field>
-          <Field label="Professional Title"><Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} /></Field>
-          <Field label="Email"><Input type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} /></Field>
-          <Field label="Phone"><Input value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} /></Field>
-          <Field label="Professional Biography" hint="Shown on your client portal." className="sm:col-span-2"><Textarea rows={4} value={f.bio} onChange={(e) => setF({ ...f, bio: e.target.value })} /></Field>
-        </div>
-      </CardBody>
-      <CardFooter>
-        <Button variant="ghost" onClick={() => setF(p)}>Cancel</Button>
-        <Button onClick={() => { update(f); saved("Your profile has been updated."); }}>Save Profile</Button>
-      </CardFooter>
-    </Card>
-  );
-}
-
 // ——— Practice ————————————————————————————————————————————————————————
 const BRAND = PORTAL_ACCENTS;
 export function PracticeSection() {
@@ -92,13 +58,11 @@ export function PracticeSection() {
   const setColor = (c: string) => setF({ ...f, portalAccent: c === BRAND[0] ? undefined : c });
   return (
     <Card>
-      <CardHeader title="Practice" description="Your practice identity, used in the client portal and notifications." />
+      <CardHeader title="Practice Details" description="Your website and contact details are in Your Profile." />
       <CardBody className="space-y-6">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Practice Name" className="sm:col-span-2"><Input value={f.practice} onChange={(e) => setF({ ...f, practice: e.target.value })} /></Field>
-          <Field label="Website"><Input value={f.website} onChange={(e) => setF({ ...f, website: e.target.value })} /></Field>
-          <Field label="Public Contact Email"><Input value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} /></Field>
-          <Field label="Time Zone" className="sm:col-span-2">
+          <Field label="Practice Name" className="sm:col-span-2" hint="Shown in your clients’ portal, emails and delivered readings."><Input value={f.practice} onChange={(e) => setF({ ...f, practice: e.target.value })} /></Field>
+          <Field label="Time Zone" className="sm:col-span-2" hint="Your calendar, booking hours and reminders use it.">
             <Select value={f.timezone} onChange={(e) => setF({ ...f, timezone: e.target.value })}>
               {(DATA_MODE === "demo"
                 ? ["America/Los_Angeles (Pacific Time)", "America/Denver (Mountain Time)", "America/Chicago (Central Time)", "America/New_York (Eastern Time)", "Europe/London (UK)", "Europe/Lisbon", "Europe/Madrid (Central European)", "Australia/Sydney"]
@@ -236,13 +200,11 @@ export function AstrologySection() {
           </Button>
         </CardFooter>
       </Card>
-
-      <TimelineDefaultsCard />
     </div>
   );
 }
 
-function TimelineDefaultsCard() {
+export function TimelineSection() {
   const t = useStore((s) => s.defaults.timeline) ?? DEFAULT_TIMELINE;
   const update = useStore((s) => s.updateDefaults);
   const toast = useStore((s) => s.toast);
@@ -278,7 +240,6 @@ function ServerNotifications() {
       <RemindersCard />
       <CalendarFeedCard />
       <NewsEmailsCard />
-      <DemoNotifications />
     </div>
   );
 }
@@ -427,6 +388,7 @@ export function SecuritySection() {
   const [twofa, setTwofa] = React.useState(false);
   return (
     <div className="space-y-6">
+      {DATA_MODE !== "demo" && <SignInEmailCard />}
       <PasswordCard />
       {DATA_MODE === "demo" ? (
         <Card>
@@ -446,15 +408,20 @@ export function SecuritySection() {
         <TwoFactorCard />
       )}
       <SessionsCard />
-      <Card>
-        <CardHeader title="Data Access" description="Who can see your practice data." />
-        <CardBody className="divide-y divide-line py-1">
-          <Row title="Client Portal" desc="Clients see only readings, files and consultation summaries you share. Private observations are never shown."><Badge tone="sage">Enforced</Badge></Row>
-          {DATA_MODE === "demo" && <Row title="AI Assistance" desc="Chart questions are answered from your own records; data is not used to train models."><Badge tone="info">Practice-only</Badge></Row>}
-          <Row title="Connected Integrations"><span className="text-[12.5px] text-muted">None connected</span></Row>
-        </CardBody>
-      </Card>
     </div>
+  );
+}
+
+function SignInEmailCard() {
+  const user = useStore((s) => s.session.user);
+  return (
+    <Card>
+      <CardHeader title="Sign-In Email" description="The address you sign in with and where sign-in links are sent. Clients reach you at the contact email in Your Profile." />
+      <CardBody className="flex items-center justify-between gap-4">
+        <p className="text-[14px] font-medium text-ink">{user?.email ?? "–"}</p>
+        {user?.emailVerified ? <Badge tone="sage">Verified</Badge> : <Badge tone="warn">Not Verified</Badge>}
+      </CardBody>
+    </Card>
   );
 }
 
@@ -584,6 +551,15 @@ export function DataSection() {
           </Row>
         </CardBody>
       </Card>
+      {DATA_MODE !== "demo" && (
+        <Card>
+          <CardHeader title="Privacy" />
+          <CardBody className="divide-y divide-line py-1">
+            <Row title="What Clients See" desc="Clients see only the readings, files, charts and session summaries you share. Your notes and observations are never shown in their portal."><Badge tone="sage">Always</Badge></Row>
+            <Row title="Your Data" desc="Your records belong to you. Export them any time, or delete your practice below."><Badge tone="neutral">Yours</Badge></Row>
+          </CardBody>
+        </Card>
+      )}
       {DATA_MODE === "demo" && (
       <Card>
         <CardHeader title="Privacy" />

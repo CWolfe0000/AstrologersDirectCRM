@@ -379,6 +379,8 @@ export const practitionerSchema = z
     ),
     intakeForms: opt(z.array(intakeForm).max(30)),
     onboarding: opt(z.object({ step: z.number().int().min(0).max(20), done: z.boolean() }).strict()),
+    photo: opt(z.string().max(250_000).regex(/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/)),
+    links: opt(z.array(z.object({ label: str(60).min(1), url: z.string().trim().max(500).regex(/^https:\/\/\S+$/, "Links must start with https://.") }).strict()).max(8)),
   })
   .strict();
 

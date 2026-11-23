@@ -90,7 +90,7 @@ export function IntakeFormsSection() {
             ))}
           </ul>
         )}
-        <p className="mt-3 text-[12px] text-muted">To send a form automatically when someone books, choose it for the service under Settings › Booking.</p>
+        <p className="mt-3 text-[12px] text-muted">To send a form automatically when someone books, choose it for the service under Settings › Services & Availability.</p>
       </CardBody>
       <Dialog open={picking} onOpenChange={setPicking}>
         <DialogContent title="New Intake Form" description="Start from a ready-made form or a blank one. You can change everything.">

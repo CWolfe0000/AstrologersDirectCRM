@@ -72,7 +72,7 @@ export const profileSchema = z
 
 async function practitionerOf(practiceId: string) {
   const s = await getSettings(practiceId);
-  const p = (s?.practitioner ?? {}) as { name?: string; firstName?: string; title?: string; bio?: string; practice?: string; timezone?: string; email?: string; portalAccent?: string };
+  const p = (s?.practitioner ?? {}) as { name?: string; firstName?: string; title?: string; bio?: string; practice?: string; timezone?: string; email?: string; portalAccent?: string; photo?: string; website?: string; links?: { label: string; url: string }[] };
   return { ...p, tz: ianaZone(p.timezone), accent: p.portalAccent };
 }
 
@@ -132,8 +132,13 @@ export async function saveBookingProfile(practiceId: string, input: unknown) {
 export async function publicBooking(slug: string) {
   const [row] = await db().select().from(schema.bookingProfiles).where(eq(schema.bookingProfiles.slug, slug.toLowerCase()));
   if (!row || !row.enabled) throw new HttpError(404, "This booking page isn’t available.");
-  const profile = withDefaults({ ...(row.data as BookingProfile), slug: row.slug, enabled: true });
   const p = await practitionerOf(row.practiceId);
+  // Who the astrologer is comes from their profile (Settings › Your Profile); what was saved on the booking page
+  // before that existed is the fallback.
+  const saved = row.data as BookingProfile;
+  const website = p.website?.trim() ? [{ label: "Website", url: /^https?:\/\//.test(p.website.trim()) ? p.website.trim() : `https://${p.website.trim()}` }] : [];
+  const links = [...website, ...(p.links ?? saved.links ?? [])].filter((l, i, a) => a.findIndex((x) => x.url === l.url) === i);
+  const profile = withDefaults({ ...saved, slug: row.slug, enabled: true, displayName: p.name || saved.displayName, headline: p.title ?? saved.headline, about: p.bio || saved.about, photo: p.photo ?? saved.photo, links });
   return { practiceId: row.practiceId, profile, tz: p.tz, practitioner: p };
 }
 
