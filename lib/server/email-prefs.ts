@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { db, schema } from "./db";
 import { env } from "./env";
 import { link } from "./mail";
-import { BUSINESS_ADDRESS_LINE } from "@/lib/site";
+import { BUSINESS_ADDRESS_LINE, LEGAL_NAME } from "@/lib/site";
 
 /**
  * News, tips and offers from AstrologersDirect: opt-in (an unticked box at
@@ -21,7 +21,7 @@ export function unsubscribeLink(userId: string) {
 
 /** The footer every news, tips or offers email must carry: who sent it, our postal address, and a one-click unsubscribe. */
 export function newsEmailFooter(userId: string) {
-  return `\n\n—\nYou’re getting this because you asked for news, tips and offers from AstrologersDirect.\nUnsubscribe: ${unsubscribeLink(userId)}\nAstrologersDirect · ${BUSINESS_ADDRESS_LINE}\n`;
+  return `\n\n—\nYou’re getting this because you asked for news, tips and offers from AstrologersDirect.\nUnsubscribe: ${unsubscribeLink(userId)}\n${LEGAL_NAME} · ${BUSINESS_ADDRESS_LINE}\n`;
 }
 
 /** Headers so mail apps show their own one-click unsubscribe button (RFC 8058). */
