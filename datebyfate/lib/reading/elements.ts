@@ -239,11 +239,9 @@ export function attunement(you: Chart, them: Chart, name: string): Attunement {
 /* ---------- Aspects, defined ---------- */
 
 /**
- * What each kind of aspect is, whatever planets are involved. The framing follows Sue Tompkins,
- * "Aspects in Astrology", ch. 3 (unity, polarity and projection, challenge, ease, opportunity),
- * checked against the book, with the element relationship of the signs from Arroyo. Her book
- * reads aspects within one chart; applying them between two charts is our extension. The wording
- * is our own.
+ * What each kind of aspect is within one chart. The framing follows Sue Tompkins, "Aspects in
+ * Astrology", ch. 3 (unity, polarity and projection, challenge, ease, opportunity), checked against
+ * the book. Used for natal charts only. The wording is our own.
  */
 export const ASPECT_DEFINITION: Record<AspectName, string> = {
   conjunction: "A conjunction is the strongest aspect: the two planets act as one. It is so much a part of the person that it is hard to see from the inside, and between two people it is felt at once.",

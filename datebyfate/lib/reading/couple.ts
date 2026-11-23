@@ -2,7 +2,7 @@ import type { BodyId, Chart, PointId } from "@/lib/astro/types";
 import { BODIES } from "@/lib/astro/types";
 import { midpoint } from "@/lib/astro/spherical";
 import { POINT_NAMES, SIGNS, SYNASTRY_ORBS, aspectBetween, houseOf, ordinal, signIndex, type AspectName } from "@/lib/astro/zodiac";
-import { ASPECT_DEFINITION, elementNote } from "./elements";
+import { elementNote } from "./elements";
 import type { Insight } from "./own";
 import { HOUSE_AREA, SIGN_QUALITY, contactText } from "./text";
 
@@ -25,6 +25,11 @@ const SLOW = new Set<PointId>(["jupiter", "saturn", "uranus", "neptune", "pluto"
 /** Contacts worth reading first. */
 const KEY_POINTS = new Set<PointId>(["sun", "moon", "venus", "mars", "asc"]);
 
+/**
+ * The contact readings here (CONTACT_NOTES in text.ts) are our own placeholder wording. The book
+ * sources are used for each natal chart only (Tompkins for aspects, Arroyo for elements); a source
+ * for aspects between two charts has still to be chosen.
+ */
 /** Two charts read together: synastry and the composite. `you` is the member, `them` the other person. */
 export function coupleReport(you: Chart, them: Chart, name: string): CoupleReport {
   const notes: string[] = [];
@@ -47,15 +52,7 @@ export function coupleReport(you: Chart, them: Chart, name: string): CoupleRepor
       const both = KEY_POINTS.has(yid) && KEY_POINTS.has(tid);
       (tone === "hard" ? friction : strengths).push({ ...text, basis: `${asp.name}, ${asp.orb.toFixed(1)}° from exact`, rank: asp.orb + (curated ? 0 : 3) + (both ? 0 : 1), aspect: asp.name });
     }
-  // Each kind of aspect is defined once per list, on the first card that has it.
-  const top = (xs: Ranked[]) => {
-    const defined = new Set<AspectName>();
-    return xs.sort((a, b) => a.rank - b.rank).slice(0, 5).map(({ title, body, basis, aspect }) => {
-      const first = !defined.has(aspect);
-      defined.add(aspect);
-      return { title, body: first ? `${body} ${ASPECT_DEFINITION[aspect]}` : body, basis };
-    });
-  };
+  const top = (xs: Ranked[]) => xs.sort((a, b) => a.rank - b.rank).slice(0, 5).map(({ title, body, basis }) => ({ title, body, basis }));
 
   const overlays: Insight[] = [];
   const lay = (owner: Chart, into: Chart, ownerLabel: string, intoLabel: string) => {

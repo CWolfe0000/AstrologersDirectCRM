@@ -280,14 +280,11 @@ describe("elements", () => {
     expect(elementNote("opposition", 10, 190)).toBe("");
   });
 
-  it("puts the aspect's definition into a contact between two charts", () => {
+  it("names contacts between two charts by their exact aspect, without the natal-chart definitions", () => {
     const r = coupleReport(chartFor(me), chartFor(born("1988-03-10", "09:15")), "Sam");
-    for (const list of [r.strengths, r.friction]) {
-      for (const i of list) expect(i.title).toMatch(/ (conjunct|opposite|square|trine|sextile) your /);
-      // Defined on the first card of each kind, and not repeated.
-      expect(list[0]!.body).toMatch(/A (conjunction|square|trine|sextile) |An opposition /);
-      const text = list.map((i) => i.body).join(" ");
-      for (const d of ["A square is", "A trine is", "A sextile is", "An opposition is", "A conjunction fuses"]) expect(text.split(d).length).toBeLessThanOrEqual(2);
+    for (const i of [...r.strengths, ...r.friction]) {
+      expect(i.title).toMatch(/ (conjunct|opposite|square|trine|sextile) your /);
+      expect(i.body).not.toMatch(/A (square|trine|sextile) is|An opposition is|A conjunction is/);
     }
   });
 });
