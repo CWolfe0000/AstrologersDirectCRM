@@ -3,6 +3,7 @@ import type { Birth } from "@/lib/astro/types";
 import { signName } from "@/lib/astro/zodiac";
 import { binomialTail, checkAgainst, patternAcross, plainFacts, signaturesOf } from "@/lib/reading/exes";
 import { attunement, elementBalance, elementNote, elementReading, relationOf } from "@/lib/reading/elements";
+import { composite as readComposite } from "@/lib/reading/composite";
 import { coupleReport } from "@/lib/reading/couple";
 import { aspectsOf, ownPattern } from "@/lib/reading/own";
 import { contactText } from "@/lib/reading/text";
@@ -143,10 +144,8 @@ describe("couple report and wording", () => {
     const r = coupleReport(chartFor(me), chartFor(born("1988-03-10", "09:15")), "Sam");
     expect(r.strengths.length + r.friction.length).toBeGreaterThan(2);
     expect(r.overlays).toHaveLength(8);
-    expect(r.composite).toHaveLength(3);
     const noTime = coupleReport(chartFor(me), chartFor(born("1988-03-10")), "Sam");
     expect(noTime.overlays).toHaveLength(3);
-    expect(noTime.composite).toHaveLength(2);
     expect(noTime.notes[0]).toMatch(/Sam’s birth time is unknown/);
   });
 });
@@ -303,6 +302,36 @@ describe("aspects within one chart", () => {
   it("allows the Sun and Moon two degrees more", () => {
     const wide = a.filter((x) => x.orb > 8 || (x.label.includes("sextile") && x.orb > 4));
     for (const x of wide) expect(x.label).toMatch(/Sun|Moon/);
+  });
+});
+
+describe("composite chart", () => {
+  const a = chartFor(me), b = chartFor(born("1988-03-10", "09:15"));
+  const houses = { cusps: Array.from({ length: 12 }, (_, i) => i * 30), asc: 0, mc: 270 };
+  it("reads the Sun and Moon by house first, then their aspects, then signs", () => {
+    const c = readComposite(a, b, houses);
+    expect(c.core.map((i) => i.title)).toEqual(expect.arrayContaining(["What This Relationship Is For", "Where You Feel Most In Common"]));
+    expect(c.core.find((i) => i.title.startsWith("What This"))!.basis).toMatch(/^Composite Sun in the \d+(st|nd|rd|th) house$/);
+    expect(c.signs).toHaveLength(2);
+    for (const i of [...c.easy, ...c.hard]) expect(i.basis).toMatch(/^Composite (Sun|Moon) (conjunction|opposition|square|trine|sextile) /);
+    expect(c.points.asc).toBe(0);
+  });
+  it("without both birth times there are no houses and no Moon", () => {
+    const c = readComposite(a, chartFor(born("1988-03-10")), null);
+    expect(c.core).toHaveLength(0);
+    expect(c.signs).toHaveLength(1);
+    expect(c.points.moon).toBeNull();
+    expect(c.notes.join(" ")).toMatch(/both birth times/);
+  });
+  it("a chart with itself puts every planet where it was and flags nothing", () => {
+    const c = readComposite(a, a, a.houses);
+    expect(c.points.sun).toBeCloseTo(a.bodies.sun.lon);
+    expect(c.notes).toHaveLength(0);
+  });
+  it("reads a composite Sun–Venus opposition as a conjunction", () => {
+    const flip = { ...b, bodies: { ...b.bodies, sun: { lon: (a.bodies.sun.lon + 10) % 360, speed: 1 }, venus: { lon: (a.bodies.venus.lon + 176) % 360, speed: 1 } } };
+    const c = readComposite(a, flip, null);
+    expect(Math.abs(((c.points.venus - c.points.sun + 540) % 360) - 180)).toBeLessThanOrEqual(90);
   });
 });
 

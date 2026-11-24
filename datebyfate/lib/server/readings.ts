@@ -4,7 +4,9 @@ import type { Chart } from "@/lib/astro/types";
 import { SIGNS, signIndex } from "@/lib/astro/zodiac";
 import type { Person } from "@/lib/people";
 import { patternAcross, plainFacts, type ExPattern } from "@/lib/reading/exes";
+import { eclipticToRA, midpoint } from "@/lib/astro/spherical";
 import { chartFor } from "./charts";
+import { housesFromRamc } from "./swiss";
 import { listPeople } from "./people";
 import { referenceSignatures, seeded } from "./reference";
 import { transitWindows, type Target } from "./timing";
@@ -47,3 +49,14 @@ export function relationshipTargets(chart: Chart): Target[] {
 }
 
 export const ownTiming = (chart: Chart) => transitWindows(relationshipTargets(chart));
+
+/**
+ * Houses of the composite chart: cast from the midpoint of the two Midheavens (Hand, ch. 1).
+ * Hand uses the latitude of the place the couple lives; we do not ask for that, so the mean of
+ * the two birth latitudes stands in. Null unless both birth times are known.
+ */
+export function compositeHouses(a: Person & { chart: Chart }, b: Person & { chart: Chart }) {
+  if (!a.chart.houses || !b.chart.houses) return null;
+  const EPS = 23.44;
+  return housesFromRamc(eclipticToRA(midpoint(a.chart.houses.mc, b.chart.houses.mc), EPS), (a.birth.lat + b.birth.lat) / 2, EPS);
+}

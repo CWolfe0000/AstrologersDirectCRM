@@ -4,13 +4,14 @@ import { notFound } from "next/navigation";
 import { removePerson } from "@/app/actions";
 import { InsightCard, Locked, NoteList, Placements, Section, GiftList, TriggerList } from "@/components/reading";
 import { formatDate, oneIn, plural } from "@/lib/format";
+import { composite as readComposite } from "@/lib/reading/composite";
 import { coupleReport } from "@/lib/reading/couple";
 import { attunement } from "@/lib/reading/elements";
 import { checkAgainst } from "@/lib/reading/exes";
 import { placementsOf } from "@/lib/reading/own";
 import { difficultAspects, gifts } from "@/lib/reading/triggers";
 import { requireUser } from "@/lib/server/auth";
-import { exPattern, loadContext } from "@/lib/server/readings";
+import { compositeHouses, exPattern, loadContext } from "@/lib/server/readings";
 import { transitWindows } from "@/lib/server/timing";
 
 export const metadata: Metadata = { title: "Together" };
@@ -55,6 +56,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     );
 
   const report = coupleReport(ctx.self.chart, person.chart, person.name);
+  const comp = readComposite(ctx.self.chart, person.chart, compositeHouses(ctx.self, person));
   const pattern = isEx ? null : exPattern(user.id, ctx);
   const check = pattern?.repeats.length ? checkAgainst(ctx.self.chart, pattern.repeats, { chart: person.chart, hasTime: !!person.birth.time }) : null;
   // Each person alone, then what the other sets off.
@@ -181,10 +183,25 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
               </ul>
             </Section>
           )}
-          <Section title="The relationship itself" intro="The composite chart is made of the midpoints between your planets. It describes the two of you as one thing.">
-            <div className="grid gap-4 lg:grid-cols-3">{report.composite.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
+          <Section title="The relationship itself" intro="The composite chart is made of the midpoints between your planets. It describes the two of you as one thing: what the relationship is for, and how you handle it.">
+            {comp.notes.map((n) => <p key={n} className="rounded-xl bg-gold-soft px-4 py-3 text-sm text-ink-2">{n}</p>)}
+            {comp.core.length > 0 && <div className="grid gap-4 lg:grid-cols-2">{comp.core.map((i) => <InsightCard key={i.title} insight={i} />)}</div>}
+            {comp.easy.length > 0 && (
+              <>
+                <h3 className="mt-4 text-xl font-semibold">What holds it together</h3>
+                <div className="grid gap-4 lg:grid-cols-2">{comp.easy.map((i) => <InsightCard key={i.basis} insight={i} />)}</div>
+              </>
+            )}
+            {comp.hard.length > 0 && (
+              <>
+                <h3 className="mt-4 text-xl font-semibold">What tests it</h3>
+                <div className="grid gap-4 lg:grid-cols-2">{comp.hard.map((i) => <InsightCard key={i.basis} insight={i} />)}</div>
+              </>
+            )}
+            <h3 className="mt-4 text-xl font-semibold">By sign</h3>
+            <div className="grid gap-4 lg:grid-cols-2">{comp.signs.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
           </Section>
-          {!isEx && <RelationshipTiming points={report.compositePoints} />}
+          {!isEx && <RelationshipTiming points={comp.points} />}
         </>
       ) : (
         <Section title="The two of you together">
@@ -200,12 +217,15 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   );
 }
 
-function RelationshipTiming({ points }: { points: { sun: number; moon: number | null; venus: number } }) {
+function RelationshipTiming({ points }: { points: { sun: number; moon: number | null; venus: number; asc: number | null; mc: number | null } }) {
   const targets = [{ id: "c-sun", lon: points.sun }, { id: "c-venus", lon: points.venus }];
   if (points.moon !== null) targets.push({ id: "c-moon", lon: points.moon });
+  // Transits over the angles of the composite are the strongest timing signal.
+  if (points.asc !== null) targets.push({ id: "c-asc", lon: points.asc });
+  if (points.mc !== null) targets.push({ id: "c-mc", lon: points.mc });
   const windows = transitWindows(targets);
   return (
-    <Section title="The next 12 months for the two of you" intro="Periods when a slow planet is on the relationship’s chart.">
+    <Section title="The next 12 months for the two of you" intro="Periods when a slow planet is on the relationship’s chart. The ones on its angles tend to mark events.">
       {windows.length ? (
         <div className="grid gap-4 lg:grid-cols-2">
           {windows.map((w) => (

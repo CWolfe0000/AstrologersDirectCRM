@@ -613,6 +613,8 @@ export const TARGET_AREA: Record<string, string> = {
   "c-sun": "the relationship’s Sun, its core identity",
   "c-moon": "the relationship’s Moon, its emotional life",
   "c-venus": "the relationship’s Venus, its affection",
+  "c-asc": "the relationship’s Ascendant–Descendant axis, an angle of its chart",
+  "c-mc": "the relationship’s Midheaven axis, an angle of its chart",
 };
 
 /* ---------- Describing other people ---------- */

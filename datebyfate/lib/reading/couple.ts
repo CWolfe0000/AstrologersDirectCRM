@@ -1,10 +1,9 @@
 import type { BodyId, Chart, PointId } from "@/lib/astro/types";
 import { BODIES } from "@/lib/astro/types";
-import { midpoint } from "@/lib/astro/spherical";
-import { POINT_NAMES, SIGNS, SYNASTRY_ORBS, aspectBetween, houseOf, ordinal, signIndex, type AspectName } from "@/lib/astro/zodiac";
+import { POINT_NAMES, SYNASTRY_ORBS, aspectBetween, houseOf, ordinal, type AspectName } from "@/lib/astro/zodiac";
 import { elementNote } from "./elements";
 import type { Insight } from "./own";
-import { HOUSE_AREA, SIGN_QUALITY, contactText } from "./text";
+import { HOUSE_AREA, contactText } from "./text";
 
 type Ranked = Insight & { rank: number; aspect: AspectName };
 
@@ -13,10 +12,6 @@ export interface CoupleReport {
   friction: Insight[];
   /** Where each person's planets fall in the other's houses. */
   overlays: Insight[];
-  /** The relationship's own chart (midpoint composite). */
-  composite: Insight[];
-  /** Composite longitudes, for timing. */
-  compositePoints: { sun: number; moon: number | null; venus: number };
   notes: string[];
 }
 
@@ -66,16 +61,5 @@ export function coupleReport(you: Chart, them: Chart, name: string): CoupleRepor
   lay(them, you, `${name}’s`, "your");
   lay(you, them, "Your", `${name}’s`);
 
-  const mid = (id: BodyId) => midpoint(you.bodies[id].lon, them.bodies[id].lon);
-  const moonOk = !!you.houses && !!them.houses;
-  const compositePoints = { sun: mid("sun"), moon: moonOk ? mid("moon") : null, venus: mid("venus") };
-  const line = (label: string, lon: number, lead: string): Insight => {
-    const [like, needs] = SIGN_QUALITY[signIndex(lon)]!;
-    return { title: `${label} in ${SIGNS[signIndex(lon)]!.name}`, body: `${lead} ${like}. It does best with ${needs}.`, basis: `Composite ${label}` };
-  };
-  const composite = [line("Sun", compositePoints.sun, "As a pair, you come across as")];
-  if (compositePoints.moon !== null) composite.push(line("Moon", compositePoints.moon, "The emotional climate between you is"));
-  composite.push(line("Venus", compositePoints.venus, "The way you show affection as a couple is"));
-
-  return { strengths: top(strengths), friction: top(friction), overlays, composite, compositePoints, notes };
+  return { strengths: top(strengths), friction: top(friction), overlays, notes };
 }
