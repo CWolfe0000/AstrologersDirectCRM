@@ -113,11 +113,25 @@ export function elementReading(chart: Chart): { balance: ElementBalance; insight
   const light = balance.shares.fire + balance.shares.air;
   if (light >= 0.75) insights.push({ ...GROUPS.light, basis: `${Math.round(light * 100)}% of your chart in air and fire` });
   if (light <= 0.25) insights.push({ ...GROUPS.heavy, basis: `${Math.round((1 - light) * 100)}% of your chart in water and earth` });
+  // A planet that rules the chart or the Sun sign is part of who you are, not something set against it.
+  const ascRuler = balance.accented?.ruler;
+  const sunRuler = SIGNS[signIndex(chart.bodies.sun.lon)]!.ruler as BodyId;
+  const DOING: Partial<Record<BodyId, string>> = { sun: "being yourself", moon: "feeling", venus: "loving", mars: "going after what you want" };
   for (const [a, b, title, body] of INNER) {
     if ((a === "moon" || b === "moon") && !chart.moonSignCertain) continue;
     const la = chart.bodies[a].lon, lb = chart.bodies[b].lon;
-    if (relationOf(elementOf(la), elementOf(lb)) === "discordant")
-      insights.push({ title, body, basis: `${POINT_NAMES[a]} in ${SIGNS[signIndex(la)]!.name} (${elementOf(la)}), ${POINT_NAMES[b]} in ${SIGNS[signIndex(lb)]!.name} (${elementOf(lb)})` });
+    if (relationOf(elementOf(la), elementOf(lb)) !== "discordant") continue;
+    const basis = `${POINT_NAMES[a]} in ${SIGNS[signIndex(la)]!.name} (${elementOf(la)}), ${POINT_NAMES[b]} in ${SIGNS[signIndex(lb)]!.name} (${elementOf(lb)})`;
+    const ruler = [b, a].find((p) => p === ascRuler || (p === sunRuler && p !== "sun"));
+    if (ruler) {
+      const other = ruler === a ? b : a;
+      const role = ruler === ascRuler ? "rules your chart" : "rules your Sun sign";
+      insights.push({
+        title: "Two Sides Of You",
+        body: `${POINT_NAMES[ruler]} ${role}, so its ${elementOf(chart.bodies[ruler].lon)} way of ${DOING[ruler]} is as much who you are as your ${elementOf(chart.bodies[other].lon)} ${POINT_NAMES[other]}. The two run on different kinds of energy. That pull is inside you, and a partner meets both sides.`,
+        basis: `${basis}; ${POINT_NAMES[ruler]} ${role}`,
+      });
+    } else insights.push({ title, body, basis });
   }
   return { balance, insights };
 }
