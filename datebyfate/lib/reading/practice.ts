@@ -8,8 +8,8 @@ import { aspectBasis, aspectsOf } from "./own";
  * another planet's day) and the traditional correspondences follow Jason Miller, "Advanced
  * Planetary Magic", and Dykes & Gibson, "Astrological Magic: Basic Rituals & Meditations".
  * Neither book ties a practice to an aspect in a birth chart, and neither works with Uranus,
- * Neptune or Pluto: matching a practice to your own dynamics is ours. Every practice here is
- * something you do for yourself. The wording is our own; no invocation from either book is used.
+ * Neptune or Pluto: matching a practice to your own dynamics is ours. The uses of each hour on
+ * each day are in hour-uses.ts. The wording is our own; no invocation from either book is used.
  */
 
 export interface PlanetPractice {

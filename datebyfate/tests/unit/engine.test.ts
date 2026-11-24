@@ -4,6 +4,7 @@ import { signName } from "@/lib/astro/zodiac";
 import { binomialTail, checkAgainst, patternAcross, plainFacts, signaturesOf } from "@/lib/reading/exes";
 import { attunement, elementBalance, elementNote, elementReading, relationOf } from "@/lib/reading/elements";
 import * as hoursLib from "@/lib/reading/hours";
+import { DISCLAIMER, KIND_LABEL, USES } from "@/lib/reading/hour-uses";
 import { practicesFor } from "@/lib/reading/practice";
 import { composite as readComposite } from "@/lib/reading/composite";
 import { coupleReport } from "@/lib/reading/couple";
@@ -397,5 +398,21 @@ describe("planetary hours", () => {
     expect(pluto.timings).toEqual([expect.objectContaining({ hour: "venus", day: "venus", label: "Venus Hour On Friday" })]);
     expect(pluto.body).toMatch(/no practice for Pluto/);
     for (const p of list) for (const t of p.timings) expect(["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn"]).toContain(t.hour);
+  });
+});
+
+describe("uses of the planetary hours", () => {
+  it("covers all forty-nine pairings, including attraction, influence and wrath", () => {
+    const all = hoursLib.CHALDEAN.flatMap((d) => hoursLib.CHALDEAN.map((h) => USES[d][h]));
+    expect(all).toHaveLength(49);
+    for (const [kind, text] of all) {
+      expect(text.length).toBeGreaterThan(15);
+      expect(KIND_LABEL[kind]).toBeTruthy();
+    }
+    expect(all.filter(([k]) => k === "wrath")).toHaveLength(7);
+    expect(USES.moon.venus[0]).toBe("love");
+    expect(USES.mercury.moon[1]).toMatch(/Persuasion/);
+    expect(USES.saturn.venus[1]).toMatch(/curse/);
+    expect(DISCLAIMER).toMatch(/no claim/);
   });
 });

@@ -4,6 +4,8 @@ import { Locked, Section } from "@/components/reading";
 import { POINT_NAMES } from "@/lib/astro/zodiac";
 import { plural } from "@/lib/format";
 import { nextHours, planetaryDayAt, type PlanetaryHour } from "@/lib/reading/hours";
+import { CHALDEAN, DAY_RULERS, dayOf } from "@/lib/reading/hours";
+import { DISCLAIMER, IN_LOVE, KIND_LABEL, USES } from "@/lib/reading/hour-uses";
 import { PRACTICE, STEPS, practicesFor } from "@/lib/reading/practice";
 import { requireUser } from "@/lib/server/auth";
 import { loadContext } from "@/lib/server/readings";
@@ -42,8 +44,10 @@ export default async function Practice() {
     <div>
       <h1 className="text-4xl font-semibold">Practice</h1>
       <p className="mt-2 max-w-2xl text-ink-2">
-        A short planetary practice for the patterns in your chart, timed by the planetary day and hour. Each one is something you do for yourself, to steady your own side of a pattern. None of it is aimed at another person, and nothing here promises a result.
+        Planetary magic, timed by the planetary day and hour where you live: what each hour of today is used for, the full set of forty-nine hour and day pairings, and a practice matched to each pattern in your chart.
       </p>
+
+      <p className="mt-4 max-w-2xl rounded-xl border border-line bg-paper px-4 py-3 text-sm text-muted">{DISCLAIMER}</p>
 
       {!self.home && <p className="mt-5 rounded-xl bg-gold-soft px-4 py-3 text-sm text-ink-2">Times are for your birthplace, {self.birth.place}, until you say where you live now.</p>}
 
@@ -73,16 +77,19 @@ export default async function Practice() {
             </div>
           </Section>
 
-          <Section title="Today’s planetary hours" intro="Twelve hours of daylight and twelve of night, each belonging to a planet. The hours are longer or shorter with the season.">
-            <div className="card grid gap-x-10 gap-y-1 sm:grid-cols-2">
+          <Section title="Today’s planetary hours" intro="Twelve hours of daylight and twelve of night, each belonging to a planet, with what that hour is used for today. The planet of the hour is the main force and the planet of the day colours it.">
+            <div className="card grid gap-x-10 gap-y-6 lg:grid-cols-2">
               {[false, true].map((night) => (
                 <div key={String(night)}>
                   <h3 className="mb-2 text-lg font-semibold">{night ? "Night" : "Day"}</h3>
                   <ol>
                     {day.hours.filter((h) => h.night === night).map((h) => (
-                      <li key={h.start} className={`flex justify-between gap-4 border-b border-line py-1.5 last:border-0 ${h === current ? "font-semibold text-rose-hover" : h.planet === day.ruler ? "font-semibold" : "text-ink-2"}`}>
-                        <span>{POINT_NAMES[h.planet]}{h === current && " · now"}</span>
-                        <span className="tabular-nums">{span(h)}</span>
+                      <li key={h.start} className="border-b border-line py-2 last:border-0">
+                        <div className={`flex justify-between gap-4 ${h === current ? "font-semibold text-rose-hover" : h.planet === day.ruler ? "font-semibold" : ""}`}>
+                          <span>{POINT_NAMES[h.planet]}{h === current && " · now"}</span>
+                          <span className="tabular-nums">{span(h)}</span>
+                        </div>
+                        <p className="text-sm text-muted"><span className="font-semibold">{KIND_LABEL[USES[day.ruler][h.planet][0]]}.</span> {USES[day.ruler][h.planet][1]}</p>
                       </li>
                     ))}
                   </ol>
@@ -95,7 +102,7 @@ export default async function Practice() {
         <p className="card mt-8 text-ink-2">The Sun does not rise and set today in {place.place}, so planetary hours cannot be worked out there. Use the planet of the weekday instead.</p>
       )}
 
-      <Section title="A practice for each of your dynamics" intro="Each difficult aspect in your chart, with the planet to work with and the next times that suit it. Use the same five minutes as above, with that planet’s colour and scent.">
+      <Section title="A practice for each of your dynamics" intro="Each difficult aspect in your own chart, with the planet to work with and the next times that suit it. Use the same five minutes as above, with that planet’s colour and scent.">
         {practices.length === 0 ? (
           <p className="card text-ink-2">Your chart has no difficult aspects between the relationship planets, so there is nothing to steady here. Follow the planet of the day.</p>
         ) : user.premium ? (
@@ -127,6 +134,37 @@ export default async function Practice() {
         ) : (
           <Locked title={`${plural(practices.length, "practice")} matched to your chart`}>
             <p>Subscribe to see which planet to work with for each of your difficult dynamics, and the next times to do it where you live.</p>
+          </Locked>
+        )}
+      </Section>
+
+      <Section title="The forty-nine hours" intro="Every pairing of a planet’s hour with a planet’s day, and what it is used for. Each one comes round once or more every week.">
+        {user.premium ? (
+          <div className="grid gap-4">
+            {DAY_RULERS.map((d) => (
+              <details key={d} className="card group" open={day?.ruler === d}>
+                <summary className="heading flex cursor-pointer list-none items-center justify-between gap-4 font-display text-xl font-semibold">
+                  {dayOf(d)}, day of {POINT_NAMES[d]}
+                  <span className="text-rose transition-transform group-open:rotate-45" aria-hidden="true">+</span>
+                </summary>
+                <p className="mt-2 text-sm text-muted">In love, {POINT_NAMES[d]} is worked with for: {IN_LOVE[d].charAt(0).toLowerCase() + IN_LOVE[d].slice(1)}</p>
+                <ul className="mt-3 divide-y divide-line">
+                  {[...CHALDEAN].reverse().map((h) => {
+                    const times = nextHours(h, d, now, place.lat, place.lon, place.tz, 1);
+                    return (
+                      <li key={h} className="grid gap-x-6 gap-y-0.5 py-2.5 sm:grid-cols-[11rem_1fr]">
+                        <p className="font-semibold">{POINT_NAMES[h]} hour <span className="ml-1 rounded-full bg-cream-2 px-2 py-0.5 text-xs font-semibold text-ink-2">{KIND_LABEL[USES[d][h][0]]}</span></p>
+                        <p className="text-ink-2">{USES[d][h][1]}{times[0] && <span className="block text-sm text-muted">Next: {dated.format(times[0].start)} – {clock.format(times[0].end)}</span>}</p>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </details>
+            ))}
+          </div>
+        ) : (
+          <Locked title="All forty-nine pairings, with the next time each one falls">
+            <p>Subscribe to see what every hour of every day is used for, in love, influence, money, strength, wrath and inner work, and when each next comes round where you live.</p>
           </Locked>
         )}
       </Section>

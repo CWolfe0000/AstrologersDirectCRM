@@ -134,6 +134,10 @@ step("practice: planetary hours and a practice per dynamic");
 await page.goto(`${BASE}/app/practice`);
 await page.getByRole("heading", { name: /Day Of (Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn)/ }).waitFor();
 assert.equal(await page.locator("ol > li").filter({ hasText: /\d{1,2}:\d{2}/ }).count(), 24);
+await page.getByRole("heading", { name: "The forty-nine hours" }).waitFor();
+assert.equal(await page.locator("details ul > li").count(), 49);
+assert.match(await page.locator("main").innerText(), /Datebyfate makes no claim that any working will have an effect/);
+assert.match(await page.locator("main").textContent(), /A curse to turn a person’s loved ones against them/); // inside a closed day
 await page.getByRole("heading", { name: "A practice for each of your dynamics" }).waitFor();
 assert.match(await page.locator("main").innerText(), /(Venus|Mars|Sun|Moon|Saturn|Jupiter|Mercury) Hour On (Sun|Mon|Tues|Wednes|Thurs|Fri|Satur)day/i);
 await page.getByRole("combobox", { name: "Where you live now" }).fill("Lisbon");
