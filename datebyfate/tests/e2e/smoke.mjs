@@ -65,16 +65,18 @@ await shot("03-app-home");
 
 step("add past partners");
 const exes = [
-  { name: "Sam", date: "1988-03-10", time: null, city: "Paris", start: "2012", end: "2014", ending: "them" },
-  { name: "Alex", date: "1987-11-02", time: "08:15", city: "Berlin", start: "2015", end: "2018", ending: "them" },
-  { name: "Jo", date: "1989-03-14", time: null, city: "London", start: "2019", end: "2022", ending: "me" },
+  { name: "Sam", date: "1988-03-10", time: null, city: "Paris", met: "2012-01-10", start: "2012-02-01", end: "2014-03-01", ending: "them", friends: "yes" },
+  { name: "Alex", date: "1987-11-02", time: "08:15", city: "Berlin", met: "2015-04-02", start: "2015-04-20", end: "2018-05-01", ending: "them", friends: "no" },
+  { name: "Jo", date: "1989-03-14", time: null, city: "London", met: "2019-01-05", start: "2019-06-01", end: "2022-06-01", ending: "me", friends: "yes" },
 ];
 for (const ex of exes) {
   await page.goto(`${BASE}/app/exes/new`);
   await page.fill("#person-name", ex.name);
   await fillBirth(ex);
-  await page.selectOption("#startYear", ex.start);
-  await page.selectOption("#endYear", ex.end);
+  await page.fill("#metDate", ex.met);
+  await page.fill("#startDate", ex.start);
+  await page.fill("#endDate", ex.end);
+  await page.selectOption("#stayedFriends", ex.friends);
   await page.selectOption("#ending", ex.ending);
   await page.getByRole("button", { name: "Add", exact: true }).click();
   await page.waitForURL("**/app/exes");
@@ -84,6 +86,8 @@ let text = await page.locator("main").innerText();
 assert.match(text, /A random group of 3 people born in the same years would show about \d+\.\d/i);
 assert.match(text, /Every partner was older than you/i);
 assert.match(text, /They ended 2 of 3\./i);
+assert.match(text, /You stayed friends with 2 of 3\./i);
+assert.match(text, /When your relationships begin/i);
 const hasRepeats = /repeats? found/i.test(text);
 if (hasRepeats) assert.match(text, /Subscribe to see what each one is/i); // free plan: locked
 await shot("04-exes-free");
@@ -127,7 +131,7 @@ assert.match(text, /Charlie’s (Sun|Moon|Ascendant|Venus|Mars)[A-Za-z, ]* in yo
 await shot("08-person-premium");
 await page.goto(`${BASE}/app/timing`);
 await page.getByRole("heading", { name: "Your relationship calendar" }).waitFor();
-assert.ok((await page.locator("ol > li").count()) >= 1);
+assert.ok((await page.locator("article ul > li").count()) >= 1);
 await shot("09-timing");
 
 step("practice: planetary hours and a practice per dynamic");

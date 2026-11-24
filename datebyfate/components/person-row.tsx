@@ -4,7 +4,9 @@ import { signName } from "@/lib/astro/zodiac";
 import type { Person } from "@/lib/people";
 
 export function PersonRow({ person }: { person: Person & { chart: Chart } }) {
-  const years = person.startYear ? `${person.startYear}–${person.endYear ?? ""}` : null;
+  const from = person.startDate?.slice(0, 4) ?? person.metDate?.slice(0, 4) ?? (person.startYear ? String(person.startYear) : null);
+  const to = person.endDate?.slice(0, 4) ?? (person.endYear ? String(person.endYear) : "");
+  const years = from ? `${from}–${to}` : null;
   return (
     <li>
       <Link href={`/app/people/${person.id}`} className="card flex items-center justify-between gap-4 !p-4 hover:border-ink">

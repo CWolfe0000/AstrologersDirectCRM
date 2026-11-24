@@ -12,8 +12,9 @@ import { placementsOf } from "@/lib/reading/own";
 import { stelliumBetween } from "@/lib/reading/stellium";
 import { difficultAspects, gifts } from "@/lib/reading/triggers";
 import { requireUser } from "@/lib/server/auth";
+import { momentReading } from "@/lib/server/moments";
 import { compositeHouses, exPattern, loadContext } from "@/lib/server/readings";
-import { TransitCard } from "@/components/transit-card";
+import { TransitGroups } from "@/components/transit-card";
 import { transitWindows } from "@/lib/server/timing";
 
 export const metadata: Metadata = { title: "Together" };
@@ -26,6 +27,15 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const isEx = person.kind === "ex";
   const back = isEx ? { href: "/app/exes", label: "Past partners" } : { href: "/app/people", label: "Someone new" };
 
+  const facts = [
+    person.metDate && `Met ${formatDate(person.metDate)}`,
+    person.startDate && `Began ${formatDate(person.startDate)}`,
+    person.endDate && `Ended ${formatDate(person.endDate)}`,
+    person.livedTogether && "Lived together",
+    person.married && "Married",
+    person.children && "Children together",
+    person.stayedFriends === true ? "Stayed friends" : person.stayedFriends === false ? "Not in touch as friends" : null,
+  ].filter((x): x is string => !!x);
   const header = (
     <>
       <Link href={back.href} className="link text-sm">← {back.label}</Link>
@@ -34,6 +44,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         <h1 className="mt-2 text-4xl font-semibold sm:text-5xl">{person.name}</h1>
         <p className="mt-2 text-cream/70">Born {formatDate(person.birth.date)}{person.birth.time ? ` at ${person.birth.time}` : ", time unknown"}, {person.birth.place}</p>
         <div className="mt-5"><Placements placements={placementsOf(person.chart)} /></div>
+        {facts.length > 0 && <p className="mt-4 text-sm text-cream/70">{facts.join(" · ")}</p>}
       </div>
     </>
   );
@@ -71,6 +82,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     <span className={`rounded-full px-3 py-1 text-sm font-semibold ${l.relation === "discordant" ? "bg-rose-soft text-rose-hover" : "bg-gold-soft text-gold"}`}>{l.relation === "same" ? "Same Element" : l.relation === "compatible" ? "Feed Each Other" : "Cross Purposes"}</span>
   );
   const stelliums = [stelliumBetween(person.chart, ctx.self.chart, person.name, null), stelliumBetween(ctx.self.chart, person.chart, null, person.name)].filter((x) => x !== null);
+  const moments = ([["The day you met", person.metDate], ["The day it began", person.startDate], ["The day it ended", person.endDate]] as [string, string | null | undefined][]).filter((m): m is [string, string] => !!m[1]);
   const yourGifts = gifts(ctx.self.chart, person.chart, null, person.name);
   const theirGifts = gifts(person.chart, ctx.self.chart, person.name, null);
   const setOff = (xs: typeof yours) => xs.filter((a) => a.triggers.length).length;
@@ -228,6 +240,19 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
               </div>
             )}
           </Section>
+          {moments.length > 0 && (
+            <Section title="At the time" intro="What was working on the relationship side of your own chart on the dates that mattered: slow planets on your Sun, Moon, Venus, Mars and partnership axis or in your houses of love, and your progressed Moon.">
+              {moments.map(([label, date]) => {
+                const items = momentReading(ctx.self!.chart, date);
+                return (
+                  <div key={label}>
+                    <h3 className="mb-3 mt-2 text-xl font-semibold">{label}, {formatDate(date)}</h3>
+                    {items.length ? <div className="grid gap-4 lg:grid-cols-2">{items.map((i) => <InsightCard key={i.title} insight={i} />)}</div> : <p className="card text-ink-2">No slow planet was on your relationship points that day.</p>}
+                  </div>
+                );
+              })}
+            </Section>
+          )}
           {!isEx && <RelationshipTiming points={comp.points} />}
         </>
       ) : (
@@ -254,9 +279,7 @@ function RelationshipTiming({ points }: { points: { sun: number; moon: number | 
   return (
     <Section title="The next 12 months for the two of you" intro="Periods when a slow planet is on the relationship’s chart. The ones on its angles tend to mark events.">
       {windows.length ? (
-        <div className="grid gap-4 lg:grid-cols-2">
-          {windows.map((w) => <TransitCard key={w.basis + w.start} w={w} />)}
-        </div>
+        <TransitGroups windows={windows} />
       ) : (
         <p className="card text-ink-2">No slow planet reaches the relationship’s chart in the next 12 months.</p>
       )}

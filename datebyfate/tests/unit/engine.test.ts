@@ -19,6 +19,7 @@ import { difficultAspects, gifts, natalContactKeys } from "@/lib/reading/trigger
 import { chartFor } from "@/lib/server/charts";
 import { referenceSignatures, seeded } from "@/lib/server/reference";
 import { ownTiming } from "@/lib/server/readings";
+import * as moments from "@/lib/server/moments";
 import * as timing from "@/lib/server/timing";
 
 const london = { place: "London", lat: 51.5074, lon: -0.1278, tz: "Europe/London" };
@@ -132,15 +133,23 @@ describe("pattern across partners", () => {
     expect(other.carried.length).toBeLessThan(result.repeats.length);
   });
 
-  it("summarises ages, lengths and endings", () => {
+  it("summarises ages, lengths, pace, gaps and what came of each relationship", () => {
     const facts = plainFacts("1990-06-15", [
-      { name: "A", birthDate: "1986-01-01", startYear: 2012, endYear: 2014, ending: "them" },
-      { name: "B", birthDate: "1988-03-01", startYear: 2015, endYear: 2017, ending: "them" },
-      { name: "C", birthDate: "1984-07-01", startYear: 2018, endYear: 2021, ending: "me" },
+      { name: "A", birthDate: "1986-01-01", metDate: "2012-01-10", startDate: "2012-02-01", endDate: "2014-02-01", ending: "them", stayedFriends: true, livedTogether: false, married: false, children: false },
+      { name: "B", birthDate: "1988-03-01", metDate: "2015-03-01", startDate: "2015-03-20", endDate: "2017-06-20", ending: "them", stayedFriends: false, livedTogether: true, married: false, children: false },
+      { name: "C", birthDate: "1984-07-01", metDate: "2017-05-01", startDate: "2018-01-15", endDate: "2021-01-15", ending: "me", stayedFriends: true, livedTogether: true, married: true, children: true },
     ]);
     expect(facts[0]).toBe("Every partner was older than you, by 2 to 6 years.");
-    expect(facts[1]).toMatch(/about 2 years each/);
-    expect(facts[2]).toBe("They ended 2 of 3.");
+    expect(facts).toContain("Your relationships have lasted about 2.5 years each.");
+    expect(facts).toContain("2 of 3 began within a month of meeting.");
+    expect(facts.some((f) => /^Between relationships you have had from /.test(f))).toBe(true);
+    expect(facts).toContain("They ended 2 of 3.");
+    expect(facts).toContain("You lived with 2 of 3.");
+    expect(facts).toContain("You married 1 of 3.");
+    expect(facts).toContain("You had children with 1 of 3.");
+    expect(facts).toContain("You stayed friends with 2 of 3.");
+    // Records saved before full dates were asked for still work.
+    expect(plainFacts("1990-06-15", [{ name: "A", birthDate: "1986-01-01", startYear: 2012, endYear: 2014 }, { name: "B", birthDate: "1988-03-01", startYear: 2015, endYear: 2017 }])[1]).toMatch(/about 2 years each/);
   });
 });
 
@@ -464,7 +473,13 @@ describe("calendar: one process per transit, houses and progressions", () => {
     expect(new Set(w.map((x) => x.basis)).size).toBeGreaterThanOrEqual(w.length - 1);
     expect(w.some((x) => x.passes.length >= 1)).toBe(true);
     for (const x of w) if (x.major) expect(x.planet).not.toBe("jupiter");
-    expect(w.find((x) => x.planet === "saturn")?.body ?? "Saturn asks").toMatch(/Saturn asks/);
+    // What a planet brings is said once per planet; each period carries only what is specific to it.
+    for (const planet of new Set(w.map((x) => x.planet))) {
+      const mine = w.filter((x) => x.planet === planet);
+      expect(new Set(mine.map((x) => x.theme)).size).toBe(1);
+      expect(new Set(mine.map((x) => x.body)).size).toBe(new Set(mine.map((x) => x.touches)).size); // one line per point and aspect
+      for (const x of mine) expect(x.body).not.toContain(x.theme);
+    }
   });
   it("finds slow planets in the houses of love, and the current progressed chapter", () => {
     for (const h of timing.houseTransits(chart, from)) expect(h.basis).toMatch(/in your (5th|7th|8th) house$/);
@@ -582,5 +597,30 @@ describe("placements are weighed by their aspects", () => {
       expect(`${r.core} ${r.strain}`).not.toMatch(/dangerous|alarm|intimidat|betray|heartbreak|\balways\b|\bnever\b/i);
       expect(r.core).not.toMatch(/Under strain|under pressure/);
     }
+  });
+});
+
+describe("what was happening at the time", () => {
+  const chart = chartFor(me);
+  it("lists the factors in force on a date and words each one", () => {
+    const keys = moments.momentKeys(chart, Date.UTC(2019, 6, 1));
+    expect(keys.filter((k) => k.startsWith("house|"))).toHaveLength(5);
+    expect(keys.some((k) => k.startsWith("pmoon-house|")) && keys.some((k) => k.startsWith("pmoon-sign|"))).toBe(true);
+    for (const k of keys) {
+      const d = moments.describeMoment(k);
+      expect(d.title.length).toBeGreaterThan(8);
+      expect(d.body).not.toMatch(/[{}]/);
+    }
+    expect(moments.momentReading(chart, "2019-07-01").every((i) => i.basis === "On 2019-07-01")).toBe(true);
+    expect(moments.momentKeys(chartFor(born("1990-06-15")), Date.UTC(2019, 6, 1)).every((k) => k.startsWith("transit|"))).toBe(true);
+  });
+  it("finds a factor shared by dates close together and rates it against random days", () => {
+    const r = moments.timingRepeats(chart, [{ name: "A", date: "2019-07-01" }, { name: "B", date: "2019-07-20" }, { name: "C", date: "2019-08-05" }], seeded("t"));
+    expect(r.repeats.length).toBeGreaterThan(0);
+    for (const x of r.repeats) {
+      expect(x.count).toBeGreaterThanOrEqual(2);
+      expect(x.chance).toBeLessThanOrEqual(0.1);
+    }
+    expect(moments.timingRepeats(chart, [{ name: "A", date: "2019-07-01" }], seeded("t")).repeats).toHaveLength(0);
   });
 });

@@ -2,7 +2,7 @@ import "server-only";
 import type { BodyId, Chart } from "@/lib/astro/types";
 import { eclipticToRA, separation } from "@/lib/astro/spherical";
 import { POINT_NAMES, SIGNS, aspectBetween, houseOf, ordinal, signIndex, type Orbs } from "@/lib/astro/zodiac";
-import { ARRIVES, FUNCTION, HOUSE_TRANSIT, LIFE_CYCLE, PROGRESSED_MOON_HOUSE, PROGRESSED_MOON_SIGN, PROGRESSED_OTHER, PROGRESSED_VENUS, TRANSIT, TRIGGER } from "@/lib/reading/forecast";
+import { ARRIVES, FUNCTION, TRANSIT_LINE, HOUSE_TRANSIT, LIFE_CYCLE, PROGRESSED_MOON_HOUSE, PROGRESSED_MOON_SIGN, PROGRESSED_OTHER, PROGRESSED_VENUS, TRANSIT, TRIGGER } from "@/lib/reading/forecast";
 import type { Insight } from "@/lib/reading/own";
 import { TARGET_AREA } from "@/lib/reading/text";
 import { bodiesAt, housesFromRamc } from "./swiss";
@@ -16,8 +16,12 @@ export interface Target {
 export interface Window {
   planet: string;
   title: string;
-  /** The task, and how it arrives. */
+  /** What this planet brings in general: the same for every period of that planet. */
+  theme: string;
+  /** What is specific to this period: what it touches, and how it arrives. */
   body: string;
+  /** "Square Your Mars" */
+  touches: string;
   /** The way it goes wrong. */
   trap: string;
   basis: string;
@@ -78,7 +82,9 @@ export function transitWindows(targets: Target[], fromMs = Date.now(), days = 36
             out.push({
               planet: m.id,
               title: t.name,
-              body: `${t.task.replace("{F}", FUNCTION[target.id] ?? "this part of your life")} ${ARRIVES[angle]}`,
+              theme: t.theme,
+              body: `${TRANSIT_LINE[m.id]?.[target.id] ?? `It works on ${FUNCTION[target.id] ?? "this part of your life"}.`} ${ARRIVES[angle]}`,
+              touches: `${ASPECT_WORD[angle]} ${TARGET_AREA[target.id]!.split(",")[0]}`,
               trap: t.trap,
               basis: `${POINT_NAMES[m.id]} ${ASPECT_WORD[angle]} ${TARGET_AREA[target.id]}`,
               start: date(start),

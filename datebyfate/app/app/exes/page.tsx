@@ -4,7 +4,9 @@ import { PersonRow } from "@/components/person-row";
 import { InsightCard, Locked, Section } from "@/components/reading";
 import { oneIn, plural } from "@/lib/format";
 import { requireUser } from "@/lib/server/auth";
+import { timingRepeats } from "@/lib/server/moments";
 import { exPattern, loadContext } from "@/lib/server/readings";
+import { seeded } from "@/lib/server/reference";
 
 export const metadata: Metadata = { title: "Past Partners" };
 
@@ -16,6 +18,14 @@ export default async function Exes() {
   const pattern = exPattern(user.id, ctx);
   const found = pattern?.repeats.length ?? 0;
   const expected = pattern?.expectedByChance ?? 0;
+  // What was in force in your own chart when each relationship began, and when each ended.
+  const dated = (pick: (e: (typeof ctx.exes)[number]) => string | null | undefined) => ctx.exes.flatMap((e) => (pick(e) ? [{ name: e.name, date: pick(e)! }] : []));
+  const begins = ctx.self ? timingRepeats(ctx.self.chart, dated((e) => e.startDate ?? e.metDate), seeded(user.id + "begin")) : null;
+  const ends = ctx.self ? timingRepeats(ctx.self.chart, dated((e) => e.endDate), seeded(user.id + "end")) : null;
+  const timing = [
+    { title: "When your relationships begin", data: begins, n: dated((e) => e.startDate ?? e.metDate).length, word: "beginnings" },
+    { title: "When your relationships end", data: ends, n: dated((e) => e.endDate).length, word: "endings" },
+  ];
   const aboveChance = found >= expected * 1.5 && found - expected >= 2;
 
   return (
@@ -58,6 +68,27 @@ export default async function Exes() {
             <Section title="The plain facts" intro="No astrology needed for these.">
               <ul className="card space-y-2 text-ink-2">{pattern.facts.map((f) => <li key={f}>{f}</li>)}</ul>
             </Section>
+          )}
+
+          {timing.map((t) =>
+            t.n >= 2 && t.data ? (
+              <Section key={t.title} title={t.title} intro={`What was in force in your own chart on those dates, across ${t.n} ${t.word}. Random days in your adult life would show about ${t.data.expectedByChance.toFixed(1)} repeats like these.`}>
+                {t.data.repeats.length === 0 ? (
+                  <p className="card text-ink-2">Nothing in your chart repeats across these dates more than chance would give.</p>
+                ) : user.premium ? (
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    {t.data.repeats.slice(0, 6).map((r) => (
+                      <InsightCard key={r.key} insight={{ title: r.title, body: r.body, basis: `${r.names.join(", ")} · true on ${oneIn(r.baseRate).replace("people", "days")}` }} tag={<span className="rounded-full bg-rose-soft px-3 py-1 text-sm font-semibold text-rose-hover">{r.count} of {r.of}</span>} />
+                    ))}
+                  </div>
+                ) : (
+                  <Locked title={`${plural(t.data.repeats.length, "repeat")} in the timing of your ${t.word}`}><p>Subscribe to see what was in force in your chart each time.</p></Locked>
+                )}
+              </Section>
+            ) : null,
+          )}
+          {timing.every((t) => t.n < 2) && (
+            <p className="mt-8 rounded-xl bg-gold-soft px-4 py-3 text-sm text-ink-2">Add the dates each relationship began and ended, on each person’s details, to see what was happening in your chart at those times and whether it repeats.</p>
           )}
 
           {found > 0 && (

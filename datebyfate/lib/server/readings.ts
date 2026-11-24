@@ -30,7 +30,7 @@ export function exPattern(userId: string, ctx: Context): (ExPattern & { facts: s
   const random = seeded(userId);
   const reference = referenceSignatures(ctx.self.chart, Math.min(...years) - 2, Math.max(...years) + 2, random);
   const pattern = patternAcross(ctx.self.chart, ctx.exes.map((e) => ({ name: e.name, chart: e.chart, hasTime: !!e.birth.time })), reference, random);
-  const facts = plainFacts(ctx.self.birth.date, ctx.exes.map((e) => ({ name: e.name, birthDate: e.birth.date, startYear: e.startYear, endYear: e.endYear, ending: e.ending })));
+  const facts = plainFacts(ctx.self.birth.date, ctx.exes.map((e) => ({ ...e, birthDate: e.birth.date })));
   return { ...pattern, facts };
 }
 

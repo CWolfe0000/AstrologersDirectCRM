@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { InsightCard, Locked, Section } from "@/components/reading";
-import { TransitCard } from "@/components/transit-card";
+import { TransitGroups } from "@/components/transit-card";
 import { formatDate, plural } from "@/lib/format";
 import { requireUser } from "@/lib/server/auth";
 import { loadContext, ownTiming, relationshipTargets } from "@/lib/server/readings";
@@ -55,9 +55,9 @@ export default async function Timing() {
         </Section>
       )}
 
-      <Section title="The next 12 months" intro="Periods when Jupiter, Saturn, Uranus, Neptune or Pluto is working on one of your relationship points. The ones marked Major touch your Sun, Moon or partnership axis; read the others in their light.">
+      <Section title="The next 12 months" intro="One card for each slow planet at work on your relationship points, with every period it makes this year. The effect of a period builds toward its exact dates and fades after them. Periods marked Major touch your Sun, Moon or partnership axis; read the others in their light.">
         {windows.length === 0 && <p className="card text-ink-2">No slow planet reaches your relationship points in the next 12 months. Read this year as the aftermath of the last such period, or the lead-in to the next.</p>}
-        <ol className="grid gap-4">{shown.map((w) => <li key={w.basis + w.start}><TransitCard w={w} /></li>)}</ol>
+        <TransitGroups windows={shown} />
       </Section>
       {user.premium && triggers.length > 0 && (
         <Section title="The next six weeks: which days" intro="Fast planets do not make a theme of their own. On these days one of them touches a point a slow planet is already working on, and sets it off.">

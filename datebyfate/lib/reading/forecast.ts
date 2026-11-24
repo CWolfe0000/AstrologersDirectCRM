@@ -10,31 +10,80 @@
  */
 
 /** A slow planet in transit: its name for the period, the task ({F} = what it touches) and the trap. */
-export const TRANSIT: Record<string, { name: string; task: string; trap: string }> = {
+export const TRANSIT: Record<string, { name: string; theme: string; task: string; trap: string }> = {
   jupiter: {
     name: "An Opening",
+    theme: "Jupiter offers a chance to stop settling for less. It is an audition more than a gift: see the better possibility, and reach for it while it is there.",
     task: "Jupiter offers a chance to stop settling for less in {F}. It is an audition more than a gift: see the better possibility, and reach for it while it is there.",
     trap: "Overconfidence: assuming it will take care of itself, or being taken in by something too good to be true.",
   },
   saturn: {
     name: "A Reality Check",
+    theme: "Saturn asks you to see things as they really are, and to act on what you see. Ask what you have outgrown, make a realistic plan, and keep to it without waiting for applause.",
     task: "Saturn asks you to see {F} as it really is, and to act on what you see. Ask what you have outgrown here, make a realistic plan, and keep to it without waiting for applause.",
     trap: "Deciding you cannot win, and going rigid or giving up. The wall is high but it is not wide.",
   },
   uranus: {
     name: "A Call To Be Yourself",
+    theme: "Uranus asks what in your life is truly yours, and what you took on to keep other people comfortable. An old way of doing things has burned out and has to be reinvented.",
     task: "Uranus asks what in {F} is truly yours, and what you took on to keep other people comfortable. An old way of doing this has burned out, and you are asked to reinvent it.",
     trap: "Staying with the familiar because it is practical, until the change arrives in a clumsier form than it needed to.",
   },
   neptune: {
     name: "A Time To Listen",
+    theme: "Neptune softens what it touches and asks you to be still. Something that matters has drifted out of your everyday life. This is a time to reflect more than to act.",
     task: "Neptune softens {F} and asks you to be still. Something that matters has drifted out of your everyday life. This is a time to reflect more than to act.",
     trap: "Glamour and escape: idealising a person or a wish that has never been tested. Before acting on a wonderful idea, wait three days and look again.",
   },
   pluto: {
     name: "An Old Wound Surfaces",
+    theme: "Pluto brings up what once hurt you, so that it can heal. You may feel pulled to replay an old drama. Feeling the pull and choosing a different ending is the work.",
     task: "Pluto brings up what once hurt you in {F}, so that it can heal. You may feel pulled to replay an old drama. Feeling the pull and choosing a different ending is the work.",
     trap: "Re-enacting it: leaving before you are left, trying to control, or giving up in cynicism.",
+  },
+};
+
+/** What each slow planet brings to each point of your chart: one line, so a period can be told from the next. */
+export const TRANSIT_LINE: Record<string, Record<string, string>> = {
+  jupiter: {
+    sun: "Look at where you have been underestimating yourself.",
+    moon: "Ask what would make you feel more at home, and then ask for it.",
+    venus: "Ask for more in love, and say yes to invitations.",
+    mars: "Go after something you have been holding back from.",
+    axis: "New people come in, or life with the person you have gets wider.",
+    ruler: "An opening comes through a partner, or toward one.",
+  },
+  saturn: {
+    sun: "You see what you have outgrown in how you think of yourself.",
+    moon: "You find out what you really need in order to feel safe, as opposed to what you are used to.",
+    venus: "An honest look at where you stand in love: commit, or stop pretending.",
+    mars: "You decide whether what you want is worth the effort, and find the patience to do it properly.",
+    axis: "A relationship gets defined: made real, or shown to be finished.",
+    ruler: "A partner, or the question of one, asks for a grown-up answer.",
+  },
+  uranus: {
+    sun: "The parts of your life that are not really yours start to chafe.",
+    moon: "Your need for emotional room becomes impossible to ignore.",
+    venus: "What you thought you wanted in love changes, sometimes suddenly.",
+    mars: "You want to act for yourself and stop asking permission.",
+    axis: "How you present yourself, or the shape of a partnership, has to be reinvented.",
+    ruler: "The kind of partner you want, or the terms you want them on, is changing.",
+  },
+  neptune: {
+    sun: "Your sense of direction softens, and what once drove you matters less.",
+    moon: "You are more sensitive than usual and need more quiet.",
+    venus: "Longing rises, and it is easy to fall for an ideal. Check what you see against what is there.",
+    mars: "Your drive ebbs, and you want what you do to mean something.",
+    axis: "It is hard to see a partner, or yourself with them, clearly.",
+    ruler: "Your picture of a partner blurs.",
+  },
+  pluto: {
+    sun: "An old question about who you are and what your life is for comes back.",
+    moon: "Feelings you had put away surface and want dealing with.",
+    venus: "Old hurts in love resurface, with a pull to repeat them.",
+    mars: "Anger or desire you have buried comes up with force.",
+    axis: "A relationship, or the way you meet the world, changes at the root.",
+    ruler: "Power and trust with a partner come into question.",
   },
 };
 
@@ -55,10 +104,10 @@ export const FUNCTION: Record<string, string> = {
 
 /** How it arrives. The aspect does not make a period good or bad. */
 export const ARRIVES: Record<number, string> = {
-  0: "By conjunction, the two fuse.",
-  90: "By square, it comes as friction and takes effort.",
-  120: "By trine, it flows, so act on it and do not coast.",
-  180: "By opposition, it tends to arrive through another person or outside circumstances.",
+  0: "By conjunction: the two fuse.",
+  90: "By square: through friction and effort.",
+  120: "By trine: it flows, so act on it and do not coast.",
+  180: "By opposition: through another person or outside circumstances.",
 };
 
 /** A slow planet moving through the three houses of love. {P} is the planet. */

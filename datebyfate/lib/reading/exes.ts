@@ -217,9 +217,16 @@ export function checkAgainst(you: Chart, repeats: Repeat[], person: Subject) {
 export interface ExFacts {
   name: string;
   birthDate: string;
+  metDate?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
   startYear?: number | null;
   endYear?: number | null;
   ending?: "me" | "them" | "mutual" | null;
+  stayedFriends?: boolean | null;
+  children?: boolean | null;
+  livedTogether?: boolean | null;
+  married?: boolean | null;
 }
 
 /** Patterns that need no astrology: ages, lengths, endings. */
@@ -238,16 +245,42 @@ export function plainFacts(yourBirthDate: string, exes: ExFacts[]): string[] {
   else if (older === 0 && younger === 0) out.push("Every partner was within a year of your own age.");
   else out.push(`${older} of ${exes.length} partners were older than you and ${younger} were younger.`);
 
-  const lengths = exes.filter((e) => e.startYear && e.endYear).map((e) => e.endYear! - e.startYear!);
+  // Lengths in years, from full dates where given and from years otherwise.
+  const years = (from: string, to: string) => (Date.parse(to) - Date.parse(from)) / (365.25 * 86_400_000);
+  const lengths = exes
+    .map((e) => (e.startDate && e.endDate ? years(e.startDate, e.endDate) : e.startYear && e.endYear ? e.endYear - e.startYear : null))
+    .filter((x): x is number => x !== null);
+  const length = (y: number) => (y < 1 ? `${Math.max(1, Math.round(y * 12))} month${Math.round(y * 12) > 1 ? "s" : ""}` : `${y < 3 ? Math.round(y * 2) / 2 : Math.round(y)} year${y < 1.25 ? "" : "s"}`);
   if (lengths.length >= 2) {
     const avg = lengths.reduce((a, c) => a + c, 0) / lengths.length;
     const lo = Math.min(...lengths), hi = Math.max(...lengths);
-    out.push(
-      hi - lo <= 1
-        ? `Your relationships have lasted about ${Math.max(1, Math.round(avg))} year${Math.round(avg) > 1 ? "s" : ""} each.`
-        : `Your relationships have lasted from ${lo < 1 ? "under a year" : `${lo} year${lo > 1 ? "s" : ""}`} to ${hi} years, ${avg.toFixed(1)} on average.`,
-    );
+    out.push(hi - lo <= 1 && hi < 12 ? `Your relationships have lasted about ${length(avg)} each.` : `Your relationships have lasted from ${length(lo)} to ${length(hi)}, ${length(avg)} on average.`);
   }
+  // From meeting to getting together.
+  const leads = exes.filter((e) => e.metDate && e.startDate).map((e) => years(e.metDate!, e.startDate!) * 12);
+  if (leads.length >= 2) {
+    const quick = leads.filter((m) => m <= 1).length, slow = leads.filter((m) => m >= 6).length;
+    if (quick * 2 > leads.length) out.push(`${quick} of ${leads.length} began within a month of meeting.`);
+    else if (slow * 2 > leads.length) out.push(`${slow} of ${leads.length} began six months or more after you met.`);
+    else out.push(`From meeting to getting together took between ${length(Math.min(...leads) / 12)} and ${length(Math.max(...leads) / 12)}.`);
+  }
+  // Gaps between one relationship ending and the next beginning.
+  const dated = exes.filter((e) => e.startDate).sort((a, b) => a.startDate!.localeCompare(b.startDate!));
+  const pauses = dated.slice(1).map((e, i) => (dated[i]!.endDate ? years(dated[i]!.endDate!, e.startDate!) * 12 : null)).filter((x): x is number => x !== null);
+  if (pauses.length >= 2) {
+    const overlap = pauses.filter((m) => m < 0).length, soon = pauses.filter((m) => m >= 0 && m <= 3).length;
+    if (overlap) out.push(`${overlap} of ${pauses.length} began before the one before had ended.`);
+    else if (soon * 2 > pauses.length) out.push(`${soon} of ${pauses.length} began within three months of the last one ending.`);
+    else out.push(`Between relationships you have had from ${length(Math.min(...pauses) / 12)} to ${length(Math.max(...pauses) / 12)} on your own.`);
+  }
+  const count = (key: "stayedFriends" | "children" | "livedTogether" | "married", yes: string) => {
+    const known = exes.filter((e) => typeof e[key] === "boolean");
+    if (known.length >= 2) out.push(`${yes} ${known.filter((e) => e[key]).length} of ${known.length}.`);
+  };
+  count("livedTogether", "You lived with");
+  count("married", "You married");
+  count("children", "You had children with");
+  count("stayedFriends", "You stayed friends with");
   const endings = exes.filter((e) => e.ending);
   if (endings.length >= 2) {
     const by = (k: string) => endings.filter((e) => e.ending === k).length;

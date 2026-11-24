@@ -6,9 +6,17 @@ export type PersonKind = "self" | "ex" | "match";
 export interface PersonData {
   name: string;
   birth: Birth;
-  /** Past relationships only. */
+  /** The relationship: the day you met, the day it began and, for a past partner, the day it ended (YYYY-MM-DD). */
+  metDate?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  /** Kept for records saved before full dates were asked for; filled from the dates when they are given. */
   startYear?: number | null;
   endYear?: number | null;
+  stayedFriends?: boolean | null;
+  children?: boolean | null;
+  livedTogether?: boolean | null;
+  married?: boolean | null;
   /** Who ended it. */
   ending?: "me" | "them" | "mutual" | null;
   /** Where the two of you first met in person: the relationship’s chart is cast for this place. */
@@ -49,20 +57,39 @@ export const birthSchema = z.object({
 });
 
 const year = z.number().int().min(1940).max(new Date().getFullYear());
+const pastDate = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .refine((d) => {
+    const t = Date.parse(d + "T00:00:00Z");
+    return !Number.isNaN(t) && t > Date.parse("1940-01-01") && t <= Date.now() && new Date(t).toISOString().slice(0, 10) === d;
+  }, "Enter a real date, not in the future.")
+  .nullish();
+const yesNo = z.boolean().nullish();
 export const personSchema = z
   .object({
     name: z.string().trim().min(1, "Enter a name or nickname.").max(60),
     birth: birthSchema,
+    metDate: pastDate,
+    startDate: pastDate,
+    endDate: pastDate,
     startYear: year.nullish(),
     endYear: year.nullish(),
+    stayedFriends: yesNo,
+    children: yesNo,
+    livedTogether: yesNo,
+    married: yesNo,
     ending: z.enum(["me", "them", "mutual"]).nullish(),
     met: birthSchema.pick({ place: true, lat: true, lon: true, tz: true }).nullish(),
   })
-  .refine((p) => !p.startYear || !p.endYear || p.endYear >= p.startYear, { message: "The end year is before the start year.", path: ["endYear"] });
+  .refine((p) => !p.startDate || !p.endDate || p.endDate >= p.startDate, { message: "The end date is before the date it began.", path: ["endDate"] })
+  .refine((p) => !p.metDate || !p.startDate || p.startDate >= p.metDate, { message: "The date it began is before the date you met.", path: ["startDate"] });
 
 /** Reads the fields of the person form (components/person-form.tsx). */
 export function personFromForm(form: FormData) {
-  const num = (k: string) => (form.get(k) ? Number(form.get(k)) : null);
+  const date = (k: string) => (form.get(k) ? String(form.get(k)) : null);
+  const yn = (k: string) => (form.get(k) === "yes" ? true : form.get(k) === "no" ? false : null);
+  const yearOf = (d: string | null) => (d ? Number(d.slice(0, 4)) : null);
   const time = String(form.get("time") ?? "");
   return personSchema.safeParse({
     name: String(form.get("name") ?? ""),
@@ -74,8 +101,15 @@ export function personFromForm(form: FormData) {
       lon: Number(form.get("lon") ?? NaN),
       tz: String(form.get("tz") ?? ""),
     },
-    startYear: num("startYear"),
-    endYear: num("endYear"),
+    metDate: date("metDate"),
+    startDate: date("startDate"),
+    endDate: date("endDate"),
+    startYear: yearOf(date("startDate") ?? date("metDate")),
+    endYear: yearOf(date("endDate")),
+    stayedFriends: yn("stayedFriends"),
+    children: yn("children"),
+    livedTogether: yn("livedTogether"),
+    married: yn("married"),
     ending: form.get("ending") || null,
     met: form.get("metPlace") ? { place: String(form.get("metPlace")), lat: Number(form.get("metLat")), lon: Number(form.get("metLon")), tz: String(form.get("metTz")) } : null,
   });

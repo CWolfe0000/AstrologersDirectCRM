@@ -3,7 +3,7 @@ import Link from "next/link";
 import { saveSelf } from "@/app/actions";
 import { SelfForm } from "@/components/forms";
 import { Locked, PatternView, Section } from "@/components/reading";
-import { TransitCard } from "@/components/transit-card";
+import { TransitGroups } from "@/components/transit-card";
 import { formatDate, plural } from "@/lib/format";
 import { elementReading } from "@/lib/reading/elements";
 import { ownPattern, placementsOf } from "@/lib/reading/own";
@@ -31,7 +31,7 @@ export default async function AppHome() {
     <PatternView pattern={ownPattern(ctx.self.chart)} placements={placementsOf(ctx.self.chart)} elements={elementReading(ctx.self.chart)}>
       <Section title="Your next relationship period">
         {next ? (
-<TransitCard w={next} />
+<TransitGroups windows={[next]} />
         ) : (
           <p className="card text-ink-2">No slow planet reaches your relationship points in the next 12 months. Read this year as the aftermath of the last such period, or the lead-in to the next.</p>
         )}
