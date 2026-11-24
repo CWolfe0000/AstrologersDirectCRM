@@ -28,6 +28,8 @@ export type SessionUser = {
 /** Statuses that keep access. past_due stays on while Stripe retries the card. */
 const ACTIVE = new Set(["active", "trialing", "past_due"]);
 export function isPremium(u: { subscriptionStatus: string | null; compPremium: boolean }) {
+  // Test deployments only: every account sees the subscriber features (see .env.example).
+  if (process.env.PREVIEW_ALL_PREMIUM === "1") return true;
   return u.compPremium || (!!u.subscriptionStatus && ACTIVE.has(u.subscriptionStatus));
 }
 
@@ -85,7 +87,7 @@ export const getUser = cache(async (): Promise<SessionUser | null> => {
     currentPeriodEnd: u.currentPeriodEnd,
     cancelAtPeriodEnd: u.cancelAtPeriodEnd,
     hasStripeCustomer: !!u.stripeCustomerId,
-    comp: u.compPremium,
+    comp: u.compPremium || process.env.PREVIEW_ALL_PREMIUM === "1",
   };
 });
 
