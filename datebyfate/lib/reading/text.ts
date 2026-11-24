@@ -575,39 +575,11 @@ export function contactText(
 
 /* ---------- Timing ---------- */
 
-export const TRANSIT_THEME: Record<string, { name: string; easy: string; hard: string }> = {
-  jupiter: {
-    name: "An opening",
-    easy: "Jupiter brings more: more invitations, more confidence, more people. A good period for meeting someone, or for a relationship to grow.",
-    hard: "Jupiter brings more, sometimes too much: big feelings, big promises and a tendency to overreach. Opportunities are real; pace yourself.",
-  },
-  saturn: {
-    name: "A reality check",
-    easy: "Saturn asks what is real and what will last. Relationships get defined: committed to, or ended because they cannot bear weight.",
-    hard: "Saturn tests. Distance, obligations or doubt put pressure on love, and what is not working becomes hard to ignore. What survives this is solid.",
-  },
-  uranus: {
-    name: "A shake-up",
-    easy: "Uranus breaks routine. Expect sudden attractions, new kinds of people and a strong need for freedom.",
-    hard: "Uranus disrupts. Relationships that have become confining may break open, and attractions can arrive and leave without warning. Avoid permanent decisions made in a week.",
-  },
-  neptune: {
-    name: "A soft-focus period",
-    easy: "Neptune heightens romance and longing. It is easy to fall in love with an idea, so check what you see against what is there.",
-    hard: "Neptune blurs. You may idealise someone, be unclear about where you stand, or grieve something that is fading. Judgment about people is at its weakest.",
-  },
-  pluto: {
-    name: "A deep change",
-    easy: "Pluto transforms slowly and for good. What you want from love changes at the root, and relationships either deepen or end.",
-    hard: "Pluto strips away what is finished. Expect intensity, power struggles, or an attachment that is very hard to release. You come out wanting something different.",
-  },
-};
-
 export const TARGET_AREA: Record<string, string> = {
   venus: "your Venus, how you love and what attracts you",
   moon: "your Moon, your emotional needs",
   mars: "your Mars, your desire and drive",
-  sun: "your Sun, your sense of self",
+  sun: "your Sun, your sense of who you are",
   axis: "your Ascendant–Descendant axis, the line of partnership in your chart",
   ruler: "the ruler of your 7th house, the planet that stands for your partners",
   "c-sun": "the relationship’s Sun, its core identity",

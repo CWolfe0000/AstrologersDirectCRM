@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { saveSelf } from "@/app/actions";
 import { SelfForm } from "@/components/forms";
-import { InsightCard, Locked, PatternView, Section } from "@/components/reading";
+import { Locked, PatternView, Section } from "@/components/reading";
+import { TransitCard } from "@/components/transit-card";
 import { formatDate, plural } from "@/lib/format";
 import { elementReading } from "@/lib/reading/elements";
 import { ownPattern, placementsOf } from "@/lib/reading/own";
@@ -30,12 +31,9 @@ export default async function AppHome() {
     <PatternView pattern={ownPattern(ctx.self.chart)} placements={placementsOf(ctx.self.chart)} elements={elementReading(ctx.self.chart)}>
       <Section title="Your next relationship period">
         {next ? (
-          <InsightCard
-            insight={next}
-            tag={<span className="rounded-full bg-gold-soft px-3 py-1 text-sm font-semibold text-gold">{next.active ? "Now" : `From ${formatDate(next.start)}`} · until {next.ongoing ? "next year" : formatDate(next.end)}</span>}
-          />
+<TransitCard w={next} />
         ) : (
-          <p className="card text-ink-2">No slow planet reaches your relationship points in the next 12 months. A quiet year in the sky: what happens in love is down to you.</p>
+          <p className="card text-ink-2">No slow planet reaches your relationship points in the next 12 months. Read this year as the aftermath of the last such period, or the lead-in to the next.</p>
         )}
         {windows.length > 1 && (user.premium ? <Link href="/app/timing" className="link">See all {windows.length} periods in your calendar</Link> : (
           <Locked title={`${plural(windows.length - 1, "more period")} in your next 12 months`}>

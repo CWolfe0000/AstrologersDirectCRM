@@ -12,6 +12,7 @@ import { placementsOf } from "@/lib/reading/own";
 import { difficultAspects, gifts } from "@/lib/reading/triggers";
 import { requireUser } from "@/lib/server/auth";
 import { compositeHouses, exPattern, loadContext } from "@/lib/server/readings";
+import { TransitCard } from "@/components/transit-card";
 import { transitWindows } from "@/lib/server/timing";
 
 export const metadata: Metadata = { title: "Together" };
@@ -228,9 +229,7 @@ function RelationshipTiming({ points }: { points: { sun: number; moon: number | 
     <Section title="The next 12 months for the two of you" intro="Periods when a slow planet is on the relationship’s chart. The ones on its angles tend to mark events.">
       {windows.length ? (
         <div className="grid gap-4 lg:grid-cols-2">
-          {windows.map((w) => (
-            <InsightCard key={w.basis + w.start} insight={w} tag={<span className="rounded-full bg-gold-soft px-3 py-1 text-sm font-semibold text-gold">{w.active ? "Now" : formatDate(w.start)} – {w.ongoing ? "next year" : formatDate(w.end)}</span>} />
-          ))}
+          {windows.map((w) => <TransitCard key={w.basis + w.start} w={w} />)}
         </div>
       ) : (
         <p className="card text-ink-2">No slow planet reaches the relationship’s chart in the next 12 months.</p>

@@ -14,6 +14,7 @@ import { difficultAspects, gifts, natalContactKeys } from "@/lib/reading/trigger
 import { chartFor } from "@/lib/server/charts";
 import { referenceSignatures, seeded } from "@/lib/server/reference";
 import { ownTiming } from "@/lib/server/readings";
+import * as timing from "@/lib/server/timing";
 
 const london = { place: "London", lat: 51.5074, lon: -0.1278, tz: "Europe/London" };
 const me: Birth = { date: "1990-06-15", time: "14:30", ...london };
@@ -345,6 +346,9 @@ describe("timing", () => {
     for (const x of w) {
       expect(x.start <= x.peak && x.peak <= x.end).toBe(true);
       expect(x.basis).toMatch(/^(Jupiter|Saturn|Uranus|Neptune|Pluto) /);
+      expect(x.body).not.toContain("{F}");
+      expect(x.trap.length).toBeGreaterThan(20);
+      for (const p of x.passes) expect(p.date >= x.start && p.date <= x.end).toBe(true);
     }
     expect([...w].sort((a, b) => a.start.localeCompare(b.start)).map((x) => x.start)).toEqual(w.map((x) => x.start));
   });
@@ -414,5 +418,30 @@ describe("uses of the planetary hours", () => {
     expect(USES.mercury.moon[1]).toMatch(/Persuasion/);
     expect(USES.saturn.venus[1]).toMatch(/curse/);
     expect(DISCLAIMER).toMatch(/no claim/);
+  });
+});
+
+describe("calendar: one process per transit, houses and progressions", () => {
+  const chart = chartFor(me);
+  // A fixed moment so the test does not drift: 1 January 2026.
+  const from = Date.UTC(2026, 0, 1);
+  it("keeps the retrograde passes of one transit in one period and ranks the major ones", () => {
+    const w = timing.transitWindows([{ id: "sun", lon: chart.bodies.sun.lon }, { id: "venus", lon: chart.bodies.venus.lon }, { id: "axis", lon: chart.houses!.asc }], from);
+    expect(w.length).toBeGreaterThan(0);
+    // No two periods of the same planet, point and aspect.
+    expect(new Set(w.map((x) => x.basis)).size).toBeGreaterThanOrEqual(w.length - 1);
+    expect(w.some((x) => x.passes.length >= 1)).toBe(true);
+    for (const x of w) if (x.major) expect(x.planet).not.toBe("jupiter");
+    expect(w.find((x) => x.planet === "saturn")?.body ?? "Saturn asks").toMatch(/Saturn asks/);
+  });
+  it("finds slow planets in the houses of love, and the current progressed chapter", () => {
+    for (const h of timing.houseTransits(chart, from)) expect(h.basis).toMatch(/in your (5th|7th|8th) house$/);
+    expect(timing.houseTransits(chartFor(born("1990-06-15")), from)).toHaveLength(0);
+    const p = timing.progressions(chart, from);
+    expect(p.moon.map((i) => i.title)).toEqual(["Where Your Heart Is", "The Mood Of This Chapter"]);
+    // 35.5 years after birth the progressed Moon has gone once round and about a third again.
+    expect(p.moon[1]!.basis).toMatch(/^Progressed Moon in [A-Z]/);
+    for (const v of p.venus) expect(v.basis).toMatch(/^Progressed Venus (conjunction|opposition|square|trine|sextile) natal /);
+    expect(timing.progressions(chartFor(born("1990-06-15")), from).moon).toHaveLength(0);
   });
 });

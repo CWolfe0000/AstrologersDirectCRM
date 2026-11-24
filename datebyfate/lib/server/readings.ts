@@ -36,13 +36,13 @@ export function exPattern(userId: string, ctx: Context): (ExPattern & { facts: s
 
 /** The points in your chart that relationship timing is read from. */
 export function relationshipTargets(chart: Chart): Target[] {
-  const out: Target[] = [{ id: "venus", lon: chart.bodies.venus.lon }];
+  const out: Target[] = [{ id: "sun", lon: chart.bodies.sun.lon }, { id: "venus", lon: chart.bodies.venus.lon }];
   if (chart.houses) {
     out.push({ id: "axis", lon: chart.houses.asc });
-    const ruler = SIGNS[signIndex(chart.houses.asc + 180)]!.ruler;
-    // Venus is already listed; the Moon moves too fast to be a ruler worth timing only when the time is unknown, and here it is known.
-    if (ruler !== "venus") out.push({ id: "ruler", lon: chart.bodies[ruler].lon });
     out.push({ id: "moon", lon: chart.bodies.moon.lon });
+    // The ruler of the 7th house is our own addition: Forrest does not use house rulers as targets.
+    const ruler = SIGNS[signIndex(chart.houses.asc + 180)]!.ruler;
+    if (!["venus", "sun", "moon", "mars"].includes(ruler)) out.push({ id: "ruler", lon: chart.bodies[ruler].lon });
   }
   out.push({ id: "mars", lon: chart.bodies.mars.lon });
   return out;
