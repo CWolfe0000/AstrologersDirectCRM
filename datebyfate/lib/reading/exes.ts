@@ -2,7 +2,8 @@ import type { AspectClass, BodyId, Chart, PointId } from "@/lib/astro/types";
 import { BODIES } from "@/lib/astro/types";
 import { POINT_NAMES, SIGNS, SYNASTRY_ORBS, aspectBetween, elementOf, houseOf, ordinal, signIndex } from "@/lib/astro/zodiac";
 import { natalContactKeys } from "./triggers";
-import { BODY_SHOWS, DYNAMICS, ELEMENT_PEOPLE, HOUSE_AREA, SIGN_PEOPLE, contactText } from "./text";
+import { synastryText } from "./synastry";
+import { BODY_SHOWS, DYNAMICS, ELEMENT_PEOPLE, HOUSE_AREA, SIGN_PEOPLE } from "./text";
 
 /**
  * The pattern across past partners.
@@ -91,10 +92,11 @@ export function describeSignature(key: string, you: Chart): { title: string; bod
     }
     case "house":
       return { title: `${POINT_NAMES[body]} in your ${ordinal(Number(b))} house`, body: `Their ${BODY_SHOWS[body]} lands in the part of your chart to do with ${HOUSE_AREA[Number(b) - 1]}. That is where you feel them most.` };
-    default:
-    {
-      const { title, body: text } = contactText(a as PointId, b as PointId, c as AspectClass);
-      return { title, body: text };
+    default: {
+      // A contact between the two charts, worded from the same source as the couple report.
+      const kind = c === "conjunction" ? "conjunction" : c === "hard" ? "challenging" : "flowing";
+      const how = c === "conjunction" ? "on" : c === "hard" ? "in tension with" : "in harmony with";
+      return { title: `Their ${POINT_NAMES[b as PointId]} ${how} your ${POINT_NAMES[a as PointId]}`, body: synastryText(a as PointId, b as PointId, kind, null).body };
     }
   }
 }

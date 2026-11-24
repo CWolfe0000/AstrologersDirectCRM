@@ -9,6 +9,7 @@ import { practicesFor } from "@/lib/reading/practice";
 import { composite as readComposite } from "@/lib/reading/composite";
 import { coupleReport } from "@/lib/reading/couple";
 import { aspectsOf, ownPattern } from "@/lib/reading/own";
+import { synastryText } from "@/lib/reading/synastry";
 import { contactText } from "@/lib/reading/text";
 import { difficultAspects, gifts, natalContactKeys } from "@/lib/reading/triggers";
 import { chartFor } from "@/lib/server/charts";
@@ -144,13 +145,32 @@ describe("couple report and wording", () => {
     expect(t.tone).toBe("hard");
   });
 
-  it("splits contacts into strengths and friction", () => {
+  it("sorts contacts into fusions, flowing and challenging, and groups house overlays", () => {
     const r = coupleReport(chartFor(me), chartFor(born("1988-03-10", "09:15")), "Sam");
-    expect(r.strengths.length + r.friction.length).toBeGreaterThan(2);
-    expect(r.overlays).toHaveLength(8);
+    expect(r.fusions.length + r.flowing.length + r.challenging.length).toBeGreaterThan(4);
+    for (const i of r.fusions) expect(i.title).toMatch(/ conjunct your /);
+    for (const i of r.flowing) expect(i.title).toMatch(/ (trine|sextile) your /);
+    for (const i of r.challenging) expect(i.title).toMatch(/ (square|opposite) your /);
+    for (const i of [...r.fusions, ...r.flowing, ...r.challenging]) {
+      expect(i.body).not.toMatch(/[{}]/);
+      expect(i.title).not.toMatch(/Node/);
+    }
+    expect(r.bedrock).toMatch(/Sun, Moon and rising signs/);
+    expect(r.overlays.every((o) => /in (your|Sam’s) \d+(st|nd|rd|th) house$/.test(o.title))).toBe(true);
     const noTime = coupleReport(chartFor(me), chartFor(born("1988-03-10")), "Sam");
-    expect(noTime.overlays).toHaveLength(3);
+    expect(noTime.overlays.every((o) => !o.title.includes("in Sam’s"))).toBe(true);
     expect(noTime.notes[0]).toMatch(/Sam’s birth time is unknown/);
+  });
+
+  it("words a contact both ways round, from whichever side holds the first planet", () => {
+    const a = synastryText("moon", "saturn", "challenging", "Sam").body; // your Moon, Sam's Saturn
+    expect(a).toMatch(/^Two languages\. Sam’s Saturn offers sound advice when your Moon needs kindness/);
+    const b = synastryText("saturn", "moon", "challenging", "Sam").body; // your Saturn, Sam's Moon
+    expect(b).toMatch(/Your Saturn offers sound advice when Sam’s Moon needs kindness/);
+    expect(synastryText("venus", "mars", "conjunction", "Sam").body).toMatch(/As a conjunction the two fuse/);
+    const generic = synastryText("mercury", "pluto", "flowing", null);
+    expect(generic.sourced).toBe(false);
+    expect(generic.body).toMatch(/^Your Mercury can inform and stimulate their Pluto, or fluster or talk over it\. In turn their Pluto can/);
   });
 });
 
@@ -283,13 +303,6 @@ describe("elements", () => {
     expect(elementNote("opposition", 10, 190)).toBe("");
   });
 
-  it("names contacts between two charts by their exact aspect, without the natal-chart definitions", () => {
-    const r = coupleReport(chartFor(me), chartFor(born("1988-03-10", "09:15")), "Sam");
-    for (const i of [...r.strengths, ...r.friction]) {
-      expect(i.title).toMatch(/ (conjunct|opposite|square|trine|sextile) your /);
-      expect(i.body).not.toMatch(/A (square|trine|sextile) is|An opposition is|A conjunction is/);
-    }
-  });
 });
 
 describe("aspects within one chart", () => {

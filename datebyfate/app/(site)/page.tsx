@@ -11,7 +11,7 @@ const STEPS = [
 const FAQ = [
   { q: "Do I need to know my birth time?", a: "No. Without it you still get your Venus, Mars and Sun readings and most of your dynamics. Your rising sign and the section on who you are drawn to need a time, and you can add it later." },
   { q: "I don’t know my exes’ birth times. Does it still work?", a: "Yes. A birth date is enough. We leave out the parts of their chart that depend on the time and use the rest." },
-  { q: "How is this different from a compatibility score?", a: "There is no score. A single number hides everything useful. You get the specific contacts between two charts, sorted into what comes easily and what causes friction, in plain words." },
+  { q: "How is this different from a compatibility score?", a: "There is no score. A single number hides everything useful. You get the specific contacts between two charts, sorted into what flows and what challenges, in plain words and in both directions." },
   { q: "Is the pattern real or coincidence?", a: "With two or three partners, some repeats always happen by chance. So we measure it: every repeat is compared with how often it shows up among random people born in the same years, and the page tells you how many repeats chance alone would produce." },
   { q: "Who can see the people I add?", a: "Only you. Names and birth details are encrypted, and you can delete any person, or your whole account, at any time." },
 ];

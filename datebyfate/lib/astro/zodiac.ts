@@ -59,7 +59,9 @@ export const NATAL_ORBS: Orbs = { conjunction: 8, opposition: 8, square: 8, trin
 export const LUMINARY_ORBS: Orbs = { conjunction: 10, opposition: 10, square: 10, trine: 10, sextile: 6 };
 /** Her "tight" aspects, the ones central to a life; wider ones confirm. */
 export const TIGHT_ORBS: Orbs = { conjunction: 4, opposition: 4, square: 4, trine: 3, sextile: 2 };
-/** Between two charts: tighter, so that a contact means something. */
+/** Between two people, for the couple report: the Forrests’ table in "Skymates" (7° for the major aspects, 5° for the sextile). */
+export const COUPLE_ORBS: Orbs = { conjunction: 7, opposition: 7, square: 7, trine: 7, sextile: 5 };
+/** Between two charts, for finding repeats across partners: tighter, so that a contact means something. */
 export const SYNASTRY_ORBS: Orbs = { conjunction: 6, opposition: 5, square: 5, trine: 5, sextile: 3 };
 
 /** The aspect between two longitudes, if any is within orb. */

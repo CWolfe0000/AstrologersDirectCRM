@@ -133,11 +133,19 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             <p className="-mt-2 text-ink-2">The Sun, Moon and rising sign cannot be retuned. Mercury, Venus and Mars can be adjusted to the other person, at some cost in energy.</p>
             <div className="grid gap-4 lg:grid-cols-2">{elements.levels.map((l) => <InsightCard key={l.title} insight={l} tag={relationTag(l)} />)}</div>
           </Section>
-          <Section title="What comes easily" intro="The closest supportive contacts between your two charts.">
-            {report.strengths.length ? <div className="grid gap-4 lg:grid-cols-2">{report.strengths.map((i) => <InsightCard key={i.title} insight={i} />)}</div> : <p className="card text-ink-2">No close supportive contacts between the two charts. Ease is something you would build, not start with.</p>}
-          </Section>
-          <Section title="Where it rubs" intro="The closest tense contacts. These are where the work is, and often where the pull is.">
-            {report.friction.length ? <div className="grid gap-4 lg:grid-cols-2">{report.friction.map((i) => <InsightCard key={i.title} insight={i} />)}</div> : <p className="card text-ink-2">No close tense contacts between the two charts.</p>}
+          <Section title="How your charts meet" intro="The contacts between your two charts, strongest first. No contact is good or bad in itself: the easy ones can make a couple complacent, and the hard ones supply much of the passion and the growth.">
+            <p className="card text-ink-2">{report.bedrock}</p>
+            {report.fusions.length > 0 && (
+              <>
+                <h3 className="mt-4 text-xl font-semibold">Where you fuse</h3>
+                <p className="-mt-2 text-ink-2">Conjunctions: the strongest contacts, where one person’s planet sits on the other’s.</p>
+                <div className="grid gap-4 lg:grid-cols-2">{report.fusions.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
+              </>
+            )}
+            <h3 className="mt-4 text-xl font-semibold">What flows</h3>
+            {report.flowing.length ? <div className="grid gap-4 lg:grid-cols-2">{report.flowing.map((i) => <InsightCard key={i.title} insight={i} />)}</div> : <p className="card text-ink-2">No close sextiles or trines between the two charts. Ease is something you would build.</p>}
+            <h3 className="mt-4 text-xl font-semibold">What challenges</h3>
+            {report.challenging.length ? <div className="grid gap-4 lg:grid-cols-2">{report.challenging.map((i) => <InsightCard key={i.title} insight={i} />)}</div> : <p className="card text-ink-2">No close squares or oppositions between the two charts. That is comfortable, and it can leave a couple short of spark.</p>}
           </Section>
           <Section
             title="What you set off in each other"
@@ -178,10 +186,10 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             </div>
           </Section>
           {report.overlays.length > 0 && (
-            <Section title="Where you land in each other’s lives" intro="The part of one person’s chart that the other person’s planets fall in.">
-              <ul className="card grid gap-x-8 gap-y-3 sm:grid-cols-2">
-                {report.overlays.map((o) => <li key={o.title}><span className="font-semibold">{o.title}.</span> <span className="text-ink-2">{o.body}</span></li>)}
-              </ul>
+            <Section title="Where you land in each other’s lives" intro="The house of one person’s chart that the other’s Sun, Moon, rising sign, Venus and Mars fall in. The more that land in one house, the more that part of life wakes up when you are together.">
+              <div className="grid gap-4 lg:grid-cols-2">
+                {report.overlays.map((o) => <InsightCard key={o.title} insight={o} tag={o.emphasis ? <span className="rounded-full bg-rose-soft px-3 py-1 text-sm font-semibold text-rose-hover">Emphasis</span> : undefined} />)}
+              </div>
             </Section>
           )}
           <Section title="The relationship itself" intro="The composite chart is made of the midpoints between your planets. It describes the two of you as one thing: what the relationship is for, and how you handle it.">
@@ -206,7 +214,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
         </>
       ) : (
         <Section title="The two of you together">
-          <Locked title={`${plural(report.strengths.length, "strength")} and ${plural(report.friction.length, "friction point")} between your charts`}>
+          <Locked title={`${plural(report.fusions.length + report.flowing.length, "flowing contact")} and ${plural(report.challenging.length, "challenging contact")} between your charts`}>
             <p>
               {person.name} sets off {setOff(yours)} and eases {eased(yours)} of the {plural(yours.length, "difficult aspect")} in your chart, and brings out {broughtOut(yourGifts)} of your {plural(yourGifts.length, "strength")}. You set off {setOff(theirs)}, ease {eased(theirs)} and bring out {broughtOut(theirGifts)} in theirs. Your elements are in tune on {inTune} of {plural(allLevels.length, "link")}. Subscribe to see which ones and how, along with each contact, where you land in each other’s lives, the relationship’s own chart and its timing for the next 12 months.
             </p>
