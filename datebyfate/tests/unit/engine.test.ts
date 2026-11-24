@@ -9,6 +9,8 @@ import { practicesFor } from "@/lib/reading/practice";
 import { composite as readComposite } from "@/lib/reading/composite";
 import { C_PATTERNS } from "@/lib/reading/composite-love";
 import { coupleReport } from "@/lib/reading/couple";
+import { aspectsTo } from "@/lib/reading/context";
+import { HOUSE_LOVE, MARS_LOVE, MOON_LOVE, RISING_LOVE, SUN_LOVE, VENUS_LOVE } from "@/lib/reading/natal-love";
 import { aspectsOf, ownPattern } from "@/lib/reading/own";
 import { stelliumBetween, stelliumOf } from "@/lib/reading/stellium";
 import { synastryText } from "@/lib/reading/synastry";
@@ -521,5 +523,64 @@ describe("progressed Ascendant", () => {
     expect(hits.some((h) => h.length > 0)).toBe(true);
     expect(hits.filter((h) => h.length > 0).length).toBeLessThan(25);
     expect(timing.progressions(chart, Date.UTC(2026, 0, 1)).venus.every((v) => !v.basis.startsWith("Progressed Ascendant"))).toBe(true);
+  });
+});
+
+describe("placements are weighed by their aspects", () => {
+  // A chart like the owner's test case: Aries rising, Mars in Gemini ruling the chart, Sun and Venus in Pisces,
+  // Pluto in Scorpio in the 7th making only trines.
+  const lon = (sign: number, deg: number) => sign * 30 + deg;
+  const body = (l: number) => ({ lon: l, speed: 1 });
+  const chart = {
+    utc: "1990-03-10T06:00:00.000Z",
+    moonSignCertain: true,
+    houses: { cusps: Array.from({ length: 12 }, (_, i) => lon(i, 10)), asc: lon(0, 10), mc: lon(9, 10) },
+    bodies: {
+      sun: body(lon(11, 7)), moon: body(lon(3, 6)), mercury: body(lon(10, 25)), venus: body(lon(11, 5)), mars: body(lon(2, 20)),
+      jupiter: body(lon(3, 22)), saturn: body(lon(9, 24)), uranus: body(lon(9, 9)), neptune: body(lon(9, 14)), pluto: body(lon(7, 5)), node: body(lon(10, 12)),
+    },
+  } as Parameters<typeof ownPattern>[0];
+  const p = ownPattern(chart);
+  const card = (title: string) => [...p.core, ...p.arc.flatMap((a) => a.items)].find((i) => i.title === title)!;
+
+  it("a well-aspected Pluto in the 7th is not told it has a trust problem", () => {
+    const pluto = card("Pluto In Your 7th House");
+    expect(pluto.basis).toMatch(/supported by trine Sun, trine Moon, trine Venus/);
+    expect(pluto.basis).not.toMatch(/under pressure/);
+    expect(pluto.body).toMatch(/well supported in your chart, so the harder side of this placement is unlikely to be your story/);
+    expect(pluto.body).not.toMatch(/Under strain|When this is under pressure|Trust is hard/);
+    expect(aspectsTo(chart, "pluto")).toEqual({ hard: [], flowing: ["trine Sun", "trine Moon", "trine Venus"] });
+  });
+
+  it("the same Pluto under a square gets the difficult form, as a tendency", () => {
+    const squared = { ...chart, bodies: { ...chart.bodies, mars: body(lon(4, 5)) } }; // Mars in Leo, square Pluto
+    const pluto = ownPattern(squared).arc.flatMap((a) => a.items).find((i) => i.title === "Pluto In Your 7th House")!;
+    expect(pluto.basis).toMatch(/under pressure from square Mars/);
+    expect(pluto.body).toMatch(/Under strain|When this is under pressure/);
+    expect(pluto.body).toMatch(/It also has support in your chart/);
+  });
+
+  it("reads the rising sign through its ruler", () => {
+    const rising = card("How You Come Across");
+    expect(rising.body).toMatch(/Your chart ruler, Mars, is in Gemini, so this comes out through talk, wit and curiosity\./);
+    expect(rising.basis).toMatch(/^Aries rising; Mars in Gemini, 3rd house/);
+    expect(rising.body).not.toMatch(/dangerous|alarm/i);
+  });
+
+  it("does not set the chart ruler against who the person is", () => {
+    const titles = elementReading(chart).insights.map((i) => i.title);
+    expect(titles).toContain("Two Sides Of You");
+    expect(titles).not.toContain("What Excites You Against Who You Are");
+    expect(elementReading(chart).insights.find((i) => i.title === "Two Sides Of You")!.body).toMatch(/^Mars rules your chart, so its air way of going after what you want is as much who you are as your water Sun\./);
+  });
+
+  it("no reading in the library uses the rejected wording", () => {
+    const all = [SUN_LOVE, MOON_LOVE, RISING_LOVE, VENUS_LOVE, MARS_LOVE].flat().concat(Object.values(HOUSE_LOVE).flatMap((h) => Object.values(h.planets)));
+    expect(all).toHaveLength(120);
+    for (const r of all) {
+      expect(r.strain).toMatch(/^(Under strain,|When this is under pressure,)/);
+      expect(`${r.core} ${r.strain}`).not.toMatch(/dangerous|alarm|intimidat|betray|heartbreak|\balways\b|\bnever\b/i);
+      expect(r.core).not.toMatch(/Under strain|under pressure/);
+    }
   });
 });

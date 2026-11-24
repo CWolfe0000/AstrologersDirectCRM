@@ -1,5 +1,7 @@
 import type { BodyId, Chart } from "@/lib/astro/types";
 import { LUMINARY_ORBS, NATAL_ORBS, TIGHT_ORBS, POINT_NAMES, SIGNS, aspectBetween, houseOf, ordinal, signIndex, signName } from "@/lib/astro/zodiac";
+import { delta } from "@/lib/astro/spherical";
+import { SIGN_MANNER, aspectsTo, weigh, type Reading } from "./context";
 import { HOUSE_LOVE, MARS_LOVE, MOON_LOVE, RISING_LOVE, SUN_LOVE, VENUS_LOVE } from "./natal-love";
 import { ownStellium } from "./stellium";
 import { DESCENDANT, DYNAMICS, KIND_NOTE, type Dynamic, RULER_HOUSE, VENUS_HEADLINES } from "./text";
@@ -83,13 +85,30 @@ export function ownPattern(chart: Chart): OwnPattern {
   const notes: string[] = [];
   const place = (id: BodyId) => `${POINT_NAMES[id]} in ${signName(b[id].lon)}${h ? `, ${ordinal(houseOf(b[id].lon, h.cusps))} house` : ""}`;
 
+  // Each placement is weighed by the aspects that planet makes in this chart (context.ts).
+  const placed = (title: string, reading: Reading, id: BodyId, note = ""): Insight => {
+    const w = weigh(reading, aspectsTo(chart, id));
+    return { title, body: w.body, basis: `${place(id)}${note}; ${w.basis}` };
+  };
   const core: Insight[] = [
-    { title: "Who You Are In Love", body: SUN_LOVE[signIndex(b.sun.lon)]!, basis: place("sun") },
-    { title: "What Your Heart Needs", body: MOON_LOVE[signIndex(b.moon.lon)]!, basis: place("moon") + (chart.moonSignCertain ? "" : " (uncertain without a birth time)") },
-    { title: "How You Love", body: VENUS_LOVE[signIndex(b.venus.lon)]!, basis: place("venus") },
-    { title: "What You Go After", body: MARS_LOVE[signIndex(b.mars.lon)]!, basis: place("mars") },
+    placed("Who You Are In Love", SUN_LOVE[signIndex(b.sun.lon)]!, "sun"),
+    placed("What Your Heart Needs", MOON_LOVE[signIndex(b.moon.lon)]!, "moon", chart.moonSignCertain ? "" : " (uncertain without a birth time)"),
+    placed("How You Love", VENUS_LOVE[signIndex(b.venus.lon)]!, "venus"),
+    placed("What You Go After", MARS_LOVE[signIndex(b.mars.lon)]!, "mars"),
   ];
-  if (h) core.splice(2, 0, { title: "How You Come Across", body: RISING_LOVE[signIndex(h.asc)]!, basis: `${signName(h.asc)} rising` });
+  if (h) {
+    // The rising sign is read through its ruler: where that planet is, and the aspects it makes.
+    const rising = RISING_LOVE[signIndex(h.asc)]!;
+    const ruler = SIGNS[signIndex(h.asc)]!.ruler as BodyId;
+    const ctx = aspectsTo(chart, ruler);
+    const through = `Your chart ruler, ${POINT_NAMES[ruler]}, is in ${signName(b[ruler].lon)}, so this comes out ${SIGN_MANNER[signIndex(b[ruler].lon)]}.`;
+    const onAsc = (Object.keys(b) as BodyId[]).filter((id) => id !== "node" && Math.abs(delta(h.asc, b[id].lon)) <= 8).map((id) => POINT_NAMES[id]);
+    core.splice(2, 0, {
+      title: "How You Come Across",
+      body: `${rising.core} ${through}${ctx.hard.length ? ` ${rising.strain}` : ""}`,
+      basis: `${signName(h.asc)} rising; ${place(ruler)}${ctx.hard.length ? `, under pressure from ${ctx.hard.join(", ")}` : ctx.flowing.length ? `, supported by ${ctx.flowing.join(", ")}` : ""}${onAsc.length ? `; ${onAsc.join(", ")} rising` : ""}`,
+    });
+  }
   if (!chart.moonSignCertain) notes.push("The Moon changed sign on the day you were born, so your Moon sign depends on your birth time. The reading above uses noon.");
 
   const drawnTo: Insight[] = [];
@@ -115,7 +134,11 @@ export function ownPattern(chart: Chart): OwnPattern {
       for (const key of Object.keys(HOUSE_LOVE[house].planets) as (keyof (typeof HOUSE_LOVE)[4]["planets"])[]) {
         const lon = key === "southnode" ? b.node.lon + 180 : b[key].lon;
         const name = key === "southnode" ? "South Node" : POINT_NAMES[key];
-        if (houseOf(lon, h.cusps) === house) items.push({ title: `${name} In Your ${ordinal(house)} House`, body: HOUSE_LOVE[house].planets[key], basis: `${name} in ${signName(lon)}, ${ordinal(house)} house` });
+        if (houseOf(lon, h.cusps) !== house) continue;
+        const reading = HOUSE_LOVE[house].planets[key];
+        // The nodes take no aspects of their own here: both sides are given.
+        const w = key === "node" || key === "southnode" ? { body: `${reading.core} ${reading.strain}`, basis: "" } : weigh(reading, aspectsTo(chart, key));
+        items.push({ title: `${name} In Your ${ordinal(house)} House`, body: w.body, basis: `${name} in ${signName(lon)}, ${ordinal(house)} house${w.basis ? `; ${w.basis}` : ""}` });
       }
       if (items.length) arc.push({ house, meaning: HOUSE_LOVE[house].meaning, items });
     }
@@ -127,7 +150,7 @@ export function ownPattern(chart: Chart): OwnPattern {
   const lead = found.find((f) => f.hard) ?? null;
   const headline = lead
     ? { name: lead.title, line: firstSentence(lead.body) }
-    : { name: VENUS_HEADLINES[signIndex(b.venus.lon)]!, line: firstSentence(VENUS_LOVE[signIndex(b.venus.lon)]!) };
+    : { name: VENUS_HEADLINES[signIndex(b.venus.lon)]!, line: firstSentence(VENUS_LOVE[signIndex(b.venus.lon)]!.core) };
 
   return { headline, core, drawnTo, arc, dynamics, stellium: ownStellium(chart), notes };
 }
