@@ -353,6 +353,7 @@ describe("composite chart", () => {
     expect(c.sections[4]!.items).toHaveLength(4);
     expect(c.others).toHaveLength(5);
     for (const sec of c.sections) for (const i of sec.items) expect(i.body.length).toBeGreaterThan(40);
+    for (const i of [...c.sections.flatMap((x) => x.items).filter((x) => !/^Centred On/.test(x.title)), ...c.others]) expect(i.expressions!.length).toBeGreaterThanOrEqual(3);
     for (const i of [...c.easy, ...c.hard]) expect(i.basis).toMatch(/^Composite (Sun|Moon) (conjunction|opposition|square|trine|sextile) /);
     expect(c.pattern).toBeTruthy();
     expect(c.pattern).not.toMatch(/[{}]/);
@@ -562,17 +563,17 @@ describe("placements are weighed by their aspects", () => {
     const pluto = card("Pluto In Your 7th House");
     expect(pluto.basis).toMatch(/supported by trine Sun, trine Moon, trine Venus/);
     expect(pluto.basis).not.toMatch(/under pressure/);
-    expect(pluto.body).toMatch(/well supported in your chart, so the harder side of this placement is unlikely to be your story/);
-    expect(pluto.body).not.toMatch(/Under strain|When this is under pressure|Trust is hard/);
+    expect(pluto.lean).toMatch(/^In your chart this is supported \(trine Sun, trine Moon, trine Venus\), which favours the first expressions\.$/);
+    expect(pluto.expressions!.length).toBeGreaterThanOrEqual(3);
     expect(aspectsTo(chart, "pluto")).toEqual({ hard: [], flowing: ["trine Sun", "trine Moon", "trine Venus"] });
   });
 
-  it("the same Pluto under a square gets the difficult form, as a tendency", () => {
+  it("the same Pluto under a square leans toward the harder expressions", () => {
     const squared = { ...chart, bodies: { ...chart.bodies, mars: body(lon(4, 5)) } }; // Mars in Leo, square Pluto
     const pluto = ownPattern(squared).arc.flatMap((a) => a.items).find((i) => i.title === "Pluto In Your 7th House")!;
     expect(pluto.basis).toMatch(/under pressure from square Mars/);
-    expect(pluto.body).toMatch(/Under strain|When this is under pressure/);
-    expect(pluto.body).toMatch(/It also has support in your chart/);
+    expect(pluto.lean).toMatch(/both pressed \(square Mars\) and supported/);
+    expect(pluto.expressions).toEqual(HOUSE_LOVE[7].planets.pluto.expressions); // every expression is shown either way
   });
 
   it("reads the rising sign through its ruler", () => {
@@ -593,9 +594,8 @@ describe("placements are weighed by their aspects", () => {
     const all = [SUN_LOVE, MOON_LOVE, RISING_LOVE, VENUS_LOVE, MARS_LOVE].flat().concat(Object.values(HOUSE_LOVE).flatMap((h) => Object.values(h.planets)));
     expect(all).toHaveLength(120);
     for (const r of all) {
-      expect(r.strain).toMatch(/^(Under strain,|When this is under pressure,)/);
-      expect(`${r.core} ${r.strain}`).not.toMatch(/dangerous|alarm|intimidat|betray|heartbreak|\balways\b|\bnever\b/i);
-      expect(r.core).not.toMatch(/Under strain|under pressure/);
+      expect(r.expressions.length).toBeGreaterThanOrEqual(3);
+      expect(`${r.core} ${r.expressions.join(" ")}`).not.toMatch(/dangerous|alarm|intimidat/i);
     }
   });
 });

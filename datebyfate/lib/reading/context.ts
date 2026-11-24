@@ -2,16 +2,17 @@ import type { BodyId, Chart } from "@/lib/astro/types";
 import { LUMINARY_ORBS, NATAL_ORBS, POINT_NAMES, aspectBetween } from "@/lib/astro/zodiac";
 
 /**
- * A placement is never read alone. Every reading of a planet by sign or house comes in two parts:
- * what the placement is and needs (true whatever its aspects), and the difficult form it can
- * take. Which of the two the person sees depends on the aspects that planet actually makes in
- * their chart: a planet under hard aspect gets the difficult form as written; one with only easy
- * aspects is told the difficult form is unlikely to be their story.
+ * A placement is never read alone, and it is never watered down. Every reading of a planet by sign
+ * or house has a core (what the placement is and needs, at the strength the source gives it) and
+ * several expressions: distinct forms the same placement takes in real lives, ordered from the most
+ * constructive to the hardest. All of them are shown. The aspects the planet actually makes in the
+ * chart say which way it leans.
  */
 
 export interface Reading {
   core: string;
-  strain: string;
+  /** Three or four forms this placement takes, most constructive first, hardest last. */
+  expressions: string[];
 }
 
 export interface AspectContext {
@@ -44,13 +45,16 @@ export function aspectsTo(chart: Chart, point: BodyId): AspectContext {
   return out;
 }
 
-/** One reading, weighed by the aspects the planet makes. */
-export function weigh(reading: Reading, ctx: AspectContext, where = "your chart"): { body: string; basis: string } {
+export interface Weighed { body: string; expressions: string[]; lean: string; basis: string }
+
+/** One reading with all its expressions, and which way the planet's aspects lean it. */
+export function weigh(reading: Reading, ctx: AspectContext, where = "your chart"): Weighed {
   const { hard, flowing } = ctx;
-  if (hard.length && flowing.length) return { body: `${reading.core} ${reading.strain} It also has support in ${where}, which gives you a way through.`, basis: `under pressure from ${hard.join(", ")}; supported by ${flowing.join(", ")}` };
-  if (hard.length) return { body: `${reading.core} ${reading.strain}`, basis: `under pressure from ${hard.join(", ")}` };
-  if (flowing.length) return { body: `${reading.core} It is well supported in ${where}, so the harder side of this placement is unlikely to be your story.`, basis: `supported by ${flowing.join(", ")}` };
-  return { body: reading.core, basis: "no close aspects from the other planets" };
+  const base = { body: reading.core, expressions: reading.expressions };
+  if (hard.length && flowing.length) return { ...base, lean: `In ${where} this is both pressed (${hard.join(", ")}) and supported (${flowing.join(", ")}), so expect the whole range, with a way through the harder end.`, basis: `under pressure from ${hard.join(", ")}; supported by ${flowing.join(", ")}` };
+  if (hard.length) return { ...base, lean: `In ${where} this is under pressure (${hard.join(", ")}), which pulls toward the harder expressions until the pressure is worked with.`, basis: `under pressure from ${hard.join(", ")}` };
+  if (flowing.length) return { ...base, lean: `In ${where} this is supported (${flowing.join(", ")}), which favours the first expressions.`, basis: `supported by ${flowing.join(", ")}` };
+  return { ...base, lean: `Nothing in ${where} aspects this closely, so no expression is favoured.`, basis: "no close aspects from the other planets" };
 }
 
 /** How a chart ruler in each sign colours the way a person comes across. */

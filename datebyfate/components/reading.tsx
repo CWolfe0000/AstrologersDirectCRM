@@ -12,6 +12,15 @@ export function InsightCard({ insight, tag }: { insight: Insight; tag?: React.Re
         {tag}
       </div>
       <p className="mt-2 text-ink-2">{insight.body}</p>
+      {insight.expressions && insight.expressions.length > 0 && (
+        <div className="mt-3">
+          <p className="eyebrow">How It Shows Up</p>
+          <ul className="mt-1.5 list-disc space-y-1.5 pl-5 text-ink-2 marker:text-accent">
+            {insight.expressions.map((e) => <li key={e}>{e}</li>)}
+          </ul>
+          {insight.lean && <p className="mt-2.5 text-[13px] text-muted">{insight.lean}</p>}
+        </div>
+      )}
       <p className="mt-3 border-t border-line pt-2.5 text-[11.5px] font-medium uppercase tracking-wider text-muted">{insight.basis}</p>
     </article>
   );
@@ -81,7 +90,7 @@ export function PatternBody({ pattern, elements, part }: { pattern: OwnPattern; 
     <div className="[&>section:first-of-type]:mt-0">
       {show("pattern") && <NoteList notes={pattern.notes} />}
       {show("pattern") && (
-        <Section title="How you are in love" intro="Your Sun, Moon, rising sign, Venus and Mars. Each is weighed by the aspects that planet makes in your chart, listed under it.">
+        <Section title="How you are in love" intro="Your Sun, Moon, rising sign, Venus and Mars. Each comes with the several forms it takes, and the aspects that planet makes in your chart say which way it leans.">
           <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">{pattern.core.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
         </Section>
       )}
