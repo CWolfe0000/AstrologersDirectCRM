@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { saveMatch } from "@/app/actions";
+import { saveEx, saveMatch } from "@/app/actions";
+import { PageHeader } from "@/components/app-shell";
 import { PersonForm } from "@/components/forms";
 
-export const metadata: Metadata = { title: "Add Someone New" };
+export const metadata: Metadata = { title: "Add A Person" };
 
-export default function NewMatch() {
+export default async function NewPerson({ searchParams }: { searchParams: Promise<{ kind?: string }> }) {
+  const ex = (await searchParams).kind === "ex";
   return (
     <div className="mx-auto max-w-xl">
-      <Link href="/app/people" className="link text-sm">← Someone new</Link>
-      <h1 className="mt-3 text-4xl font-semibold">Add someone new</h1>
-      <p className="mb-6 mt-2 text-ink-2">Someone you have met, are seeing, or are with now.</p>
-      <div className="card"><PersonForm action={saveMatch} kind="match" submit="Add and read" /></div>
+      <Link href="/app/people" className="link text-[13px]">← People</Link>
+      <div className="mt-3"><PageHeader title={ex ? "Add a past partner" : "Add someone new"} subtitle={ex ? "A birth date is enough. Add the dates of the relationship if you remember them." : "Someone you have met, are seeing, or are with now."} /></div>
+      <div className="card"><PersonForm action={ex ? saveEx : saveMatch} kind={ex ? "ex" : "match"} submit={ex ? "Add" : "Add and read"} /></div>
     </div>
   );
 }

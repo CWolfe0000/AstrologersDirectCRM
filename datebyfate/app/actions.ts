@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import type { Chart } from "@/lib/astro/types";
 import { birthSchema, homeSchema, personFromForm, type PersonKind } from "@/lib/people";
 import type { Interval } from "@/lib/plans";
 import { elementReading } from "@/lib/reading/elements";
@@ -112,14 +113,14 @@ export async function deleteAccount(_: FormState, form: FormData): Promise<FormS
 
 /* ---------- The free reading (no account) ---------- */
 
-export type FreeReading = { error: string } | { pattern: OwnPattern; placements: Placement[]; elements: ReturnType<typeof elementReading> };
+export type FreeReading = { error: string } | { pattern: OwnPattern; placements: Placement[]; elements: ReturnType<typeof elementReading>; chart: Chart };
 
 export async function freeReading(input: unknown): Promise<FreeReading> {
   if (!(await rateLimit("free-reading", 30, 3_600_000))) return { error: BUSY };
   const birth = birthSchema.safeParse(input);
   if (!birth.success) return { error: birth.error.issues[0]?.message ?? "Check the birth details." };
   const chart = chartFor(birth.data);
-  return { pattern: ownPattern(chart), placements: placementsOf(chart), elements: elementReading(chart) };
+  return { pattern: ownPattern(chart), placements: placementsOf(chart), elements: elementReading(chart), chart };
 }
 
 /* ---------- People ---------- */
@@ -148,7 +149,7 @@ export async function saveEx(_: FormState, form: FormData): Promise<FormState> {
   const r = await savePersonFrom("ex", form);
   if (typeof r !== "string") return r;
   revalidatePath("/app", "layout");
-  redirect("/app/exes");
+  redirect(`/app/people/${r}`);
 }
 
 export async function saveMatch(_: FormState, form: FormData): Promise<FormState> {
@@ -162,7 +163,7 @@ export async function removePerson(form: FormData) {
   const user = await requireUser();
   await deletePerson(user.id, String(form.get("id") ?? ""));
   revalidatePath("/app", "layout");
-  redirect(String(form.get("back") ?? "") === "exes" ? "/app/exes" : "/app/people");
+  redirect("/app/people");
 }
 
 export async function saveWhereYouLive(_: FormState, form: FormData): Promise<FormState> {

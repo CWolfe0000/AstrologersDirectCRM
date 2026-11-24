@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageHeader } from "@/components/app-shell";
 import { Locked, Section } from "@/components/reading";
 import { POINT_NAMES } from "@/lib/astro/zodiac";
 import { plural } from "@/lib/format";
@@ -42,25 +43,21 @@ export default async function Practice() {
 
   return (
     <div>
-      <h1 className="text-4xl font-semibold">Practice</h1>
-      <p className="mt-2 max-w-2xl text-ink-2">
-        Planetary magic, timed by the planetary day and hour where you live: what each hour of today is used for, the full set of forty-nine hour and day pairings, and a practice matched to each pattern in your chart.
-      </p>
+      <PageHeader title="Practice" subtitle="Planetary magic, timed by the planetary day and hour where you live: what each hour of today is used for, all forty-nine hour and day pairings, and a practice matched to each pattern in your chart." />
+      <p className="max-w-3xl rounded-lg border border-line bg-white px-4 py-3 text-[13px] text-muted">{DISCLAIMER}</p>
 
-      <p className="mt-4 max-w-2xl rounded-xl border border-line bg-paper px-4 py-3 text-sm text-muted">{DISCLAIMER}</p>
-
-      {!self.home && <p className="mt-5 rounded-xl bg-gold-soft px-4 py-3 text-sm text-ink-2">Times are for your birthplace, {self.birth.place}, until you say where you live now.</p>}
+      {!self.home && <p className="mt-4 rounded-lg bg-warn-50 px-4 py-3 text-[13px] text-ink-2">Times are for your birthplace, {self.birth.place}, until you say where you live now.</p>}
 
       {day && today ? (
         <>
-          <section className="mt-8 rounded-3xl bg-night px-6 py-8 text-cream sm:px-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-rose-line">Today in {place.place}</p>
-            <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">{day.weekday}, Day Of {POINT_NAMES[day.ruler]}</h2>
-            <p className="mt-3 max-w-2xl text-cream/85">
+          <section className="card mt-6">
+            <p className="eyebrow">Today in {place.place}</p>
+            <h2 className="mt-1 text-[26px]">{day.weekday}, Day Of {POINT_NAMES[day.ruler]}</h2>
+            <p className="mt-2 max-w-3xl text-ink-2">
               {POINT_NAMES[day.ruler]} is worked with for {today.purpose}. The planetary day runs from sunrise ({clock.format(day.sunrise)}) to the next sunrise.
               {current && ` It is now the hour of ${POINT_NAMES[current.planet]}, until ${clock.format(current.end)}.`}
             </p>
-            <ul className="mt-4 space-y-1 text-sm text-cream/70">{notes.map((n) => <li key={n}>{n}</li>)}</ul>
+            <ul className="mt-3 space-y-1 text-[13px] text-muted">{notes.map((n) => <li key={n}>{n}</li>)}</ul>
           </section>
 
           <Section title="Today’s five minutes" intro={`For ${POINT_NAMES[day.ruler]}. Best in one of its own hours today: ${day.hours.filter((h) => h.planet === day.ruler && h.end > now).map(span).join(", ") || "they have passed for today"}.`}>
@@ -85,7 +82,7 @@ export default async function Practice() {
                   <ol>
                     {day.hours.filter((h) => h.night === night).map((h) => (
                       <li key={h.start} className="border-b border-line py-2 last:border-0">
-                        <div className={`flex justify-between gap-4 ${h === current ? "font-semibold text-rose-hover" : h.planet === day.ruler ? "font-semibold" : ""}`}>
+                        <div className={`flex justify-between gap-4 ${h === current ? "font-semibold text-accent" : h.planet === day.ruler ? "font-semibold" : ""}`}>
                           <span>{POINT_NAMES[h.planet]}{h === current && " · now"}</span>
                           <span className="tabular-nums">{span(h)}</span>
                         </div>

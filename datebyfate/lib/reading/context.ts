@@ -45,12 +45,12 @@ export function aspectsTo(chart: Chart, point: BodyId): AspectContext {
 }
 
 /** One reading, weighed by the aspects the planet makes. */
-export function weigh(reading: Reading, ctx: AspectContext): { body: string; basis: string } {
+export function weigh(reading: Reading, ctx: AspectContext, where = "your chart"): { body: string; basis: string } {
   const { hard, flowing } = ctx;
-  if (hard.length && flowing.length) return { body: `${reading.core} ${reading.strain} It also has support in your chart, which gives you a way through.`, basis: `under pressure from ${hard.join(", ")}; supported by ${flowing.join(", ")}` };
+  if (hard.length && flowing.length) return { body: `${reading.core} ${reading.strain} It also has support in ${where}, which gives you a way through.`, basis: `under pressure from ${hard.join(", ")}; supported by ${flowing.join(", ")}` };
   if (hard.length) return { body: `${reading.core} ${reading.strain}`, basis: `under pressure from ${hard.join(", ")}` };
-  if (flowing.length) return { body: `${reading.core} It is well supported in your chart, so the harder side of this placement is unlikely to be your story.`, basis: `supported by ${flowing.join(", ")}` };
-  return { body: reading.core, basis: "no close aspects from your other planets" };
+  if (flowing.length) return { body: `${reading.core} It is well supported in ${where}, so the harder side of this placement is unlikely to be your story.`, basis: `supported by ${flowing.join(", ")}` };
+  return { body: reading.core, basis: "no close aspects from the other planets" };
 }
 
 /** How a chart ruler in each sign colours the way a person comes across. */

@@ -3,24 +3,34 @@
 @tailwind utilities;
 
 @layer base {
-  html { @apply bg-cream text-ink antialiased; }
-  body { @apply font-sans text-[16px] leading-relaxed; }
-  h1, h2, h3 { @apply font-display tracking-tight; font-variation-settings: "opsz" 96; }
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body { @apply bg-canvas font-sans text-[14.5px] leading-relaxed text-ink; }
+  h1, h2, h3, h4 { @apply font-display tracking-normal; }
   /* House style: every word of a heading starts with a capital. Use .heading on heading-like text that isn't an h1–h4. */
   h1, h2, h3, h4, legend, .heading { text-transform: capitalize; }
-  :focus-visible { @apply outline-none ring-2 ring-rose ring-offset-2 ring-offset-cream; }
-  ::selection { background: #f0c9d0; }
+  ::selection { background: #EDDCE1; }
+  :focus-visible { outline: 2px solid #824B59; outline-offset: 2px; }
+  input, textarea, select { font: inherit; }
 }
 
 @layer components {
-  .btn { @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-[15px] font-semibold transition-colors disabled:opacity-60; }
-  .btn-primary { @apply btn bg-rose text-white hover:bg-rose-hover; }
-  .btn-dark { @apply btn bg-ink text-cream hover:bg-ink-2; }
-  .btn-ghost { @apply btn border border-line-strong bg-paper text-ink hover:border-ink; }
-  .btn-light { @apply btn bg-cream text-ink hover:bg-white; }
-  .card { @apply rounded-2xl border border-line bg-paper p-6 shadow-card; }
-  .label { @apply mb-1.5 block text-sm font-semibold text-ink; }
-  .input { @apply block w-full rounded-xl border border-line-strong bg-white px-3.5 py-2.5 text-[15px] text-ink placeholder:text-muted/70 focus:border-rose focus:outline-none focus:ring-2 focus:ring-rose/25; }
-  .eyebrow { @apply text-xs font-semibold uppercase tracking-[0.14em] text-rose; }
-  .link { @apply font-semibold text-rose underline-offset-4 hover:underline; }
+  .btn { @apply inline-flex h-9 items-center justify-center gap-2 rounded-lg px-3.5 text-[13.5px] font-medium transition-colors disabled:opacity-60; }
+  .btn-primary { @apply btn bg-accent text-white hover:bg-accent-hover; }
+  .btn-dark { @apply btn bg-ink text-white hover:bg-ink-2; }
+  .btn-ghost { @apply btn border border-line-strong bg-white text-ink hover:bg-canvas; }
+  .btn-light { @apply btn bg-white text-ink hover:bg-canvas; }
+  .card { @apply rounded-xl border border-line bg-white p-5 shadow-card; }
+  .label { @apply mb-1.5 block text-[13px] font-medium text-ink; }
+  .input { @apply block h-9 w-full rounded-lg border border-line-strong bg-white px-3 text-[14px] text-ink placeholder:text-muted/70 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20; }
+  .eyebrow { @apply text-[11px] font-semibold uppercase tracking-[0.12em] text-muted; }
+  .link { @apply font-medium text-accent underline-offset-4 hover:underline; }
+  .glyph { font-family: "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols", "Noto Sans Symbols 2", "DejaVu Sans", sans-serif; font-variant-emoji: text; }
+  .scrollbar-thin { scrollbar-width: thin; scrollbar-color: #D6CFC6 transparent; }
+  .chip { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-[12px] font-medium; }
 }
+
+/* DM Serif Display has one weight: stop headings being faux-bolded by weight utilities. */
+h1, h2, h3, h4, [class~="font-display"] { font-weight: 400 !important; }
+
+/* Grid items default to min-width:auto, which lets long content push layouts wider than phones. */
+.grid > * { min-width: 0; }

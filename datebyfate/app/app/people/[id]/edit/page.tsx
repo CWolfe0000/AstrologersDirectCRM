@@ -15,7 +15,7 @@ export default async function EditPerson({ params }: { params: Promise<{ id: str
   return (
     <div className="mx-auto max-w-xl">
       <Link href={`/app/people/${person.id}`} className="link text-sm">← {person.name}</Link>
-      <h1 className="mb-6 mt-3 text-4xl font-semibold">Edit {person.name}</h1>
+      <h1 className="mb-6 mt-3 text-[28px]">Edit {person.name}</h1>
       <div className="card"><PersonForm action={person.kind === "ex" ? saveEx : saveMatch} kind={person.kind} initial={person} submit="Save" /></div>
     </div>
   );

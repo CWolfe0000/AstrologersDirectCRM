@@ -5,7 +5,8 @@ import { useState, useTransition } from "react";
 import { freeReading, type FreeReading } from "@/app/actions";
 import { BirthFields } from "@/components/birth-fields";
 import { stashBirth } from "@/components/forms";
-import { Locked, PatternView } from "@/components/reading";
+import { ChartWheel } from "@/components/chart/wheel";
+import { Locked, PatternBody, PatternHeadline } from "@/components/reading";
 import type { Birth } from "@/lib/astro/types";
 
 export function FreeReadingTool({ signedIn }: { signedIn: boolean }) {
@@ -16,7 +17,11 @@ export function FreeReadingTool({ signedIn }: { signedIn: boolean }) {
   if (result && "pattern" in result)
     return (
       <div>
-        <PatternView pattern={result.pattern} placements={result.placements} elements={result.elements}>
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,520px)_1fr]">
+          <div className="card"><ChartWheel chart={result.chart} label="Your birth chart" /></div>
+          <PatternHeadline pattern={result.pattern} placements={result.placements} />
+        </div>
+        <PatternBody pattern={result.pattern} elements={result.elements} part="all" />
           <section className="mt-12 grid gap-4 lg:grid-cols-2">
             <div className="card">
               <h2 className="text-2xl font-semibold">Keep this reading</h2>
@@ -27,7 +32,7 @@ export function FreeReadingTool({ signedIn }: { signedIn: boolean }) {
               <p>This is what your chart says. Add your past partners and Datebyfate shows what they actually had in common, measured against chance, and checks anyone new against it.</p>
             </Locked>
           </section>
-        </PatternView>
+
         <button type="button" className="link mt-8" onClick={() => setResult(null)}>Read a different chart</button>
       </div>
     );

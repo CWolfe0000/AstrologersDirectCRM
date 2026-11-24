@@ -41,7 +41,8 @@ await page.getByRole("link", { name: "Get your free pattern" }).first().click();
 await page.waitForURL("**/reading");
 await fillBirth({ date: "1990-06-15", time: "14:30", city: "London" });
 await page.getByRole("button", { name: "Show my pattern" }).click();
-await page.getByText("Your pattern", { exact: true }).waitFor();
+await page.getByRole("heading", { name: "How you are in love" }).waitFor();
+assert.ok(await page.locator("svg[role=img]").count() >= 1, "free reading shows a chart wheel");
 assert.match(await page.locator("body").innerText(), /Descendant in Aries/i);
 assert.match(await page.locator("body").innerText(), /Venus in (Taurus|Gemini|Cancer)/i);
 await shot("02-free-reading");
@@ -57,11 +58,19 @@ await page.waitForURL("**/app");
 await page.getByRole("heading", { name: "Welcome, Robin" }).waitFor();
 assert.equal(await page.inputValue('input[name="date"]'), "1990-06-15");
 await page.getByText(/^Time zone: Europe\/London/).waitFor();
-await page.getByRole("button", { name: "Show my pattern" }).click();
-await page.getByRole("heading", { name: "Your recurring dynamics" }).waitFor();
-await page.getByRole("heading", { name: "Your elements" }).waitFor();
+await page.getByRole("button", { name: "Show my chart" }).click();
+await page.getByRole("heading", { level: 1, name: "You" }).waitFor();
+await page.getByRole("heading", { name: "How you are in love" }).waitFor();
 await page.getByRole("heading", { name: "Your next relationship period" }).waitFor();
+assert.ok(await page.locator("main svg[role=img]").count() >= 1, "You page shows the natal wheel");
 await shot("03-app-home");
+await page.goto(`${BASE}/app?tab=elements`);
+await page.getByRole("heading", { name: "Your elements" }).waitFor();
+await page.goto(`${BASE}/app?tab=dynamics`);
+await page.getByRole("heading", { name: "Your recurring dynamics" }).waitFor();
+await page.goto(`${BASE}/app?tab=aspects`);
+await page.getByRole("heading", { name: "Aspects in your chart" }).waitFor();
+await shot("03b-you-aspects");
 
 step("add past partners");
 const exes = [
@@ -70,7 +79,7 @@ const exes = [
   { name: "Jo", date: "1989-03-14", time: null, city: "London", met: "2019-01-05", start: "2019-06-01", end: "2022-06-01", ending: "me", friends: "yes" },
 ];
 for (const ex of exes) {
-  await page.goto(`${BASE}/app/exes/new`);
+  await page.goto(`${BASE}/app/people/new?kind=ex`);
   await page.fill("#person-name", ex.name);
   await fillBirth(ex);
   await page.fill("#metDate", ex.met);
@@ -79,8 +88,12 @@ for (const ex of exes) {
   await page.selectOption("#stayedFriends", ex.friends);
   await page.selectOption("#ending", ex.ending);
   await page.getByRole("button", { name: "Add", exact: true }).click();
-  await page.waitForURL("**/app/exes");
+  await page.waitForURL(/\/app\/people\/p_/);
 }
+await page.goto(`${BASE}/app/people`);
+await page.getByRole("heading", { level: 1, name: "People" }).waitFor();
+await shot("04a-people");
+await page.goto(`${BASE}/app/patterns`);
 await page.getByRole("heading", { name: /repeats? found|No repeats/ }).waitFor();
 let text = await page.locator("main").innerText();
 assert.match(text, /A random group of 3 people born in the same years would show about \d+\.\d/i);
@@ -93,15 +106,23 @@ if (hasRepeats) assert.match(text, /Subscribe to see what each one is/i); // fre
 await shot("04-exes-free");
 
 step("add someone new (free plan: locked report)");
-await page.goto(`${BASE}/app/people/new`);
+await page.goto(`${BASE}/app/people/new?kind=match`);
 await page.fill("#person-name", "Charlie");
 await fillBirth({ date: "1991-09-23", time: "19:40", city: "Madrid" });
 await page.getByRole("button", { name: "Add and read" }).click();
 await page.waitForURL(/\/app\/people\/p_/);
 const personUrl = page.url();
+await page.getByRole("heading", { level: 1, name: "Charlie" }).waitFor();
+await shot("05-person-overview");
+await page.goto(personUrl + "?tab=between");
+await page.getByText(/between your charts/i).waitFor();
+assert.ok(await page.locator("main svg[role=img]").count() >= 1, "bi-wheel is drawn on the free plan");
 text = await page.locator("main").innerText();
 assert.match(text, /\d+ flowing contacts? and \d+ challenging contacts? between your charts/i);
 assert.doesNotMatch(text, /How your charts meet/i);
+await page.goto(personUrl + "?tab=triggers");
+await page.getByText(/Charlie sets off/).waitFor();
+text = await page.locator("main").innerText();
 assert.match(text, /Charlie sets off \d+ and eases \d+ of the \d+ difficult aspects? in your chart, and brings out \d+ of your \d+ strengths?/i);
 await shot("05-person-free");
 
@@ -114,23 +135,31 @@ await shot("06-pricing");
 
 step("subscriber view");
 execFileSync("node", ["scripts/set-plan.mjs", email, "premium"], { stdio: "inherit" });
-await page.goto(`${BASE}/app/exes`);
+await page.goto(`${BASE}/app/patterns`);
 text = await page.locator("main").innerText();
 if (hasRepeats) assert.match(text, /usual rate about/i);
 assert.doesNotMatch(text, /Subscribe to see/i);
 await shot("07-exes-premium");
-await page.goto(personUrl);
+await page.goto(personUrl + "?tab=between");
 await page.getByRole("heading", { name: "How your charts meet" }).waitFor();
-await page.getByRole("heading", { name: "The relationship itself" }).waitFor();
+await page.getByRole("heading", { name: "Aspect grid" }).waitFor();
 await page.getByRole("heading", { name: "Your elements together" }).waitFor();
+text = await page.locator("main").innerText();
+assert.match(text, /Charlie’s (Sun|Moon|Ascendant|Venus|Mars)[A-Za-z, ]* in your \d+(st|nd|rd|th) house/i);
+await shot("08-person-between");
+await page.goto(personUrl + "?tab=triggers");
 await page.getByRole("heading", { name: "What you set off in each other" }).waitFor();
 await page.getByRole("heading", { name: "What you bring out in each other" }).waitFor();
 assert.equal(await page.getByRole("heading", { name: "In Charlie", exact: true }).count(), 2);
-text = await page.locator("main").innerText();
-assert.match(text, /Charlie’s (Sun|Moon|Ascendant|Venus|Mars)[A-Za-z, ]* in your \d+(st|nd|rd|th) house/i);
-await shot("08-person-premium");
+await shot("08b-person-triggers");
+await page.goto(personUrl + "?tab=relationship");
+await page.getByRole("heading", { name: "The next 12 months for the two of you" }).waitFor();
+assert.ok(await page.locator("main svg[role=img]").count() >= 1, "composite wheel is drawn");
+await shot("08c-person-relationship");
 await page.goto(`${BASE}/app/timing`);
-await page.getByRole("heading", { name: "Your relationship calendar" }).waitFor();
+await page.waitForURL("**/app/calendar");
+await page.getByRole("heading", { level: 1, name: "Calendar" }).waitFor();
+assert.ok(await page.locator("main svg[role=img]").count() >= 1, "transit wheel is drawn");
 assert.ok((await page.locator("article ul > li").count()) >= 1);
 await shot("09-timing");
 
@@ -158,14 +187,15 @@ await page.fill("#person-name", "Charlie B");
 await page.getByRole("button", { name: "Save" }).click();
 await page.waitForURL(personUrl);
 await page.getByRole("heading", { level: 1, name: "Charlie B" }).waitFor();
-await page.getByRole("button", { name: "Delete Charlie B" }).click();
+await page.getByRole("button", { name: "Delete", exact: true }).click();
 await page.waitForURL("**/app/people");
-await page.getByText("Nobody here yet.").waitFor();
+await page.getByRole("heading", { level: 1, name: "People" }).waitFor();
+assert.doesNotMatch(await page.locator("main").innerText(), /Charlie B/);
 
 step("another member cannot open someone else's person");
 const other = await browser.newContext();
 const stranger = await other.newPage();
-await stranger.goto(`${BASE}/app/exes`);
+await stranger.goto(`${BASE}/app/patterns`);
 await stranger.waitForURL("**/login"); // signed out → sign-in page
 await other.close();
 
@@ -190,11 +220,11 @@ assert.ok([400, 503].includes(hook.status()), `webhook answered ${hook.status()}
 
 step("mobile layout has no sideways scroll");
 await page.setViewportSize({ width: 390, height: 800 });
-for (const path of ["/", "/pricing", "/app", "/app/exes", "/app/timing"]) {
+for (const path of ["/", "/pricing", "/app", "/app/people", "/app/patterns", "/app/calendar", "/app/practice"]) {
   await page.goto(BASE + path);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   assert.ok(overflow <= 1, `${path} scrolls sideways by ${overflow}px`);
-  if (path === "/" || path === "/app") await shot(`11-mobile${path.replace(/\//g, "-")}`);
+  if (path !== "/pricing") await shot(`11-mobile${path.replace(/\//g, "-")}`);
 }
 await page.setViewportSize({ width: 1280, height: 900 });
 

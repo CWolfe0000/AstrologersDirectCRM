@@ -8,19 +8,19 @@ export function InsightCard({ insight, tag }: { insight: Insight; tag?: React.Re
   return (
     <article className="card">
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
-        <h3 className="text-xl font-semibold">{insight.title}</h3>
+        <h3 className="text-[18px] leading-snug">{insight.title}</h3>
         {tag}
       </div>
       <p className="mt-2 text-ink-2">{insight.body}</p>
-      <p className="mt-3 text-xs font-medium uppercase tracking-wider text-muted">{insight.basis}</p>
+      <p className="mt-3 border-t border-line pt-2.5 text-[11.5px] font-medium uppercase tracking-wider text-muted">{insight.basis}</p>
     </article>
   );
 }
 
 export function Section({ title, intro, children }: { title: string; intro?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="mt-12">
-      <h2 className="text-2xl font-semibold sm:text-[28px]">{title}</h2>
+    <section className="mt-10">
+      <h2 className="text-[22px]">{title}</h2>
       {intro && <p className="mt-1.5 max-w-2xl text-muted">{intro}</p>}
       <div className="mt-5 grid gap-4">{children}</div>
     </section>
@@ -39,8 +39,8 @@ export function NoteList({ notes }: { notes: string[] }) {
 /** What a locked section says: what is behind it, in real numbers, and the way in. */
 export function Locked({ title, children, signedIn = true }: { title: string; children: React.ReactNode; signedIn?: boolean }) {
   return (
-    <div className="rounded-2xl border border-rose-line bg-rose-soft p-6">
-      <p className="eyebrow">Subscribers</p>
+    <div className="rounded-xl border border-accent-200 bg-accent-50 p-5">
+      <p className="eyebrow !text-accent">Subscribers</p>
       <h3 className="mt-1 text-xl font-semibold">{title}</h3>
       <div className="mt-2 text-ink-2">{children}</div>
       <Link href={signedIn ? "/pricing" : "/signup"} className="btn-primary mt-4">{signedIn ? "See plans" : "Create a free account"}</Link>
@@ -50,65 +50,79 @@ export function Locked({ title, children, signedIn = true }: { title: string; ch
 
 export function Placements({ placements }: { placements: Placement[] }) {
   return (
-    <ul className="flex flex-wrap gap-2" aria-label="Your placements">
+    <ul className="flex flex-wrap gap-1.5" aria-label="Placements">
       {placements.map((p) => (
-        <li key={p.point} className="rounded-full border border-cream/25 px-3 py-1 text-sm text-cream/90">
-          <span className="text-cream/60">{p.point}</span> {p.sign}
+        <li key={p.point} className="chip border border-line bg-white text-ink">
+          <span className="mr-1 text-muted">{p.point}</span> {p.sign}
         </li>
       ))}
     </ul>
   );
 }
 
-/** Your own pattern: the free reading and the top of the member's home page. */
-export function PatternView({ pattern, placements, elements, children }: { pattern: OwnPattern; placements: Placement[]; elements: { balance: ElementBalance; insights: Insight[] }; children?: React.ReactNode }) {
+export type PatternPart = "pattern" | "elements" | "dynamics" | "intimacy" | "all";
+
+/** The headline of a pattern: its name, and the one line that goes with it. */
+export function PatternHeadline({ pattern, placements }: { pattern: OwnPattern; placements: Placement[] }) {
   return (
-    <div>
-      <div className="rounded-3xl bg-night px-6 py-9 text-cream sm:px-10 sm:py-12">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-rose-line">Your pattern</p>
-        <h1 className="mt-2 text-4xl font-semibold sm:text-5xl">{pattern.headline.name}</h1>
-        <p className="mt-3 max-w-2xl text-lg text-cream/85">{pattern.headline.line}</p>
-        <div className="mt-6"><Placements placements={placements} /></div>
-      </div>
-      <NoteList notes={pattern.notes} />
-      <Section title="How you are in love" intro="Your Sun, Moon, rising sign, Venus and Mars: who you are, what your heart needs, how you come across, how you love and what you go after.">
-        <div className="grid gap-4 lg:grid-cols-3">{pattern.core.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
-      </Section>
-      {pattern.stellium && (
+    <div className="card">
+      <p className="eyebrow">Your Pattern</p>
+      <h2 className="mt-1 text-[26px] leading-tight">{pattern.headline.name}</h2>
+      <p className="mt-2 text-ink-2">{pattern.headline.line}</p>
+      <div className="mt-4"><Placements placements={placements} /></div>
+    </div>
+  );
+}
+
+/** The readings of your own chart, whole or one part at a time (the tabs on the You page). */
+export function PatternBody({ pattern, elements, part }: { pattern: OwnPattern; elements: { balance: ElementBalance; insights: Insight[] }; part: PatternPart }) {
+  const show = (p: PatternPart) => part === "all" || part === p;
+  return (
+    <div className="[&>section:first-of-type]:mt-0">
+      {show("pattern") && <NoteList notes={pattern.notes} />}
+      {show("pattern") && (
+        <Section title="How you are in love" intro="Your Sun, Moon, rising sign, Venus and Mars. Each is weighed by the aspects that planet makes in your chart, listed under it.">
+          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">{pattern.core.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
+        </Section>
+      )}
+      {show("pattern") && pattern.stellium && (
         <Section title="Where your chart is concentrated">
           <InsightCard insight={pattern.stellium} />
         </Section>
       )}
-      <Section title="Your elements" intro="Fire, earth, air and water are the kinds of energy you run on. What your chart is full of comes naturally. What it lacks you have to cultivate, and it is often what draws you to other people.">
-        <ElementBars balance={elements.balance} />
-        <div className="grid gap-4 lg:grid-cols-2">{elements.insights.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
-      </Section>
-      {pattern.drawnTo.length > 0 && (
-        <Section title="Who you are drawn to" intro="Your 7th house: the partner your chart describes, and where partnership takes you.">
+      {show("pattern") && pattern.drawnTo.length > 0 && (
+        <Section title="Who you are drawn to" intro="Your Descendant and the ruler of your 7th house.">
           <div className="grid gap-4 lg:grid-cols-2">{pattern.drawnTo.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
         </Section>
       )}
-      {pattern.arc.length > 0 && (
-        <Section title="Your arc of intimacy" intro={ARC_OF_INTIMACY}>
-          {pattern.arc.map((a) => (
-            <div key={a.house}>
-              <p className="mb-3 text-ink-2">{a.meaning}</p>
-              <div className="grid gap-4 lg:grid-cols-2">{a.items.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
-            </div>
-          ))}
+      {show("elements") && (
+        <Section title="Your elements" intro="Fire, earth, air and water are the kinds of energy you run on. What your chart is full of comes naturally. What it lacks you have to cultivate, and it is often what draws you to other people.">
+          <ElementBars balance={elements.balance} />
+          <div className="grid gap-4 lg:grid-cols-2">{elements.insights.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
         </Section>
       )}
-      <Section
-        title="Your recurring dynamics"
-        intro={pattern.dynamics.length ? "What tends to happen once you are in a relationship, closest aspect first." : undefined}
-      >
-        {pattern.dynamics.length ? (
-          <div className="grid gap-4 lg:grid-cols-2">{pattern.dynamics.map((i) => <InsightCard key={i.basis} insight={i} />)}</div>
-        ) : (
-          <p className="card text-ink-2">Your chart has no close aspects between the relationship planets, so no single dynamic dominates. Your pattern is described best by the placements above.</p>
-        )}
-      </Section>
-      {children}
+      {show("dynamics") && (
+        <Section title="Your recurring dynamics" intro={pattern.dynamics.length ? "The aspects between your Sun, Moon, Venus and Mars and the other planets: what tends to happen once you are in a relationship, closest aspect first." : undefined}>
+          {pattern.dynamics.length ? (
+            <div className="grid gap-4 lg:grid-cols-2">{pattern.dynamics.map((i) => <InsightCard key={i.basis} insight={i} />)}</div>
+          ) : (
+            <p className="card text-ink-2">Your chart has no close aspects between the relationship planets, so no single dynamic dominates.</p>
+          )}
+        </Section>
+      )}
+      {show("intimacy") &&
+        (pattern.arc.length > 0 ? (
+          <Section title="Your arc of intimacy" intro={ARC_OF_INTIMACY}>
+            {pattern.arc.map((a) => (
+              <div key={a.house}>
+                <p className="mb-3 text-ink-2">{a.meaning}</p>
+                <div className="grid gap-4 lg:grid-cols-2">{a.items.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
+              </div>
+            ))}
+          </Section>
+        ) : part === "intimacy" ? (
+          <p className="card text-ink-2">You have no planets in your 4th to 8th houses, or your birth time is not known, so there is nothing to read here.</p>
+        ) : null)}
     </div>
   );
 }

@@ -49,4 +49,6 @@ npm run test:e2e                           # full walk-through in a browser (nee
 - `lib/reading/text.ts` — every sentence a reading can contain.
 - `lib/reading/own.ts`, `exes.ts`, `couple.ts` — the rules that assemble readings. `exes.ts` explains the base-rate method.
 - `lib/server/` — charts (Swiss Ephemeris), accounts, encrypted people, timing, Stripe.
+- `components/chart/` — the chart wheel (natal, bi-wheel, composite, transits), placements table, aspect table and aspect grid; `lib/astro/wheel.ts` holds the geometry.
+- `components/app-shell.tsx` — the signed-in layout: sidebar with You, People, Patterns, Calendar, Practice, Account. A person’s page (`app/app/people/[id]`) has tabs: Overview, Between You, Triggers And Support, The Relationship, At The Time.
 - `app/actions.ts` — every form on the site.

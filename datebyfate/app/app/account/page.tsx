@@ -12,7 +12,7 @@ export default async function Account({ searchParams }: { searchParams: Promise<
   const until = user.currentPeriodEnd ? formatDate(user.currentPeriodEnd.toISOString().slice(0, 10)) : null;
   return (
     <div className="mx-auto max-w-2xl space-y-5">
-      <h1 className="text-4xl font-semibold">Account</h1>
+      <h1 className="text-[28px]">Account</h1>
       {checkout === "success" && (
         <p role="status" className="rounded-xl bg-gold-soft px-4 py-3">
           {user.premium ? "Thank you. Your subscription is active." : "Thank you. Your payment went through and your subscription is being confirmed. Refresh this page in a moment."}
