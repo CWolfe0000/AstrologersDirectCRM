@@ -1,7 +1,8 @@
 import type { BodyId, Chart } from "@/lib/astro/types";
 import { LUMINARY_ORBS, NATAL_ORBS, TIGHT_ORBS, POINT_NAMES, SIGNS, aspectBetween, houseOf, ordinal, signIndex, signName } from "@/lib/astro/zodiac";
+import { HOUSE_LOVE, MARS_LOVE, MOON_LOVE, RISING_LOVE, SUN_LOVE, VENUS_LOVE } from "./natal-love";
 import { ownStellium } from "./stellium";
-import { DESCENDANT, DYNAMICS, KIND_NOTE, type Dynamic, IN_SEVENTH, MARS, MOON, RULER_HOUSE, VENUS, VENUS_HEADLINES } from "./text";
+import { DESCENDANT, DYNAMICS, KIND_NOTE, type Dynamic, RULER_HOUSE, VENUS_HEADLINES } from "./text";
 
 export interface Insight {
   title: string;
@@ -15,6 +16,8 @@ export interface OwnPattern {
   core: Insight[];
   /** Needs a birth time. */
   drawnTo: Insight[];
+  /** Planets in houses 4 to 8, the houses of intimacy. Needs a birth time. */
+  arc: { house: number; meaning: string; items: Insight[] }[];
   dynamics: Insight[];
   /** Three or more personal planets in one sign. */
   stellium: Insight | null;
@@ -81,10 +84,12 @@ export function ownPattern(chart: Chart): OwnPattern {
   const place = (id: BodyId) => `${POINT_NAMES[id]} in ${signName(b[id].lon)}${h ? `, ${ordinal(houseOf(b[id].lon, h.cusps))} house` : ""}`;
 
   const core: Insight[] = [
-    { title: "How you love", body: VENUS[signIndex(b.venus.lon)]!, basis: place("venus") },
-    { title: "What you need to feel safe", body: MOON[signIndex(b.moon.lon)]!, basis: place("moon") + (chart.moonSignCertain ? "" : " (uncertain without a birth time)") },
-    { title: "What you go after", body: MARS[signIndex(b.mars.lon)]!, basis: place("mars") },
+    { title: "Who You Are In Love", body: SUN_LOVE[signIndex(b.sun.lon)]!, basis: place("sun") },
+    { title: "What Your Heart Needs", body: MOON_LOVE[signIndex(b.moon.lon)]!, basis: place("moon") + (chart.moonSignCertain ? "" : " (uncertain without a birth time)") },
+    { title: "How You Love", body: VENUS_LOVE[signIndex(b.venus.lon)]!, basis: place("venus") },
+    { title: "What You Go After", body: MARS_LOVE[signIndex(b.mars.lon)]!, basis: place("mars") },
   ];
+  if (h) core.splice(2, 0, { title: "How You Come Across", body: RISING_LOVE[signIndex(h.asc)]!, basis: `${signName(h.asc)} rising` });
   if (!chart.moonSignCertain) notes.push("The Moon changed sign on the day you were born, so your Moon sign depends on your birth time. The reading above uses noon.");
 
   const drawnTo: Insight[] = [];
@@ -98,11 +103,22 @@ export function ownPattern(chart: Chart): OwnPattern {
       body: RULER_HOUSE[rulerHouse - 1]!,
       basis: `${POINT_NAMES[ruler]}, ruler of your 7th house, in your ${ordinal(rulerHouse)} house`,
     });
-    for (const id of Object.keys(IN_SEVENTH) as BodyId[])
-      if (houseOf(b[id].lon, h.cusps) === 7) drawnTo.push({ title: `${POINT_NAMES[id]} in your house of partnership`, body: IN_SEVENTH[id]!, basis: `${POINT_NAMES[id]} in your 7th house` });
   } else {
     notes.push("Without a birth time we can’t work out your rising sign or houses, so the section on who you are drawn to is missing. Add your birth time to see it.");
   }
+
+  // The arc of intimacy: every planet, and both nodes, in houses 4 to 8.
+  const arc: OwnPattern["arc"] = [];
+  if (h)
+    for (const house of [4, 5, 6, 7, 8] as const) {
+      const items: Insight[] = [];
+      for (const key of Object.keys(HOUSE_LOVE[house].planets) as (keyof (typeof HOUSE_LOVE)[4]["planets"])[]) {
+        const lon = key === "southnode" ? b.node.lon + 180 : b[key].lon;
+        const name = key === "southnode" ? "South Node" : POINT_NAMES[key];
+        if (houseOf(lon, h.cusps) === house) items.push({ title: `${name} In Your ${ordinal(house)} House`, body: HOUSE_LOVE[house].planets[key], basis: `${name} in ${signName(lon)}, ${ordinal(house)} house` });
+      }
+      if (items.length) arc.push({ house, meaning: HOUSE_LOVE[house].meaning, items });
+    }
 
   const found: (Insight & { orb: number; hard: boolean })[] = aspectsOf(chart).map((a) => ({ title: a.name, body: a.you, basis: aspectBasis(a), orb: a.orb, hard: a.hard }));
   found.sort((p, q) => p.orb - q.orb);
@@ -111,9 +127,9 @@ export function ownPattern(chart: Chart): OwnPattern {
   const lead = found.find((f) => f.hard) ?? null;
   const headline = lead
     ? { name: lead.title, line: firstSentence(lead.body) }
-    : { name: VENUS_HEADLINES[signIndex(b.venus.lon)]!, line: firstSentence(VENUS[signIndex(b.venus.lon)]!) };
+    : { name: VENUS_HEADLINES[signIndex(b.venus.lon)]!, line: firstSentence(VENUS_LOVE[signIndex(b.venus.lon)]!) };
 
-  return { headline, core, drawnTo, dynamics, stellium: ownStellium(chart), notes };
+  return { headline, core, drawnTo, arc, dynamics, stellium: ownStellium(chart), notes };
 }
 
 export type Placement = { point: string; sign: string };

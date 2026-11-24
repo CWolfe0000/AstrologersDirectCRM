@@ -47,7 +47,9 @@ describe("charts", () => {
 describe("own pattern", () => {
   it("reads the core placements and the partnership houses", () => {
     const p = ownPattern(chartFor(me));
-    expect(p.core.map((i) => i.title)).toEqual(["How you love", "What you need to feel safe", "What you go after"]);
+    expect(p.core.map((i) => i.title)).toEqual(["Who You Are In Love", "What Your Heart Needs", "How You Come Across", "How You Love", "What You Go After"]);
+    expect(p.arc.every((a) => a.house >= 4 && a.house <= 8 && a.items.length > 0)).toBe(true);
+    expect(p.arc.flatMap((a) => a.items).some((i) => i.basis.includes("8th house"))).toBe(true); // Venus in the 8th
     expect(p.drawnTo[0]!.basis).toBe("Descendant in Aries");
     expect(p.headline.name.length).toBeGreaterThan(3);
     expect(p.notes).toHaveLength(0);
@@ -56,6 +58,8 @@ describe("own pattern", () => {
   it("explains what is missing without a birth time", () => {
     const p = ownPattern(chartFor(born("1990-06-15")));
     expect(p.drawnTo).toHaveLength(0);
+    expect(p.arc).toHaveLength(0);
+    expect(p.core.map((i) => i.title)).not.toContain("How You Come Across");
     expect(p.notes.join(" ")).toMatch(/birth time/);
     expect(p.dynamics.every((d) => !d.basis.includes("Moon"))).toBe(true);
   });
@@ -494,5 +498,16 @@ describe("calendar: life cycle and triggers", () => {
       expect(windows.some((w) => w.title === t.sets && w.start <= t.date && t.date <= w.end)).toBe(true);
     }
     expect(timing.triggerDays(targets, [], from)).toHaveLength(0);
+  });
+});
+
+describe("progressed Ascendant", () => {
+  it("is read against Venus when the birth latitude is given, and moves about a degree a year", () => {
+    const chart = chartFor(me);
+    // Find an age at which the progressed Ascendant reaches natal Venus by some aspect.
+    const hits = Array.from({ length: 70 }, (_, age) => timing.progressions(chart, Date.parse(chart.utc) + age * 365.2422 * 86_400_000, 51.5074).venus.filter((v) => v.basis.startsWith("Progressed Ascendant")));
+    expect(hits.some((h) => h.length > 0)).toBe(true);
+    expect(hits.filter((h) => h.length > 0).length).toBeLessThan(25);
+    expect(timing.progressions(chart, Date.UTC(2026, 0, 1)).venus.every((v) => !v.basis.startsWith("Progressed Ascendant"))).toBe(true);
   });
 });

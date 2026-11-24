@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ARC_OF_INTIMACY } from "@/lib/reading/natal-love";
 import type { Insight, OwnPattern, Placement } from "@/lib/reading/own";
 import type { ElementBalance } from "@/lib/reading/elements";
 import type { DifficultAspect, Gift, Trigger } from "@/lib/reading/triggers";
@@ -70,7 +71,7 @@ export function PatternView({ pattern, placements, elements, children }: { patte
         <div className="mt-6"><Placements placements={placements} /></div>
       </div>
       <NoteList notes={pattern.notes} />
-      <Section title="How you are in love" intro="Venus, the Moon and Mars: affection, safety and desire.">
+      <Section title="How you are in love" intro="Your Sun, Moon, rising sign, Venus and Mars: who you are, what your heart needs, how you come across, how you love and what you go after.">
         <div className="grid gap-4 lg:grid-cols-3">{pattern.core.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
       </Section>
       {pattern.stellium && (
@@ -85,6 +86,16 @@ export function PatternView({ pattern, placements, elements, children }: { patte
       {pattern.drawnTo.length > 0 && (
         <Section title="Who you are drawn to" intro="Your 7th house: the partner your chart describes, and where partnership takes you.">
           <div className="grid gap-4 lg:grid-cols-2">{pattern.drawnTo.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
+        </Section>
+      )}
+      {pattern.arc.length > 0 && (
+        <Section title="Your arc of intimacy" intro={ARC_OF_INTIMACY}>
+          {pattern.arc.map((a) => (
+            <div key={a.house}>
+              <p className="mb-3 text-ink-2">{a.meaning}</p>
+              <div className="grid gap-4 lg:grid-cols-2">{a.items.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
+            </div>
+          ))}
         </Section>
       )}
       <Section

@@ -132,6 +132,7 @@ export const PROGRESSED_OTHER: Record<string, { title: string; body: string }> =
   "sun-venus": { title: "A Time Of Meetings", body: "Your evolving identity meets your Venus. Meetings that feel fated are likely, and you need the help of one or two people you feel equal to. Take social risks. The people involved are either brand new or old ties renewed." },
   "sun-moon": { title: "Decisions Of The Heart", body: "Your evolving identity meets your Moon. Questions of the heart come up: where to live, whether to be in this relationship, a milestone with a partner. Trust your instinct." },
   "mars-venus": { title: "Stirring The Pot", body: "Your evolving courage meets your Venus. You want more direct, wholehearted contact with the people who matter, and the polite habits that keep the peace start to chafe. Go for real renewal, and do not use more force than you need." },
+  "asc-venus": { title: "Ready To Meet Someone", body: "Your evolving way of meeting the world reaches your Venus. This is among the strongest signs of meeting people who matter to you, and you come across as warmer and more attractive. It still depends on you taking the first step." },
   "mars-moon": { title: "Under Pressure", body: "Your evolving courage meets your Moon. You are edgy and carrying a load that needs releasing. Decide for yourself what gives, before something gives for you." },
 };
 

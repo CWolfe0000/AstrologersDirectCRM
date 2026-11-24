@@ -1,11 +1,11 @@
 import "server-only";
 import type { BodyId, Chart } from "@/lib/astro/types";
-import { separation } from "@/lib/astro/spherical";
+import { eclipticToRA, separation } from "@/lib/astro/spherical";
 import { POINT_NAMES, SIGNS, aspectBetween, houseOf, ordinal, signIndex, type Orbs } from "@/lib/astro/zodiac";
 import { ARRIVES, FUNCTION, HOUSE_TRANSIT, LIFE_CYCLE, PROGRESSED_MOON_HOUSE, PROGRESSED_MOON_SIGN, PROGRESSED_OTHER, PROGRESSED_VENUS, TRANSIT, TRIGGER } from "@/lib/reading/forecast";
 import type { Insight } from "@/lib/reading/own";
 import { TARGET_AREA } from "@/lib/reading/text";
-import { bodiesAt } from "./swiss";
+import { bodiesAt, housesFromRamc } from "./swiss";
 
 export interface Target {
   /** Key into FUNCTION and TARGET_AREA. */
@@ -136,7 +136,7 @@ const PROGRESSED_ORBS: Orbs = { conjunction: 1.5, opposition: 1.5, square: 1.5, 
  * The progressed Moon gives the current chapter; progressed Venus meeting a natal point gives
  * a two or three year adjustment in how you relate.
  */
-export function progressions(chart: Chart, nowMs = Date.now()): { moon: Insight[]; venus: Insight[] } {
+export function progressions(chart: Chart, nowMs = Date.now(), birthLat?: number): { moon: Insight[]; venus: Insight[] } {
   const birth = Date.parse(chart.utc);
   const sky = bodiesAt(birth + ((nowMs - birth) / 365.2422));
   const moon: Insight[] = [];
@@ -168,6 +168,18 @@ export function progressions(chart: Chart, nowMs = Date.now()): { moon: Insight[
       const tail = asp.cls === "hard" ? " As a hard aspect it costs more and goes deeper." : asp.cls === "flowing" ? " As an easy aspect it goes smoothly, with a risk of staying on the surface." : "";
       venus.push({ title: t.title, body: t.body + tail, basis: `Progressed ${POINT_NAMES[mover]} ${asp.name} natal ${POINT_NAMES[target]}, ${asp.orb.toFixed(1)}° from exact` });
     }
+  // The progressed Ascendant: the Midheaven moved on by the progressed Sun's arc, and the Ascendant cast from it at the birth latitude.
+  if (chart.houses && birthLat !== undefined) {
+    const EPS = 23.44;
+    const mc = (((chart.houses.mc + sky.sun.lon - chart.bodies.sun.lon) % 360) + 360) % 360;
+    const asc = housesFromRamc(eclipticToRA(mc, EPS), birthLat, EPS).asc;
+    const asp = aspectBetween(asc, chart.bodies.venus.lon, PROGRESSED_ORBS);
+    if (asp) {
+      const t = PROGRESSED_OTHER["asc-venus"]!;
+      const tail = asp.cls === "hard" ? " As a hard aspect there are obstacles in the way, such as distance or existing ties." : asp.cls === "flowing" ? " As an easy aspect it flows, and is easier to let slip." : "";
+      venus.push({ title: t.title, body: t.body + tail, basis: `Progressed Ascendant ${asp.name} natal Venus, ${asp.orb.toFixed(1)}° from exact` });
+    }
+  }
   return { moon, venus };
 }
 

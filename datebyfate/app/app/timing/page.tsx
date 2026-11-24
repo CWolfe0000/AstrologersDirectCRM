@@ -15,7 +15,7 @@ export default async function Timing() {
   if (!self) return <p className="card">Add <Link className="link" href="/app">your own birth details</Link> to see your calendar.</p>;
   const windows = ownTiming(self.chart);
   const houses = houseTransits(self.chart);
-  const progressed = progressions(self.chart);
+  const progressed = progressions(self.chart, Date.now(), self.birth.lat);
   const cycle = lifeCycle(self.chart);
   const triggers = triggerDays(relationshipTargets(self.chart), windows);
   const shown = user.premium ? windows : windows.slice(0, 1);
