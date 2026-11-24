@@ -51,12 +51,13 @@ export function relationshipTargets(chart: Chart): Target[] {
 export const ownTiming = (chart: Chart) => transitWindows(relationshipTargets(chart));
 
 /**
- * Houses of the composite chart: cast from the midpoint of the two Midheavens (Hand, ch. 1).
- * Hand uses the latitude of the place the couple lives; we do not ask for that, so the mean of
- * the two birth latitudes stands in. Null unless both birth times are known.
+ * Houses of the composite chart: cast from the midpoint of the two Midheavens, for the place the
+ * couple first met (the Forrests, "Skymates, Volume Two"). When that place is not given, the mean
+ * of the two birth latitudes stands in. Null unless both birth times are known.
  */
 export function compositeHouses(a: Person & { chart: Chart }, b: Person & { chart: Chart }) {
   if (!a.chart.houses || !b.chart.houses) return null;
   const EPS = 23.44;
-  return housesFromRamc(eclipticToRA(midpoint(a.chart.houses.mc, b.chart.houses.mc), EPS), (a.birth.lat + b.birth.lat) / 2, EPS);
+  const lat = b.met?.lat ?? a.met?.lat ?? (a.birth.lat + b.birth.lat) / 2;
+  return { ...housesFromRamc(eclipticToRA(midpoint(a.chart.houses.mc, b.chart.houses.mc), EPS), lat, EPS), located: !!(b.met ?? a.met) };
 }

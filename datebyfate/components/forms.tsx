@@ -6,6 +6,7 @@ import type { FormState } from "@/app/actions";
 import type { Birth } from "@/lib/astro/types";
 import type { Person } from "@/lib/people";
 import { BirthFields } from "./birth-fields";
+import { PlacePicker, type Place } from "./place-picker";
 
 type Action = (state: FormState, form: FormData) => Promise<FormState>;
 
@@ -86,6 +87,7 @@ export function PersonForm({ action, kind, initial, submit }: { action: Action; 
   const [state, formAction] = useActionState(action, undefined);
   const [name, setName] = useState(initial?.name ?? "");
   const [extra, setExtra] = useState({ startYear: String(initial?.startYear ?? ""), endYear: String(initial?.endYear ?? ""), ending: initial?.ending ?? "" });
+  const [met, setMet] = useState<Place | null>(initial?.met ?? null);
   const set = (k: keyof typeof extra) => (e: React.ChangeEvent<HTMLSelectElement>) => setExtra((x) => ({ ...x, [k]: e.target.value }));
   return (
     <form action={formAction} className="space-y-5">
@@ -96,6 +98,14 @@ export function PersonForm({ action, kind, initial, submit }: { action: Action; 
         <p id="person-name-hint" className="mt-1.5 text-sm text-muted">Only you see this. A nickname or initial is enough.</p>
       </div>
       <BirthFields who="them" initial={initial?.birth} />
+      <div className="border-t border-line pt-5">
+        <PlacePicker value={met} onChange={setMet} label="Where you first met in person (optional)" />
+        <p className="-mt-1 text-sm text-muted">The chart of the relationship itself is cast for this place. Leave it empty if you are not sure.</p>
+        <input type="hidden" name="metPlace" value={met?.place ?? ""} />
+        <input type="hidden" name="metLat" value={met?.lat ?? ""} />
+        <input type="hidden" name="metLon" value={met?.lon ?? ""} />
+        <input type="hidden" name="metTz" value={met?.tz ?? ""} />
+      </div>
       {kind === "ex" && (
         <fieldset className="space-y-4 border-t border-line pt-5">
           <legend className="text-sm font-semibold">The relationship <span className="font-normal text-muted">(optional)</span></legend>

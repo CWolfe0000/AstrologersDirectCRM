@@ -11,6 +11,8 @@ export interface PersonData {
   endYear?: number | null;
   /** Who ended it. */
   ending?: "me" | "them" | "mutual" | null;
+  /** Where the two of you first met in person: the relationship’s chart is cast for this place. */
+  met?: Home | null;
   /** The member only: where they live now, for planetary hours. */
   home?: Home | null;
 }
@@ -54,6 +56,7 @@ export const personSchema = z
     startYear: year.nullish(),
     endYear: year.nullish(),
     ending: z.enum(["me", "them", "mutual"]).nullish(),
+    met: birthSchema.pick({ place: true, lat: true, lon: true, tz: true }).nullish(),
   })
   .refine((p) => !p.startYear || !p.endYear || p.endYear >= p.startYear, { message: "The end year is before the start year.", path: ["endYear"] });
 
@@ -74,6 +77,7 @@ export function personFromForm(form: FormData) {
     startYear: num("startYear"),
     endYear: num("endYear"),
     ending: form.get("ending") || null,
+    met: form.get("metPlace") ? { place: String(form.get("metPlace")), lat: Number(form.get("metLat")), lon: Number(form.get("metLon")), tz: String(form.get("metTz")) } : null,
   });
 }
 
