@@ -243,6 +243,7 @@ const consultation = z
     status: z.enum(["scheduled", "completed", "cancelled", "no-show"]),
     location: z.enum(["Live session", "Recorded reading", "Written reading", "Video call", "Audio call", "Phone", "In person"]),
     meetingUrl: opt(z.string().max(500).regex(/^https:\/\/[^\s]+$/, "Use a full https:// link")),
+    callMode: opt(z.enum(["video", "audio"])),
     chartIds: z.array(id).max(30),
     prepNotes: opt(str(50_000)),
     sessionNotes: opt(str(50_000)),

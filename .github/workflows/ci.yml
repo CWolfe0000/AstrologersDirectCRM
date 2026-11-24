@@ -35,6 +35,9 @@ jobs:
       STRIPE_SECRET_KEY: sk_test_mock
       STRIPE_API_BASE: http://127.0.0.1:4010
       STRIPE_WEBHOOK_SECRET: whsec_test_e2e
+      # Calls run against a stand-in for Daily started by tests/e2e/calls.mjs.
+      DAILY_API_KEY: mock
+      DAILY_API_BASE: http://127.0.0.1:4011
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -87,6 +90,7 @@ jobs:
           node tests/e2e/asteroids.mjs
           node tests/e2e/share-cards.mjs
           node tests/e2e/payments.mjs
+          node tests/e2e/calls.mjs
           node tests/e2e/booking.mjs
           node tests/e2e/pwa.mjs
           node tests/e2e/a11y.mjs

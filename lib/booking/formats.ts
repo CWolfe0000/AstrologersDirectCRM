@@ -31,8 +31,8 @@ export const FORMAT_LABEL: Record<SessionFormat, string> = {
   "In person": "In Person",
 };
 /** "Live Session", "Recorded Reading (Audio)", "Written Reading". */
-export const formatLabel = (f: string, recording?: RecordingKind) =>
-  (FORMAT_LABEL[f as SessionFormat] ?? f) + (f === "Recorded reading" && recording ? ` (${recording === "video" ? "Video" : "Audio"})` : "");
+export const formatLabel = (f: string, kind?: RecordingKind) =>
+  (FORMAT_LABEL[f as SessionFormat] ?? f) + ((f === "Recorded reading" || isCall(f)) && kind ? ` (${kind === "video" ? "Video" : "Audio"})` : "");
 
 /** Starting instructions for each format; the astrologer rewrites them in Settings › Booking. */
 export const DEFAULT_INSTRUCTIONS: Record<"Live session" | "Recorded reading" | "Written reading" | "Phone", string> = {

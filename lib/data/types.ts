@@ -142,6 +142,8 @@ export interface Consultation {
   location: "Live session" | "Recorded reading" | "Written reading" | "Video call" | "Audio call" | "Phone" | "In person";
   /** Video call link (Zoom, Meet…) the client joins from their portal and reminder email. */
   meetingUrl?: string;
+  /** Built-in calls: audio only (camera off to start), or video. */
+  callMode?: "video" | "audio";
   chartIds: string[];
   prepNotes?: string;
   sessionNotes?: string;

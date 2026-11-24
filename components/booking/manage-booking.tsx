@@ -20,6 +20,8 @@ type View = {
   displayName: string;
   clientName: string;
   meetingUrl: string | null;
+  /** On a built-in call: video or audio. */
+  call: "video" | "audio" | null;
   canChange: boolean;
   canReschedule: boolean;
   deadline: string;
@@ -108,6 +110,9 @@ export function ManageBooking({ token }: { token: string }) {
           {v.status === "canceled" && <p className="mt-3 text-[13.5px] font-medium text-ink">{v.written ? "This order is canceled." : "This session is canceled."}</p>}
           {v.status === "past" && <p className="mt-3 text-[13.5px] text-muted">{v.written ? "Your reading is in your client portal, or on its way." : "This session has taken place."}</p>}
           {v.status === "scheduled" && v.instructions && <p className="mt-3 whitespace-pre-line rounded-lg bg-canvas-2 px-3 py-2 text-[13px] leading-relaxed text-ink-3">{v.instructions}</p>}
+          {v.status === "scheduled" && v.call && (
+            <a href={`/book/manage/${token}/call`} className="mt-4 inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-[14px] font-medium text-white hover:bg-accent-hover"><Video className="size-4" /> Join {v.call === "audio" ? "Audio" : "Video"} Call</a>
+          )}
           {v.status === "scheduled" && v.meetingUrl && (
             <a href={v.meetingUrl} target="_blank" rel="noreferrer" className="mt-4 inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-[14px] font-medium text-white hover:bg-accent-hover"><Video className="size-4" /> Join Video Call</a>
           )}

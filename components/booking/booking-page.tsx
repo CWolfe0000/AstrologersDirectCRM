@@ -12,9 +12,9 @@ import { accentVars } from "@/lib/brand";
 import { formatLabel, isDelivered } from "@/lib/booking/formats";
 import { priceCents } from "@/lib/booking/payments";
 
-type Service = { id: string; name: string; description: string; durationMin: number; price: string; format: "Live session" | "Recorded reading" | "Written reading" | "Video call" | "Audio call" | "Phone" | "In person"; deliveryDays?: number; recording?: "audio" | "video" };
+type Service = { id: string; name: string; description: string; durationMin: number; price: string; format: "Live session" | "Recorded reading" | "Written reading" | "Video call" | "Audio call" | "Phone" | "In person"; deliveryDays?: number; recording?: "audio" | "video"; call?: "audio" | "video" };
 type Profile = { slug: string; displayName: string; headline: string; about: string; location: string; practice: string; tz: string; photo: string | null; links: { label: string; url: string }[]; accent: string | null; services: Service[]; payments: { refundPolicy: string } | null };
-type Booked = { start: string; service: string; durationMin: number; format: string; written?: boolean; instructions?: string; displayName: string; meetingUrl: string | null; manage: string; paid?: boolean };
+type Booked = { start: string; service: string; durationMin: number; format: string; written?: boolean; instructions?: string; displayName: string; meetingUrl: string | null; call?: "audio" | "video" | null; manage: string; paid?: boolean };
 
 const FORMAT_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones, "Live session": Video, "Recorded reading": Mic } as const;
 /** The public booking page: profile and services → time → details → booked. */
@@ -110,7 +110,7 @@ export function BookingPage({ slug }: { slug: string }) {
                               <span className="block text-[16px] font-semibold text-ink">{s.name}</span>
                               <span className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[12.5px] text-muted">
                                 {isDelivered(s.format) ? <span className="inline-flex items-center gap-1"><Clock className="size-3.5" /> Ready in {s.deliveryDays ?? 7} days</span> : <span className="inline-flex items-center gap-1"><Clock className="size-3.5" /> {s.durationMin} min</span>}
-                                <span className="inline-flex items-center gap-1"><Icon className="size-3.5" /> {formatLabel(s.format, s.recording)}</span>
+                                <span className="inline-flex items-center gap-1"><Icon className="size-3.5" /> {formatLabel(s.format, s.recording ?? s.call)}</span>
                               </span>
                             </span>
                             {s.price && <span className="shrink-0 rounded-full bg-accent-50 px-3 py-1 text-[14px] font-medium text-accent">{s.price}</span>}
@@ -315,7 +315,7 @@ function Confirmation({ booked, tz }: { booked: Booked; tz: string }) {
     const s = new Date(booked.start);
     const e = new Date(s.getTime() + booked.durationMin * 60_000);
     const f = (d: Date) => d.toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z";
-    const body = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//AstrologersDirect//Booking//EN", "BEGIN:VEVENT", `UID:${f(s)}-${Math.random().toString(36).slice(2)}@astrologersdirect.com`, `DTSTAMP:${f(new Date())}`, `DTSTART:${f(s)}`, `DTEND:${f(e)}`, `SUMMARY:${booked.service} with ${booked.displayName}`, `LOCATION:${booked.meetingUrl ?? formatLabel(booked.format)}`, "END:VEVENT", "END:VCALENDAR", ""].join("\r\n");
+    const body = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//AstrologersDirect//Booking//EN", "BEGIN:VEVENT", `UID:${f(s)}-${Math.random().toString(36).slice(2)}@astrologersdirect.com`, `DTSTAMP:${f(new Date())}`, `DTSTART:${f(s)}`, `DTEND:${f(e)}`, `SUMMARY:${booked.service} with ${booked.displayName}`, `LOCATION:${booked.meetingUrl ?? (booked.call ? `${window.location.origin}${booked.manage}/call` : formatLabel(booked.format))}`, "END:VEVENT", "END:VCALENDAR", ""].join("\r\n");
     return `data:text/calendar;charset=utf-8,${encodeURIComponent(body)}`;
   }, [booked]);
   const day = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "long", month: "long", day: "numeric" }).format(new Date(booked.start));
@@ -333,6 +333,7 @@ function Confirmation({ booked, tz }: { booked: Booked; tz: string }) {
           <p className="mt-1 text-[13px] text-muted">{booked.durationMin} minutes · {formatLabel(booked.format)}</p>
         </>
       )}
+      {booked.call && <p className="mx-auto mt-4 max-w-md text-[13.5px] text-ink-3">Your {booked.call === "audio" ? "audio" : "video"} call happens right here on AstrologersDirect. Join from your booking link; it opens 30 minutes before.</p>}
       {booked.instructions && <p className="mx-auto mt-5 max-w-md whitespace-pre-line rounded-xl bg-canvas-2 px-4 py-3 text-left text-[13.5px] leading-relaxed text-ink-3">{booked.instructions}</p>}
       <p className="mt-5 text-[13.5px] leading-relaxed text-muted">{booked.written ? "We’ve emailed your confirmation, with a link to cancel if you need to." : "We’ve emailed your confirmation, with a link to reschedule or cancel if you need to."}</p>
       {!booked.written && (

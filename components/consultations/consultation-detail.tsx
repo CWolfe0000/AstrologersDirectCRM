@@ -1,5 +1,7 @@
 "use client";
 
+import { onBuiltInCall, useCallsEnabled } from "@/components/call/use-calls";
+
 import * as React from "react";
 import Link from "next/link";
 import {
@@ -30,6 +32,7 @@ export function ConsultationDetail({ id }: { id: string }) {
   const readings = useStore((s) => s.readings);
   const recordings = useStore((s) => s.recordings);
   const update = useStore((s) => s.updateConsultation);
+  const calls = useCallsEnabled();
   const updateTask = useStore((s) => s.updateTask);
   const toast = useStore((s) => s.toast);
   const log = useStore((s) => s.log);
@@ -73,6 +76,9 @@ export function ConsultationDetail({ id }: { id: string }) {
           <p className="flex items-center gap-2"><CalendarDays className="size-4 text-muted" /> {fmtLong(k.start)}</p>
           <p className="flex items-center gap-2"><Clock className="size-4 text-muted" /> {fmtTime(k.start)} – {fmtTime(end)} <span className="text-muted">({relDay(k.start)})</span></p>
           <p className="flex items-center gap-2"><LocIcon className="size-4 text-muted" /> {formatLabel(k.location)}</p>
+          {onBuiltInCall(k, calls) && k.status === "scheduled" && (
+            <p className="flex items-center gap-2"><Video className="size-4 text-muted" /> {k.callMode === "audio" ? "Audio" : "Video"} call on AstrologersDirect <Link href={`/app/consultations/${encodeURIComponent(k.id)}/call`} className="font-medium text-accent hover:underline">Start Call</Link></p>
+          )}
           {isCall(k.location) && k.status === "scheduled" && <MeetingLink url={k.meetingUrl} onSave={(meetingUrl) => { update(k.id, { meetingUrl }); toast(meetingUrl ? "Video link saved" : "Video link removed", meetingUrl ? "Your client can join from their portal." : undefined, "success"); }} />}
         </div>
         <div className="mt-4 flex flex-wrap gap-2">

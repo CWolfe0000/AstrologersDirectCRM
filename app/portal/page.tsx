@@ -18,11 +18,13 @@ import { workState } from "@/components/client-work/work-meta";
 import { ReadingCard } from "@/components/portal/reading-card";
 import { AddToCalendar } from "@/components/portal/session-actions";
 import { formatLabel, isCall } from "@/lib/booking/formats";
+import { onBuiltInCall, useCallsEnabled } from "@/components/call/use-calls";
 
 const LOC_ICON = { "Video call": Video, Phone: Phone, "In person": MapPin, "Written reading": PenLine, "Audio call": Headphones, "Live session": Video, "Recorded reading": Mic } as const;
 
 export default function PortalHome() {
   const PORTAL_CLIENT_ID = usePortalClientId();
+  const calls = useCallsEnabled();
   const me = useStore((s) => s.people.find((p) => p.id === PORTAL_CLIENT_ID));
   const practices = usePortalPractices();
   const [hello, setHello] = React.useState("Welcome");
@@ -87,7 +89,11 @@ export default function PortalHome() {
                           <span className="inline-flex items-center gap-1"><Icon className="size-3.5" />{formatLabel(k.location)}</span>
                         </p>
                       </div>
-                      {today && isCall(k.location) && k.meetingUrl ? (
+                      {today && onBuiltInCall(k, calls) ? (
+                        <Link href={`/portal/consultations/${encodeURIComponent(k.id)}/call`} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-accent px-5 text-[15px] font-medium text-white hover:bg-accent-hover sm:w-auto">
+                          <Video className="size-[18px]" /> Join Call
+                        </Link>
+                      ) : today && isCall(k.location) && k.meetingUrl ? (
                         <a href={k.meetingUrl} target="_blank" rel="noreferrer" className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-accent px-5 text-[15px] font-medium text-white hover:bg-accent-hover sm:w-auto">
                           <Video className="size-[18px]" /> Join video call
                         </a>

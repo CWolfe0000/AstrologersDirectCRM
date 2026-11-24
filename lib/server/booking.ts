@@ -18,6 +18,7 @@ import { DEFAULT_INSTRUCTIONS, currentFormat, instructionsKey, isCall, isDeliver
 import { DEFAULT_REFUND_POLICY, money, priceCents, refundFor, refundPolicyText } from "@/lib/booking/payments";
 import { paymentAccount, paymentForConsultation, refundPayment } from "./payments";
 import { platformFeePercent, stripe, stripeEnabled } from "./stripe";
+import { callsEnabled, joinCall, usesBuiltInCall } from "./calls";
 
 const hhmm = z.string().regex(/^\d{2}:\d{2}$/);
 const range = z.object({ start: hhmm, end: hhmm }).strict().refine((r) => r.start < r.end, "Each range must start before it ends.");
@@ -44,6 +45,7 @@ export const profileSchema = z
             format: z.enum(["Live session", "Recorded reading", "Written reading", "Video call", "Audio call", "Phone", "In person"]),
             deliveryDays: z.number().int().min(1).max(90).optional(),
             recording: z.enum(["audio", "video"]).optional(),
+            call: z.enum(["audio", "video"]).optional(),
             active: z.boolean(),
             /** The intake form sent when someone books this service. */
             intakeFormId: z.string().regex(/^[A-Za-z0-9_-]{1,80}$/).optional(),
@@ -62,6 +64,7 @@ export const profileSchema = z
       })
       .strict(),
     autoInvite: z.boolean(),
+    callVia: z.enum(["astrologersdirect", "own-link"]).optional(),
     /** Take payment when clients book (once the astrologer's Stripe account is ready). */
     takePayments: z.boolean().optional(),
     refundPolicy: z.object({ fullRefundHours: z.number().int().min(0).max(24 * 14), lateRefundPercent: z.number().int().min(0).max(100) }).strict().optional(),
@@ -175,9 +178,12 @@ export function publicView(b: Awaited<ReturnType<typeof publicBooking>>, paid = 
     practice: b.practitioner.practice ?? "",
     tz: b.tz,
     maxAdvanceDays: profile.rules.maxAdvanceDays,
-    services: profile.services.filter((s) => s.active).map(({ id, name, description, durationMin, price, format, deliveryDays, recording }) => ({ id, name, description, durationMin, price, format, ...(isDelivered(format) ? { deliveryDays: deliveryDays ?? 7 } : {}), ...(format === "Recorded reading" ? { recording: recording ?? "audio" } : {}) })),
+    services: profile.services.filter((s) => s.active).map(({ id, name, description, durationMin, price, format, deliveryDays, recording, call }) => ({ id, name, description, durationMin, price, format, ...(isDelivered(format) ? { deliveryDays: deliveryDays ?? 7 } : {}), ...(format === "Recorded reading" ? { recording: recording ?? "audio" } : {}), ...(isCall(format) && builtInCalls(profile) ? { call: call ?? "video" } : {}) })),
   };
 }
+
+/** Whether this astrologer's live sessions happen on AstrologersDirect's own calls. */
+export const builtInCalls = (p: Pick<BookingProfile, "callVia" | "meetingUrl">) => callsEnabled() && (p.callVia ?? (p.meetingUrl ? "own-link" : "astrologersdirect")) === "astrologersdirect";
 
 /** What the client needs to know for this format: the astrologer's words, or a sensible default. */
 function instructionsFor(profile: BookingProfile, format: string) {
@@ -410,7 +416,9 @@ async function createBooking(b: Context, service: BookingService, input: Booking
     chartId = newId("ch");
     await upsertRecord(practiceId, "charts", { id: chartId, title: `${name} — Natal`, type: "natal", personIds: [clientId], clientId, createdAt: now, updatedAt: now });
   }
-  const meetingUrl = isCall(service.format) && profile.meetingUrl ? profile.meetingUrl : undefined;
+  const builtIn = isCall(service.format) && builtInCalls(profile);
+  const meetingUrl = isCall(service.format) && !builtIn && profile.meetingUrl ? profile.meetingUrl : undefined;
+  const callMode = isCall(service.format) ? (service.call ?? "video") : undefined;
   const consultationId = newId("k");
   const note = [`Booked online (${service.name}).${paid ? ` Paid ${money(paid.amount, paid.currency)} online.` : ""}`, input.notes ? `Their note: ${input.notes}` : "", existing ? "" : `New client. Birth details as given: ${input.birth.date}, ${input.birth.timeAccuracy === "unknown" ? "time unknown" : input.birth.time}, ${input.birth.place}.`]
     .filter(Boolean)
@@ -424,6 +432,7 @@ async function createBooking(b: Context, service: BookingService, input: Booking
     status: "scheduled",
     location: service.format,
     ...(meetingUrl ? { meetingUrl } : {}),
+    ...(callMode ? { callMode } : {}),
     chartIds: chartId ? [chartId] : [],
     prepNotes: note,
     readingIds: [],
@@ -449,7 +458,7 @@ async function createBooking(b: Context, service: BookingService, input: Booking
   const astro = profile.displayName || b.practitioner.name || "Your astrologer";
   const owner = await ownerEmail(practiceId);
   const visitorTz = ianaZone(input.tz) || tz;
-  const place = isCall(service.format) ? (meetingUrl ? `Live session: ${meetingUrl}` : `Live session (${astro} will send the link)`) : service.format === "Phone" ? `Phone call: ${astro} will call you at ${input.phone.trim()}` : `In person${profile.location ? `: ${profile.location}` : ""}`;
+  const place = builtIn ? `${callMode === "audio" ? "Audio" : "Video"} call on AstrologersDirect: join from your booking link below (it opens 30 minutes before)` : isCall(service.format) ? (meetingUrl ? `Live session: ${meetingUrl}` : `Live session (${astro} will send the link)`) : service.format === "Phone" ? `Phone call: ${astro} will call you at ${input.phone.trim()}` : `In person${profile.location ? `: ${profile.location}` : ""}`;
   const price = paid
     ? `\nPaid: ${money(paid.amount, paid.currency)}. ${refundPolicyText(profile.refundPolicy ?? DEFAULT_REFUND_POLICY)}`
     : service.price ? `\nPrice: ${service.price} (payment arranged directly with ${astro})` : "";
@@ -473,7 +482,7 @@ async function createBooking(b: Context, service: BookingService, input: Booking
     // Best effort: an address that can't be invited (e.g. a practitioner's) just isn't.
     await inviteClient({ practiceId }, clientId).catch(() => {});
   }
-  return { start: new Date(start).toISOString(), service: service.name, durationMin: service.durationMin, format: service.format, written, instructions, displayName: astro, meetingUrl: meetingUrl ?? null, manage: `/book/manage/${token}`, consultationId };
+  return { start: new Date(start).toISOString(), service: service.name, durationMin: service.durationMin, format: service.format, written, instructions, displayName: astro, meetingUrl: meetingUrl ?? null, call: builtIn ? (callMode ?? "video") : null, manage: `/book/manage/${token}`, consultationId };
 }
 
 // ——— Managing a booking (the client's private link) ————————————————————
@@ -507,6 +516,7 @@ export async function manageView(token: string) {
     displayName: b.profile.displayName || b.practitioner.name || "Your astrologer",
     clientName: b.row.clientName,
     meetingUrl: typeof b.k.meetingUrl === "string" ? b.k.meetingUrl : null,
+    call: usesBuiltInCall(b.k) ? (b.k.callMode === "audio" ? "audio" : "video") : null,
     canChange: b.canChange,
     canReschedule: b.canReschedule,
     deadline: new Date(b.deadline).toISOString(),
@@ -525,6 +535,12 @@ export async function manageView(token: string) {
 async function intakeFor(b: Awaited<ReturnType<typeof lookup>>) {
   const reqs = await listCollection(b.row.practiceId, "intakeRequests", { clientIds: [String(b.k.clientId)] });
   return (reqs.find((r) => r.consultationId === b.row.consultationId) as unknown as IntakeRequest | undefined) ?? null;
+}
+
+/** The client joins their session's call from the booking link. */
+export async function bookingCall(token: string) {
+  const b = await lookup(token);
+  return joinCall(b.row.practiceId, b.row.consultationId, { name: b.row.clientName || "Client", owner: false });
 }
 
 /** The booked session's intake form: what to ask, and whether it's been sent back. */

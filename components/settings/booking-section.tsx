@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox, Field, Input, Select, Textarea } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { SimulatedNote } from "@/components/ui/misc";
+import { useCallsEnabled } from "@/components/call/use-calls";
 import { DEFAULT_INSTRUCTIONS, DELIVERY_DAYS, OFFERED_FORMATS, formatLabel, isCall, isDelivered } from "@/lib/booking/formats";
 
 const DURATIONS = [30, 45, 60, 75, 90, 120];
@@ -138,6 +139,7 @@ export function BookingPageSection() {
 /** Settings › Services & Availability: what clients can book, when, and how sessions happen. */
 export function ServicesSection() {
   const b = useBookingProfile();
+  const calls = useCallsEnabled();
   const intakeForms = useStore(selectIntakeForms);
   const tz = useStore((s) => s.practitioner.timezone);
   if (!b.p) return <Unavailable error={b.error} />;
@@ -147,10 +149,12 @@ export function ServicesSection() {
   const setDay = (d: Day, on: boolean, range?: { start: string; end: string }) =>
     set({ rules: { ...p.rules, weekly: { ...p.rules.weekly, [d]: on ? [range ?? p.rules.weekly[d][0] ?? { start: "09:00", end: "17:00" }] : [] } } });
   const inPerson = p.services.some((x) => x.format === "In person");
+  const via = p.callVia ?? (p.meetingUrl ? "own-link" : "astrologersdirect");
+  const builtIn = calls && via === "astrologersdirect";
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader title="Services" description="Each one is a bookable session. Prices are shown as written; payment is arranged directly for now." action={<Button size="sm" variant="secondary" onClick={() => set({ services: [...p.services, { id: uid("svc"), name: "", description: "", durationMin: 60, price: "", format: "Live session", active: true }] })}><Plus /> Add Service</Button>} />
+        <CardHeader title="Services" description="Each one is a bookable session. Clients pay the price when they book once payments are set up (Settings › Payments); otherwise it’s shown as written." action={<Button size="sm" variant="secondary" onClick={() => set({ services: [...p.services, { id: uid("svc"), name: "", description: "", durationMin: 60, price: "", format: "Live session", active: true }] })}><Plus /> Add Service</Button>} />
         <CardBody className="space-y-3">
           {p.services.length === 0 && <p className="text-[13px] text-muted">No services yet. Add one to start taking bookings.</p>}
           {p.services.map((s, i) => (
@@ -176,6 +180,14 @@ export function ServicesSection() {
                     {[...OFFERED_FORMATS, ...(OFFERED_FORMATS.includes(s.format) ? [] : [s.format])].map((f) => <option key={f} value={f}>{formatLabel(f)}</option>)}
                   </Select>
                 </Field>
+                {isCall(s.format) && builtIn && (
+                  <Field label="Call" htmlFor={`sv-c-${s.id}`}>
+                    <Select id={`sv-c-${s.id}`} value={s.call ?? "video"} onChange={(e) => setService(s.id, { call: e.target.value as "audio" | "video" })}>
+                      <option value="video">Video</option>
+                      <option value="audio">Audio Only</option>
+                    </Select>
+                  </Field>
+                )}
                 {s.format === "Recorded reading" && (
                   <Field label="Recording" htmlFor={`sv-r-${s.id}`}>
                     <Select id={`sv-r-${s.id}`} value={s.recording ?? "audio"} onChange={(e) => setService(s.id, { recording: e.target.value as "audio" | "video" })}>
@@ -266,7 +278,15 @@ export function ServicesSection() {
       <Card>
         <CardHeader title="How Sessions Happen" description="Your call link, and what clients need to know for each kind of reading. Sent with their booking confirmation and shown on their booking page." />
         <CardBody className="space-y-4">
-          <Field label="Call Link" htmlFor="bk-meet" optional hint="Your Zoom or Google Meet room, sent with live session bookings."><Input id="bk-meet" type="url" placeholder="https://" maxLength={500} value={p.meetingUrl} onChange={(e) => set({ meetingUrl: e.target.value.trim() })} /></Field>
+          {calls && (
+            <Field label="Live Sessions Happen On" htmlFor="bk-via" hint={builtIn ? "Clients join from their booking link or portal; no Zoom needed. You can record the audio and save it to their record." : "Clients get your Zoom or Google Meet link with their booking."}>
+              <Select id="bk-via" value={via} onChange={(e) => set({ callVia: e.target.value as "astrologersdirect" | "own-link" })}>
+                <option value="astrologersdirect">AstrologersDirect Calls (Built In)</option>
+                <option value="own-link">My Own Link (Zoom, Google Meet)</option>
+              </Select>
+            </Field>
+          )}
+          {!builtIn && <Field label="Call Link" htmlFor="bk-meet" optional hint="Your Zoom or Google Meet room, sent with live session bookings."><Input id="bk-meet" type="url" placeholder="https://" maxLength={500} value={p.meetingUrl} onChange={(e) => set({ meetingUrl: e.target.value.trim() })} /></Field>}
           {inPerson && <Field label="In-Person Location" htmlFor="bk-loc" optional hint="For your services that are still set to In Person."><Input id="bk-loc" maxLength={200} value={p.location} onChange={(e) => set({ location: e.target.value })} /></Field>}
           {OFFERED_FORMATS.map((f) => {
             const key = f as keyof typeof DEFAULT_INSTRUCTIONS;

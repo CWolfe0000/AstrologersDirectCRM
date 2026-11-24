@@ -1,5 +1,9 @@
 "use client";
 
+import Link from "next/link";
+import { onBuiltInCall, useCallsEnabled } from "@/components/call/use-calls";
+import { isCall } from "@/lib/booking/formats";
+
 import * as React from "react";
 import { CalendarDays, Loader2, Video } from "lucide-react";
 import { api } from "@/lib/api";
@@ -13,6 +17,7 @@ type Session = { id: string; type: string; location: string; meetingUrl?: string
 
 /** "Join video call" (when the astrologer added a link) and "Request to reschedule". */
 export function SessionActions({ k, today, who, className }: { k: Session; today: boolean; who: string; className?: string }) {
+  const calls = useCallsEnabled();
   const toast = useStore((s) => s.toast);
   const [open, setOpen] = React.useState(false);
   const [message, setMessage] = React.useState("");
@@ -38,9 +43,15 @@ export function SessionActions({ k, today, who, className }: { k: Session; today
     }
   };
 
-  const join = (k.location === "Video call" || k.location === "Audio call") && k.meetingUrl;
+  const join = isCall(k.location) && k.meetingUrl;
+  const builtIn = onBuiltInCall(k, calls);
   return (
     <div className={cn("flex flex-wrap gap-2", className)}>
+      {builtIn && (
+        <Link href={`/portal/consultations/${encodeURIComponent(k.id)}/call`} className={cn("inline-flex h-10 items-center gap-2 rounded-lg px-4 text-[13.5px] font-medium", today ? "bg-accent text-white hover:bg-accent-hover" : "border border-line text-ink hover:bg-canvas-2")}>
+          <Video className="size-4" /> Join Call
+        </Link>
+      )}
       {join && (
         <a
           href={k.meetingUrl}

@@ -19,6 +19,8 @@ export interface BookingService {
   deliveryDays?: number;
   /** Recorded readings: audio or video. */
   recording?: "audio" | "video";
+  /** Live sessions on a built-in call: video (default) or audio only. */
+  call?: "audio" | "video";
   active: boolean;
   /** The intake form sent to whoever books this service. */
   intakeFormId?: string;
@@ -48,6 +50,8 @@ export interface BookingProfile {
   location: string;
   /** Sent with video-call bookings (Zoom, Meet…). */
   meetingUrl: string;
+  /** Live sessions on AstrologersDirect's own calls, or on the astrologer's link. Default: built-in unless a link was set before. */
+  callVia?: "astrologersdirect" | "own-link";
   services: BookingService[];
   rules: BookingRules;
   /** Invite new clients to their portal when they book. */

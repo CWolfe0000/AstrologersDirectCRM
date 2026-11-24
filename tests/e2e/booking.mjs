@@ -71,6 +71,8 @@ await page.getByLabel("Page Address").fill(slug);
 await page.getByRole("button", { name: "Save Changes" }).click();
 await page.getByText("Booking Settings Saved").waitFor();
 await page.goto(BASE + "/app/settings?section=services");
+// This astrologer uses their own meeting room (built-in calls are covered by calls.mjs).
+await page.getByLabel("Live Sessions Happen On").selectOption("own-link");
 await page.getByLabel("Call Link", { exact: false }).fill(MEET);
 for (const d of ["Saturday", "Sunday"]) await page.getByRole("checkbox", { name: d }).check();
 await page.getByRole("button", { name: "Save Changes" }).click();
