@@ -7,6 +7,7 @@ import * as hoursLib from "@/lib/reading/hours";
 import { DISCLAIMER, KIND_LABEL, USES } from "@/lib/reading/hour-uses";
 import { practicesFor } from "@/lib/reading/practice";
 import { composite as readComposite } from "@/lib/reading/composite";
+import { C_PATTERNS } from "@/lib/reading/composite-love";
 import { coupleReport } from "@/lib/reading/couple";
 import { aspectsOf, ownPattern } from "@/lib/reading/own";
 import { stelliumBetween, stelliumOf } from "@/lib/reading/stellium";
@@ -330,30 +331,37 @@ describe("aspects within one chart", () => {
 describe("composite chart", () => {
   const a = chartFor(me), b = chartFor(born("1988-03-10", "09:15"));
   const houses = { cusps: Array.from({ length: 12 }, (_, i) => i * 30), asc: 0, mc: 270 };
-  it("reads the Sun and Moon by house first, then their aspects, then signs", () => {
-    const c = readComposite(a, b, houses);
-    expect(c.core.map((i) => i.title)).toEqual(expect.arrayContaining(["What This Relationship Is For", "Where You Feel Most In Common"]));
-    expect(c.core.find((i) => i.title.startsWith("What This"))!.basis).toMatch(/^Composite Sun in the \d+(st|nd|rd|th) house$/);
-    expect(c.signs).toHaveLength(2);
+  it("reads the nodes, Sun, Moon, rising sign, Venus, Mars and Saturn by sign and house", () => {
+    const c = readComposite(a, b, houses, "Sam");
+    expect(c.sections.map((x) => x.title)).toEqual(["The story between you", "What keeps you alive", "What your hearts need", "How you come across", "Affection and desire", "Where the work is"]);
+    expect(c.sections[1]!.items.map((i) => i.title)).toEqual([expect.stringMatching(/^Sun In [A-Z]/), expect.stringMatching(/^Sun In The \d+(st|nd|rd|th) House$/)]);
+    expect(c.sections[4]!.items).toHaveLength(4);
+    expect(c.others).toHaveLength(5);
+    for (const sec of c.sections) for (const i of sec.items) expect(i.body.length).toBeGreaterThan(40);
     for (const i of [...c.easy, ...c.hard]) expect(i.basis).toMatch(/^Composite (Sun|Moon) (conjunction|opposition|square|trine|sextile) /);
-    expect(c.points.asc).toBe(0);
+    expect(c.pattern).toBeTruthy();
+    expect(c.pattern).not.toMatch(/[{}]/);
+    expect(c.notes.join(" ")).toMatch(/Add where you first met, on Sam’s details/);
+    expect(readComposite(a, b, { ...houses, located: true }, "Sam").notes).toHaveLength(0);
   });
-  it("without both birth times there are no houses and no Moon", () => {
-    const c = readComposite(a, chartFor(born("1988-03-10")), null);
-    expect(c.core).toHaveLength(0);
-    expect(c.signs).toHaveLength(1);
+  it("without both birth times there are no houses, rising sign or Moon", () => {
+    const c = readComposite(a, chartFor(born("1988-03-10")), null, "Sam");
+    expect(c.sections.map((x) => x.title)).toEqual(["The story between you", "What keeps you alive", "Affection and desire"]);
+    expect(c.sections.flatMap((x) => x.items).every((i) => !/House$/.test(i.title))).toBe(true);
+    expect(c.others).toHaveLength(0);
     expect(c.points.moon).toBeNull();
     expect(c.notes.join(" ")).toMatch(/both birth times/);
   });
-  it("a chart with itself puts every planet where it was and flags nothing", () => {
-    const c = readComposite(a, a, a.houses);
+  it("a chart with itself puts every planet where it was and resembles both people", () => {
+    const c = readComposite(a, a, a.houses, "Twin");
     expect(c.points.sun).toBeCloseTo(a.bodies.sun.lon);
-    expect(c.notes).toHaveLength(0);
+    expect(c.sections[1]!.items[0]!.title).toBe("Sun In Gemini");
+    expect(c.pattern).toBe(C_PATTERNS.shared);
   });
-  it("reads a composite Sun–Venus opposition as a conjunction", () => {
+  it("uses the shorter-arc midpoint with no exception for Venus", () => {
     const flip = { ...b, bodies: { ...b.bodies, sun: { lon: (a.bodies.sun.lon + 10) % 360, speed: 1 }, venus: { lon: (a.bodies.venus.lon + 176) % 360, speed: 1 } } };
-    const c = readComposite(a, flip, null);
-    expect(Math.abs(((c.points.venus - c.points.sun + 540) % 360) - 180)).toBeLessThanOrEqual(90);
+    const c = readComposite(a, flip, null, "Sam");
+    expect(Math.abs(((c.points.venus - a.bodies.venus.lon + 540) % 360) - 180)).toBeCloseTo(88, 0);
   });
 });
 

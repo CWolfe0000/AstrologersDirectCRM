@@ -2,18 +2,17 @@ import type { BodyId, Chart } from "@/lib/astro/types";
 import { delta, midpoint, separation } from "@/lib/astro/spherical";
 import { POINT_NAMES, SIGNS, houseOf, ordinal, signIndex, type AspectName } from "@/lib/astro/zodiac";
 import type { Insight } from "./own";
-import { SIGN_QUALITY } from "./text";
+import { C_MARS_HOUSE, C_MARS_SIGN, C_MOON_HOUSE, C_MOON_SIGN, C_NODES_HOUSE, C_NODES_SIGN, C_OTHER_HOUSE, C_PATTERNS, C_RISING_SIGN, C_SATURN_HOUSE, C_SUN_HOUSE, C_SUN_SIGN, C_VENUS_HOUSE, C_VENUS_SIGN } from "./composite-love";
 
 /**
  * The composite chart: the relationship as a thing in its own right.
  *
- * The method follows Robert Hand, "Planets in Composite", chapters 1, 2 and 4–6 (the part of the
- * book we could read): each planet is the nearer midpoint of the two natal planets, the houses
- * come from the midpoint of the two Midheavens, and the chart is read by house emphasis, the
- * houses of the Sun and Moon, and the aspects to the Sun and Moon. He does not read composite
- * planets by sign, beyond a later note that the signs of the Sun, Moon and Ascendant matter, so
- * signs are a supplement here. His Venus, Mars and Saturn chapters were not available, so those
- * planets are read only through their aspects to the Sun and Moon. The wording is our own.
+ * Construction and the readings of each planet by sign and house, of the rising sign and of the
+ * lunar nodes follow Steven and Jodie Forrest, "Skymates, Volume Two": each planet is the midpoint
+ * on the shorter arc, with no exceptions; the houses come from the midpoint of the two Midheavens,
+ * cast for the place the couple first met; and no placement is a verdict. The reading of a house
+ * that holds four or more planets, and of the aspects to the composite Sun and Moon, follow Robert
+ * Hand, "Planets in Composite", chs. 2–6. The wording is our own (composite-love.ts and below).
  */
 
 const PLANETS: BodyId[] = ["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto"];
@@ -32,38 +31,6 @@ const HOUSE_EMPHASIS = [
   "This relationship asks what it is for. You share a direction, and how you stand in the world as a couple matters to you both.",
   "This is friendship and shared hopes as much as romance. You like each other, share a great deal of life, and it suits a long relationship.",
   "This relationship brings up what each of you keeps hidden, and habits neither of you is aware of can undermine it. It is intense, and it needs complete honesty to work.",
-];
-
-/** The composite Sun by house: what the relationship is for and where its main issues lie. */
-const SUN_HOUSE = [
-  "An unusually important relationship. You are stronger as a pair than apart and are seen as a unit. Very good for love and for marriage; watch for caring too much about appearances.",
-  "The focus is on what you value and own together. A good base for practical partnership and neutral for romance. A difference in values would go deep.",
-  "The focus is on communication and ideas. You have real mental rapport, more naturally as friends than lovers, and a habit of talking about feelings instead of having them.",
-  "The focus is on home, roots and private life, with strong emotional involvement. One of the best placements for living together. The risk is losing perspective.",
-  "The focus is on enjoyment and being yourselves. One of the best placements for a love affair and for friendship. Each of you needs room, and it is not in itself a sign of the long haul.",
-  "A harder placement: one tends to give and the other to take, and either can feel used. It works when you serve something together, or each other equally.",
-  "An equal partnership working as a unit, and usually the best placement for marriage. The other side of it is competing with each other.",
-  "A relationship that feels fated and changes both of you. Sex matters and is not casual, and so do shared resources.",
-  "The focus is on growing: ideals, a shared philosophy, travel. It can lean toward the platonic or the intellectual.",
-  "A significant relationship with a shared purpose and direction. The risk is fixing how things look from outside while problems inside go unattended.",
-  "The focus is on friendship and shared hopes. Excellent for almost any relationship, especially marriage, though it does not in itself show physical attraction.",
-  "A challenging placement that brings out hidden sides of you both, and the relationship itself may be kept private or misunderstood. It needs total honesty before any commitment.",
-];
-
-/** The composite Moon by house: where you feel most in common. */
-const MOON_HOUSE = [
-  "Feelings are out in the open and you sense you belong together. The risk is losing your objectivity about each other.",
-  "You are drawn together by a need for security, emotional and material. You may stay together for that security.",
-  "You communicate through feeling and share opinions. Talking a problem through coolly is the hard part.",
-  "The most natural placement for the Moon: shared background, a home, and emotional security in each other. Do not swallow grievances to keep the peace.",
-  "You are together because it feels good: fun, easy emotional expression, and often a wish for children. Getting serious is the hard part.",
-  "It can feel like a task, with one of you in the lesser role. It needs an equal exchange of looking after each other.",
-  "You share feelings so closely that you can feel like one person. Very good for marriage; under stress you lose perspective together.",
-  "The relationship turns you both inward and changes you, a little like therapy. It can get heavy and moody.",
-  "You share an outlook and teach each other, often with travel or another culture involved. It leans toward friendship of the mind.",
-  "You share a wish to get on in the world and make a good impression together. The risk is blaming outside things for emotional problems.",
-  "There is a steady emotional sympathy under everything, with shared goals and friends. One of the better placements for love and friendship together.",
-  "A demanding placement: feelings are hidden, even from yourselves, and can come out later all at once. It needs honest looking at yourselves together.",
 ];
 
 type Tone = "easy" | "hard" | "mixed";
@@ -139,59 +106,83 @@ const ORBS: [AspectName, number, number, "conj" | "soft" | "hard"][] = [
 ];
 
 export interface Composite {
-  /** House emphasis and the Sun and Moon by house (needs both birth times). */
-  core: Insight[];
+  /** How the composite relates to the two people's own charts. */
+  pattern: string | null;
+  /** Readings in order: the story between you, the Sun, the Moon, how you come across, affection and desire, where the work is. */
+  sections: { title: string; intro: string; items: Insight[] }[];
+  /** The other planets by house, one line each. */
+  others: Insight[];
   /** Aspects to the composite Sun and Moon. */
   easy: Insight[];
   hard: Insight[];
-  /** Sun and Moon by sign: a supplement. */
-  signs: Insight[];
   notes: string[];
   /** Longitudes for timing. */
   points: { sun: number; moon: number | null; venus: number; asc: number | null; mc: number | null };
 }
 
+const five = (c: Chart): number[] => [c.bodies.sun.lon, c.bodies.venus.lon, c.bodies.mars.lon, ...(c.houses ? [c.bodies.moon.lon, c.houses.asc] : [])].map(signIndex);
+
 /**
  * @param houses composite houses, derived on the server from the midpoint of the two Midheavens
  *               (lib/server/readings.ts); null when either birth time is unknown.
  */
-export function composite(you: Chart, them: Chart, houses: { cusps: number[]; asc: number; mc: number } | null): Composite {
+export function composite(you: Chart, them: Chart, houses: { cusps: number[]; asc: number; mc: number; located?: boolean } | null, name: string): Composite {
   const moonOk = !!you.houses && !!them.houses;
   const notes: string[] = [];
   const lon = {} as Record<BodyId, number>;
-  for (const id of PLANETS) lon[id] = midpoint(you.bodies[id].lon, them.bodies[id].lon);
-  // The inner planets can never really oppose the Sun: such a composite opposition is read as a conjunction.
-  for (const id of ["mercury", "venus"] as const) if (separation(lon.sun, lon[id]) > 90) lon[id] = (lon[id] + 180) % 360;
+  for (const id of [...PLANETS, "node"] as BodyId[]) lon[id] = midpoint(you.bodies[id].lon, them.bodies[id].lon);
   const used = PLANETS.filter((id) => id !== "moon" || moonOk);
 
   for (const id of ["sun", "moon"] as const)
     if (used.includes(id) && Math.abs(delta(you.bodies[id].lon, them.bodies[id].lon)) > 150)
-      notes.push(`Your two ${POINT_NAMES[id]}s are nearly opposite each other, so the composite ${POINT_NAMES[id]} works from the opposite point as well: read its opposite house and sign too.`);
+      notes.push(`Your two ${POINT_NAMES[id]}s are nearly opposite each other, so the composite ${POINT_NAMES[id]} could almost as easily sit at the opposite point. Read its opposite sign and house as well.`);
+  if (!houses) notes.push("The houses and rising sign of the relationship’s chart need both birth times. Without them it is read by sign only.");
+  else if (!houses.located) notes.push(`These houses use the average of your two birthplaces. Add where you first met, on ${name}’s details, to cast them for that place.`);
 
-  const core: Insight[] = [];
+  const house = (at: number) => (houses ? houseOf(at, houses.cusps) : null);
+  const bySign = (label: string, at: number, texts: string[]): Insight => ({ title: `${label} In ${SIGNS[signIndex(at)]!.name}`, body: texts[signIndex(at)]!, basis: `Composite ${label} by sign` });
+  const byHouse = (label: string, at: number, texts: string[]): Insight[] => {
+    const h = house(at);
+    return h ? [{ title: `${label} In The ${ordinal(h)} House`, body: texts[h - 1]!, basis: `Composite ${label} by house` }] : [];
+  };
+
+  const sections: Composite["sections"] = [];
+  const south = (lon.node + 180) % 360;
+  sections.push({
+    title: "The story between you",
+    intro: "The lunar nodes of the relationship’s chart: the familiar pattern the two of you fall into, and what you are growing toward together.",
+    items: [{ title: `South Node In ${SIGNS[signIndex(south)]!.name}`, body: C_NODES_SIGN[signIndex(south)]!, basis: "Composite nodes by sign" }, ...byHouse("South Node", south, C_NODES_HOUSE)],
+  });
+  sections.push({ title: "What keeps you alive", intro: "The composite Sun: what the relationship runs on.", items: [bySign("Sun", lon.sun, C_SUN_SIGN), ...byHouse("Sun", lon.sun, C_SUN_HOUSE)] });
+  if (moonOk) sections.push({ title: "What your hearts need", intro: "The composite Moon: what the two of you need in order to feel at home together.", items: [bySign("Moon", lon.moon, C_MOON_SIGN), ...byHouse("Moon", lon.moon, C_MOON_HOUSE)] });
+  if (houses) sections.push({ title: "How you come across", intro: "The composite rising sign: how the two of you meet the world as a pair.", items: [{ title: `${SIGNS[signIndex(houses.asc)]!.name} Rising`, body: C_RISING_SIGN[signIndex(houses.asc)]!, basis: "Composite Ascendant by sign" }] });
+  sections.push({
+    title: "Affection and desire",
+    intro: "Composite Venus and Mars: how affection is kept alive, and how desire and tension are handled.",
+    items: [bySign("Venus", lon.venus, C_VENUS_SIGN), ...byHouse("Venus", lon.venus, C_VENUS_HOUSE), bySign("Mars", lon.mars, C_MARS_SIGN), ...byHouse("Mars", lon.mars, C_MARS_HOUSE)],
+  });
+
+  const work: Insight[] = byHouse("Saturn", lon.saturn, C_SATURN_HOUSE);
   if (houses) {
     const counts = Array.from({ length: 12 }, () => [] as string[]);
     for (const id of used) counts[houseOf(lon[id], houses.cusps) - 1]!.push(POINT_NAMES[id]);
     counts.forEach((names, i) => {
-      if (names.length >= 4) core.push({ title: `Centred On The ${ordinal(i + 1)} House`, body: HOUSE_EMPHASIS[i]!, basis: `${names.join(", ")} in the composite ${ordinal(i + 1)} house` });
+      if (names.length >= 4) work.unshift({ title: `Centred On The ${ordinal(i + 1)} House`, body: HOUSE_EMPHASIS[i]!, basis: `${names.join(", ")} in the composite ${ordinal(i + 1)} house` });
     });
-    const sunHouse = houseOf(lon.sun, houses.cusps);
-    core.push({ title: "What This Relationship Is For", body: SUN_HOUSE[sunHouse - 1]!, basis: `Composite Sun in the ${ordinal(sunHouse)} house` });
-    if (moonOk) {
-      const moonHouse = houseOf(lon.moon, houses.cusps);
-      core.push({ title: "Where You Feel Most In Common", body: MOON_HOUSE[moonHouse - 1]!, basis: `Composite Moon in the ${ordinal(moonHouse)} house` });
-    }
-  } else {
-    notes.push("The houses of the relationship’s chart need both birth times. Without them, it is read from the aspects to its Sun and from its Sun sign.");
   }
+  if (work.length) sections.push({ title: "Where the work is", intro: "Composite Saturn, and any house that holds four or more planets.", items: work });
+
+  const others: Insight[] = (["mercury", "jupiter", "uranus", "neptune", "pluto"] as const).flatMap((id) => byHouse(POINT_NAMES[id], lon[id], C_OTHER_HOUSE[id]));
 
   const found: (Insight & { tone: Tone; orb: number })[] = [];
   for (const [key, texts] of Object.entries(ASPECTS)) {
     const [a, b] = key.split("-") as [BodyId, BodyId];
     if (!used.includes(a) || !used.includes(b)) continue;
     const sep = separation(lon[a], lon[b]);
-    const hit = ORBS.find(([, angle, orb]) => Math.abs(sep - angle) <= orb);
+    let hit = ORBS.find(([, angle, orb]) => Math.abs(sep - angle) <= orb);
     if (!hit) continue;
+    // The inner planets never really oppose the Sun: such a composite opposition is read as a conjunction.
+    if (hit[0] === "opposition" && (key === "sun-venus" || key === "sun-mercury")) hit = ["conjunction", 180, hit[2], "conj"];
     const [tone, body] = texts[hit[3]];
     if (!body) continue;
     found.push({ title: `${POINT_NAMES[a]} ${hit[0]} ${POINT_NAMES[b]}`.replace(/\b\w/g, (c) => c.toUpperCase()), body, basis: `Composite ${POINT_NAMES[a]} ${hit[0]} ${POINT_NAMES[b]}, ${Math.abs(sep - hit[1]).toFixed(1)}° from exact`, tone, orb: Math.abs(sep - hit[1]) });
@@ -199,18 +190,18 @@ export function composite(you: Chart, them: Chart, houses: { cusps: number[]; as
   found.sort((p, q) => p.orb - q.orb);
   const strip = ({ title, body, basis }: Insight) => ({ title, body, basis });
 
-  const sign = (label: string, at: number, lead: string): Insight => {
-    const [like, needs] = SIGN_QUALITY[signIndex(at)]!;
-    return { title: `${label} In ${SIGNS[signIndex(at)]!.name}`, body: `${lead} ${like}. It does best with ${needs}.`, basis: `Composite ${label} by sign` };
-  };
-  const signs = [sign("Sun", lon.sun, "The basic character of the relationship is")];
-  if (moonOk) signs.push(sign("Moon", lon.moon, "The emotional climate between you is"));
+  // Which of you the relationship's chart resembles: its Sun, Moon, rising sign, Venus and Mars against your own. A guideline.
+  const mine = new Set(five(you)), theirs = new Set(five(them));
+  const key = [signIndex(lon.sun), signIndex(lon.venus), signIndex(lon.mars), ...(moonOk ? [signIndex(lon.moon)] : []), ...(houses ? [signIndex(houses.asc)] : [])];
+  const a = key.filter((x) => mine.has(x)).length, b = key.filter((x) => theirs.has(x)).length;
+  const pattern = a >= 2 && b >= 2 ? C_PATTERNS.shared : a >= 2 || b >= 2 ? C_PATTERNS.lopsided.replaceAll("{A}", a > b ? "you" : name).replaceAll("{B}", a > b ? name : "you") : C_PATTERNS.apart;
 
   return {
-    core,
+    pattern,
+    sections,
+    others,
     easy: found.filter((f) => f.tone === "easy").map(strip),
     hard: found.filter((f) => f.tone !== "easy").map(strip),
-    signs,
     notes,
     points: { sun: lon.sun, moon: moonOk ? lon.moon : null, venus: lon.venus, asc: houses?.asc ?? null, mc: houses?.mc ?? null },
   };

@@ -58,7 +58,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
     );
 
   const report = coupleReport(ctx.self.chart, person.chart, person.name);
-  const comp = readComposite(ctx.self.chart, person.chart, compositeHouses(ctx.self, person));
+  const comp = readComposite(ctx.self.chart, person.chart, compositeHouses(ctx.self, person), person.name);
   const pattern = isEx ? null : exPattern(user.id, ctx);
   const check = pattern?.repeats.length ? checkAgainst(ctx.self.chart, pattern.repeats, { chart: person.chart, hasTime: !!person.birth.time }) : null;
   // Each person alone, then what the other sets off.
@@ -199,23 +199,34 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
               </div>
             </Section>
           )}
-          <Section title="The relationship itself" intro="The composite chart is made of the midpoints between your planets. It describes the two of you as one thing: what the relationship is for, and how you handle it.">
+          <Section title="The relationship itself" intro="The composite chart is made of the midpoints between your planets. It describes the two of you as a third thing with needs of its own. Nothing in it is a verdict: each placement is something the relationship needs, with a cost when it goes without.">
             {comp.notes.map((n) => <p key={n} className="rounded-xl bg-gold-soft px-4 py-3 text-sm text-ink-2">{n}</p>)}
-            {comp.core.length > 0 && <div className="grid gap-4 lg:grid-cols-2">{comp.core.map((i) => <InsightCard key={i.title} insight={i} />)}</div>}
+            {comp.pattern && <p className="card text-ink-2">{comp.pattern}</p>}
+            {comp.sections.map((sec) => (
+              <div key={sec.title}>
+                <h3 className="mt-4 text-xl font-semibold">{sec.title}</h3>
+                <p className="mb-3 text-ink-2">{sec.intro}</p>
+                <div className="grid gap-4 lg:grid-cols-2">{sec.items.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
+              </div>
+            ))}
+            {comp.others.length > 0 && (
+              <div>
+                <h3 className="mt-4 text-xl font-semibold">The other planets</h3>
+                <ul className="card mt-3 space-y-2">{comp.others.map((o) => <li key={o.title}><span className="heading font-semibold">{o.title}.</span> <span className="text-ink-2">{o.body}</span></li>)}</ul>
+              </div>
+            )}
             {comp.easy.length > 0 && (
-              <>
-                <h3 className="mt-4 text-xl font-semibold">What holds it together</h3>
+              <div>
+                <h3 className="mb-3 mt-4 text-xl font-semibold">What holds it together</h3>
                 <div className="grid gap-4 lg:grid-cols-2">{comp.easy.map((i) => <InsightCard key={i.basis} insight={i} />)}</div>
-              </>
+              </div>
             )}
             {comp.hard.length > 0 && (
-              <>
-                <h3 className="mt-4 text-xl font-semibold">What tests it</h3>
+              <div>
+                <h3 className="mb-3 mt-4 text-xl font-semibold">What tests it</h3>
                 <div className="grid gap-4 lg:grid-cols-2">{comp.hard.map((i) => <InsightCard key={i.basis} insight={i} />)}</div>
-              </>
+              </div>
             )}
-            <h3 className="mt-4 text-xl font-semibold">By sign</h3>
-            <div className="grid gap-4 lg:grid-cols-2">{comp.signs.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
           </Section>
           {!isEx && <RelationshipTiming points={comp.points} />}
         </>
