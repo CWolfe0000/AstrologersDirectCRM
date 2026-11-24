@@ -298,7 +298,11 @@ describe("elements", () => {
     expect(b.points.air.join(" ")).toMatch(/Mercury \(rules your Sun sign\)/);
     const titles = elementReading(chartFor(me)).insights.map((i) => i.title);
     expect(titles).toContain("Sun And Moon In Different Worlds"); // Gemini Sun (air), Pisces Moon (water)
-    expect(titles).toContain("What You Like Against Who You Are"); // Taurus Venus (earth)
+    // Venus in Taurus (earth) against a Gemini Sun (air), but Venus rules this chart (Libra rising): it is part of who they are.
+    expect(titles).toContain("Two Sides Of You");
+    expect(titles).not.toContain("What You Like Against Who You Are");
+    const noTime = elementReading(chartFor(born("1990-06-15"))).insights.map((i) => i.title);
+    expect(noTime).toContain("What You Like Against Who You Are"); // no rising sign known, so no chart ruler
   });
 
   it("notes aspects whose signs are not in the usual elements", () => {
