@@ -9,6 +9,7 @@ import { coupleReport } from "@/lib/reading/couple";
 import { attunement } from "@/lib/reading/elements";
 import { checkAgainst } from "@/lib/reading/exes";
 import { placementsOf } from "@/lib/reading/own";
+import { stelliumBetween } from "@/lib/reading/stellium";
 import { difficultAspects, gifts } from "@/lib/reading/triggers";
 import { requireUser } from "@/lib/server/auth";
 import { compositeHouses, exPattern, loadContext } from "@/lib/server/readings";
@@ -69,6 +70,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const relationTag = (l: (typeof allLevels)[number]) => (
     <span className={`rounded-full px-3 py-1 text-sm font-semibold ${l.relation === "discordant" ? "bg-rose-soft text-rose-hover" : "bg-gold-soft text-gold"}`}>{l.relation === "same" ? "Same Element" : l.relation === "compatible" ? "Feed Each Other" : "Cross Purposes"}</span>
   );
+  const stelliums = [stelliumBetween(person.chart, ctx.self.chart, person.name, null), stelliumBetween(ctx.self.chart, person.chart, null, person.name)].filter((x) => x !== null);
   const yourGifts = gifts(ctx.self.chart, person.chart, null, person.name);
   const theirGifts = gifts(person.chart, ctx.self.chart, person.name, null);
   const setOff = (xs: typeof yours) => xs.filter((a) => a.triggers.length).length;
@@ -185,6 +187,11 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
               </div>
             </div>
           </Section>
+          {stelliums.length > 0 && (
+            <Section title="Stelliums" intro="Three or more personal planets in one sign. In a relationship a stellium lands in one part of the other person’s life, and it helps when they have a planet in the same sign. This is a tendency, not a rule.">
+              <div className="grid gap-4 lg:grid-cols-2">{stelliums.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
+            </Section>
+          )}
           {report.overlays.length > 0 && (
             <Section title="Where you land in each other’s lives" intro="The house of one person’s chart that the other’s Sun, Moon, rising sign, Venus and Mars fall in. The more that land in one house, the more that part of life wakes up when you are together.">
               <div className="grid gap-4 lg:grid-cols-2">

@@ -126,3 +126,27 @@ export const PROGRESSED_VENUS: Record<string, string> = {
   pluto: "Time to look at the hurt, untrusting part of yourself. You are ready to love more honestly, and first you have to feel the old injuries. What you do not look at, you act out.",
   asc: "One of the most dramatic. You meet people who change things, very often in love. You have reached a point only another person can help you past, so openness is everything.",
 };
+
+/** Other progressed planets meeting your natal Venus or Moon (The Changing Sky, chs. 8 and 10). */
+export const PROGRESSED_OTHER: Record<string, { title: string; body: string }> = {
+  "sun-venus": { title: "A Time Of Meetings", body: "Your evolving identity meets your Venus. Meetings that feel fated are likely, and you need the help of one or two people you feel equal to. Take social risks. The people involved are either brand new or old ties renewed." },
+  "sun-moon": { title: "Decisions Of The Heart", body: "Your evolving identity meets your Moon. Questions of the heart come up: where to live, whether to be in this relationship, a milestone with a partner. Trust your instinct." },
+  "mars-venus": { title: "Stirring The Pot", body: "Your evolving courage meets your Venus. You want more direct, wholehearted contact with the people who matter, and the polite habits that keep the peace start to chafe. Go for real renewal, and do not use more force than you need." },
+  "mars-moon": { title: "Under Pressure", body: "Your evolving courage meets your Moon. You are edgy and carrying a load that needs releasing. Decide for yourself what gives, before something gives for you." },
+};
+
+/** Turning points every life shares, by age. */
+export const LIFE_CYCLE: Record<string, { title: string; body: string }> = {
+  "saturn-0": { title: "Your Saturn Return", body: "Saturn returns to where it was when you were born, about every 29 years. It marks the step from one stage of life to the next and is a time of commitment, in love as elsewhere: a bargain between what you dreamed and what is real. Everything else this year is read in its light." },
+  "uranus-180": { title: "Your Uranus Opposition", body: "Uranus stands opposite its place at your birth, around the age of 42. It is the most telling of the mid-life turning points: you ask whether your life is really yours. A relationship that belongs only to your younger self comes under strain, and one that is yours gets room to change." },
+  "neptune-90": { title: "Your Neptune Square", body: "Neptune squares its place at your birth, around 41. It is a question of faith and meaning that runs into the Uranus opposition. What you believed love was for is up for review." },
+  "jupiter-0": { title: "Your Jupiter Return", body: "Jupiter returns to its place at your birth, every 12 years. It is a chance offered, and a short one. Ask where you have been settling for too little." },
+};
+
+/** Fast planets as triggers: they do not make a theme, they set a slow one off on a particular day. */
+export const TRIGGER: Record<string, string> = {
+  mars: "A day for the difficult conversation and for acting. If you hold it in, it comes out sideways.",
+  venus: "A day when help comes through another person. Be open to it, and rest.",
+  sun: "A day when this is in the spotlight, for you and for others.",
+  mercury: "A day when new information arrives, or the right words do.",
+};

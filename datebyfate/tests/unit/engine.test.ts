@@ -9,6 +9,7 @@ import { practicesFor } from "@/lib/reading/practice";
 import { composite as readComposite } from "@/lib/reading/composite";
 import { coupleReport } from "@/lib/reading/couple";
 import { aspectsOf, ownPattern } from "@/lib/reading/own";
+import { stelliumBetween, stelliumOf } from "@/lib/reading/stellium";
 import { synastryText } from "@/lib/reading/synastry";
 import { contactText } from "@/lib/reading/text";
 import { difficultAspects, gifts, natalContactKeys } from "@/lib/reading/triggers";
@@ -456,5 +457,42 @@ describe("calendar: one process per transit, houses and progressions", () => {
     expect(p.moon[1]!.basis).toMatch(/^Progressed Moon in [A-Z]/);
     for (const v of p.venus) expect(v.basis).toMatch(/^Progressed Venus (conjunction|opposition|square|trine|sextile) natal /);
     expect(timing.progressions(chartFor(born("1990-06-15")), from).moon).toHaveLength(0);
+  });
+});
+
+describe("stelliums", () => {
+  // 21 May 1990: Sun, Mercury and (with the Moon at the new moon of the 24th nearby) personal planets gather in Taurus and Gemini.
+  it("needs three personal planets in one sign", () => {
+    expect(stelliumOf(chartFor(me))).toBeNull(); // Sun Gemini, Moon Pisces, Mercury Gemini, Venus Taurus, Mars Aries
+    const dates = Array.from({ length: 365 }, (_, i) => new Date(Date.UTC(1990, 0, 1) + i * 86_400_000).toISOString().slice(0, 10));
+    const withOne = dates.map((d) => chartFor(born(d, "12:00"))).find((c) => stelliumOf(c));
+    expect(withOne).toBeTruthy();
+    const s = stelliumOf(withOne!)!;
+    expect(s.planets.length).toBeGreaterThanOrEqual(3);
+    expect(ownPattern(withOne!).stellium!.title).toMatch(/^A Stellium In [A-Z]/);
+    const between = stelliumBetween(withOne!, chartFor(me), "Sam", null)!;
+    expect(between.title).toMatch(/^Sam’s Stellium In /);
+    expect(between.body).toMatch(/falls in your \d+(st|nd|rd|th) house/);
+    expect(between.body).toMatch(/You have (no personal planet|[A-Z])/);
+  });
+});
+
+describe("calendar: life cycle and triggers", () => {
+  it("finds a Saturn return near 29 and not otherwise", () => {
+    const chart = chartFor(me); // born June 1990: first Saturn return around 2019–2020
+    expect(timing.lifeCycle(chart, Date.UTC(2019, 6, 1)).map((c) => c.title)).toContain("Your Saturn Return");
+    expect(timing.lifeCycle(chart, Date.UTC(2024, 0, 1)).map((c) => c.title)).not.toContain("Your Saturn Return");
+  });
+  it("lists trigger days only inside a slow period on the same point", () => {
+    const chart = chartFor(me);
+    const from = Date.UTC(2026, 0, 1);
+    const targets = [{ id: "venus", lon: chart.bodies.venus.lon }, { id: "mars", lon: chart.bodies.mars.lon }, { id: "sun", lon: chart.bodies.sun.lon }];
+    const windows = timing.transitWindows(targets, from);
+    const days = timing.triggerDays(targets, windows, from);
+    for (const t of days) {
+      expect(t.title).toMatch(/^(Mars|Venus|Sun|Mercury) (conjunct|square|opposite) your (Venus|Mars|Sun)$/);
+      expect(windows.some((w) => w.title === t.sets && w.start <= t.date && t.date <= w.end)).toBe(true);
+    }
+    expect(timing.triggerDays(targets, [], from)).toHaveLength(0);
   });
 });

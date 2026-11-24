@@ -73,6 +73,11 @@ export function PatternView({ pattern, placements, elements, children }: { patte
       <Section title="How you are in love" intro="Venus, the Moon and Mars: affection, safety and desire.">
         <div className="grid gap-4 lg:grid-cols-3">{pattern.core.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
       </Section>
+      {pattern.stellium && (
+        <Section title="Where your chart is concentrated">
+          <InsightCard insight={pattern.stellium} />
+        </Section>
+      )}
       <Section title="Your elements" intro="Fire, earth, air and water are the kinds of energy you run on. What your chart is full of comes naturally. What it lacks you have to cultivate, and it is often what draws you to other people.">
         <ElementBars balance={elements.balance} />
         <div className="grid gap-4 lg:grid-cols-2">{elements.insights.map((i) => <InsightCard key={i.title} insight={i} />)}</div>

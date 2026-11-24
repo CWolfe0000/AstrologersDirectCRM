@@ -2,7 +2,7 @@ import "server-only";
 import type { BodyId, Chart } from "@/lib/astro/types";
 import { separation } from "@/lib/astro/spherical";
 import { POINT_NAMES, SIGNS, aspectBetween, houseOf, ordinal, signIndex, type Orbs } from "@/lib/astro/zodiac";
-import { ARRIVES, FUNCTION, HOUSE_TRANSIT, PROGRESSED_MOON_HOUSE, PROGRESSED_MOON_SIGN, PROGRESSED_VENUS, TRANSIT } from "@/lib/reading/forecast";
+import { ARRIVES, FUNCTION, HOUSE_TRANSIT, LIFE_CYCLE, PROGRESSED_MOON_HOUSE, PROGRESSED_MOON_SIGN, PROGRESSED_OTHER, PROGRESSED_VENUS, TRANSIT, TRIGGER } from "@/lib/reading/forecast";
 import type { Insight } from "@/lib/reading/own";
 import { TARGET_AREA } from "@/lib/reading/text";
 import { bodiesAt } from "./swiss";
@@ -157,5 +157,68 @@ export function progressions(chart: Chart, nowMs = Date.now()): { moon: Insight[
     const tail = asp.cls === "hard" ? " As a hard aspect it costs more and goes deeper." : asp.cls === "flowing" ? " As an easy aspect it goes smoothly, with a risk of staying on the surface." : "";
     venus.push({ title: `Your Evolving Relationships Meet Your ${name}`, body: PROGRESSED_VENUS[id]! + tail, basis: `Progressed Venus ${asp.name} natal ${name}, ${asp.orb.toFixed(1)}° from exact` });
   }
+  // The progressed Sun and Mars meeting your Venus or Moon: the other signs of meeting, commitment and renewal.
+  const sunOrbs: Orbs = { conjunction: 2.5, opposition: 2.5, square: 2.5, trine: 2.5, sextile: 2.5 };
+  for (const [mover, orbs] of [["sun", sunOrbs], ["mars", PROGRESSED_ORBS]] as const)
+    for (const target of ["venus", "moon"] as const) {
+      if (target === "moon" && !chart.houses) continue;
+      const asp = aspectBetween(sky[mover].lon, chart.bodies[target].lon, orbs);
+      if (!asp) continue;
+      const t = PROGRESSED_OTHER[`${mover}-${target}`]!;
+      const tail = asp.cls === "hard" ? " As a hard aspect it costs more and goes deeper." : asp.cls === "flowing" ? " As an easy aspect it goes smoothly, with a risk of staying on the surface." : "";
+      venus.push({ title: t.title, body: t.body + tail, basis: `Progressed ${POINT_NAMES[mover]} ${asp.name} natal ${POINT_NAMES[target]}, ${asp.orb.toFixed(1)}° from exact` });
+    }
   return { moon, venus };
+}
+
+/** The turning points that come to everyone at a certain age, if one falls in the coming year. */
+export function lifeCycle(chart: Chart, fromMs = Date.now(), days = 365): (Insight & { from: string | null })[] {
+  const t0 = Math.floor(fromMs / DAY) * DAY + DAY / 2;
+  const out: (Insight & { from: string | null })[] = [];
+  for (const [planet, angle, orb] of [["saturn", 0, 3.5], ["uranus", 180, 3], ["neptune", 90, 2], ["jupiter", 0, 5]] as const)
+    for (let d = 0; d <= days; d += 5) {
+      const lon = bodiesAt(t0 + d * DAY, [planet])[planet].lon;
+      if (Math.abs(separation(lon, chart.bodies[planet].lon) - angle) > orb) continue;
+      // Jupiter and Saturn come back to the same place only at a return; skip the birth year itself.
+      if (fromMs - Date.parse(chart.utc) < 5 * 365 * DAY) break;
+      out.push({ ...LIFE_CYCLE[`${planet}-${angle}`]!, basis: `Transiting ${POINT_NAMES[planet]} ${ASPECT_WORD[angle]} your natal ${POINT_NAMES[planet]}`, from: d === 0 ? null : new Date(t0 + d * DAY).toISOString().slice(0, 10) });
+      break;
+    }
+  return out;
+}
+
+export interface TriggerDay {
+  date: string;
+  title: string;
+  body: string;
+  /** The slow period it sets off. */
+  sets: string;
+}
+
+/**
+ * The days in the coming weeks when Mars, Venus, the Sun or Mercury touches a point that a slow
+ * planet is already working on. A fast planet makes no theme of its own; it sets the slow one off.
+ */
+export function triggerDays(targets: Target[], windows: Window[], fromMs = Date.now(), days = 45): TriggerDay[] {
+  const t0 = Math.floor(fromMs / DAY) * DAY + DAY / 2;
+  const fast = ["mars", "venus", "sun", "mercury"] as const;
+  const sky = Array.from({ length: days + 2 }, (_, d) => bodiesAt(t0 + (d - 1) * DAY, [...fast]));
+  const out: TriggerDay[] = [];
+  for (const target of targets) {
+    const area = TARGET_AREA[target.id]!;
+    const working = windows.filter((w) => w.basis.endsWith(area));
+    if (!working.length) continue;
+    for (const planet of fast)
+      for (const angle of [0, 90, 180]) {
+        const orb = (i: number) => Math.abs(separation(sky[i]![planet].lon, target.lon) - angle);
+        for (let d = 0; d < days; d++) {
+          const i = d + 1;
+          if (orb(i) > 1 || orb(i - 1) < orb(i) || orb(i + 1) <= orb(i)) continue;
+          const date = new Date(t0 + d * DAY).toISOString().slice(0, 10);
+          const active = working.find((w) => w.start <= date && date <= w.end);
+          if (active) out.push({ date, title: `${POINT_NAMES[planet]} ${ASPECT_WORD[angle]} ${area.split(",")[0]}`, body: TRIGGER[planet]!, sets: active.title });
+        }
+      }
+  }
+  return out.sort((a, b) => a.date.localeCompare(b.date));
 }

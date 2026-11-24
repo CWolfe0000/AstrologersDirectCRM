@@ -4,8 +4,8 @@ import { InsightCard, Locked, Section } from "@/components/reading";
 import { TransitCard } from "@/components/transit-card";
 import { formatDate, plural } from "@/lib/format";
 import { requireUser } from "@/lib/server/auth";
-import { loadContext, ownTiming } from "@/lib/server/readings";
-import { houseTransits, progressions } from "@/lib/server/timing";
+import { loadContext, ownTiming, relationshipTargets } from "@/lib/server/readings";
+import { houseTransits, lifeCycle, progressions, triggerDays } from "@/lib/server/timing";
 
 export const metadata: Metadata = { title: "Calendar" };
 
@@ -16,8 +16,10 @@ export default async function Timing() {
   const windows = ownTiming(self.chart);
   const houses = houseTransits(self.chart);
   const progressed = progressions(self.chart);
+  const cycle = lifeCycle(self.chart);
+  const triggers = triggerDays(relationshipTargets(self.chart), windows);
   const shown = user.premium ? windows : windows.slice(0, 1);
-  const hidden = windows.length - shown.length + houses.length + progressed.moon.length + progressed.venus.length;
+  const hidden = windows.length - shown.length + houses.length + progressed.moon.length + progressed.venus.length + cycle.length + triggers.length;
   return (
     <div>
       <h1 className="text-4xl font-semibold">Your relationship calendar</h1>
@@ -26,6 +28,13 @@ export default async function Timing() {
       </p>
       {!self.chart.houses && <p className="mt-5 rounded-xl bg-gold-soft px-4 py-3 text-sm text-ink-2">Without a birth time this calendar uses your Sun, Venus and Mars only. <Link className="link" href="/app/you">Add your birth time</Link> to include your Moon, your partnership axis, the houses and your current chapter.</p>}
 
+      {user.premium && cycle.length > 0 && (
+        <Section title="A turning point of your age" intro="These come to everyone at about the same age. When one is in force, read everything else in its light.">
+          <div className="grid gap-4 lg:grid-cols-2">
+            {cycle.map((c) => <InsightCard key={c.title} insight={c} tag={<span className="rounded-full bg-rose-soft px-3 py-1 text-sm font-semibold text-rose-hover">{c.from ? `From ${formatDate(c.from)}` : "Now"}</span>} />)}
+          </div>
+        </Section>
+      )}
       {user.premium && progressed.moon.length > 0 && (
         <Section title="The chapter you are in" intro="Your progressed Moon: where your heart is, for two or three years at a time. Everything else is read against this.">
           <div className="grid gap-4 lg:grid-cols-2">{progressed.moon.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
@@ -50,6 +59,18 @@ export default async function Timing() {
         {windows.length === 0 && <p className="card text-ink-2">No slow planet reaches your relationship points in the next 12 months. Read this year as the aftermath of the last such period, or the lead-in to the next.</p>}
         <ol className="grid gap-4">{shown.map((w) => <li key={w.basis + w.start}><TransitCard w={w} /></li>)}</ol>
       </Section>
+      {user.premium && triggers.length > 0 && (
+        <Section title="The next six weeks: which days" intro="Fast planets do not make a theme of their own. On these days one of them touches a point a slow planet is already working on, and sets it off.">
+          <ul className="card divide-y divide-line">
+            {triggers.map((t) => (
+              <li key={t.date + t.title} className="grid gap-x-6 gap-y-0.5 py-2.5 sm:grid-cols-[8rem_1fr]">
+                <p className="font-semibold tabular-nums">{formatDate(t.date)}</p>
+                <p className="text-ink-2"><span className="heading font-semibold text-ink">{t.title}.</span> {t.body} <span className="text-sm text-muted">Sets off: {t.sets}.</span></p>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
       {!user.premium && hidden > 0 && (
         <div className="mt-4">
           <Locked title={`${plural(hidden, "more reading")} in your calendar`}>

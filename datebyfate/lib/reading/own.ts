@@ -1,5 +1,6 @@
 import type { BodyId, Chart } from "@/lib/astro/types";
 import { LUMINARY_ORBS, NATAL_ORBS, TIGHT_ORBS, POINT_NAMES, SIGNS, aspectBetween, houseOf, ordinal, signIndex, signName } from "@/lib/astro/zodiac";
+import { ownStellium } from "./stellium";
 import { DESCENDANT, DYNAMICS, KIND_NOTE, type Dynamic, IN_SEVENTH, MARS, MOON, RULER_HOUSE, VENUS, VENUS_HEADLINES } from "./text";
 
 export interface Insight {
@@ -15,6 +16,8 @@ export interface OwnPattern {
   /** Needs a birth time. */
   drawnTo: Insight[];
   dynamics: Insight[];
+  /** Three or more personal planets in one sign. */
+  stellium: Insight | null;
   notes: string[];
 }
 
@@ -110,7 +113,7 @@ export function ownPattern(chart: Chart): OwnPattern {
     ? { name: lead.title, line: firstSentence(lead.body) }
     : { name: VENUS_HEADLINES[signIndex(b.venus.lon)]!, line: firstSentence(VENUS[signIndex(b.venus.lon)]!) };
 
-  return { headline, core, drawnTo, dynamics, notes };
+  return { headline, core, drawnTo, dynamics, stellium: ownStellium(chart), notes };
 }
 
 export type Placement = { point: string; sign: string };
