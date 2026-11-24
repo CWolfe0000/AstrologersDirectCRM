@@ -44,6 +44,21 @@ export const STEPS = [
   "Put the candle out, and write two lines about what you noticed.",
 ];
 
+/**
+ * What to do about a pattern in ordinary life, by the heavier planet involved. The advice follows
+ * Donna Cunningham, "An Astrological Guide to Self-Awareness", in our own words. She writes it for
+ * Venus aspects and for strongly Saturnian or Plutonian people in general; applying it to every
+ * pair with that planet is our extension. Her alternative-therapy suggestions are left out.
+ */
+const ADVICE: Partial<Record<BodyId, string>> = {
+  saturn: "Ask yourself regularly, and honestly, what your own part is. Loosen your perfectionism: good enough is enough. Build trust slowly and on purpose, and expect this to ease as you get older.",
+  uranus: "Hold relationships loosely without leaving them. Admit to yourself when you are choosing someone unavailable, and practise valuing people who are dependable.",
+  neptune: "Notice what rescuing someone gives you. Offer compassion without taking over, and act on the warning signs you already recognise.",
+  pluto: "Watch for jealousy, guilt and keeping score, and drop them one at a time. Build a life of your own so that you need less from one person. Say what you feel in company you trust, and if nothing changes, let it go.",
+  mars: "Say no at the start, not after agreeing and resenting it. Raise a problem while it is small. Use your body, because exercise takes the edge off irritability. Find the unspoken demand behind your anger and question it.",
+};
+const PROJECT = "Treat this as a project for a few months: notice where it shows up, write about it, name your own part without blaming anyone, and list what the struggle has already taught you.";
+
 const isClassical = (id: BodyId): id is Classical => (CHALDEAN as string[]).includes(id);
 
 export interface DynamicPractice {
@@ -51,6 +66,8 @@ export interface DynamicPractice {
   name: string;
   basis: string;
   body: string;
+  /** What to do about it in ordinary life. */
+  advice: string;
   /** Timings to use: the hour of one planet on the day of another. */
   timings: { hour: Classical; day: Classical; label: string; note: string }[];
 }
@@ -77,6 +94,7 @@ export function practicesFor(chart: Chart): DynamicPractice[] {
         body: both
           ? `Both planets can be worked with. Set down ${PRACTICE[a.x as Classical].release}, and ${PRACTICE[a.y as Classical].release}. Cultivate ${PRACTICE[a.x as Classical].cultivate}, and ${PRACTICE[a.y as Classical].cultivate}.`
           : `The tradition these practices come from works with the seven visible planets, so there is no practice for ${outer}. Work with your ${POINT_NAMES[inner]}, the side of this you can steady: set down ${PRACTICE[inner].release}, and cultivate ${PRACTICE[inner].cultivate}.`,
+        advice: [ADVICE[a.y] ?? ADVICE[a.x] ?? "", PROJECT].filter(Boolean).join(" "),
         timings: both ? [timing(a.x as Classical, a.y as Classical), timing(a.y as Classical, a.x as Classical)] : [timing(inner, inner)],
       };
     });

@@ -105,6 +105,10 @@ export default async function Practice() {
                 <h3 className="text-xl font-semibold">{p.name}</h3>
                 <p className="mt-2 text-ink-2">{p.body}</p>
                 <p className="mt-3 text-xs font-medium uppercase tracking-wider text-muted">{p.basis}</p>
+                <div className="mt-4 border-t border-line pt-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted">In everyday life</p>
+                  <p className="mt-1 text-ink-2">{p.advice}</p>
+                </div>
                 <ul className="mt-4 space-y-3 border-t border-line pt-4">
                   {p.timings.map((t) => {
                     const times = nextHours(t.hour, t.day, now, place.lat, place.lon, place.tz);

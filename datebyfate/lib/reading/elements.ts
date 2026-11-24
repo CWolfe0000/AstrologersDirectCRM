@@ -144,7 +144,11 @@ export function relationOf(a: Element, b: Element): Relation {
   return pair === "air-fire" || pair === "earth-water" ? "compatible" : "discordant";
 }
 
-/** How two elements meet between two people (Four Elements, ch. 10 and 15), in our words. */
+/**
+ * How two elements meet between two people (Arroyo, Four Elements, ch. 10 and 15), in our words.
+ * The note that fire with earth and air with water are the pairings people are most drawn to is
+ * from Liz Greene, "Astrology for Lovers".
+ */
 const PAIR: Record<string, string> = {
   "fire-fire": "You recharge each other. There is plenty of energy and encouragement, and nobody to slow things down.",
   "earth-earth": "You recharge each other. You agree on what is practical and dependable, and it can settle into routine.",
@@ -152,10 +156,10 @@ const PAIR: Record<string, string> = {
   "water-water": "You recharge each other. You feel each other without words, and moods can feed each other too.",
   "air-fire": "Air fans fire with ideas, and fire gives air the confidence to say them. You stimulate each other, though fire can be too brash for air’s nerves and gets bored with talk it cannot act on.",
   "earth-water": "Earth gives water a form and something solid to rely on, and water refreshes earth and makes it more fruitful. You both hold on to what matters and protect it.",
-  "earth-fire": "Fire feels smothered, and earth finds fire too fast and forceful to trust. It takes effort, and when it works one supplies the drive and the other makes it real.",
+  "earth-fire": "Fire feels smothered, and earth finds fire too fast and forceful to trust. It takes effort, and when it works one supplies the drive and the other makes it real. It is also one of the mixes people are most drawn to: vision on one side and reality on the other, each holding what the other has not lived.",
   "fire-water": "Fire fears being put out and tires of emotion, and water shrinks from so much force. This is the most draining mix, and each needs time apart to recover.",
   "air-earth": "Earth thinks air has its head in the clouds, and is a little fascinated by it. Air will not be pinned down. You complement each other in what you notice and differ in how you go about things.",
-  "air-water": "Water weighs on air’s lightness, and air dries water out. One wants it talked about and the other wants it felt, and each can leave the other feeling unheard.",
+  "air-water": "Water weighs on air’s lightness, and air dries water out. One wants it talked about and the other wants it felt, and each can leave the other feeling unheard. It is also one of the mixes people are most drawn to: one brings thought and the other feeling, and each sees in the other what they have not lived.",
 };
 const SAME_SIGN = " You share the sign itself, which blends more than it feeds: comfortable, and it can go flat without other links between you.";
 
