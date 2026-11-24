@@ -46,7 +46,34 @@ const mins = (t) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3));
 console.log("  ", top.map((t) => `${t.time} ${t.score}`).join(" | "));
 assert.ok(Math.abs(mins(top[0].time) - mins("07:42")) <= 4, `best ${top[0].time}`);
 assert.equal(curve.length, 241);
-assert.ok(top[0].hits.every((h) => h.points >= 0 && h.orb <= 1));
+assert.ok(top[0].hits.every((h) => h.points >= 0 && h.orb <= (h.technique === "eclipse" ? 3 : 1)));
+
+step("Tebbs: aspect hooks, impact, transit windows, eclipses, Moon table");
+const res = r.body.rectify;
+assert.ok(Array.isArray(res.hooks) && Array.isArray(res.notes));
+for (const h of res.hooks) { assert.ok(h.planets.length >= 2 && !h.planets.includes("Moon")); assert.ok(h.tightest <= 2); }
+// Hits on hook planets are marked; slow transits report their passes.
+const allHits = res.top.flatMap((t) => t.hits);
+if (res.hooks.length) assert.ok(allHits.some((h) => h.hook), "some contact involves a hook planet");
+assert.ok(allHits.filter((h) => h.technique === "transit").every((h) => h.passes === undefined || h.passes >= 0));
+// A major loss counts more than the same event as a milestone.
+const one = [{ date: "2001-06-25", type: "parent" }];
+const as = async (impact) => (await post("/api/v1/astro/rectify", { birth, events: one.map((e) => ({ ...e, impact })), from: "07:30", to: "07:50", stepMin: 5, settings: { zodiac: "tropical", houseSystem: "placidus" } })).body.rectify.curve;
+const [maj, mil] = [await as("major"), await as("milestone")];
+assert.ok(maj.some((x, i) => x.score > mil[i].score), "impact raises the score");
+assert.ok(maj.every((x, i) => x.score >= mil[i].score));
+// New event types are accepted.
+assert.equal((await post("/api/v1/astro/rectify", { birth, events: [{ date: "2010-02-02", type: "loss" }, { date: "2011-03-03", type: "crime" }, { date: "2012-04-04", type: "honors" }, { date: "2013-05-05", type: "retirement" }, { date: "2014-06-06", type: "job-loss" }, { date: "2015-07-07", type: "finance" }], from: "07:00", to: "08:00", stepMin: 5, settings: { zodiac: "tropical", houseSystem: "placidus" } })).status, 200);
+assert.equal((await post("/api/v1/astro/rectify", { birth, events: [{ date: "2010-02-02", type: "loss", impact: "enormous" }], from: "07:00", to: "08:00", stepMin: 5, settings: { zodiac: "tropical", houseSystem: "placidus" } })).status, 422);
+// The Moon table: 24 hours, with the dwad and 1° aspects.
+const mt = (await post("/api/v1/astro/rising", { birth, settings: { zodiac: "tropical", houseSystem: "placidus" } })).body.moonTable;
+assert.equal(mt.length, 24);
+assert.equal(mt[0].time, "00:00");
+assert.ok(mt.every((x) => x.lon >= 0 && x.lon < 360 && x.dwad && x.aspects.every((a) => a.orb <= 1)));
+assert.ok(mt[23].lon !== mt[0].lon);
+// A whole-day search that puts the same degrees on swapped angles 6 or 12 hours apart says so.
+const wide = (await post("/api/v1/astro/rectify", { birth, events, from: "00:00", to: "23:56", stepMin: 4, settings: { zodiac: "tropical", houseSystem: "placidus" } })).body.rectify;
+assert.ok(wide.notes.every((n) => /hours apart/.test(n)));
 // The new event types are accepted.
 assert.equal((await post("/api/v1/astro/rectify", { birth, events: [...events, ...extra], from: "07:00", to: "08:00", stepMin: 5, settings: { zodiac: "tropical", houseSystem: "placidus" } })).status, 200);
 assert.equal((await post("/api/v1/astro/rectify", { birth, events: [], from: "05:42", to: "09:42", stepMin: 1, settings: { zodiac: "tropical", houseSystem: "placidus" } })).status, 422);
@@ -98,14 +125,22 @@ await page.getByRole("button", { name: /Rising.*\(Recorded Time\)/ }).click();
 assert.equal(await page.getByRole("button", { name: /Rising.*\(Recorded Time\)/ }).getAttribute("aria-pressed"), "true");
 await page.getByText(/Only times with .* rising are tested/).waitFor();
 await page.getByLabel(/C-Section/).check();
+await page.getByTestId("reliability").getByText("Evidence: Weak.").waitFor();
 for (const e of events.slice(0, 3)) {
   await page.getByLabel("Event Date").fill(e.date);
   await page.getByLabel("Event Type").selectOption(e.type);
   await page.getByRole("button", { name: "Add Event" }).click();
 }
+// Each event's impact starts at the usual for its kind and can be changed.
+await page.getByLabel("Impact of event 1").waitFor();
+assert.equal(await page.getByLabel("Impact of event 1").inputValue(), "milestone", "a move is a milestone");
+await page.getByLabel("Impact of event 1").selectOption("major");
+await page.getByText("Moon Through the Day").click();
+await page.getByRole("columnheader", { name: "Dwad" }).waitFor();
 await page.getByRole("button", { name: /Test .* Candidate Times/ }).click();
 await page.getByRole("heading", { name: "Best Candidates" }).waitFor({ timeout: 60000 });
 await page.getByText("Technical Breakdown").first().waitFor();
+await page.getByRole("heading", { name: "Natal Aspect Hooks" }).waitFor();
 if (SHOTS) await page.screenshot({ path: `${SHOTS}/rectify.png`, fullPage: true });
 const [, hh, mm, ap] = (await page.locator("tr", { hasText: "Use This Time" }).first().innerText()).match(/(\d{1,2}):(\d\d)\s*([AP]M)?/i);
 const chosen = `${String((Number(hh) % 12) + (/p/i.test(ap ?? "") ? 12 : ap ? 0 : Number(hh) >= 12 ? 12 : 0)).padStart(2, "0")}:${mm}`;
@@ -113,6 +148,7 @@ await page.getByRole("button", { name: "Use This Time" }).first().click();
 await page.waitForTimeout(1500);
 const c1 = (await state()).people.find((p) => p.id === "c1");
 assert.equal(c1.lifeEvents.length, 3);
+assert.equal(c1.lifeEvents.find((e) => e.date === events[0].date).impact, "major");
 assert.deepEqual(c1.birthCircumstances, ["c-section"]);
 await page.getByText("Birth Circumstances", { exact: true }).first().waitFor();
 assert.equal(c1.birth.time, chosen);

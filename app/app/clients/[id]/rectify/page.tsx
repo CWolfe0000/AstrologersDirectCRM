@@ -13,23 +13,12 @@ import { PageHeader } from "@/components/ui/misc";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { Breakdown, BHead, BTable } from "@/components/ui/breakdown";
-import { lifeEventLabel, lifeEventWhen, rectifyType } from "@/lib/life-events";
+import { IMPACTS, LIFE_EVENT_TYPES, lifeEventLabel, lifeEventWhen, rectifyReliability, rectifyType, usualImpact, type Impact } from "@/lib/life-events";
 import { PremiumGate, usePremium } from "@/components/plan/premium";
 import { useHydrated } from "@/components/workspace/use-hydrated";
 
-const EVENT_TYPES: { id: string; label: string }[] = [
-  { id: "marriage", label: "Marriage or Committed Partnership" },
-  { id: "separation", label: "Separation or Divorce" },
-  { id: "child", label: "Birth of a Child" },
-  { id: "career", label: "Career Change, Promotion or Graduation" },
-  { id: "move", label: "Move or Change of Home" },
-  { id: "long-move", label: "Long-Distance Move or Emigration" },
-  { id: "parent", label: "Death or Illness of a Parent" },
-  { id: "health", label: "Accident, Surgery or Illness" },
-  { id: "legal", label: "Legal Issue, Lawsuit or Court Case" },
-  { id: "incarceration", label: "Incarceration or Confinement" },
-  { id: "other", label: "Other Major Event" },
-];
+// Event kinds: the same categories as clients' life events (each maps to a rectification type).
+const EVENT_TYPES = LIFE_EVENT_TYPES.filter((t) => t.id !== "relationship");
 // Traditional rising-sign descriptions: how the Ascendant tends to show in looks and manner.
 const RISING: string[] = [
   "Brisk, direct and quick to act. Often an athletic build, a strong brow or a mark on the head or face.",
@@ -76,11 +65,15 @@ const CIRCS: { id: string; label: string; planets: string }[] = [
   { id: "easy", label: "Easy, Smooth Birth", planets: "Jupiter, Venus" },
   { id: "large", label: "Large Baby", planets: "Jupiter" },
 ];
-type Hit = { event: number; circumstance?: string; technique: string; from: string; to: string; aspect: string; orb: number; points: number };
+type Hit = { event: number; circumstance?: string; technique: string; from: string; to: string; aspect: string; orb: number; points: number; hook?: boolean; passes?: number };
+type Hook = { planets: string[]; aspects: { a: string; b: string; aspect: string; orb: number }[]; sensitive: { lon: number; label: string }[]; tightest: number };
+type MoonRow = { time: string; lon: number; sign: string; dwad: string; aspects: { planet: string; aspect: string; orb: number }[] };
 type Result = {
+  hooks: Hook[];
+  notes: string[];
   curve: { time: string; score: number; asc: number; mc: number }[];
   top: { time: string; utc: string; asc: number; mc: number; score: number; hits: Hit[] }[];
-  weights: { techniques: Record<string, { label: string; w: number; orb: number }>; aspects: { name: string; w: number }[]; events: Record<string, { label: string; angles: Record<string, number> }> };
+  weights: { impact: Record<string, { label: string; w: number }>; hookBonus: number; stackBonus: number; repeatBonus: number; transitWindows: Record<string, [number, number]>; techniques: Record<string, { label: string; w: number; orb: number }>; aspects: { name: string; w: number }[]; events: Record<string, { label: string; angles: Record<string, number> }> };
 };
 const uid = () => Math.random().toString(36).slice(2, 10);
 const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
@@ -108,14 +101,15 @@ export default function RectifyPage() {
   const [chosen, setChosen] = React.useState(0);
   const [spans, setSpans] = React.useState<Span[] | null>(null);
   const [moonSpans, setMoonSpans] = React.useState<Span[] | null>(null);
+  const [moonRows, setMoonRows] = React.useState<MoonRow[] | null>(null);
   const [picked, setPicked] = React.useState<number[]>([]);
   const [pickedMoon, setPickedMoon] = React.useState<number[]>([]);
   const birthKey = b ? JSON.stringify([b.date, b.lat, b.lon, b.tz, defaults.zodiac, defaults.houseSystem]) : "";
   React.useEffect(() => {
     if (!b || DATA_MODE !== "server") return;
     let live = true;
-    api<{ rising: Span[]; moon: Span[] }>("/api/v1/astro/rising", { body: { birth: b, settings: { zodiac: defaults.zodiac, houseSystem: defaults.houseSystem } } })
-      .then((r) => { if (live) { setSpans(r.rising); setMoonSpans(r.moon); } }, () => { if (live) { setSpans([]); setMoonSpans([]); } });
+    api<{ rising: Span[]; moon: Span[]; moonTable: MoonRow[] }>("/api/v1/astro/rising", { body: { birth: b, settings: { zodiac: defaults.zodiac, houseSystem: defaults.houseSystem } } })
+      .then((r) => { if (live) { setSpans(r.rising); setMoonSpans(r.moon); setMoonRows(r.moonTable); } }, () => { if (live) { setSpans([]); setMoonSpans([]); setMoonRows([]); } });
     return () => { live = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [birthKey]);
@@ -133,7 +127,7 @@ export default function RectifyPage() {
     setError(null);
     try {
       const r = await api<{ rectify: Result }>("/api/v1/astro/rectify", {
-        body: { birth: b, events: sorted.map((e) => ({ date: e.date, type: rectifyType(e.type) })), from, to: to < from ? from : to, stepMin: step, settings: { zodiac: defaults.zodiac, houseSystem: defaults.houseSystem }, ascSigns: picked.length ? picked : undefined, moonSigns: pickedMoon.length ? pickedMoon : undefined, circumstances: circs },
+        body: { birth: b, events: sorted.map((e) => ({ date: e.date, type: rectifyType(e.type), impact: e.impact ?? usualImpact(e.type) })), from, to: to < from ? from : to, stepMin: step, settings: { zodiac: defaults.zodiac, houseSystem: defaults.houseSystem }, ascSigns: picked.length ? picked : undefined, moonSigns: pickedMoon.length ? pickedMoon : undefined, circumstances: circs },
       });
       setResult(r.rectify);
       setRanCircs(circs);
@@ -176,6 +170,7 @@ export default function RectifyPage() {
   const recordedSpan = known && spans ? spans.find((x) => x.from <= b.time && b.time <= x.to) : undefined;
 
   const maxScore = Math.max(1, ...(result?.curve.map((c) => c.score) ?? [1]));
+  const reliability = rectifyReliability(sorted);
   const top = result?.top[chosen];
   const recorded = known ? b.time : null;
 
@@ -190,7 +185,7 @@ export default function RectifyPage() {
 
       <div className="mb-5 rounded-lg border border-line bg-canvas-2 px-4 py-3 text-[12.5px] text-muted">
         <p className="mb-0.5 font-semibold text-ink">How Reliable Is This?</p>
-        <p>We tested this on 10 people with birth-certificate times (Astro-Databank, rated AA) and four to seven well-dated events each, searching two hours either side. Using every technique here, primary directions included, the top candidate was within 30 minutes of the true time for 1 of the 10, which is no better than chance. Where you can judge the rising sign correctly, that alone narrows the search to about two and a half hours. Treat the ranking as a starting point and weigh the contacts listed for each candidate yourself.</p>
+        <p>We tested this on 10 people with birth-certificate times (Astro-Databank, rated AA) and only four to seven well-dated events each. Searching two hours either side, the top candidate was within 30 minutes of the true time for 4 of the 10 (median error 39 minutes, against 60 by chance). With the rising sign judged correctly first, 6 of 10 (median 27 minutes, against 48). It rarely lands within 10 minutes, and 10 people is a small test, so treat the ranking as a shortlist and weigh the contacts listed for each candidate yourself. Carol Tebbs recommends a dozen or more events, mostly hard ones.</p>
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[420px_minmax(0,1fr)]">
@@ -224,6 +219,12 @@ export default function RectifyPage() {
                   </ul>
                   <p className="text-[11.5px] text-muted">The Moon changes sign at {fmtClock(moonSpans[1]!.from)} on this date.</p>
                 </>
+              )}
+              {moonRows && moonRows.length > 0 && (
+                <Breakdown title="Moon Through the Day">
+                  <p>Where the Moon is at each hour of the birth date, its dwad (the 2½° twelfth of its sign, for fine-tuning) and the natal planets it would aspect within 1°. If the client’s life strongly shows one of these contacts, that narrows the hours.</p>
+                  <BTable head={["Time", "Moon", "Dwad", "Within 1°"]} rows={moonRows.map((r) => [fmtClock(r.time), `${fmtDeg(r.lon)} ${r.sign}`, r.dwad, r.aspects.length ? r.aspects.map((a) => `${a.aspect.charAt(0).toUpperCase()}${a.aspect.slice(1)} ${a.planet} (${a.orb.toFixed(1)}°)`).join(", ") : "—"])} />
+                </Breakdown>
               )}
               {moonSpans && moonSpans.length > 0 && (
                 <Breakdown title="Moon Sign Guide">
@@ -284,8 +285,11 @@ export default function RectifyPage() {
           </Card>
 
           <Card>
-            <CardHeader title="Step 4: Life Events" description="Dated events with known dates. Five or more spread across life give the clearest result." />
+            <CardHeader title="Step 4: Life Events" description="Dated events, spread across life. The hard ones show most clearly: losses, accidents, surgery, divorce, a parent’s death. Mark how hard each one hit; major losses and crises count most." />
             <CardBody className="space-y-3 pt-0">
+              <p className={cn("rounded-lg px-3 py-2 text-[12.5px]", reliability.level === "Weak" ? "bg-warn-50 text-ink-3" : "bg-canvas-2 text-ink-3")} data-testid="reliability">
+                <span className="font-semibold text-ink">Evidence: {reliability.level}.</span> {reliability.advice}
+              </p>
               <div className="grid grid-cols-[1fr_auto] gap-2">
                 <Input type="date" aria-label="Event Date" value={draft.date} max={TODAY} min={b.date} onChange={(e) => setDraft({ ...draft, date: e.target.value })} />
                 <Button
@@ -314,6 +318,9 @@ export default function RectifyPage() {
                         <span className="font-medium text-ink">{e.end || e.approx ? lifeEventWhen(e) : fmtDate(e.date)}</span> · {lifeEventLabel(e.type)}{e.source === "client" && <span className="text-muted"> · From Client</span>}
                         {e.note && <span className="block truncate text-muted">{e.note}</span>}
                       </span>
+                      <Select aria-label={`Impact of event ${i + 1}`} className="h-7 w-auto shrink-0 py-0 text-[12px]" value={e.impact ?? usualImpact(e.type)} onChange={(ev) => setEvents(events.map((x) => (x.id === e.id ? { ...x, impact: ev.target.value as Impact } : x)))}>
+                        {IMPACTS.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+                      </Select>
                       <Button variant="ghost" size="icon-sm" aria-label={`Remove event ${i + 1}`} onClick={() => setEvents(events.filter((x) => x.id !== e.id))}><Trash2 /></Button>
                     </li>
                   ))}
@@ -341,7 +348,6 @@ export default function RectifyPage() {
               <Button onClick={run} disabled={busy || (sorted.length === 0 && circs.length === 0) || DATA_MODE !== "server"}>
                 {busy ? <Loader2 className="animate-spin" /> : <Sparkles />} Test {Math.floor((toMin(to) - toMin(from)) / step) + 1} Candidate Times
               </Button>
-              {sorted.length > 0 && sorted.length < 3 && <p className="text-[12px] text-warn">With fewer than three events the result is weak; add more if you can.</p>}
               {error && <p className="text-[12.5px] text-danger" role="alert">{error}</p>}
             </CardBody>
           </Card>
@@ -352,6 +358,30 @@ export default function RectifyPage() {
             <Card><CardBody className="py-12 text-center text-[13px] text-muted">Add life events and test candidate times to see the ranking.</CardBody></Card>
           ) : (
             <>
+              {result.notes.length > 0 && (
+                <div role="note" className="rounded-lg border border-accent/30 bg-accent-50 px-4 py-3 text-[12.5px] text-ink-3">
+                  <p className="mb-0.5 font-semibold text-ink">Angles Possibly Swapped</p>
+                  {result.notes.map((n, i) => <p key={i}>{n}</p>)}
+                </div>
+              )}
+              <Card>
+                <CardHeader title="Natal Aspect Hooks" description="Tight hard-aspect networks (2° or less) in the natal chart, without the Moon and angles. At major events an angle or the Moon often sets one off, so contacts to these planets count extra. Shown as a starting point (Carol Tebbs’ method)." />
+                <CardBody className="pt-0">
+                  {result.hooks.length === 0 ? (
+                    <p className="text-[12.5px] text-muted">No hard aspects within 2° in this chart, so no planet gets the hook bonus. Look at the closest aspects of any kind instead.</p>
+                  ) : (
+                    <ul className="space-y-2 text-[12.5px]">
+                      {result.hooks.map((h, i) => (
+                        <li key={i} className="rounded-lg border border-line px-3 py-2">
+                          <p className="font-medium text-ink">{h.planets.join(" · ")} <span className="font-normal text-muted">(tightest {h.tightest.toFixed(2)}°)</span></p>
+                          <p className="text-ink-3">{h.aspects.map((a) => `${a.a} ${a.aspect} ${a.b} ${a.orb.toFixed(2)}°`).join("; ")}</p>
+                          {h.sensitive.map((x, k) => <p key={k} className="text-muted">{x.label}: {fmtDeg(x.lon)} {signOf(x.lon).name}</p>)}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </CardBody>
+              </Card>
               <Card>
                 <CardHeader title="Score Across the Window" description="Higher means more, tighter contacts to the angles at the events. Select a peak to see its candidate." />
                 <CardBody className="pt-0">
@@ -418,12 +448,18 @@ export default function RectifyPage() {
                       const hits = top.hits.filter((h) => h.event === i).sort((x, y) => y.points - x.points);
                       return (
                         <div key={e.id} className="rounded-lg border border-line p-3">
-                          <p className="text-[13px] font-medium text-ink">{fmtDate(e.date)} · {EVENT_TYPES.find((t) => t.id === e.type)?.label}{e.note ? <span className="font-normal text-muted"> · {e.note}</span> : ""}</p>
+                          <p className="text-[13px] font-medium text-ink">{fmtDate(e.date)} · {lifeEventLabel(e.type)} <span className="font-normal text-muted">· {IMPACTS.find((m) => m.id === (e.impact ?? usualImpact(e.type)))?.label}{e.note ? ` · ${e.note}` : ""}</span></p>
                           {hits.length === 0 ? (
                             <p className="mt-1 text-[12.5px] text-muted">No contact to the angles at this time.</p>
                           ) : (
                             <ul className="mt-1 space-y-0.5 text-[12.5px] text-ink-3">
-                              {hits.slice(0, 6).map((h, k) => <li key={k}>{h.from} {h.aspect.charAt(0).toUpperCase() + h.aspect.slice(1)} Natal {h.to} <span className="text-muted">({h.orb.toFixed(2)}° Orb, {h.points.toFixed(2)} Points)</span></li>)}
+                              {hits.slice(0, 6).map((h, k) => (
+                                <li key={k}>
+                                  {h.from} {h.aspect.charAt(0).toUpperCase() + h.aspect.slice(1)} Natal {h.to} <span className="text-muted">({h.orb.toFixed(2)}° Orb, {h.points.toFixed(2)} Points)</span>
+                                  {h.hook && <span className="ml-1.5 rounded bg-accent-50 px-1 text-[11px] font-medium text-accent">Hook</span>}
+                                  {h.passes && h.passes >= 2 ? <span className="ml-1.5 rounded bg-canvas-2 px-1 text-[11px] font-medium text-ink-3">{h.passes} Passes</span> : null}
+                                </li>
+                              ))}
                               {hits.length > 6 && <li className="text-muted">+{hits.length - 6} More</li>}
                             </ul>
                           )}
@@ -434,7 +470,7 @@ export default function RectifyPage() {
                       <div className="space-y-1">
                         <BHead>What Is Checked at Each Event</BHead>
                         <BTable head={["Technique", "Weight", "Orb"]} rows={Object.values(result.weights.techniques).map((t) => [t.label, t.w, `${t.orb}°`])} />
-                        <p>Transits use Jupiter, Saturn, Uranus, Neptune, Pluto and the North Node at noon UTC on the event date. Progressions are one day after birth for each year of life; the solar arc is the progressed Sun minus the natal Sun. Progressed angles come from the natal RAMC plus the arc. Natal points: the Sun through Pluto and the North Node.</p>
+                        <p>Transits use Jupiter, Saturn, Uranus, Neptune, Pluto and the North Node, checked across the time each is felt around the event (days before and after: {Object.entries(result.weights.transitWindows).map(([k, [a, z]]) => `${k.charAt(0).toUpperCase()}${k.slice(1)} ${a}/${z}`).join(", ")}); a transit exact more than once in that time (a retrograde loop) counts {Math.round(result.weights.repeatBonus * 100)}% more. The solar eclipse before each event (within a year) is checked against the angles and the Moon with a 3° orb. Progressions are one day after birth for each year of life; the solar arc is the progressed Sun minus the natal Sun. Progressed angles come from the natal RAMC plus the arc. Natal points: the Sun through Pluto and the North Node.</p>
                         <p>Primary directions turn the sky after birth: a planet (with its latitude) reaches an angle when its right ascension meets the Midheaven or IC, or its oblique ascension or descension meets the Ascendant or Descendant under the birthplace latitude (the Placidus semi-arc method). Squares use the zodiacal points 90° from each planet. The arc becomes years by Naibod’s key, 0°59′08″ per year; converse directions run the sky backward. A 1° orb is about a year.</p>
                       </div>
                       <div className="space-y-1">
@@ -450,7 +486,12 @@ export default function RectifyPage() {
                         <BHead>Which Angle Matters for Each Event</BHead>
                         <BTable head={["Event", "ASC", "MC", "DSC", "IC"]} rows={Object.values(result.weights.events).map((e) => [e.label, e.angles.asc, e.angles.mc, e.angles.dsc, e.angles.ic])} />
                       </div>
-                      <p>Points for a hit = technique weight × aspect weight × angle weight × (1 − orb ÷ maximum orb), so an exact hit scores in full and one at the edge of orb scores nothing. Each event counts its best hit plus a quarter of its second; a candidate’s score is the total over all events. Only conjunctions, oppositions and squares count. Weights are provisional; the hits listed above are the evidence to judge.</p>
+                      <div className="space-y-1">
+                        <BHead>Impact, Hooks and Agreement (After Carol Tebbs)</BHead>
+                        <BTable head={["Impact", "Weight"]} rows={Object.values(result.weights.impact).map((m) => [m.label, `×${m.w}`])} />
+                        <p>A contact involving a planet in a natal aspect hook counts up to {Math.round(result.weights.hookBonus * 100)}% more (the tighter the hook, the more). Each further family of techniques (directions, progressions, transits) that also shows an event adds {Math.round(result.weights.stackBonus * 100)}% of its best hit: Zipporah Dobyns’ rule that a right time shows each event in all three.</p>
+                      </div>
+                      <p>Points for a hit = technique weight × aspect weight × angle weight × (1 − orb ÷ maximum orb), times the hook bonus, so an exact hit scores in full and one at the edge of orb scores nothing. Each event counts its best hit plus a quarter of its second plus the agreement bonus, times its impact; a candidate’s score is the total over all events. Only conjunctions, oppositions and squares count. Weights are provisional; the hits listed above are the evidence to judge.</p>
                     </Breakdown>
                   </CardBody>
                 </Card>

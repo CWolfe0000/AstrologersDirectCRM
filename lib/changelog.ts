@@ -3,6 +3,18 @@ export interface Release { date: string; title: string; items: string[] }
 
 export const CHANGELOG: Release[] = [
   {
+    date: "2026-11-24",
+    title: "Rectification, the Tebbs Way",
+    items: [
+      "Natal aspect hooks: the chart’s tight hard-aspect networks, which angles set off at major events, now count extra.",
+      "Mark how hard each life event hit (Major Loss or Crisis, Significant, Milestone); losses and crises weigh most.",
+      "Events confirmed by directions, progressions and transits together score higher.",
+      "Slow transits are checked across the weeks or months they’re felt, with retrograde repeat passes counted.",
+      "Solar eclipses before each event, the Moon hour by hour with its dwad, and a flag for times that swap the angles.",
+      "An evidence meter for how many events, and how many hard ones, you’ve entered.",
+    ],
+  },
+  {
     date: "2026-11-22",
     title: "Your Page, Your Setup, Your Formats",
     items: [

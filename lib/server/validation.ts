@@ -32,7 +32,7 @@ export const birthSchema = z
 
 const ymd = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 export const lifeEvent = z
-  .object({ id: str(40).min(1), date: ymd, end: opt(ymd), ongoing: opt(z.boolean()), approx: opt(z.boolean()), type: str(20).min(1), note: opt(str(500)), source: opt(z.enum(["client", "astrologer"])) })
+  .object({ id: str(40).min(1), date: ymd, end: opt(ymd), ongoing: opt(z.boolean()), approx: opt(z.boolean()), type: str(20).min(1), note: opt(str(500)), source: opt(z.enum(["client", "astrologer"])), impact: opt(z.enum(["major", "significant", "milestone"])) })
   .strict()
   .refine((e) => !e.end || e.end >= e.date, "A period can’t end before it starts.");
 

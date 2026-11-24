@@ -6,7 +6,7 @@ import { acgChart, davisonChart, motionFrom, natalChart, returnChart, positionsA
 import { SWISS_INFO, fixedStarsAt } from "@/lib/server/swiss";
 import { coupleForecast, forecast, THEMES, type Theme } from "@/lib/server/forecast";
 import { FIXED_STARS } from "@/lib/astro/fixed-stars";
-import { CIRCUMSTANCES, EVENT_TYPES, moonSpans, type Circumstance, rectify, risingSpans, type EventType } from "@/lib/server/rectify";
+import { CIRCUMSTANCES, EVENT_TYPES, IMPACT, moonSpans, moonTable, type Circumstance, type Impact, rectify, risingSpans, type EventType } from "@/lib/server/rectify";
 import { findElections } from "@/lib/server/elect";
 import { ELECTION_CHECKS, type ElectionCheck } from "@/lib/astro/elect";
 import { requirePremium } from "@/lib/server/plan";
@@ -35,7 +35,7 @@ const Bodies = {
   motion: z.object({ utc: z.string().max(40), settings: z.object({ zodiac: z.enum(["tropical", "sidereal-lahiri", "sidereal-fagan-bradley"]) }).passthrough() }),
   rectify: z.object({
     birth: birthSchema,
-    events: z.array(z.object({ date, type: z.enum(Object.keys(EVENT_TYPES) as [EventType, ...EventType[]]), note: z.string().max(300).optional() })).max(40),
+    events: z.array(z.object({ date, type: z.enum(Object.keys(EVENT_TYPES) as [EventType, ...EventType[]]), note: z.string().max(300).optional(), impact: z.enum(Object.keys(IMPACT) as [Impact, ...Impact[]]).optional() })).max(40),
     circumstances: z.array(z.enum(Object.keys(CIRCUMSTANCES) as [Circumstance, ...Circumstance[]])).max(12).optional(),
     from: z.string().regex(/^\d{2}:\d{2}$/),
     to: z.string().regex(/^\d{2}:\d{2}$/),
@@ -118,7 +118,7 @@ export const POST = handler(async (req: Request, ctx: { params: Promise<{ op: st
       case "couple-forecast":
         return json({ engine: SWISS_INFO, forecast: coupleForecast(b.a, b.b, b.settings, b.from, b.years, b.themes) });
       case "rising":
-        return json({ engine: SWISS_INFO, rising: risingSpans(b.birth, b.settings), moon: moonSpans(b.birth, b.settings) });
+        return json({ engine: SWISS_INFO, rising: risingSpans(b.birth, b.settings), moon: moonSpans(b.birth, b.settings), moonTable: moonTable(b.birth, b.settings) });
       case "davison":
         return json({ engine: SWISS_INFO, points: davisonChart(b.a, b.b, b.settings) });
       case "solar-return":
