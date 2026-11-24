@@ -5,7 +5,7 @@ import { useEffect, useId, useRef, useState } from "react";
 export type Place = { place: string; lat: number; lon: number; tz: string };
 
 /** Birthplace search. The chosen place carries its coordinates and time zone. */
-export function PlacePicker({ value, onChange }: { value: Place | null; onChange: (p: Place | null) => void }) {
+export function PlacePicker({ value, onChange, label = "Birthplace" }: { value: Place | null; onChange: (p: Place | null) => void; label?: string }) {
   const id = useId();
   const [text, setText] = useState(value?.place ?? "");
   const [results, setResults] = useState<Place[]>([]);
@@ -50,7 +50,7 @@ export function PlacePicker({ value, onChange }: { value: Place | null; onChange
 
   return (
     <div className="relative">
-      <label htmlFor={id} className="label">Birthplace</label>
+      <label htmlFor={id} className="label">{label}</label>
       <input
         id={id}
         className="input"

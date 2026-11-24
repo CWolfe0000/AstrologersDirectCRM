@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { birthSchema, personFromForm, type PersonKind } from "@/lib/people";
+import { birthSchema, homeSchema, personFromForm, type PersonKind } from "@/lib/people";
 import type { Interval } from "@/lib/plans";
 import { elementReading } from "@/lib/reading/elements";
 import { ownPattern, placementsOf, type OwnPattern, type Placement } from "@/lib/reading/own";
@@ -15,7 +15,7 @@ import { newId } from "@/lib/server/crypto";
 import { db, schema } from "@/lib/server/db";
 import { env } from "@/lib/server/env";
 import { sendMail } from "@/lib/server/mail";
-import { deletePerson, savePerson } from "@/lib/server/people";
+import { deletePerson, saveHome, savePerson } from "@/lib/server/people";
 
 export type FormState = { error?: string; ok?: string } | undefined;
 
@@ -163,6 +163,19 @@ export async function removePerson(form: FormData) {
   await deletePerson(user.id, String(form.get("id") ?? ""));
   revalidatePath("/app", "layout");
   redirect(String(form.get("back") ?? "") === "exes" ? "/app/exes" : "/app/people");
+}
+
+export async function saveWhereYouLive(_: FormState, form: FormData): Promise<FormState> {
+  const user = await requireUser();
+  const home = homeSchema.safeParse({ place: String(form.get("place") ?? ""), lat: Number(form.get("lat") ?? NaN), lon: Number(form.get("lon") ?? NaN), tz: String(form.get("tz") ?? "") });
+  if (!home.success) return { error: "Choose a place from the list." };
+  try {
+    await saveHome(user.id, home.data);
+  } catch (e) {
+    return { error: (e as Error).message };
+  }
+  revalidatePath("/app/practice");
+  return { ok: `Saved. Times below are for ${home.data.place}.` };
 }
 
 /* ---------- Billing ---------- */

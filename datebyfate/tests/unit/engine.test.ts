@@ -3,6 +3,8 @@ import type { Birth } from "@/lib/astro/types";
 import { signName } from "@/lib/astro/zodiac";
 import { binomialTail, checkAgainst, patternAcross, plainFacts, signaturesOf } from "@/lib/reading/exes";
 import { attunement, elementBalance, elementNote, elementReading, relationOf } from "@/lib/reading/elements";
+import * as hoursLib from "@/lib/reading/hours";
+import { practicesFor } from "@/lib/reading/practice";
 import { composite as readComposite } from "@/lib/reading/composite";
 import { coupleReport } from "@/lib/reading/couple";
 import { aspectsOf, ownPattern } from "@/lib/reading/own";
@@ -344,5 +346,56 @@ describe("timing", () => {
       expect(x.basis).toMatch(/^(Jupiter|Saturn|Uranus|Neptune|Pluto) /);
     }
     expect([...w].sort((a, b) => a.start.localeCompare(b.start)).map((x) => x.start)).toEqual(w.map((x) => x.start));
+  });
+});
+
+describe("planetary hours", () => {
+  const { planetaryDayAt, nextHours, CHALDEAN } = hoursLib;
+  // Wednesday 24 June 2026, London, midday.
+  const noon = Date.UTC(2026, 5, 24, 11, 0);
+  const day = planetaryDayAt(noon, 51.5074, -0.1278, "Europe/London")!;
+
+  it("finds sunrise and sunset to within a few minutes", () => {
+    // London, 24 June 2026: sunrise about 04:44 BST (03:44 UT), sunset about 21:22 BST (20:22 UT).
+    expect(Math.abs(day.sunrise - Date.UTC(2026, 5, 24, 3, 44)) / 60_000).toBeLessThan(4);
+    expect(Math.abs(day.sunset - Date.UTC(2026, 5, 24, 20, 22)) / 60_000).toBeLessThan(4);
+  });
+
+  it("gives the day to the weekday's planet and runs the Chaldean order without a break", () => {
+    expect(day.weekday).toBe("Wednesday");
+    expect(day.ruler).toBe("mercury");
+    expect(day.hours).toHaveLength(24);
+    expect(day.hours[0]!.planet).toBe("mercury");
+    // The day ruler holds day hours 1 and 8 and night hours 3 and 10; Wednesday's first night hour is the Sun's.
+    expect(day.hours.map((h, i) => (h.planet === "mercury" ? i : -1)).filter((i) => i >= 0)).toEqual([0, 7, 14, 21]);
+    expect(day.hours[12]!.planet).toBe("sun");
+    day.hours.forEach((h, i) => expect(h.planet).toBe(CHALDEAN[(CHALDEAN.indexOf("mercury") + i) % 7]));
+    // Contiguous, and the 25th hour would open Thursday with Jupiter.
+    day.hours.slice(1).forEach((h, i) => expect(h.start).toBeCloseTo(day.hours[i]!.end, -1));
+    expect(CHALDEAN[(CHALDEAN.indexOf("mercury") + 24) % 7]).toBe("jupiter");
+    // Summer: day hours are longer than night hours.
+    expect(day.hours[0]!.end - day.hours[0]!.start).toBeGreaterThan(day.hours[12]!.end - day.hours[12]!.start);
+  });
+
+  it("before sunrise it is still the previous planetary day", () => {
+    const early = planetaryDayAt(Date.UTC(2026, 5, 24, 1, 0), 51.5074, -0.1278, "Europe/London")!;
+    expect(early.weekday).toBe("Tuesday");
+    expect(early.ruler).toBe("mars");
+  });
+
+  it("finds the next Saturn hours on a Friday, and none where the Sun does not set", () => {
+    const next = nextHours("saturn", "venus", noon, 51.5074, -0.1278, "Europe/London");
+    expect(next).toHaveLength(2);
+    for (const h of next) expect(new Date(h.start).getUTCDay() === 5 || new Date(h.start).getUTCDay() === 6).toBe(true);
+    expect(planetaryDayAt(noon, 78.2, 15.6, "Arctic/Longyearbyen")).toBeNull(); // Svalbard, midnight sun
+  });
+
+  it("matches a practice to each difficult dynamic, classical planets only", () => {
+    const list = practicesFor(chartFor(me));
+    expect(list.length).toBe(aspectsOf(chartFor(me)).filter((a) => a.hard).length);
+    const pluto = list.find((p) => p.key === "venus-pluto")!;
+    expect(pluto.timings).toEqual([expect.objectContaining({ hour: "venus", day: "venus", label: "Venus Hour On Friday" })]);
+    expect(pluto.body).toMatch(/no practice for Pluto/);
+    for (const p of list) for (const t of p.timings) expect(["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn"]).toContain(t.hour);
   });
 });

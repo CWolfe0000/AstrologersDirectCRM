@@ -11,7 +11,11 @@ export interface PersonData {
   endYear?: number | null;
   /** Who ended it. */
   ending?: "me" | "them" | "mutual" | null;
+  /** The member only: where they live now, for planetary hours. */
+  home?: Home | null;
 }
+
+export type Home = Pick<Birth, "place" | "lat" | "lon" | "tz">;
 
 export interface Person extends PersonData {
   id: string;
@@ -72,3 +76,5 @@ export function personFromForm(form: FormData) {
     ending: form.get("ending") || null,
   });
 }
+
+export const homeSchema = birthSchema.pick({ place: true, lat: true, lon: true, tz: true });

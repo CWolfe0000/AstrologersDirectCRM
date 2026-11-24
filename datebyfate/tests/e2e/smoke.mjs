@@ -130,6 +130,20 @@ await page.getByRole("heading", { name: "Your relationship calendar" }).waitFor(
 assert.ok((await page.locator("ol > li").count()) >= 1);
 await shot("09-timing");
 
+step("practice: planetary hours and a practice per dynamic");
+await page.goto(`${BASE}/app/practice`);
+await page.getByRole("heading", { name: /Day Of (Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn)/ }).waitFor();
+assert.equal(await page.locator("ol > li").filter({ hasText: /\d{1,2}:\d{2}/ }).count(), 24);
+await page.getByRole("heading", { name: "A practice for each of your dynamics" }).waitFor();
+assert.match(await page.locator("main").innerText(), /(Venus|Mars|Sun|Moon|Saturn|Jupiter|Mercury) Hour On (Sun|Mon|Tues|Wednes|Thurs|Fri|Satur)day/i);
+await page.getByRole("combobox", { name: "Where you live now" }).fill("Lisbon");
+await page.getByRole("listbox").getByRole("option").first().click();
+await page.getByRole("button", { name: "Save place" }).click();
+await page.getByText(/Times below are for Lisbon/).waitFor();
+await page.reload();
+await page.getByText(/Today in Lisbon/i).waitFor();
+await shot("12-practice");
+
 step("edit and delete a person");
 await page.goto(personUrl + "/edit");
 await page.fill("#person-name", "Charlie B");

@@ -1,6 +1,6 @@
 import "server-only";
 import { and, asc, eq } from "drizzle-orm";
-import type { Person, PersonData, PersonKind } from "@/lib/people";
+import type { Home, Person, PersonData, PersonKind } from "@/lib/people";
 import { db, schema } from "./db";
 import { newId, seal, unseal } from "./crypto";
 
@@ -22,6 +22,8 @@ export async function savePerson(userId: string, kind: PersonKind, data: PersonD
   const target = id ?? (kind === "self" ? existing.find((p) => p.kind === "self")?.id : undefined);
   if (target) {
     if (!existing.some((p) => p.id === target && p.kind === kind)) throw new Error("Not found");
+    // The form does not carry where the member lives: keep it.
+    if (kind === "self" && data.home === undefined) data = { ...data, home: (await getPerson(userId, target))?.home ?? null };
     await db().update(schema.people).set({ sealed: seal(data) }).where(and(eq(schema.people.userId, userId), eq(schema.people.id, target)));
     return target;
   }
@@ -33,4 +35,13 @@ export async function savePerson(userId: string, kind: PersonKind, data: PersonD
 
 export async function deletePerson(userId: string, id: string) {
   await db().delete(schema.people).where(and(eq(schema.people.userId, userId), eq(schema.people.id, id)));
+}
+
+/** Where the member lives now (kept with their own details). */
+export async function saveHome(userId: string, home: Home) {
+  const self = (await listPeople(userId)).find((p) => p.kind === "self");
+  if (!self) throw new Error("Add your birth details first.");
+  const { id, kind, ...data } = self;
+  void kind;
+  await db().update(schema.people).set({ sealed: seal({ ...data, home }) }).where(and(eq(schema.people.userId, userId), eq(schema.people.id, id)));
 }

@@ -46,6 +46,10 @@ export default function Method() {
         <H>Timing</H>
         <P>Your calendar lists the periods in the next 12 months when Jupiter, Saturn, Uranus, Neptune or Pluto come within a degree or two of your relationship points, with start, peak and end dates.</P>
 
+        <H>Planetary practice</H>
+        <P>The Practice page gives the planetary day and hours for where you live. The planetary day runs from sunrise to sunrise. Daylight is divided into twelve equal hours and the night into twelve more, the first hour after sunrise belongs to the planet of the weekday, and the rest follow in the traditional order: Saturn, Jupiter, Mars, Sun, Venus, Mercury, Moon. This, the pairing of one planet’s hour with another planet’s day, and the colours and scents follow Jason Miller’s <em>Advanced Planetary Magic</em> and Dykes and Gibson’s <em>Astrological Magic</em>.</P>
+        <P>Those books work with the seven visible planets and do not tie a practice to a birth chart. Matching a short practice to each difficult aspect in your chart is our own addition, and the wording is ours. Every practice is something you do for yourself, to steady your own side of a pattern. Nothing here is aimed at making another person feel or do anything, and we make no promise about results.</P>
+
         <H>What this is not</H>
         <P>Astrology has not been shown to predict behaviour, and nothing here tells you what a person will do or whether a relationship will last. Use it the way you would use a good question from a friend: as a prompt to look at your own history. If you are in a relationship that frightens you, please talk to someone you trust or a local support service.</P>
 

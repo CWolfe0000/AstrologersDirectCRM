@@ -8,6 +8,7 @@ const ITEMS = [
   { href: "/app/exes", label: "Past partners" },
   { href: "/app/people", label: "Someone new" },
   { href: "/app/timing", label: "Calendar" },
+  { href: "/app/practice", label: "Practice" },
   { href: "/app/account", label: "Account" },
 ];
 
