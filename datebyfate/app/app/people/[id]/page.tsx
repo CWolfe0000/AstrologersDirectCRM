@@ -5,14 +5,16 @@ import { removePerson } from "@/app/actions";
 import { PageHeader } from "@/components/app-shell";
 import { AspectGrid, AspectTable, PlacementsTable } from "@/components/chart/tables";
 import { ChartWheel } from "@/components/chart/wheel";
-import { GiftList, InsightCard, Locked, NoteList, Section, TriggerList } from "@/components/reading";
+import { GiftList, InsightCard, Locked, NoteList, ScoreCards, ScoreSummary, Section, TriggerList } from "@/components/reading";
 import { Tabs } from "@/components/tabs";
 import { TransitGroups } from "@/components/transit-card";
 import { formatDate, oneIn, plural } from "@/lib/format";
+import { STATUS_LABEL, statusOf } from "@/lib/people";
 import { composite as readComposite } from "@/lib/reading/composite";
 import { coupleReport } from "@/lib/reading/couple";
 import { attunement } from "@/lib/reading/elements";
 import { checkAgainst } from "@/lib/reading/exes";
+import { scoresBetween } from "@/lib/reading/scores";
 import { stelliumBetween } from "@/lib/reading/stellium";
 import { difficultAspects, gifts } from "@/lib/reading/triggers";
 import { requireUser } from "@/lib/server/auth";
@@ -57,7 +59,7 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
       <div className="mt-3">
         <PageHeader
           title={person.name}
-          subtitle={`${isEx ? "Past partner" : "Current or new"} · Born ${formatDate(person.birth.date)}${person.birth.time ? ` at ${person.birth.time}` : ", time unknown"}, ${person.birth.place}`}
+          subtitle={`${STATUS_LABEL[statusOf(person)]} · Born ${formatDate(person.birth.date)}${person.birth.time ? ` at ${person.birth.time}` : ", time unknown"}, ${person.birth.place}`}
         >
           <Link href={`${base}/edit`} className="btn-ghost">Edit details</Link>
           <form action={removePerson}>
@@ -91,7 +93,7 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
           <div className="card self-start"><ChartWheel chart={person.chart} label={`${person.name}’s birth chart`} /></div>
           <div className="space-y-5">
             <div className="card">
-              <h3 className="mb-3 text-[18px]">The relationship</h3>
+              <h3 className="mb-3 text-[18px]">The Relationship</h3>
               {facts.length ? <ul className="flex flex-wrap gap-1.5">{facts.map((f) => <li key={f} className="chip border border-line bg-white">{f}</li>)}</ul> : <p className="text-muted">No dates or details yet. <Link className="link" href={`${base}/edit`}>Add them</Link> to see what was happening in your chart at the time.</p>}
             </div>
             <div className="card">
@@ -101,7 +103,7 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
           </div>
         </div>
         {!isEx && (
-          <Section title="Against your pattern" intro="The repeats found across your past partners, and whether this person carries them.">
+          <Section title="Against Your Pattern" intro="The repeats found across your past partners, and whether this person carries them.">
             {!check ? (
               <p className="card text-ink-2">{ctx.exes.length < 2 ? <>There is no pattern to check against yet. <Link className="link" href="/app/people/new?kind=ex">Add at least two past partners</Link> first.</> : "Your past partners show no repeats that stand out, so there is nothing to check this person against."}</p>
             ) : (
@@ -119,7 +121,7 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
                     {check.absent.map((r) => <InsightCard key={r.key} insight={{ title: r.title, body: `Not here. ${r.count} of your ${r.of} past partners had this; ${person.name} doesn’t.`, basis: `True of ${r.names.join(", ")}` }} tag={<span className="chip bg-canvas-2 text-ink-2">Breaks The Pattern</span>} />)}
                   </div>
                 ) : judged > 0 ? (
-                  locked("See which ones", `Subscribe to see which repeats ${person.name} carries, which they break, and what each one means.`)
+                  locked("See Which Ones", `Subscribe to see which repeats ${person.name} carries, which they break, and what each one means.`)
                 ) : null}
               </>
             )}
@@ -132,55 +134,60 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
   /* ---------- Between you: the bi-wheel and every contact between the two charts ---------- */
   const between = () => {
     const report = coupleReport(self.chart, person.chart, person.name);
+    const scores = scoresBetween(self.chart, person.chart, person.name);
     const elements = attunement(self.chart, person.chart, person.name);
     const stelliums = [stelliumBetween(person.chart, self.chart, person.name, null), stelliumBetween(self.chart, person.chart, null, person.name)].filter((x) => x !== null);
     const relationTag = (l: (typeof elements.levels)[number]) => <span className={`chip ${l.relation === "discordant" ? "bg-accent-50 text-accent" : "bg-sage-50 text-sage-dark"}`}>{l.relation === "same" ? "Same Element" : l.relation === "compatible" ? "Feed Each Other" : "Cross Purposes"}</span>;
     if (!user.premium)
       return (
         <>
-          <div className="card mx-auto max-w-[560px]"><ChartWheel chart={self.chart} outer={person.chart} label="Your birth chart" outerLabel={`${person.name}’s planets`} /></div>
-          <div className="mt-6">{locked(`${plural(report.fusions.length + report.flowing.length, "flowing contact")} and ${plural(report.challenging.length, "challenging contact")} between your charts`, "Subscribe to read each contact, your elements together, where you land in each other’s lives, and the full aspect grid.")}</div>
+          <ScoreSummary scores={scores} name={person.name} />
+          <div className="card mx-auto mt-5 max-w-[560px]"><ChartWheel chart={self.chart} outer={person.chart} label="Your birth chart" outerLabel={`${person.name}’s planets`} /></div>
+          <div className="mt-6">{locked(`${plural(report.fusions.length + report.flowing.length, "Flowing Contact")} And ${plural(report.challenging.length, "Challenging Contact")} Between Your Charts`, "Subscribe to see your scores for love language, emotional, intellectual and physical compatibility and staying power, and to read each contact, your elements together, where you land in each other’s lives, and the full aspect grid.")}</div>
         </>
       );
     return (
       <>
-        <NoteList notes={report.notes} />
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,560px)_1fr]">
+        <NoteList notes={[...report.notes, ...scores.notes]} />
+        <ScoreSummary scores={scores} name={person.name} />
+        <div className="mt-5"><ScoreCards scores={scores} /></div>
+        <p className="mt-3 max-w-3xl text-[12.5px] text-muted">The scores compare your charts planet by planet through the elements, after Stephen Arroyo, and add the aspects your planets actually make to each other. Arroyo describes levels of harmony and gives no numbers: the numbers and weights are Datebyfate’s own. A low score names where the work is. It is not a verdict.</p>
+        <div className="mt-8 grid gap-5 xl:grid-cols-[minmax(0,560px)_1fr]">
           <div className="card self-start">
             <ChartWheel chart={self.chart} outer={person.chart} label="Your birth chart" outerLabel={`${person.name}’s planets`} />
             <p className="mt-2 text-center text-[12.5px] text-muted">Your chart inside, {person.name}’s planets outside. Lines are aspects between the two.</p>
           </div>
           <div className="card min-w-0">
-            <h3 className="mb-3 text-[18px]">Aspect grid</h3>
+            <h3 className="mb-3 text-[18px]">Aspect Grid</h3>
             <AspectGrid inner={self.chart} outer={person.chart} innerLabel="You" outerLabel={person.name} />
             <p className="mt-3 text-[12.5px] text-muted">Orbs of 7°, and 5° for the sextile.</p>
           </div>
         </div>
-        <Section title="How your charts meet" intro="The contacts between your two charts, strongest first. No contact is good or bad in itself: the easy ones can make a couple complacent, and the hard ones supply much of the passion and the growth.">
+        <Section title="How Your Charts Meet" intro="The contacts between your two charts, strongest first. No contact is good or bad in itself: the easy ones can make a couple complacent, and the hard ones supply much of the passion and the growth.">
           <p className="card text-ink-2">{report.bedrock}</p>
           {report.fusions.length > 0 && (
             <div>
-              <h3 className="mb-3 mt-2 text-[18px]">Where you fuse</h3>
+              <h3 className="mb-3 mt-2 text-[18px]">Where You Fuse</h3>
               <div className="grid gap-4 lg:grid-cols-2">{report.fusions.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
             </div>
           )}
           <div>
-            <h3 className="mb-3 mt-2 text-[18px]">What flows</h3>
+            <h3 className="mb-3 mt-2 text-[18px]">What Flows</h3>
             {report.flowing.length ? <div className="grid gap-4 lg:grid-cols-2">{report.flowing.map((i) => <InsightCard key={i.title} insight={i} />)}</div> : <p className="card text-ink-2">No close sextiles or trines between the two charts. Ease is something you would build.</p>}
           </div>
           <div>
-            <h3 className="mb-3 mt-2 text-[18px]">What challenges</h3>
+            <h3 className="mb-3 mt-2 text-[18px]">What Challenges</h3>
             {report.challenging.length ? <div className="grid gap-4 lg:grid-cols-2">{report.challenging.map((i) => <InsightCard key={i.title} insight={i} />)}</div> : <p className="card text-ink-2">No close squares or oppositions between the two charts. That is comfortable, and it can leave a couple short of spark.</p>}
           </div>
         </Section>
-        <Section title="Your elements together" intro="Whether the two of you run on the same kind of energy. Where your elements are in tune you feed each other; where they are not, it takes energy. None of this decides the outcome.">
+        <Section title="Your Elements Together" intro="Whether the two of you run on the same kind of energy. Where your elements are in tune you feed each other; where they are not, it takes energy. None of this decides the outcome.">
           <div className="card grid gap-4 sm:grid-cols-2">
             <p><span className="font-semibold">You.</span> <span className="text-ink-2">{elements.yours}</span></p>
             <p><span className="font-semibold">{person.name}.</span> <span className="text-ink-2">{elements.theirs}</span></p>
             {elements.supplies.map((t) => <p key={t} className="text-ink-2 sm:col-span-2">{t}</p>)}
           </div>
           <div>
-            <h3 className="mt-2 text-[18px]">The core: Sun and Moon</h3>
+            <h3 className="mt-2 text-[18px]">The Core: Sun And Moon</h3>
             <p className="mb-3 mt-1 text-ink-2">{elements.lightsVerdict}</p>
             <div className="grid gap-4 lg:grid-cols-2">{elements.lights.map((l) => <InsightCard key={l.title} insight={l} tag={relationTag(l)} />)}</div>
           </div>
@@ -189,7 +196,7 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
             <p className="card text-ink-2">{elements.attraction}</p>
           </div>
           <div>
-            <h3 className="mb-3 mt-2 text-[18px]">Planet by planet</h3>
+            <h3 className="mb-3 mt-2 text-[18px]">Planet By Planet</h3>
             <div className="grid gap-4 lg:grid-cols-2">{elements.levels.map((l) => <InsightCard key={l.title} insight={l} tag={relationTag(l)} />)}</div>
           </div>
         </Section>
@@ -199,7 +206,7 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
           </Section>
         )}
         {report.overlays.length > 0 && (
-          <Section title="Where you land in each other’s lives" intro="The house of one person’s chart that the other’s Sun, Moon, rising sign, Venus and Mars fall in.">
+          <Section title="Where You Land In Each Other’s Lives" intro="The house of one person’s chart that the other’s Sun, Moon, rising sign, Venus and Mars fall in.">
             <div className="grid gap-4 lg:grid-cols-2">{report.overlays.map((o) => <InsightCard key={o.title} insight={o} tag={o.emphasis ? <span className="chip bg-accent-50 text-accent">Emphasis</span> : undefined} />)}</div>
           </Section>
         )}
@@ -216,7 +223,7 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
     const n = (xs: typeof yours, k: "triggers" | "eased") => xs.filter((a) => a[k].length).length;
     if (!user.premium)
       return locked(
-        "What you set off, ease and bring out in each other",
+        "What You Set Off, Ease And Bring Out In Each Other",
         `${person.name} sets off ${n(yours, "triggers")} and eases ${n(yours, "eased")} of the ${plural(yours.length, "difficult aspect")} in your chart, and brings out ${yourGifts.filter((g) => g.broughtOut.length).length} of your ${plural(yourGifts.length, "strength")}. You set off ${n(theirs, "triggers")} and ease ${n(theirs, "eased")} in theirs. Subscribe to see which ones and how.`,
       );
     const column = (title: string, child: React.ReactNode) => (
@@ -227,13 +234,13 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
     );
     return (
       <>
-        <Section title="What you set off in each other" intro="Each of you has difficult aspects in your own chart, whoever you are with. The other person’s planets can press on them (conjunction, square, opposition) or ease them (trine, sextile).">
+        <Section title="What You Set Off In Each Other" intro="Each of you has difficult aspects in your own chart, whoever you are with. The other person’s planets can press on them (conjunction, square, opposition) or ease them (trine, sextile).">
           <div className="grid gap-8 lg:grid-cols-2">
             {column("In you", yours.length ? <TriggerList aspects={yours} quiet={`Nothing in ${person.name}’s chart touches this. It stays quiet between you.`} /> : <p className="card text-ink-2">Your chart has no difficult aspects between the relationship planets.</p>)}
             {column(`In ${person.name}`, theirs.length ? <TriggerList aspects={theirs} quiet="Nothing in your chart touches this. It stays quiet between you." /> : <p className="card text-ink-2">{person.name}’s chart has no difficult aspects between the relationship planets{person.birth.time ? "" : " that can be read without a birth time"}.</p>)}
           </div>
         </Section>
-        <Section title="What you bring out in each other" intro="Each of you also has supportive aspects in your own chart. These are the strengths the other person’s planets land on or support.">
+        <Section title="What You Bring Out In Each Other" intro="Each of you also has supportive aspects in your own chart. These are the strengths the other person’s planets land on or support.">
           <div className="grid gap-8 lg:grid-cols-2">
             {column("In you", yourGifts.length ? <GiftList gifts={yourGifts} quiet={`Nothing in ${person.name}’s chart touches this. It is yours either way.`} /> : <p className="card text-ink-2">Your chart has no supportive aspects between the relationship planets.</p>)}
             {column(`In ${person.name}`, theirGifts.length ? <GiftList gifts={theirGifts} quiet="Nothing in your chart touches this. It is theirs either way." /> : <p className="card text-ink-2">{person.name}’s chart has no supportive aspects between the relationship planets{person.birth.time ? "" : " that can be read without a birth time"}.</p>)}
@@ -276,12 +283,12 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
               </Section>
             ))}
             {comp.others.length > 0 && (
-              <Section title="The other planets">
+              <Section title="The Other Planets">
                 <ul className="card space-y-2">{comp.others.map((o) => <li key={o.title}><span className="heading font-semibold">{o.title}.</span> <span className="text-ink-2">{o.body}</span></li>)}</ul>
               </Section>
             )}
             {(comp.easy.length > 0 || comp.hard.length > 0) && (
-              <Section title="Aspects to its Sun and Moon" intro="How the two of you handle what the relationship is about.">
+              <Section title="Aspects To Its Sun And Moon" intro="How the two of you handle what the relationship is about.">
                 <div className="grid gap-4 lg:grid-cols-2">
                   {comp.easy.map((i) => <InsightCard key={i.basis} insight={i} tag={<span className="chip bg-sage-50 text-sage-dark">Holds It Together</span>} />)}
                   {comp.hard.map((i) => <InsightCard key={i.basis} insight={i} tag={<span className="chip bg-accent-50 text-accent">Tests It</span>} />)}
@@ -289,13 +296,13 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
               </Section>
             )}
             {!isEx && (
-              <Section title="The next 12 months for the two of you" intro="Slow planets on the relationship’s chart. The ones on its angles tend to mark events.">
+              <Section title="The Next 12 Months For The Two Of You" intro="Slow planets on the relationship’s chart. The ones on its angles tend to mark events.">
                 {windows.length ? <TransitGroups windows={windows} /> : <p className="card text-ink-2">No slow planet reaches the relationship’s chart in the next 12 months.</p>}
               </Section>
             )}
           </>
         ) : (
-          <div className="mt-6">{locked("The relationship’s own chart, read in full", "Subscribe for its lunar nodes, Sun, Moon, rising sign, Venus, Mars and Saturn by sign and house, and its next 12 months.")}</div>
+          <div className="mt-6">{locked("The Relationship’s Own Chart, Read In Full", "Subscribe for its lunar nodes, Sun, Moon, rising sign, Venus, Mars and Saturn by sign and house, and its next 12 months.")}</div>
         )}
       </>
     );
@@ -305,7 +312,7 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
   const time = () => {
     const moments = ([["The day you met", person.metDate], ["The day it began", person.startDate], ["The day it ended", person.endDate]] as [string, string | null | undefined][]).filter((m): m is [string, string] => !!m[1]);
     if (!moments.length) return <p className="card text-ink-2">Add the day you met, the day it began{isEx ? " and the day it ended" : ""}, on <Link className="link" href={`${base}/edit`}>{person.name}’s details</Link>, to see what was working on your chart at those times.</p>;
-    if (!user.premium) return locked("Your chart on the dates that mattered", "Subscribe to see the slow planets on your relationship points and your progressed Moon on each date.");
+    if (!user.premium) return locked("Your Chart On The Dates That Mattered", "Subscribe to see the slow planets on your relationship points and your progressed Moon on each date.");
     return (
       <>
         {moments.map(([label, date]) => {
@@ -333,7 +340,7 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
       </div>
       {tab === "overview" && person.chart && (
         <div className="card mt-8">
-          <h2 className="mb-3 text-[20px]">Aspects in {person.name}’s chart</h2>
+          <h2 className="mb-3 text-[20px]">Aspects In {person.name}’s chart</h2>
           <AspectTable chart={person.chart} />
         </div>
       )}

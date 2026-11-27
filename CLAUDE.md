@@ -1,6 +1,8 @@
 # House style
 
-- Headings: capitalize the first letter of every word (Title Case), on every website and screen. This applies to page headings, section and card headings, and browser-tab titles. In `datebyfate/` the stylesheet does this for `h1`–`h4`, `legend` and anything with the `heading` class; write tab titles in Title Case in the source.
+- Headings: capitalize the first letter of every word (Title Case). This is a standing rule for everything built for the owner: every website, app, screen, document, report, email, export and text file, and any heading written in a chat reply. It applies to page headings, section and card headings, table and column headings, legends, and browser-tab titles.
+- Write headings in Title Case in the source text itself. Never rely on a stylesheet to do it: the same strings end up in exports, emails and plain-text output where no stylesheet applies. In `datebyfate/` the stylesheet also capitalizes `h1`–`h4`, `legend` and the `heading` class, but that is a backstop, not the rule.
+- Before handing over anything with headings, check them: no heading may contain a word that starts with a lowercase letter.
 
 # Astrology readings (Datebyfate)
 

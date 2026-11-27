@@ -11,7 +11,7 @@ export default async function Signup() {
   if (await getUser()) redirect("/app");
   return (
     <>
-      <h1 className="text-3xl font-semibold">Create your account</h1>
+      <h1 className="text-3xl font-semibold">Create Your Account</h1>
       <p className="mb-6 mt-1.5 text-muted">Free. Your own pattern is saved and waiting each time you come back.</p>
       <AuthForm
         action={signup}

@@ -56,7 +56,7 @@ export default async function Account({ searchParams }: { searchParams: Promise<
       </section>
 
       <section className="card">
-        <h2 className="text-xl font-semibold">Delete account</h2>
+        <h2 className="text-xl font-semibold">Delete Account</h2>
         <p className="mt-2 text-ink-2">This removes your details and everyone you have added, and cancels your subscription. It can’t be undone.</p>
         <DeleteAccountForm />
       </section>

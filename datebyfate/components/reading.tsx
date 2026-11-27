@@ -3,6 +3,7 @@ import { ARC_OF_INTIMACY } from "@/lib/reading/natal-love";
 import type { Insight, OwnPattern, Placement } from "@/lib/reading/own";
 import type { ElementBalance } from "@/lib/reading/elements";
 import type { DifficultAspect, Gift, Trigger } from "@/lib/reading/triggers";
+import type { Scores } from "@/lib/reading/scores";
 
 export function InsightCard({ insight, tag }: { insight: Insight; tag?: React.ReactNode }) {
   return (
@@ -23,6 +24,60 @@ export function InsightCard({ insight, tag }: { insight: Insight; tag?: React.Re
       )}
       <p className="mt-3 border-t border-line pt-2.5 text-[11.5px] font-medium uppercase tracking-wider text-muted">{insight.basis}</p>
     </article>
+  );
+}
+
+const scoreTone = (n: number) => (n >= 65 ? "bg-sage" : n >= 50 ? "bg-warn" : "bg-accent");
+
+/** The overall score, large, with its band. */
+export function ScoreSummary({ scores, name }: { scores: Scores; name: string }) {
+  return (
+    <div className="card flex flex-wrap items-center gap-x-6 gap-y-3">
+      <div className="flex items-baseline gap-2">
+        <span className="font-display text-[44px] leading-none">{scores.overall}</span>
+        <span className="text-muted">/ 100</span>
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="eyebrow">Overall Compatibility With {name}</p>
+        <p className="mt-1 text-ink-2">{scores.band}. A weighted average of the areas below, with core harmony counting most. Two charts picked at random score about 57, and eight in ten fall between 49 and 66.</p>
+      </div>
+    </div>
+  );
+}
+
+/** One card per area: the score, a bar, and the links it was built from. */
+export function ScoreCards({ scores }: { scores: Scores }) {
+  return (
+    <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+      {scores.areas.map((a) => (
+        <article key={a.id} className="card">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="text-[18px] leading-snug">{a.title}</h3>
+            <span className="whitespace-nowrap font-display text-[26px] leading-none">{a.score}</span>
+          </div>
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-line" role="img" aria-label={`${a.score} out of 100`}>
+            <div className={`h-full rounded-full ${scoreTone(a.score)}`} style={{ width: `${a.score}%` }} />
+          </div>
+          <p className="mt-1.5 text-[12px] font-medium uppercase tracking-wider text-muted">{a.band}</p>
+          <p className="mt-2 text-ink-2">{a.about}</p>
+          {a.factors.length > 0 ? (
+            <details className="mt-3 border-t border-line pt-2.5">
+              <summary className="cursor-pointer text-[13px] font-medium text-accent">What this is built from ({a.factors.length})</summary>
+              <ul className="mt-2 space-y-1.5 text-[13px] text-ink-2">
+                {a.factors.map((f) => (
+                  <li key={f.label} className="flex justify-between gap-3">
+                    <span>{f.label}</span>
+                    <span className="whitespace-nowrap text-muted">{f.value}</span>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ) : (
+            <p className="mt-3 border-t border-line pt-2.5 text-[13px] text-muted">No close contacts of this kind between your charts.</p>
+          )}
+        </article>
+      ))}
+    </div>
   );
 }
 
@@ -90,28 +145,33 @@ export function PatternBody({ pattern, elements, part }: { pattern: OwnPattern; 
     <div className="[&>section:first-of-type]:mt-0">
       {show("pattern") && <NoteList notes={pattern.notes} />}
       {show("pattern") && (
-        <Section title="How you are in love" intro="Your Sun, Moon, rising sign, Venus and Mars. Each comes with the several forms it takes, and the aspects that planet makes in your chart say which way it leans.">
+        <Section title="How You Are In Love" intro="Your Sun, Moon, rising sign, Venus and Mars. Each comes with the several forms it takes, and the aspects that planet makes in your chart say which way it leans.">
           <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">{pattern.core.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
         </Section>
       )}
       {show("pattern") && pattern.stellium && (
-        <Section title="Where your chart is concentrated">
+        <Section title="Where Your Chart Is Concentrated">
           <InsightCard insight={pattern.stellium} />
         </Section>
       )}
+      {show("pattern") && pattern.nodes.length > 0 && (
+        <Section title="Your Nodes" intro="The lunar nodes in your chart: what you fall back on in love, and what love asks you to grow into.">
+          <div className="grid gap-4 lg:grid-cols-2">{pattern.nodes.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
+        </Section>
+      )}
       {show("pattern") && pattern.drawnTo.length > 0 && (
-        <Section title="Who you are drawn to" intro="Your Descendant and the ruler of your 7th house.">
+        <Section title="Who You Are Drawn To" intro="Your Descendant and the ruler of your 7th house.">
           <div className="grid gap-4 lg:grid-cols-2">{pattern.drawnTo.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
         </Section>
       )}
       {show("elements") && (
-        <Section title="Your elements" intro="Fire, earth, air and water are the kinds of energy you run on. What your chart is full of comes naturally. What it lacks you have to cultivate, and it is often what draws you to other people.">
+        <Section title="Your Elements" intro="Fire, earth, air and water are the kinds of energy you run on. What your chart is full of comes naturally. What it lacks you have to cultivate, and it is often what draws you to other people.">
           <ElementBars balance={elements.balance} />
           <div className="grid gap-4 lg:grid-cols-2">{elements.insights.map((i) => <InsightCard key={i.title} insight={i} />)}</div>
         </Section>
       )}
       {show("dynamics") && (
-        <Section title="Your recurring dynamics" intro={pattern.dynamics.length ? "The aspects between your Sun, Moon, Venus and Mars and the other planets: what tends to happen once you are in a relationship, closest aspect first." : undefined}>
+        <Section title="Your Recurring Dynamics" intro={pattern.dynamics.length ? "The aspects between your Sun, Moon, Venus and Mars and the other planets: what tends to happen once you are in a relationship, closest aspect first." : undefined}>
           {pattern.dynamics.length ? (
             <div className="grid gap-4 lg:grid-cols-2">{pattern.dynamics.map((i) => <InsightCard key={i.basis} insight={i} />)}</div>
           ) : (
@@ -121,7 +181,7 @@ export function PatternBody({ pattern, elements, part }: { pattern: OwnPattern; 
       )}
       {show("intimacy") &&
         (pattern.arc.length > 0 ? (
-          <Section title="Your arc of intimacy" intro={ARC_OF_INTIMACY}>
+          <Section title="Your Arc Of Intimacy" intro={ARC_OF_INTIMACY}>
             {pattern.arc.map((a) => (
               <div key={a.house}>
                 <p className="mb-3 text-ink-2">{a.meaning}</p>

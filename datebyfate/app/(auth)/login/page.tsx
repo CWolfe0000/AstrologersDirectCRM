@@ -11,7 +11,7 @@ export default async function Login() {
   if (await getUser()) redirect("/app");
   return (
     <>
-      <h1 className="mb-6 text-3xl font-semibold">Sign in</h1>
+      <h1 className="mb-6 text-3xl font-semibold">Sign In</h1>
       <AuthForm
         action={login}
         submit="Sign in"

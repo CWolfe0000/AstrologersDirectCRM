@@ -12,6 +12,7 @@ import { coupleReport } from "@/lib/reading/couple";
 import { aspectsTo } from "@/lib/reading/context";
 import { HOUSE_LOVE, MARS_LOVE, MOON_LOVE, RISING_LOVE, SUN_LOVE, VENUS_LOVE } from "@/lib/reading/natal-love";
 import { aspectsOf, ownPattern } from "@/lib/reading/own";
+import { scoresBetween } from "@/lib/reading/scores";
 import { stelliumBetween, stelliumOf } from "@/lib/reading/stellium";
 import { synastryText } from "@/lib/reading/synastry";
 import { contactText } from "@/lib/reading/text";
@@ -165,17 +166,17 @@ describe("couple report and wording", () => {
   it("sorts contacts into fusions, flowing and challenging, and groups house overlays", () => {
     const r = coupleReport(chartFor(me), chartFor(born("1988-03-10", "09:15")), "Sam");
     expect(r.fusions.length + r.flowing.length + r.challenging.length).toBeGreaterThan(4);
-    for (const i of r.fusions) expect(i.title).toMatch(/ conjunct your /);
-    for (const i of r.flowing) expect(i.title).toMatch(/ (trine|sextile) your /);
-    for (const i of r.challenging) expect(i.title).toMatch(/ (square|opposite) your /);
+    for (const i of r.fusions) expect(i.title).toMatch(/ Conjunct Your /);
+    for (const i of r.flowing) expect(i.title).toMatch(/ (Trine|Sextile) Your /);
+    for (const i of r.challenging) expect(i.title).toMatch(/ (Square|Opposite) Your /);
     for (const i of [...r.fusions, ...r.flowing, ...r.challenging]) {
       expect(i.body).not.toMatch(/[{}]/);
       expect(i.title).not.toMatch(/Node/);
     }
     expect(r.bedrock).toMatch(/Sun, Moon and rising signs/);
-    expect(r.overlays.every((o) => /in (your|Sam’s) \d+(st|nd|rd|th) house$/.test(o.title))).toBe(true);
+    expect(r.overlays.every((o) => /In (Your|Sam’s) \d+(st|nd|rd|th) House$/.test(o.title))).toBe(true);
     const noTime = coupleReport(chartFor(me), chartFor(born("1988-03-10")), "Sam");
-    expect(noTime.overlays.every((o) => !o.title.includes("in Sam’s"))).toBe(true);
+    expect(noTime.overlays.every((o) => !o.title.includes("In Sam’s"))).toBe(true);
     expect(noTime.notes[0]).toMatch(/Sam’s birth time is unknown/);
   });
 
@@ -201,7 +202,7 @@ describe("triggers", () => {
     for (const a of own) {
       expect(a.body).toMatch(/\byou\b/i);
       for (const t of a.triggers) {
-        expect(t.title).toMatch(/^Sam’s \w+( \w+)? (on|opposite|square) your (Venus|Pluto|Mars|Uranus|Moon|Sun|Saturn|Neptune|Jupiter)$/);
+        expect(t.title).toMatch(/^Sam’s \w+( \w+)? (On|Opposite|Square) Your (Venus|Pluto|Mars|Uranus|Moon|Sun|Saturn|Neptune|Jupiter)$/);
         expect(t.orb).toBeLessThanOrEqual(4);
         expect(t.by).not.toBe("moon"); // Sam's birth time is unknown
         expect(["uranus", "neptune", "pluto"].includes(t.by) && ["uranus", "neptune", "pluto"].includes(t.end)).toBe(false);
@@ -218,7 +219,7 @@ describe("triggers", () => {
     expect(twin.every((a) => a.triggers.length >= 1)).toBe(true);
     const theirs = difficultAspects(you, you, "Twin", null);
     expect(theirs[0]!.body).toMatch(/^(They|What they) /);
-    expect(theirs[0]!.triggers[0]!.title).toMatch(/^Your \w+( \w+)? on Twin’s /);
+    expect(theirs[0]!.triggers[0]!.title).toMatch(/^Your \w+( \w+)? On Twin’s /);
     expect(natalContactKeys(you, you).filter((k) => k.startsWith("trigger|")).sort()).toEqual(aspectKeys(you).map((k) => `trigger|${k}`));
   });
 
@@ -249,7 +250,7 @@ describe("eased by and brought out", () => {
       for (const a of difficultAspects(you, other, null, "Sam"))
         for (const t of a.eased) {
           seen++;
-          expect(t.title).toMatch(/ (trine|sextile) your /);
+          expect(t.title).toMatch(/ (Trine|Sextile) Your /);
           expect(t.body).toMatch(/^It is eased by Sam’s /);
           expect(t.orb).toBeLessThanOrEqual(3);
           expect(["jupiter", "saturn", "uranus", "neptune", "pluto", "node"].includes(t.by) && ["jupiter", "saturn", "uranus", "neptune", "pluto"].includes(t.end)).toBe(false);
@@ -348,7 +349,7 @@ describe("composite chart", () => {
   const houses = { cusps: Array.from({ length: 12 }, (_, i) => i * 30), asc: 0, mc: 270 };
   it("reads the nodes, Sun, Moon, rising sign, Venus, Mars and Saturn by sign and house", () => {
     const c = readComposite(a, b, houses, "Sam");
-    expect(c.sections.map((x) => x.title)).toEqual(["The story between you", "What keeps you alive", "What your hearts need", "How you come across", "Affection and desire", "Where the work is"]);
+    expect(c.sections.map((x) => x.title)).toEqual(["The Story Between You", "What Keeps You Alive", "What Your Hearts Need", "How You Come Across", "Affection And Desire", "Where The Work Is"]);
     expect(c.sections[1]!.items.map((i) => i.title)).toEqual([expect.stringMatching(/^Sun In [A-Z]/), expect.stringMatching(/^Sun In The \d+(st|nd|rd|th) House$/)]);
     expect(c.sections[4]!.items).toHaveLength(4);
     expect(c.others).toHaveLength(5);
@@ -362,7 +363,7 @@ describe("composite chart", () => {
   });
   it("without both birth times there are no houses, rising sign or Moon", () => {
     const c = readComposite(a, chartFor(born("1988-03-10")), null, "Sam");
-    expect(c.sections.map((x) => x.title)).toEqual(["The story between you", "What keeps you alive", "Affection and desire"]);
+    expect(c.sections.map((x) => x.title)).toEqual(["The Story Between You", "What Keeps You Alive", "Affection And Desire"]);
     expect(c.sections.flatMap((x) => x.items).every((i) => !/House$/.test(i.title))).toBe(true);
     expect(c.others).toHaveLength(0);
     expect(c.points.moon).toBeNull();
@@ -597,6 +598,26 @@ describe("placements are weighed by their aspects", () => {
       expect(r.expressions.length).toBeGreaterThanOrEqual(3);
       expect(`${r.core} ${r.expressions.join(" ")}`).not.toMatch(/dangerous|alarm|intimidat/i);
     }
+  });
+});
+
+describe("compatibility scores", () => {
+  const a = chartFor(me), b = chartFor(born("1988-03-10", "09:15"));
+  it("scores six areas from 0 to 100 and lists what each is built from", () => {
+    const s = scoresBetween(a, b, "Sam");
+    expect(s.areas.map((x) => x.id)).toEqual(["identity", "emotional", "love", "intellectual", "physical", "lasting"]);
+    for (const x of s.areas) { expect(x.score).toBeGreaterThanOrEqual(0); expect(x.score).toBeLessThanOrEqual(100); }
+    expect(s.areas[0]!.factors.some((f) => /Your Sun in Gemini, Sam’s Sun in Pisces: air with water/.test(f.label))).toBe(true);
+    expect(s.overall).toBeGreaterThan(0);
+  });
+  it("a chart with itself scores very high on the element areas", () => {
+    const s = scoresBetween(a, a, "Twin");
+    for (const id of ["identity", "emotional", "love", "intellectual"]) expect(s.areas.find((x) => x.id === id)!.score).toBeGreaterThanOrEqual(65);
+  });
+  it("leaves out the rising sign and an uncertain Moon without a birth time", () => {
+    const s = scoresBetween(a, chartFor(born("1988-03-10")), "Sam");
+    expect(s.areas.flatMap((x) => x.factors).some((f) => /Sam’s rising sign/.test(f.label))).toBe(false);
+    expect(s.notes.join(" ")).toMatch(/Without both birth times/);
   });
 });
 

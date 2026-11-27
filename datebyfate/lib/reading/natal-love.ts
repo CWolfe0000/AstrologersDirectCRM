@@ -704,11 +704,11 @@ export const HOUSE_LOVE: Record<
         ],
       },
       venus: {
-        core: "You are slow to trust, and you grow on people. You need privacy with a partner and a beautiful, harmonious nest, and the ways of relating you absorbed in your family shape how you love until you examine them. Examined, they leave you capable of a lasting bond that is close to sacred.",
+        core: "You are slow to trust, and you grow on people. You need privacy with a partner and a beautiful, harmonious nest, and home is where your love is actually lived. Your habits of loving run deep and go unquestioned until you look at them; looked at, they leave you capable of a lasting bond that is close to sacred.",
         expressions: [
-          "You look hard at the habits of loving you inherited, keep the good ones, and build a bond of unusual depth and length.",
+          "You look hard at your own habits of loving, keep the good ones, and build a bond of unusual depth and length.",
           "You make a private, beautiful home with a partner, and your trust in them grows year on year.",
-          "You keep things pleasant on the surface the way your family did, smiling over what you feel.",
+          "You keep things pleasant on the surface at home, smiling over what you feel.",
           "You steer a partner through charm and indirection in place of asking, and neither of you knows what is real.",
         ],
       },

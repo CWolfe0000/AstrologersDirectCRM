@@ -3,9 +3,9 @@ import { SiteHeader } from "@/components/site-chrome";
 import { PRICES } from "@/lib/plans";
 
 const STEPS = [
-  { n: "1", title: "Start with your own chart", body: "Enter your birth date, time and place. You get your relationship pattern straight away: how you love, what you need, who you are drawn to and the dynamics you repeat. Free." },
-  { n: "2", title: "Add the people you have loved", body: "A birth date is enough for each past partner. Datebyfate looks for what they have in common with each other, and how each of their charts met yours." },
-  { n: "3", title: "Check someone new", body: "Add the person you have just met. See which parts of your pattern they repeat, which they break, and what the two of you are like together." },
+  { n: "1", title: "Start With Your Own Chart", body: "Enter your birth date, time and place. You get your relationship pattern straight away: how you love, what you need, who you are drawn to and the dynamics you repeat. Free." },
+  { n: "2", title: "Add The People You Have Loved", body: "A birth date is enough for each past partner. Datebyfate looks for what they have in common with each other, and how each of their charts met yours." },
+  { n: "3", title: "Check Someone New", body: "Add the person you have just met. See which parts of your pattern they repeat, which they break, and what the two of you are like together." },
 ];
 
 const FAQ = [
@@ -24,7 +24,7 @@ export default function Home() {
         <section className="container grid items-center gap-12 pb-20 pt-12 lg:grid-cols-[1.1fr_0.9fr] lg:pb-28 lg:pt-20">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-rose-line">Relationship patterns, from your birth chart</p>
-            <h1 className="mt-4 text-5xl font-semibold leading-[1.05] sm:text-6xl">You don’t have a type. You have a pattern.</h1>
+            <h1 className="mt-4 text-5xl font-semibold leading-[1.05] sm:text-6xl">You Don’t Have A Type. You Have A Pattern.</h1>
             <p className="mt-5 max-w-xl text-lg text-cream/80">
               Datebyfate reads your chart for the way you love, finds what your past partners had in common, and tells you whether the person you have just met is more of the same.
             </p>
@@ -57,7 +57,7 @@ export default function Home() {
 
       <section className="container py-20">
         <p className="eyebrow">How it works</p>
-        <h2 className="mt-2 max-w-2xl text-4xl font-semibold">Three charts in, one pattern out</h2>
+        <h2 className="mt-2 max-w-2xl text-4xl font-semibold">Three Charts In, One Pattern Out</h2>
         <ol className="mt-10 grid gap-5 md:grid-cols-3">
           {STEPS.map((s) => (
             <li key={s.n} className="card">
@@ -73,7 +73,7 @@ export default function Home() {
         <div className="container grid gap-12 lg:grid-cols-2 lg:items-center">
           <div>
             <p className="eyebrow">Checked against chance</p>
-            <h2 className="mt-2 text-4xl font-semibold">We tell you when it is probably a coincidence</h2>
+            <h2 className="mt-2 text-4xl font-semibold">We Tell You When It Is Probably A Coincidence</h2>
             <p className="mt-4 text-lg text-ink-2">
               Compare any three people and you will find things they share. Most astrology apps stop there and call it fate.
             </p>
@@ -102,7 +102,7 @@ export default function Home() {
         <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
           <div>
             <p className="eyebrow">Questions</p>
-            <h2 className="mt-2 text-4xl font-semibold">Before you start</h2>
+            <h2 className="mt-2 text-4xl font-semibold">Before You Start</h2>
           </div>
           <div className="divide-y divide-line border-y border-line">
             {FAQ.map((f) => (
@@ -120,7 +120,7 @@ export default function Home() {
 
       <section className="container">
         <div className="rounded-3xl bg-night px-6 py-14 text-center text-cream sm:px-12">
-          <h2 className="mx-auto max-w-2xl text-4xl font-semibold">Start with your own pattern</h2>
+          <h2 className="mx-auto max-w-2xl text-4xl font-semibold">Start With Your Own Pattern</h2>
           <p className="mx-auto mt-3 max-w-xl text-cream/75">
             Your own reading is free. The pattern across your exes, checks on new people and your calendar are {PRICES.monthly.label} a month, or {PRICES.yearly.label} a year.
           </p>

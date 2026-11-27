@@ -13,7 +13,7 @@ export default async function You() {
   return (
     <div className="mx-auto max-w-xl">
       <Link href="/app" className="link text-sm">← Your pattern</Link>
-      <h1 className="mb-6 mt-3 text-[28px]">Your birth details</h1>
+      <h1 className="mb-6 mt-3 text-[28px]">Your Birth Details</h1>
       <div className="card"><SelfForm action={saveSelf} initial={self?.birth} submit="Save" /></div>
     </div>
   );

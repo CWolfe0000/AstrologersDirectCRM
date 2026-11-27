@@ -23,6 +23,7 @@ export interface CoupleReport {
   notes: string[];
 }
 
+const up = (w: string) => w[0]!.toUpperCase() + w.slice(1);
 const WORD = { conjunction: "conjunct", opposition: "opposite", square: "square", trine: "trine", sextile: "sextile" } as const;
 const SLOW = new Set<PointId>(["jupiter", "saturn", "uranus", "neptune", "pluto"]);
 const ASPECT_WEIGHT = { conjunction: 2, opposition: 1.5, square: 1, trine: 0.5, sextile: 0 } as const;
@@ -53,7 +54,7 @@ export function coupleReport(you: Chart, them: Chart, name: string): CoupleRepor
       const text = synastryText(yid, tid, kind, name);
       const note = elementNote(asp.name, ylon, tlon);
       lists[kind].push({
-        title: `${name}’s ${POINT_NAMES[tid]} ${WORD[asp.name]} your ${POINT_NAMES[yid]}`,
+        title: `${name}’s ${POINT_NAMES[tid]} ${up(WORD[asp.name])} Your ${POINT_NAMES[yid]}`,
         body: note ? `${text.body} ${note}` : text.body,
         basis: `${asp.name}, ${asp.orb.toFixed(1)}° from exact`,
         // Higher is more important: the planets involved, then the kind of aspect, then closeness.
@@ -84,7 +85,7 @@ export function coupleReport(you: Chart, them: Chart, name: string): CoupleRepor
       byHouse.set(n, [...(byHouse.get(n) ?? []), label]);
     }
     for (const [n, labels] of [...byHouse].sort((a, b) => b[1].length - a[1].length || a[0] - b[0]))
-      overlays.push({ title: `${ownerLabel} ${labels.join(", ").replace(/, ([^,]*)$/, " and $1")} in ${intoLabel} ${ordinal(n)} house`, body: HOUSE_OVERLAY[n - 1]!.core, expressions: HOUSE_OVERLAY[n - 1]!.expressions, basis: `${labels.length} of five points`, emphasis: labels.length >= 3 });
+      overlays.push({ title: `${ownerLabel} ${labels.join(", ").replace(/, ([^,]*)$/, " And $1")} In ${up(intoLabel)} ${ordinal(n)} House`, body: HOUSE_OVERLAY[n - 1]!.core, expressions: HOUSE_OVERLAY[n - 1]!.expressions, basis: `${labels.length} of five points`, emphasis: labels.length >= 3 });
   };
   lay(them, you, `${name}’s`, "your");
   lay(you, them, "Your", `${name}’s`);

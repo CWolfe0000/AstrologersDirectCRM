@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/app-shell";
 import { signName } from "@/lib/astro/zodiac";
 import { formatDate } from "@/lib/format";
+import { STATUS_LABEL, statusOf } from "@/lib/people";
 import { requireUser } from "@/lib/server/auth";
 import { loadContext } from "@/lib/server/readings";
 
@@ -16,6 +17,7 @@ export default async function People() {
     <div>
       <PageHeader title="People" subtitle="Everyone you have been with, are with, or have just met. Each one is read with your chart.">
         <Link href="/app/people/new?kind=ex" className="btn-ghost">Add a past partner</Link>
+        <Link href="/app/people/new?kind=current" className="btn-ghost">Add your current partner</Link>
         <Link href="/app/people/new?kind=match" className="btn-primary">Add someone new</Link>
       </PageHeader>
       {!ctx.self && <p className="card mb-5">Add <Link className="link" href="/app">your own birth details</Link> first.</p>}
@@ -33,12 +35,12 @@ export default async function People() {
               {people.map((p) => (
                 <tr key={p.id} className="hover:bg-canvas">
                   <th scope="row" className="px-4 py-3 font-medium"><Link href={`/app/people/${p.id}`} className="link !text-ink">{p.name}</Link></th>
-                  <td className="px-4 py-3"><span className={`chip ${p.kind === "ex" ? "bg-canvas-2 text-ink-2" : "bg-sage-50 text-sage-dark"}`}>{p.kind === "ex" ? "Past" : "Current Or New"}</span></td>
+                  <td className="px-4 py-3"><span className={`chip ${statusOf(p) === "past" ? "bg-canvas-2 text-ink-2" : statusOf(p) === "current" ? "bg-accent-50 text-accent" : "bg-sage-50 text-sage-dark"}`}>{STATUS_LABEL[statusOf(p)]}</span></td>
                   <td className="px-4 py-3">{signName(p.chart.bodies.sun.lon)}</td>
                   <td className="px-4 py-3">{p.chart.moonSignCertain ? signName(p.chart.bodies.moon.lon) : "Uncertain"}</td>
                   <td className="px-4 py-3">{signName(p.chart.bodies.venus.lon)}</td>
                   <td className="px-4 py-3">{signName(p.chart.bodies.mars.lon)}</td>
-                  <td className="px-4 py-3 text-muted">{p.startDate ? `${formatDate(p.startDate)}${p.endDate ? ` – ${formatDate(p.endDate)}` : p.kind === "ex" ? "" : " – now"}` : p.startYear ? `${p.startYear}–${p.endYear ?? ""}` : "No dates"}</td>
+                  <td className="px-4 py-3 text-muted">{p.startDate ? `${formatDate(p.startDate)}${p.endDate ? ` – ${formatDate(p.endDate)}` : statusOf(p) === "current" ? " – now" : ""}` : p.startYear ? `${p.startYear}–${p.endYear ?? ""}` : "No dates"}</td>
                 </tr>
               ))}
             </tbody>

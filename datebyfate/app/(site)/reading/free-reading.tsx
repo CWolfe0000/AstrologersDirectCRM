@@ -24,11 +24,11 @@ export function FreeReadingTool({ signedIn }: { signedIn: boolean }) {
         <PatternBody pattern={result.pattern} elements={result.elements} part="all" />
           <section className="mt-12 grid gap-4 lg:grid-cols-2">
             <div className="card">
-              <h2 className="text-2xl font-semibold">Keep this reading</h2>
+              <h2 className="text-2xl font-semibold">Keep This Reading</h2>
               <p className="mt-2 text-ink-2">A free account saves your pattern and shows your next relationship period. Your birth details carry over.</p>
               <Link href={signedIn ? "/app" : "/signup"} className="btn-dark mt-4">{signedIn ? "Go to your pattern" : "Create a free account"}</Link>
             </div>
-            <Locked title="Now find out whether it is true" signedIn={signedIn}>
+            <Locked title="Now Find Out Whether It Is True" signedIn={signedIn}>
               <p>This is what your chart says. Add your past partners and Datebyfate shows what they actually had in common, measured against chance, and checks anyone new against it.</p>
             </Locked>
           </section>

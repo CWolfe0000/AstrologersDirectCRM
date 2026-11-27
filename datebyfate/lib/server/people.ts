@@ -21,10 +21,12 @@ export async function savePerson(userId: string, kind: PersonKind, data: PersonD
   const existing = await db().select({ id: schema.people.id, kind: schema.people.kind }).from(schema.people).where(eq(schema.people.userId, userId));
   const target = id ?? (kind === "self" ? existing.find((p) => p.kind === "self")?.id : undefined);
   if (target) {
-    if (!existing.some((p) => p.id === target && p.kind === kind)) throw new Error("Not found");
+    // A person can move between past partner and current or new; nobody moves into or out of "self".
+    const was = existing.find((p) => p.id === target)?.kind;
+    if (!was || (was === "self") !== (kind === "self")) throw new Error("Not found");
     // The form does not carry where the member lives: keep it.
     if (kind === "self" && data.home === undefined) data = { ...data, home: (await getPerson(userId, target))?.home ?? null };
-    await db().update(schema.people).set({ sealed: seal(data) }).where(and(eq(schema.people.userId, userId), eq(schema.people.id, target)));
+    await db().update(schema.people).set({ kind, sealed: seal(data) }).where(and(eq(schema.people.userId, userId), eq(schema.people.id, target)));
     return target;
   }
   if (existing.length >= MAX_PEOPLE) throw new Error(`You can save up to ${MAX_PEOPLE} people.`);

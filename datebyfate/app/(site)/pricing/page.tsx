@@ -35,7 +35,7 @@ export default async function Pricing({ searchParams }: { searchParams: Promise<
       <main className="container py-14">
         <div className="mx-auto max-w-2xl text-center">
           <p className="eyebrow">Pricing</p>
-          <h1 className="mt-2 text-4xl font-semibold sm:text-5xl">Your pattern is free. The proof is on subscription.</h1>
+          <h1 className="mt-2 text-4xl font-semibold sm:text-5xl">Your Pattern Is Free. The Proof Is On Subscription.</h1>
           <p className="mt-3 text-ink-2">Cancel any time from your account. You keep access until the end of the period you paid for.</p>
         </div>
         {problem && <p role="alert" className="mx-auto mt-6 max-w-xl rounded-xl bg-gold-soft px-4 py-3 text-center text-sm">{problem}</p>}

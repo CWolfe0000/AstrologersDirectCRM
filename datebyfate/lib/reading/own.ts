@@ -3,6 +3,7 @@ import { LUMINARY_ORBS, NATAL_ORBS, TIGHT_ORBS, POINT_NAMES, SIGNS, aspectBetwee
 import { delta } from "@/lib/astro/spherical";
 import { SIGN_MANNER, aspectsTo, weigh, type Reading } from "./context";
 import { HOUSE_LOVE, MARS_LOVE, MOON_LOVE, RISING_LOVE, SUN_LOVE, VENUS_LOVE } from "./natal-love";
+import { NODES_HOUSE_LOVE, NODES_SIGN_LOVE } from "./natal-nodes";
 import { ownStellium } from "./stellium";
 import { DESCENDANT, DYNAMICS, KIND_NOTE, type Dynamic, RULER_HOUSE, VENUS_HEADLINES } from "./text";
 
@@ -17,6 +18,9 @@ export interface Insight {
   basis: string;
 }
 
+/** Titles are written about a third person; in a person's own reading they speak to them. */
+export const ownTitle = (name: string) => name.replace(/^Their /, "Your ").replace(/ They /g, " You ").replace(/ Their /g, " Your ");
+
 export interface OwnPattern {
   headline: { name: string; line: string };
   core: Insight[];
@@ -25,6 +29,8 @@ export interface OwnPattern {
   /** Planets in houses 4 to 8, the houses of intimacy. Needs a birth time. */
   arc: { house: number; meaning: string; items: Insight[] }[];
   dynamics: Insight[];
+  /** The nodal axis by sign and, with a birth time, by house. */
+  nodes: Insight[];
   /** Three or more personal planets in one sign. */
   stellium: Insight | null;
   notes: string[];
@@ -120,11 +126,11 @@ export function ownPattern(chart: Chart): OwnPattern {
   const drawnTo: Insight[] = [];
   if (h) {
     const dsc = signIndex(h.asc + 180);
-    drawnTo.push({ title: "Who you are drawn to", body: DESCENDANT[dsc]!, basis: `Descendant in ${SIGNS[dsc]!.name}` });
+    drawnTo.push({ title: "Who You Are Drawn To", body: DESCENDANT[dsc]!, basis: `Descendant in ${SIGNS[dsc]!.name}` });
     const ruler = SIGNS[dsc]!.ruler;
     const rulerHouse = houseOf(b[ruler].lon, h.cusps);
     drawnTo.push({
-      title: "Where partnership leads",
+      title: "Where Partnership Leads",
       body: RULER_HOUSE[rulerHouse - 1]!,
       basis: `${POINT_NAMES[ruler]}, ruler of your 7th house, in your ${ordinal(rulerHouse)} house`,
     });
@@ -138,7 +144,7 @@ export function ownPattern(chart: Chart): OwnPattern {
     for (const house of [4, 5, 6, 7, 8] as const) {
       const items: Insight[] = [];
       for (const key of Object.keys(HOUSE_LOVE[house].planets) as (keyof (typeof HOUSE_LOVE)[4]["planets"])[]) {
-        // The nodes are read only where another chart makes an aspect to them (the triggers), never on their own.
+        // The nodes have their own section (natal-nodes.ts), so they are not repeated here.
         if (key === "node" || key === "southnode") continue;
         const lon = b[key].lon;
         const name = POINT_NAMES[key];
@@ -150,7 +156,7 @@ export function ownPattern(chart: Chart): OwnPattern {
       if (items.length) arc.push({ house, meaning: HOUSE_LOVE[house].meaning, items });
     }
 
-  const found: (Insight & { orb: number; hard: boolean })[] = aspectsOf(chart).map((a) => ({ title: a.name, body: a.you, basis: aspectBasis(a), orb: a.orb, hard: a.hard }));
+  const found: (Insight & { orb: number; hard: boolean })[] = aspectsOf(chart).map((a) => ({ title: ownTitle(a.name), body: a.you, basis: aspectBasis(a), orb: a.orb, hard: a.hard }));
   found.sort((p, q) => p.orb - q.orb);
   const dynamics = found.map(({ title, body, basis }) => ({ title, body, basis }));
 
@@ -159,7 +165,17 @@ export function ownPattern(chart: Chart): OwnPattern {
     ? { name: lead.title, line: firstSentence(lead.body) }
     : { name: VENUS_HEADLINES[signIndex(b.venus.lon)]!, line: firstSentence(VENUS_LOVE[signIndex(b.venus.lon)]!.core) };
 
-  return { headline, core, drawnTo, arc, dynamics, stellium: ownStellium(chart), notes };
+  // The nodal axis: what you fall back on in love (South Node) and what love asks you to develop (North Node).
+  const south = (b.node.lon + 180) % 360;
+  const nodeSign = NODES_SIGN_LOVE[signIndex(south)]!;
+  const nodes: Insight[] = [{ title: `North Node In ${signName(b.node.lon)}, South Node In ${signName(south)}`, body: nodeSign.core, expressions: nodeSign.expressions, basis: "Your nodal axis by sign" }];
+  if (h) {
+    const sh = houseOf(south, h.cusps), nh = houseOf(b.node.lon, h.cusps);
+    const r = NODES_HOUSE_LOVE[sh - 1]!;
+    nodes.push({ title: `North Node In Your ${ordinal(nh)} House, South Node In Your ${ordinal(sh)}`, body: r.core, expressions: r.expressions, basis: "Your nodal axis by house" });
+  }
+
+  return { headline, core, drawnTo, arc, dynamics, nodes, stellium: ownStellium(chart), notes };
 }
 
 export type Placement = { point: string; sign: string };

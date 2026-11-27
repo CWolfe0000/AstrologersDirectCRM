@@ -61,7 +61,7 @@ export default async function You({ searchParams }: { searchParams: Promise<{ ta
 
       {tab === "aspects" ? (
         <div className="card">
-          <h2 className="mb-3 text-[22px]">Aspects in your chart</h2>
+          <h2 className="mb-3 text-[22px]">Aspects In Your Chart</h2>
           <p className="mb-4 text-muted">Orbs of 8° for the conjunction, opposition, square and trine and 4° for the sextile, with 2° more when the Sun or Moon is involved.</p>
           <AspectTable chart={self.chart} />
         </div>
@@ -71,23 +71,23 @@ export default async function You({ searchParams }: { searchParams: Promise<{ ta
 
       {tab === "pattern" && (
         <>
-          <Section title="Your next relationship period">
+          <Section title="Your Next Relationship Period">
             {windows[0] ? <TransitGroups windows={[windows[0]]} /> : <p className="card text-ink-2">No slow planet reaches your relationship points in the next 12 months. Read this year as the aftermath of the last such period, or the lead-in to the next.</p>}
             {windows.length > 1 &&
               (user.premium ? (
                 <Link href="/app/calendar" className="link">See all {windows.length} periods in your calendar</Link>
               ) : (
-                <Locked title={`${plural(windows.length - 1, "more period")} in your next 12 months`}><p>Your calendar lists each one with its dates.</p></Locked>
+                <Locked title={`${plural(windows.length - 1, "More Period")} In Your Next 12 Months`}><p>Your calendar lists each one with its dates.</p></Locked>
               ))}
           </Section>
           <section className="mt-10 grid gap-4 lg:grid-cols-2">
             <div className="card">
-              <h2 className="text-[20px]">Is it true of your past?</h2>
+              <h2 className="text-[20px]">Is It True Of Your Past?</h2>
               <p className="mt-2 text-ink-2">{ctx.exes.length === 0 ? "This is what your chart says. Add the people you have been with and see what they actually had in common." : `You have added ${plural(ctx.exes.length, "past partner")}.${ctx.exes.length < 2 ? " Add one more to see what repeats." : ""}`}</p>
               <Link href={ctx.exes.length >= 2 ? "/app/patterns" : "/app/people/new?kind=ex"} className="btn-dark mt-4">{ctx.exes.length >= 2 ? "See your patterns" : "Add a past partner"}</Link>
             </div>
             <div className="card">
-              <h2 className="text-[20px]">Met someone?</h2>
+              <h2 className="text-[20px]">Met Someone?</h2>
               <p className="mt-2 text-ink-2">Add them to see your two charts together, and whether they fit your pattern or break it.</p>
               <Link href="/app/people/new?kind=match" className="btn-dark mt-4">Add someone new</Link>
             </div>

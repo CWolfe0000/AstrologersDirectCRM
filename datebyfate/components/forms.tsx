@@ -4,7 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import type { FormState } from "@/app/actions";
 import type { Birth } from "@/lib/astro/types";
-import type { Person } from "@/lib/people";
+import type { Person, Status } from "@/lib/people";
 import { BirthFields } from "./birth-fields";
 import { PlacePicker, type Place } from "./place-picker";
 
@@ -81,10 +81,11 @@ export function SelfForm({ action, initial, submit }: { action: Action; initial?
 }
 
 
-/** A past partner, or someone new. */
-export function PersonForm({ action, kind, initial, submit }: { action: Action; kind: "ex" | "match"; initial?: Person; submit: string }) {
+/** A partner, past or current, or someone new. */
+export function PersonForm({ action, status: firstStatus, initial, submit }: { action: Action; status: Status; initial?: Person; submit: string }) {
   const [state, formAction] = useActionState(action, undefined);
   const [name, setName] = useState(initial?.name ?? "");
+  const [status, setStatus] = useState<Status>(firstStatus);
   const yn = (v: boolean | null | undefined) => (v === true ? "yes" : v === false ? "no" : "");
   const [extra, setExtra] = useState({
     metDate: initial?.metDate ?? "", startDate: initial?.startDate ?? "", endDate: initial?.endDate ?? "", ending: initial?.ending ?? "",
@@ -93,9 +94,20 @@ export function PersonForm({ action, kind, initial, submit }: { action: Action; 
   const [met, setMet] = useState<Place | null>(initial?.met ?? null);
   const set = (k: keyof typeof extra) => (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => setExtra((x) => ({ ...x, [k]: e.target.value }));
   const today = new Date().toISOString().slice(0, 10);
+  const past = status === "past";
+  const dates: [("metDate" | "startDate" | "endDate"), string][] = [["metDate", "Day you met"], ...(status === "new" ? [] : [["startDate", "Day it began"] as ["startDate", string]]), ...(past ? [["endDate", "Day it ended (if it has)"] as ["endDate", string]] : [])];
+  const details: [("stayedFriends" | "livedTogether" | "married" | "children"), string][] = status === "new" ? [] : [...(past ? [["stayedFriends", "Did you stay friends"] as ["stayedFriends", string]] : []), ["livedTogether", past ? "Did you live together" : "Do you live together"], ["married", past ? "Were you married" : "Are you married"], ["children", "Children together"]];
   return (
     <form action={formAction} className="space-y-5">
       {initial && <input type="hidden" name="id" value={initial.id} />}
+      <div>
+        <label className="label" htmlFor="status">Who they are to you</label>
+        <select id="status" name="status" className="input" value={status} onChange={(e) => setStatus(e.target.value as Status)}>
+          <option value="current">Current partner</option>
+          <option value="past">Past partner</option>
+          <option value="new">Someone new</option>
+        </select>
+      </div>
       <div>
         <label className="label" htmlFor="person-name">Name or nickname</label>
         <input id="person-name" name="name" required maxLength={60} value={name} onChange={(e) => setName(e.target.value)} className="input" autoComplete="off" aria-describedby="person-name-hint" />
@@ -111,9 +123,9 @@ export function PersonForm({ action, kind, initial, submit }: { action: Action; 
         <input type="hidden" name="metTz" value={met?.tz ?? ""} />
       </div>
       <fieldset className="space-y-4 border-t border-line pt-5">
-        <legend className="text-sm font-semibold">The relationship <span className="font-normal text-muted">(optional, and the closest date you remember is fine)</span></legend>
+        <legend className="text-sm font-semibold">The Relationship <span className="font-normal text-muted">(all optional, and the closest date you remember is fine)</span></legend>
         <div className="grid gap-4 sm:grid-cols-3">
-          {([["metDate", "Day you met"], ["startDate", "Day it began"], ...(kind === "ex" ? [["endDate", "Day it ended"]] : [])] as [("metDate" | "startDate" | "endDate"), string][]).map(([n, label]) => (
+          {dates.map(([n, label]) => (
             <div key={n}>
               <label className="label" htmlFor={n}>{label}</label>
               <input id={n} name={n} type="date" min="1940-01-01" max={today} className="input" value={extra[n]} onChange={set(n)} />
@@ -121,7 +133,7 @@ export function PersonForm({ action, kind, initial, submit }: { action: Action; 
           ))}
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          {kind === "ex" && (
+          {past && (
             <div>
               <label className="label" htmlFor="ending">Who ended it</label>
               <select id="ending" name="ending" className="input" value={extra.ending} onChange={set("ending")}>
@@ -132,7 +144,7 @@ export function PersonForm({ action, kind, initial, submit }: { action: Action; 
               </select>
             </div>
           )}
-          {([...(kind === "ex" ? [["stayedFriends", "Did you stay friends"]] : []), ["livedTogether", kind === "ex" ? "Did you live together" : "Do you live together"], ["married", kind === "ex" ? "Were you married" : "Are you married"], ["children", "Children together"]] as [("stayedFriends" | "livedTogether" | "married" | "children"), string][]).map(([n, label]) => (
+          {details.map(([n, label]) => (
             <div key={n}>
               <label className="label" htmlFor={n}>{label}</label>
               <select id={n} name={n} className="input" value={extra[n]} onChange={set(n)}>

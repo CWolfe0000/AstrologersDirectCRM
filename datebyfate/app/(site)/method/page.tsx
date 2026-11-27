@@ -13,7 +13,7 @@ export default function Method() {
       <SiteHeader />
       <main className="container max-w-3xl py-14">
         <p className="eyebrow">How it works</p>
-        <h1 className="mt-2 text-4xl font-semibold sm:text-5xl">What Datebyfate does, exactly</h1>
+        <h1 className="mt-2 text-4xl font-semibold sm:text-5xl">What Datebyfate Does, Exactly</h1>
         <P>Every reading is produced by fixed rules from a calculated chart. The same birth details always give the same reading, and each paragraph names the chart factor it comes from.</P>
 
         <H>The charts</H>

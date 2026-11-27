@@ -3,9 +3,14 @@ import type { Birth } from "./astro/types";
 
 export type PersonKind = "self" | "ex" | "match";
 
+/** What someone is to the member now. A past partner is stored as kind "ex"; the other two as kind "match". */
+export type Status = "current" | "past" | "new";
+
 export interface PersonData {
   name: string;
   birth: Birth;
+  /** Missing on records saved before this was asked: a kind "ex" is past, anyone else is new. */
+  status?: Status | null;
   /** The relationship: the day you met, the day it began and, for a past partner, the day it ended (YYYY-MM-DD). */
   metDate?: string | null;
   startDate?: string | null;
@@ -70,6 +75,7 @@ export const personSchema = z
   .object({
     name: z.string().trim().min(1, "Enter a name or nickname.").max(60),
     birth: birthSchema,
+    status: z.enum(["current", "past", "new"]).nullish(),
     metDate: pastDate,
     startDate: pastDate,
     endDate: pastDate,
@@ -101,6 +107,7 @@ export function personFromForm(form: FormData) {
       lon: Number(form.get("lon") ?? NaN),
       tz: String(form.get("tz") ?? ""),
     },
+    status: form.get("status") || null,
     metDate: date("metDate"),
     startDate: date("startDate"),
     endDate: date("endDate"),
@@ -114,5 +121,9 @@ export function personFromForm(form: FormData) {
     met: form.get("metPlace") ? { place: String(form.get("metPlace")), lat: Number(form.get("metLat")), lon: Number(form.get("metLon")), tz: String(form.get("metTz")) } : null,
   });
 }
+
+/** The status of a saved person, whatever version of the form saved them. */
+export const statusOf = (p: { kind: PersonKind; status?: Status | null }): Status => (p.kind === "ex" ? "past" : p.status === "current" ? "current" : "new");
+export const STATUS_LABEL: Record<Status, string> = { current: "Current Partner", past: "Past Partner", new: "Someone New" };
 
 export const homeSchema = birthSchema.pick({ place: true, lat: true, lon: true, tz: true });

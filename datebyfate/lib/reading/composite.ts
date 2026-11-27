@@ -166,15 +166,15 @@ export function composite(you: Chart, them: Chart, houses: { cusps: number[]; as
   const sections: Composite["sections"] = [];
   const south = (lon.node + 180) % 360;
   sections.push({
-    title: "The story between you",
+    title: "The Story Between You",
     intro: "The lunar nodes of the relationship’s chart: the familiar pattern the two of you fall into, and what you are growing toward together.",
     items: [{ title: `South Node In ${SIGNS[signIndex(south)]!.name}`, body: C_NODES_SIGN[signIndex(south)]!.core, expressions: C_NODES_SIGN[signIndex(south)]!.expressions, basis: "Composite nodes by sign" }, ...byHouse("South Node", south, C_NODES_HOUSE, null)],
   });
-  sections.push({ title: "What keeps you alive", intro: "The composite Sun: what the relationship runs on.", items: [bySign("Sun", lon.sun, C_SUN_SIGN, "sun"), ...byHouse("Sun", lon.sun, C_SUN_HOUSE, "sun")] });
-  if (moonOk) sections.push({ title: "What your hearts need", intro: "The composite Moon: what the two of you need in order to feel at home together.", items: [bySign("Moon", lon.moon, C_MOON_SIGN, "moon"), ...byHouse("Moon", lon.moon, C_MOON_HOUSE, "moon")] });
-  if (houses) sections.push({ title: "How you come across", intro: "The composite rising sign: how the two of you meet the world as a pair.", items: [{ title: `${SIGNS[signIndex(houses.asc)]!.name} Rising`, body: C_RISING_SIGN[signIndex(houses.asc)]!.core, expressions: C_RISING_SIGN[signIndex(houses.asc)]!.expressions, basis: "Composite Ascendant by sign" }] });
+  sections.push({ title: "What Keeps You Alive", intro: "The composite Sun: what the relationship runs on.", items: [bySign("Sun", lon.sun, C_SUN_SIGN, "sun"), ...byHouse("Sun", lon.sun, C_SUN_HOUSE, "sun")] });
+  if (moonOk) sections.push({ title: "What Your Hearts Need", intro: "The composite Moon: what the two of you need in order to feel at home together.", items: [bySign("Moon", lon.moon, C_MOON_SIGN, "moon"), ...byHouse("Moon", lon.moon, C_MOON_HOUSE, "moon")] });
+  if (houses) sections.push({ title: "How You Come Across", intro: "The composite rising sign: how the two of you meet the world as a pair.", items: [{ title: `${SIGNS[signIndex(houses.asc)]!.name} Rising`, body: C_RISING_SIGN[signIndex(houses.asc)]!.core, expressions: C_RISING_SIGN[signIndex(houses.asc)]!.expressions, basis: "Composite Ascendant by sign" }] });
   sections.push({
-    title: "Affection and desire",
+    title: "Affection And Desire",
     intro: "Composite Venus and Mars: how affection is kept alive, and how desire and tension are handled.",
     items: [bySign("Venus", lon.venus, C_VENUS_SIGN, "venus"), ...byHouse("Venus", lon.venus, C_VENUS_HOUSE, "venus"), bySign("Mars", lon.mars, C_MARS_SIGN, "mars"), ...byHouse("Mars", lon.mars, C_MARS_HOUSE, "mars")],
   });
@@ -187,7 +187,7 @@ export function composite(you: Chart, them: Chart, houses: { cusps: number[]; as
       if (names.length >= 4) work.unshift({ title: `Centred On The ${ordinal(i + 1)} House`, body: HOUSE_EMPHASIS[i]!, basis: `${names.join(", ")} in the composite ${ordinal(i + 1)} house` });
     });
   }
-  if (work.length) sections.push({ title: "Where the work is", intro: "Composite Saturn, and any house that holds four or more planets.", items: work });
+  if (work.length) sections.push({ title: "Where The Work Is", intro: "Composite Saturn, and any house that holds four or more planets.", items: work });
 
   const others: Insight[] = (["mercury", "jupiter", "uranus", "neptune", "pluto"] as const).flatMap((id) => byHouse(POINT_NAMES[id], lon[id], C_OTHER_HOUSE[id], id));
 

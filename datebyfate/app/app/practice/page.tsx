@@ -60,7 +60,7 @@ export default async function Practice() {
             <ul className="mt-3 space-y-1 text-[13px] text-muted">{notes.map((n) => <li key={n}>{n}</li>)}</ul>
           </section>
 
-          <Section title="Today’s five minutes" intro={`For ${POINT_NAMES[day.ruler]}. Best in one of its own hours today: ${day.hours.filter((h) => h.planet === day.ruler && h.end > now).map(span).join(", ") || "they have passed for today"}.`}>
+          <Section title="Today’s Five Minutes" intro={`For ${POINT_NAMES[day.ruler]}. Best in one of its own hours today: ${day.hours.filter((h) => h.planet === day.ruler && h.end > now).map(span).join(", ") || "they have passed for today"}.`}>
             <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
               <ol className="card list-decimal space-y-2 pl-10 text-ink-2">{STEPS.map((s) => <li key={s}>{s}</li>)}</ol>
               <dl className="card space-y-3">
@@ -74,7 +74,7 @@ export default async function Practice() {
             </div>
           </Section>
 
-          <Section title="Today’s planetary hours" intro="Twelve hours of daylight and twelve of night, each belonging to a planet, with what that hour is used for today. The planet of the hour is the main force and the planet of the day colours it.">
+          <Section title="Today’s Planetary Hours" intro="Twelve hours of daylight and twelve of night, each belonging to a planet, with what that hour is used for today. The planet of the hour is the main force and the planet of the day colours it.">
             <div className="card grid gap-x-10 gap-y-6 lg:grid-cols-2">
               {[false, true].map((night) => (
                 <div key={String(night)}>
@@ -99,7 +99,7 @@ export default async function Practice() {
         <p className="card mt-8 text-ink-2">The Sun does not rise and set today in {place.place}, so planetary hours cannot be worked out there. Use the planet of the weekday instead.</p>
       )}
 
-      <Section title="A practice for each of your dynamics" intro="Each difficult aspect in your own chart, with the planet to work with and the next times that suit it. Use the same five minutes as above, with that planet’s colour and scent.">
+      <Section title="A Practice For Each Of Your Dynamics" intro="Each difficult aspect in your own chart, with the planet to work with and the next times that suit it. Use the same five minutes as above, with that planet’s colour and scent.">
         {practices.length === 0 ? (
           <p className="card text-ink-2">Your chart has no difficult aspects between the relationship planets, so there is nothing to steady here. Follow the planet of the day.</p>
         ) : user.premium ? (
@@ -129,13 +129,13 @@ export default async function Practice() {
             ))}
           </div>
         ) : (
-          <Locked title={`${plural(practices.length, "practice")} matched to your chart`}>
+          <Locked title={`${plural(practices.length, "Practice")} Matched To Your Chart`}>
             <p>Subscribe to see which planet to work with for each of your difficult dynamics, and the next times to do it where you live.</p>
           </Locked>
         )}
       </Section>
 
-      <Section title="The forty-nine hours" intro="Every pairing of a planet’s hour with a planet’s day, and what it is used for. Each one comes round once or more every week.">
+      <Section title="The Forty-Nine Hours" intro="Every pairing of a planet’s hour with a planet’s day, and what it is used for. Each one comes round once or more every week.">
         {user.premium ? (
           <div className="grid gap-4">
             {DAY_RULERS.map((d) => (
@@ -160,14 +160,14 @@ export default async function Practice() {
             ))}
           </div>
         ) : (
-          <Locked title="All forty-nine pairings, with the next time each one falls">
+          <Locked title="All Forty-Nine Pairings, With The Next Time Each One Falls">
             <p>Subscribe to see what every hour of every day is used for, in love, influence, money, strength, wrath and inner work, and when each next comes round where you live.</p>
           </Locked>
         )}
       </Section>
 
       <section className="mt-12 max-w-xl">
-        <h2 className="text-2xl font-semibold">Where you are</h2>
+        <h2 className="text-2xl font-semibold">Where You Are</h2>
         <p className="mb-4 mt-1.5 text-muted">Planetary hours depend on local sunrise and sunset.</p>
         <div className="card"><HomeForm initial={self.home ?? null} /></div>
       </section>

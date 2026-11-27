@@ -40,7 +40,7 @@ export interface Window {
 }
 
 /** Forrest's working orbs (The Changing Sky, ch. 11): the slower the planet, the narrower. */
-const MOVERS: { id: BodyId; orb: number; angles: number[] }[] = [
+export const MOVERS: { id: BodyId; orb: number; angles: number[] }[] = [
   { id: "jupiter", orb: 5, angles: [0, 90, 120, 180] },
   { id: "saturn", orb: 3.5, angles: [0, 90, 180] },
   { id: "uranus", orb: 3, angles: [0, 90, 180] },

@@ -66,37 +66,37 @@ export function describeSignature(key: string, you: Chart): { title: string; bod
   const body = a as BodyId;
   switch (kind) {
     case "sign":
-      return { title: `${POINT_NAMES[body]} in ${SIGNS[Number(b)]!.name}`, body: `Their ${BODY_SHOWS[body]} is ${SIGN_PEOPLE[Number(b)]}.` };
+      return { title: `${POINT_NAMES[body]} In ${SIGNS[Number(b)]!.name}`, body: `Their ${BODY_SHOWS[body]} is ${SIGN_PEOPLE[Number(b)]}.` };
     case "element":
-      return { title: `${POINT_NAMES[body]} in ${b === "air" || b === "earth" ? "an" : "a"} ${b} sign`, body: `Their ${BODY_SHOWS[body]} is ${ELEMENT_PEOPLE[b]}.` };
+      return { title: `${POINT_NAMES[body]} In ${b === "air" || b === "earth" ? "An" : "A"} ${b[0]!.toUpperCase()}${b.slice(1)} Sign`, body: `Their ${BODY_SHOWS[body]} is ${ELEMENT_PEOPLE[b]}.` };
     case "angle": {
       const sign = SIGNS[signIndex(you.houses!.asc + (b === "dsc" ? 180 : 0))]!.name;
       return b === "dsc"
-        ? { title: `${POINT_NAMES[body]} in ${sign}, your Descendant sign`, body: "Your Descendant describes the partner you look for. These people fit that description." }
-        : { title: `${POINT_NAMES[body]} in ${sign}, your rising sign`, body: "They come across the way you do, which makes them feel familiar from the start." };
+        ? { title: `${POINT_NAMES[body]} In ${sign}, Your Descendant Sign`, body: "Your Descendant describes the partner you look for. These people fit that description." }
+        : { title: `${POINT_NAMES[body]} In ${sign}, Your Rising Sign`, body: "They come across the way you do, which makes them feel familiar from the start." };
     }
     case "trigger": {
       const d = DYNAMICS[a]!;
       const [x, y] = a.split("-") as [BodyId, BodyId];
-      return { title: `Sets off your “${d.name}”`, body: `Their planets land on your ${POINT_NAMES[x]}–${POINT_NAMES[y]} aspect. ${d.hard}` };
+      return { title: `Sets Off Your “${d.name}”`, body: `Their planets land on your ${POINT_NAMES[x]}–${POINT_NAMES[y]} aspect. ${d.hard}` };
     }
     case "eases": {
       const d = DYNAMICS[a]!;
       const [x, y] = a.split("-") as [BodyId, BodyId];
-      return { title: `Eases your “${d.name}”`, body: `Their planets make an easy aspect to your ${POINT_NAMES[x]}–${POINT_NAMES[y]} aspect, so this difficulty of yours is calmer around them. ${d.hard}` };
+      return { title: `Eases Your “${d.name}”`, body: `Their planets make an easy aspect to your ${POINT_NAMES[x]}–${POINT_NAMES[y]} aspect, so this difficulty of yours is calmer around them. ${d.hard}` };
     }
     case "gift": {
       const d = DYNAMICS[a]!;
       const [x, y] = a.split("-") as [BodyId, BodyId];
-      return { title: `Brings out your “${d.easyName}”`, body: `Their planets support your ${POINT_NAMES[x]}–${POINT_NAMES[y]} aspect, one of the strengths in your chart. ${d.flowing}` };
+      return { title: `Brings Out Your “${d.easyName}”`, body: `Their planets support your ${POINT_NAMES[x]}–${POINT_NAMES[y]} aspect, one of the strengths in your chart. ${d.flowing}` };
     }
     case "house":
-      return { title: `${POINT_NAMES[body]} in your ${ordinal(Number(b))} house`, body: `Their ${BODY_SHOWS[body]} lands in the part of your chart to do with ${HOUSE_AREA[Number(b) - 1]}. That is where you feel them most.` };
+      return { title: `${POINT_NAMES[body]} In Your ${ordinal(Number(b))} House`, body: `Their ${BODY_SHOWS[body]} lands in the part of your chart to do with ${HOUSE_AREA[Number(b) - 1]}. That is where you feel them most.` };
     default: {
       // A contact between the two charts, worded from the same source as the couple report.
       const kind = c === "conjunction" ? "conjunction" : c === "hard" ? "challenging" : "flowing";
       const how = c === "conjunction" ? "on" : c === "hard" ? "in tension with" : "in harmony with";
-      return { title: `Their ${POINT_NAMES[b as PointId]} ${how} your ${POINT_NAMES[a as PointId]}`, body: synastryText(a as PointId, b as PointId, kind, null).body };
+      return { title: `Their ${POINT_NAMES[b as PointId]} ${how} Your ${POINT_NAMES[a as PointId]}`, body: synastryText(a as PointId, b as PointId, kind, null).body };
     }
   }
 }

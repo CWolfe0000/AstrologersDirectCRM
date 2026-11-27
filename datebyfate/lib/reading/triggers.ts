@@ -2,7 +2,7 @@ import type { BodyId, Chart, PointId } from "@/lib/astro/types";
 import { BODIES } from "@/lib/astro/types";
 import { separation } from "@/lib/astro/spherical";
 import { POINT_NAMES } from "@/lib/astro/zodiac";
-import { aspectBasis, aspectsOf, type NatalAspect } from "./own";
+import { aspectBasis, aspectsOf, ownTitle, type NatalAspect } from "./own";
 import { SETS_OFF, SUPPORTS_WITH } from "./text";
 
 /**
@@ -103,6 +103,7 @@ export function natalContactKeys(owner: Chart, other: Chart): string[] {
 
 const supportOf = (by: PointId, otherPoss: string) => (SUPPORTS_WITH[by] ?? "{P} presence").replace("{P}", otherPoss === "Your" ? "your" : otherPoss);
 
+const up = (w: string) => w[0]!.toUpperCase() + w.slice(1);
 const names = (ownerName: string | null, otherName: string | null) => ({ ownerPoss: ownerName ? `${ownerName}’s` : "your", otherPoss: otherName ? `${otherName}’s` : "Your" });
 
 /**
@@ -112,12 +113,12 @@ const names = (ownerName: string | null, otherName: string | null) => ({ ownerPo
  */
 export function difficultAspects(owner: Chart, other: Chart, ownerName: string | null, otherName: string | null): DifficultAspect[] {
   const { ownerPoss, otherPoss } = names(ownerName, otherName);
-  const title = (t: Touch) => `${otherPoss} ${POINT_NAMES[t.by]} ${t.word} ${ownerPoss} ${POINT_NAMES[t.end]}`;
+  const title = (t: Touch) => `${otherPoss} ${POINT_NAMES[t.by]} ${up(t.word)} ${up(ownerPoss)} ${POINT_NAMES[t.end]}`;
   return aspectsOf(owner)
     .filter((a) => a.hard)
     .map((a) => ({
       key: a.key,
-      name: a.name,
+      name: ownerName ? a.name : ownTitle(a.name),
       basis: aspectBasis(a),
       body: ownerName ? a.them : a.you,
       triggers: touching(a, owner, other, HARD).slice(0, 3).map((t) => ({ by: t.by, end: t.end, orb: t.orb, title: title(t), body: (SETS_OFF[t.by] ?? "{P} presence sets it off.").replace("{P}", otherPoss) })),
@@ -133,14 +134,14 @@ export function gifts(owner: Chart, other: Chart, ownerName: string | null, othe
     .filter((a) => !a.hard)
     .map((a) => ({
       key: a.key,
-      name: a.name,
+      name: ownerName ? a.name : ownTitle(a.name),
       basis: aspectBasis(a),
       body: ownerName ? a.them : a.you,
       broughtOut: touching(a, owner, other, SUPPORT).slice(0, 2).map((t) => ({
         by: t.by,
         end: t.end,
         orb: t.orb,
-        title: `${otherPoss} ${POINT_NAMES[t.by]} ${t.word} ${ownerPoss} ${POINT_NAMES[t.end]}`,
+        title: `${otherPoss} ${POINT_NAMES[t.by]} ${up(t.word)} ${up(ownerPoss)} ${POINT_NAMES[t.end]}`,
         body: `It is brought out by ${supportOf(t.by, otherPoss)}.`,
       })),
     }))

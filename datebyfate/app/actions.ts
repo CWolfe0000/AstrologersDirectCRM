@@ -145,15 +145,9 @@ export async function saveSelf(_: FormState, form: FormData): Promise<FormState>
   redirect("/app");
 }
 
-export async function saveEx(_: FormState, form: FormData): Promise<FormState> {
-  const r = await savePersonFrom("ex", form);
-  if (typeof r !== "string") return r;
-  revalidatePath("/app", "layout");
-  redirect(`/app/people/${r}`);
-}
-
-export async function saveMatch(_: FormState, form: FormData): Promise<FormState> {
-  const r = await savePersonFrom("match", form);
+/** A partner, past or current, or someone new: the form's status decides how they are stored. */
+export async function savePartner(_: FormState, form: FormData): Promise<FormState> {
+  const r = await savePersonFrom(form.get("status") === "past" ? "ex" : "match", form);
   if (typeof r !== "string") return r;
   revalidatePath("/app", "layout");
   redirect(`/app/people/${r}`);

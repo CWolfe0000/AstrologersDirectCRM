@@ -13,7 +13,7 @@ export default async function ReadingPage() {
       <main className="container py-12">
         <div className="mx-auto mb-8 max-w-xl text-center">
           <p className="eyebrow">Free reading</p>
-          <h1 className="mt-2 text-4xl font-semibold sm:text-5xl">Your relationship pattern</h1>
+          <h1 className="mt-2 text-4xl font-semibold sm:text-5xl">Your Relationship Pattern</h1>
           <p className="mt-3 text-ink-2">How you love, what you need, who you are drawn to and what you repeat.</p>
         </div>
         <FreeReadingTool signedIn={!!user} />

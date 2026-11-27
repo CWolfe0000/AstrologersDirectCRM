@@ -23,8 +23,8 @@ export default async function Exes() {
   const begins = ctx.self ? timingRepeats(ctx.self.chart, dated((e) => e.startDate ?? e.metDate), seeded(user.id + "begin")) : null;
   const ends = ctx.self ? timingRepeats(ctx.self.chart, dated((e) => e.endDate), seeded(user.id + "end")) : null;
   const timing = [
-    { title: "When your relationships begin", data: begins, n: dated((e) => e.startDate ?? e.metDate).length, word: "beginnings" },
-    { title: "When your relationships end", data: ends, n: dated((e) => e.endDate).length, word: "endings" },
+    { title: "When Your Relationships Begin", data: begins, n: dated((e) => e.startDate ?? e.metDate).length, word: "beginnings" },
+    { title: "When Your Relationships End", data: ends, n: dated((e) => e.endDate).length, word: "endings" },
   ];
   const aboveChance = found >= expected * 1.5 && found - expected >= 2;
 
@@ -45,7 +45,7 @@ export default async function Exes() {
         <>
           <section className="card">
             <p className="eyebrow">Across {plural(pattern.partners, "partner")}: {ctx.exes.map((e) => e.name).join(", ")}</p>
-            <h2 className="mt-1 text-[26px]">{found === 0 ? "No repeats that stand out" : `${plural(found, "repeat")} found`}</h2>
+            <h2 className="mt-1 text-[26px]">{found === 0 ? "No Repeats That Stand Out" : `${plural(found, "Repeat")} Found`}</h2>
             <p className="mt-2 max-w-3xl text-ink-2">
               We checked {pattern.checked} signatures. A random group of {pattern.partners} people born in the same years would show about {expected.toFixed(1)}.{" "}
               {found === 0
@@ -58,7 +58,7 @@ export default async function Exes() {
           </section>
 
           {pattern.facts.length > 0 && (
-            <Section title="The plain facts" intro="No astrology needed for these.">
+            <Section title="The Plain Facts" intro="No astrology needed for these.">
               <ul className="card space-y-2 text-ink-2">{pattern.facts.map((f) => <li key={f}>{f}</li>)}</ul>
             </Section>
           )}
@@ -75,7 +75,7 @@ export default async function Exes() {
                     ))}
                   </div>
                 ) : (
-                  <Locked title={`${plural(t.data.repeats.length, "repeat")} in the timing of your ${t.word}`}><p>Subscribe to see what was in force in your chart each time.</p></Locked>
+                  <Locked title={`${plural(t.data.repeats.length, "Repeat")} In The Timing Of Your ${t.word[0]!.toUpperCase()}${t.word.slice(1)}`}><p>Subscribe to see what was in force in your chart each time.</p></Locked>
                 )}
               </Section>
             ) : null,
@@ -85,7 +85,7 @@ export default async function Exes() {
           )}
 
           {found > 0 && (
-            <Section title="What repeats" intro="Least likely to be coincidence first. The usual rate is how common each one is among people born in the same years.">
+            <Section title="What Repeats" intro="Least likely to be coincidence first. The usual rate is how common each one is among people born in the same years.">
               {user.premium ? (
                 <div className="grid gap-4 lg:grid-cols-2">
                   {pattern.repeats.map((r) => (
@@ -97,7 +97,7 @@ export default async function Exes() {
                   ))}
                 </div>
               ) : (
-                <Locked title={`${plural(found, "repeat")} across your partners`}>
+                <Locked title={`${plural(found, "Repeat")} Across Your Partners`}>
                   <p>
                     {plural(pattern.repeats.filter((r) => r.strength !== "faint").length, "is", "are")} strong or clear, and the rest are faint. Subscribe to see what each one is, which partners share it, and how common it is.
                   </p>
