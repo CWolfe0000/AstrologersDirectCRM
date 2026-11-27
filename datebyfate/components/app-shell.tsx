@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { CalendarDays, CircleUserRound, Menu, Repeat2, Sparkles, SunMoon, Users, X } from "lucide-react";
+import { CalendarDays, ChartGantt, CircleUserRound, Menu, Repeat2, Sparkles, SunMoon, Users, X } from "lucide-react";
 import { Mark } from "./logo";
 
 const NAV = [
@@ -11,6 +11,7 @@ const NAV = [
   { href: "/app/people", label: "People", icon: Users },
   { href: "/app/patterns", label: "Patterns", icon: Repeat2 },
   { href: "/app/calendar", label: "Calendar", icon: CalendarDays },
+  { href: "/app/timeline", label: "Timeline", icon: ChartGantt },
   { href: "/app/practice", label: "Practice", icon: Sparkles },
 ];
 
