@@ -600,6 +600,21 @@ describe("placements are weighed by their aspects", () => {
   });
 });
 
+describe("conjunctions with the Sun", () => {
+  it("Sun with Venus or Jupiter is never read as pressure; Mars with Jupiter still is", () => {
+    const c = chartFor(born("1989-03-15", "08:18"));
+    const sun = aspectsTo(c, "sun");
+    expect(sun.hard.join()).not.toMatch(/Venus|Jupiter/);
+    expect(aspectsTo(c, "venus").hard.join()).not.toMatch(/conjunction Sun/);
+    expect(aspectsTo(c, "mars").hard.join()).toMatch(/conjunction Jupiter/);
+  });
+  it("the nodes are not read on their own in the arc of intimacy", () => {
+    const c = chartFor(born("1989-03-15", "08:18"));
+    const titles = ownPattern(c).arc.flatMap((a) => a.items.map((i) => i.title));
+    expect(titles.some((t) => /Node/.test(t))).toBe(false);
+  });
+});
+
 describe("what was happening at the time", () => {
   const chart = chartFor(me);
   it("lists the factors in force on a date and words each one", () => {

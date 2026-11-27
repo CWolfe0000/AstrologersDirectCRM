@@ -39,7 +39,9 @@ export function aspectsTo(chart: Chart, point: BodyId): AspectContext {
     const asp = aspectBetween(chart.bodies[point].lon, chart.bodies[other].lon, luminary ? LUMINARY_ORBS : NATAL_ORBS);
     if (!asp) continue;
     const label = `${asp.name} ${POINT_NAMES[other]}`;
-    const hard = asp.cls === "hard" || (asp.cls === "conjunction" && point !== "mercury" && other !== "mercury" && SOFT.has(point) !== SOFT.has(other));
+    // Sun with Venus or Jupiter is the easiest conjunction there is; it is never read as pressure.
+    const sunEasy = (point === "sun" && (other === "venus" || other === "jupiter")) || (other === "sun" && (point === "venus" || point === "jupiter"));
+    const hard = asp.cls === "hard" || (asp.cls === "conjunction" && !sunEasy && point !== "mercury" && other !== "mercury" && SOFT.has(point) !== SOFT.has(other));
     (hard ? out.hard : out.flowing).push(label);
   }
   return out;

@@ -185,7 +185,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
     easyName: "The steady one",
     themEasy: "They are emotionally steady and keep their head in a crisis.",
     conj: "hard",
-    hard: "You learned early to look after your own feelings. You express them guardedly and find it hard to let anyone look after you, so people often do not know when you need them. You hold on to what is familiar and can choose partners who resemble the family you grew up in. Risking showing that you need someone is the way through.",
+    hard: "You look after your own feelings first. You express them guardedly and find it hard to let anyone look after you, so people often do not know when you need them. You hold on to what is familiar and can be drawn to partners who feel familiar in the way family does. Risking showing that you need someone is the way through.",
     flowing: "You are emotionally steady and dependable. You keep your head in a crisis, and partners come to rely on you.",
   },
   "moon-uranus": {
@@ -241,7 +241,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
     easyName: "Of one mind",
     themEasy: "They know what they are looking for and send clear signals.",
     conj: "flowing",
-    hard: "What you want for yourself and what you need to feel safe pull in different directions, so part of you is always unsatisfied with a relationship. You tend to replay the difficulties of your parents’ relationship in your own.",
+    hard: "What you want for yourself and what you need to feel safe pull in different directions, so part of you is always unsatisfied with a relationship. You tend to be drawn to the same difficulties again and again.",
     flowing: "What you want and what you need line up. You tend to know what you are looking for, and you send clear signals.",
     conjName: "Single-minded",
     conjYou: "What you want and what you need are the same thing, so you are decisive and self-reliant and rarely ask for advice. The cost is that you see things from your own side: it takes you a while to register that a partner needs something different.",

@@ -132,19 +132,19 @@ export function ownPattern(chart: Chart): OwnPattern {
     notes.push("Without a birth time we can’t work out your rising sign or houses, so the section on who you are drawn to is missing. Add your birth time to see it.");
   }
 
-  // The arc of intimacy: every planet, and both nodes, in houses 4 to 8.
+  // The arc of intimacy: every planet in houses 4 to 8.
   const arc: OwnPattern["arc"] = [];
   if (h)
     for (const house of [4, 5, 6, 7, 8] as const) {
       const items: Insight[] = [];
       for (const key of Object.keys(HOUSE_LOVE[house].planets) as (keyof (typeof HOUSE_LOVE)[4]["planets"])[]) {
-        const lon = key === "southnode" ? b.node.lon + 180 : b[key].lon;
-        const name = key === "southnode" ? "South Node" : POINT_NAMES[key];
+        // The nodes are read only where another chart makes an aspect to them (the triggers), never on their own.
+        if (key === "node" || key === "southnode") continue;
+        const lon = b[key].lon;
+        const name = POINT_NAMES[key];
         if (houseOf(lon, h.cusps) !== house) continue;
         const reading = HOUSE_LOVE[house].planets[key];
-        // The nodes take no aspects of their own here: both sides are given.
-        // The nodes take no aspects of their own here.
-        const w = key === "node" || key === "southnode" ? { body: reading.core, expressions: reading.expressions, lean: undefined, basis: "" } : weigh(reading, aspectsTo(chart, key));
+        const w = weigh(reading, aspectsTo(chart, key));
         items.push({ title: `${name} In Your ${ordinal(house)} House`, body: w.body, expressions: w.expressions, lean: w.lean, basis: `${name} in ${signName(lon)}, ${ordinal(house)} house${w.basis ? `; ${w.basis}` : ""}` });
       }
       if (items.length) arc.push({ house, meaning: HOUSE_LOVE[house].meaning, items });

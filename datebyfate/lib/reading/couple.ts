@@ -84,7 +84,7 @@ export function coupleReport(you: Chart, them: Chart, name: string): CoupleRepor
       byHouse.set(n, [...(byHouse.get(n) ?? []), label]);
     }
     for (const [n, labels] of [...byHouse].sort((a, b) => b[1].length - a[1].length || a[0] - b[0]))
-      overlays.push({ title: `${ownerLabel} ${labels.join(", ").replace(/, ([^,]*)$/, " and $1")} in ${intoLabel} ${ordinal(n)} house`, body: HOUSE_OVERLAY[n - 1]!, basis: `${labels.length} of five points`, emphasis: labels.length >= 3 });
+      overlays.push({ title: `${ownerLabel} ${labels.join(", ").replace(/, ([^,]*)$/, " and $1")} in ${intoLabel} ${ordinal(n)} house`, body: HOUSE_OVERLAY[n - 1]!.core, expressions: HOUSE_OVERLAY[n - 1]!.expressions, basis: `${labels.length} of five points`, emphasis: labels.length >= 3 });
   };
   lay(them, you, `${name}’s`, "your");
   lay(you, them, "Your", `${name}’s`);
