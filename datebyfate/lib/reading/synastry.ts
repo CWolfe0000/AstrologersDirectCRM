@@ -1,5 +1,6 @@
 import type { PointId } from "@/lib/astro/types";
 import { POINT_NAMES, type AspectName } from "@/lib/astro/zodiac";
+import type { Reading } from "./context";
 
 /**
  * Contacts between two people's charts.
@@ -108,18 +109,119 @@ export function synastryText(yours: PointId, theirs: PointId, kind: ContactKind,
   return { body: general + tail, sourced: false };
 }
 
-/** One person's planets in a house of the other's chart. At best, and at worst. */
-export const HOUSE_OVERLAY = [
-  "Self and style. At best more poise and self-awareness; at worst feeling awkward, or remodelled.",
-  "Self-worth and resources. One of the most telling overlays: confidence is built up or worn down, and material resources with it.",
-  "Talk and curiosity. At best never bored; at worst talked over and scattered.",
-  "Roots, home and the inner life. Easy to make a home with, and able to heal old family patterns or reopen them. Handle with care.",
-  "Play, romance and creativity. At best laughter, and falling in love again and again; at worst childishness, and infatuation without a future.",
-  "Work, skill and daily responsibility. At best a shared load and useful critique; at worst earning love through tasks.",
-  "Partnership itself: the sense of having found a missing half, very common between couples. The danger is losing yourself, or a fight over who leads.",
-  "Instinct, sex and psychological depth. Feelings intensify, and secrets are confided early. At best deeper bonding; at worst old fears stirred up.",
-  "Meaning, belief and travel. At best wider horizons; at worst feeling preached at.",
-  "Work and public life. Raises visibility and ambition. Make sure the role fits the real person.",
-  "Goals, the future and friends. Makes you say what you want, and brings people in.",
-  "Letting go. It comes from the blind side and undoes the story a person tells about themselves. At best a spiritual opening; at worst confusion and loss.",
+/**
+ * One person's planets in a house of the other's chart: one reading per house, house 1 first.
+ * `core` says what the house is about and what it means that the other person's planets land there
+ * (written to work whichever of the two it is). `expressions` are three or four concrete forms the
+ * overlay takes in real couples, most constructive first and hardest last. They are forms, not
+ * predictions. The house's element (fire 1/5/9, earth 2/6/10, air 3/7/11, water 4/8/12) and its
+ * modality (angular, succedent, cadent) shape what the overlay asks for.
+ */
+export const HOUSE_OVERLAY: Reading[] = [
+  {
+    core: "The first house is identity, appearance and the manner in which a person meets the world, and the other person’s planets landing here switch on the way each of you is seen. It is a fire, angular house: it asks for spontaneity and direct self-expression, and what lands here is felt at once and in the open.",
+    expressions: [
+      "One person becomes more visible and more fully themselves in the other’s company, and says so plainly.",
+      "The pair are noticed as a pair, and the way each presents themselves begins to echo the other’s style.",
+      "First impressions are strong and immediate, and they set the tone for how the two read each other for years.",
+      "One person’s self-image is repainted by the other’s view of them, until neither knows which manner is their own and which is borrowed.",
+    ],
+  },
+  {
+    core: "The second house is self-worth, money, possessions and whatever a person values and relies on. The other person’s planets landing here touch what each of you holds dear, and as an earth, succedent house it asks for steadiness and proof in practice, not promises.",
+    expressions: [
+      "Each feels more secure in what they have and what they are worth, and the practical side of life steadies.",
+      "Money, possessions and shared spending become a regular subject, handled openly and fairly between you.",
+      "Worth becomes tied to what the other gives or approves, so praise lifts confidence and silence lowers it.",
+      "Spending, saving and ownership become the ground where control is fought for, and generosity is counted and kept as a score.",
+    ],
+  },
+  {
+    core: "The third house is everyday talk, curiosity, siblings, short trips and the constant small exchange of news. The other person’s planets landing here stir the mind, and as an air, cadent house it needs ideas passed back and forth, so the pair come alive when they are talking.",
+    expressions: [
+      "Conversation runs easily and constantly, with jokes, news and half-finished thoughts passed back and forth all day.",
+      "Each sharpens the other’s curiosity, and they take up new subjects, courses and journeys because the other is interested.",
+      "Talk becomes the way the pair avoid feeling, so topics are discussed endlessly and nothing is decided.",
+      "One person’s ideas and opinions crowd out the other’s, leaving the listener interrupted, scattered and unable to finish a thought.",
+    ],
+  },
+  {
+    core: "The fourth house is home, family roots, privacy and the earliest sense of being cared for. The other person’s planets landing here reach the private self, and as a water, angular house it asks for feeling-contact more than words.",
+    expressions: [
+      "The bond feels like coming home, and building a shared household comes naturally and gives lasting safety.",
+      "Old family patterns surface between the pair, and each sees where their upbringing taught them to give or withhold care.",
+      "One person starts to play parent to the other, protecting and nurturing until the other feels managed and unable to grow up.",
+      "Childhood feelings are reopened with no way to leave them behind, and the home becomes the place where the oldest hurts are replayed.",
+    ],
+  },
+  {
+    core: "The fifth house is play, romance, creative self-expression and pleasure for its own sake. The other person’s planets landing here call out warmth, and as a fire, succedent house it needs enthusiasm, risk and a willingness to be seen enjoying oneself.",
+    expressions: [
+      "Fun, flirtation and shared creative projects keep the bond warm, and each feels more alive and more generous with the other.",
+      "Romance is staged and celebrated with gestures, dates and games, and the pair feel they are always in the first flush of love.",
+      "Each plays to the other as an audience, and the need for admiration decides how the pair behave.",
+      "Infatuation runs ahead of substance, so the intensity of the early days is mistaken for a future and burns out when the novelty ends.",
+    ],
+  },
+  {
+    core: "The sixth house is work, routine, health and the craft of daily life. The other person’s planets landing here meet practical duty, and as an earth, cadent house it asks for usefulness, reliability and attention to detail more than grand gestures.",
+    expressions: [
+      "The pair share the load, help each other refine skills and habits, and build trust through dependable small acts.",
+      "Daily routines, health habits and household tasks become a main way that care is shown and received.",
+      "Help turns into constant correction, and each hears the other’s advice as a list of faults to be fixed.",
+      "Love is earned through service, so one person is always working and the other is always owed.",
+    ],
+  },
+  {
+    core: "The seventh house is the committed partner, the one-to-one bond and what a person looks for in others. The other person’s planets landing here are met as the missing half, and as an air, angular house the overlay asks for fairness and exchange between equals.",
+    expressions: [
+      "Each recognises in the other what they were looking for, and the partnership feels natural and balanced from early on.",
+      "The two weigh decisions together, talk problems through and treat each other as equals with an equal say.",
+      "Each puts the other’s wishes first to keep the peace, and their own needs go unspoken until they pile up.",
+      "Partnership becomes a contest over who leads and who gives way, with each keeping count of who has conceded more.",
+    ],
+  },
+  {
+    core: "The eighth house is intimacy, sexuality, shared resources and the deep emotional bond that changes both people. The other person’s planets landing here reach what each keeps private, and as a water, succedent house it asks for real feeling-contact and a willingness to be affected.",
+    expressions: [
+      "Intimacy goes deep quickly, secrets are confided early, and the bond renews each of them.",
+      "Sexual and emotional closeness becomes the centre of the relationship, with a strong pull to merge.",
+      "Money, debts and shared property are tied to trust, and every arrangement becomes a test of loyalty.",
+      "Old fears of exposure, abandonment and loss of control are stirred, and power is fought over through silence, jealousy and withholding.",
+    ],
+  },
+  {
+    core: "The ninth house is belief, learning, travel and the search for meaning. The other person’s planets landing here widen the outlook, and as a fire, cadent house it asks for shared faith, adventure and a sense of purpose.",
+    expressions: [
+      "The pair travel, study and explore ideas together, and each widens the other’s outlook.",
+      "They discuss beliefs, ethics and the point of life, and growth comes from the places where their views differ.",
+      "One person’s convictions are pressed on the other as the correct view, and disagreement is treated as ignorance.",
+    ],
+  },
+  {
+    core: "The tenth house is career, public standing, reputation and responsibility to the wider world. The other person’s planets landing here meet ambition, and as an earth, angular house it asks for concrete achievement and respect for what each is building.",
+    expressions: [
+      "Each backs the other’s goals, and the relationship raises both people’s standing and sense of direction.",
+      "The pair are seen as a unit by colleagues, family and community, and the roles they hold in public shape how they act together.",
+      "One person’s ambitions set the terms of the other’s choices, and the career of one comes first by default.",
+    ],
+  },
+  {
+    core: "The eleventh house is friends, groups, shared ideals and hopes for the future. The other person’s planets landing here stir goals, and as an air, succedent house it asks for freedom, shared ideas and room for each to be an individual.",
+    expressions: [
+      "The pair are friends first, sharing ideals, projects and a wide circle of people.",
+      "Each draws out of the other what they want from the future, and vague hopes become plans.",
+      "Friends and groups fill the calendar, and the couple spend more time with others than alone together.",
+      "Friendship replaces warmth, and detachment keeps the pair pleasant to each other but never close.",
+    ],
+  },
+  {
+    core: "The twelfth house is the hidden, the unconscious, solitude, sacrifice and whatever a person cannot see about themselves. The other person’s planets landing here fall on the blind side, and as a water, cadent house the contact works through feeling and intuition beyond words.",
+    expressions: [
+      "A quiet, wordless understanding forms, with shared compassion, time apart together and creative or spiritual depth.",
+      "Each gives to the other without being asked, and care shows as sacrifice, rescue and silent support.",
+      "Much of the bond runs out of sight, so the pair keep secrets or sense what is never said and cannot name it.",
+      "Self-image dissolves into confusion, escape and loss of direction, and each finds it hard to tell where they end and the other begins.",
+    ],
+  },
 ];
