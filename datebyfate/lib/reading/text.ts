@@ -301,7 +301,7 @@ export const DYNAMICS: Record<string, Dynamic> = {
     easyName: "The dependable one",
     themEasy: "They are responsible and realistic, and a partner can depend on them.",
     conj: "hard",
-    hard: "You doubt whether you are good enough, and you work hard to prove it. Your defences can keep people from getting close enough to value you, and you can become controlling without noticing. You find it hard to let yourself be seen. Confidence, and love, get easier for you with age.",
+    hard: "You doubt whether you are good enough, and you work hard to prove it. Your defences can keep people from getting close enough to value you, and you can become controlling without noticing. You find it hard to let yourself be seen.",
     flowing: "You are responsible and realistic, and you finish what you start. A partner can depend on you.",
   },
   "sun-uranus": {
