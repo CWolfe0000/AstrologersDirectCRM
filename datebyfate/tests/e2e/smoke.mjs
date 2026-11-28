@@ -17,8 +17,8 @@ const password = "correct-horse-battery";
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 const errors = [];
-page.on("pageerror", (e) => errors.push(String(e)));
-page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
+page.on("pageerror", (e) => errors.push(`${page.url()}: ${e}`));
+page.on("console", (m) => m.type() === "error" && errors.push(`${page.url()}: ${m.text()}`));
 const shot = async (name, opts = {}) => SHOTS && page.screenshot({ path: `${SHOTS}/${name}.png`, fullPage: true, ...opts });
 const step = (name) => console.log("•", name);
 
@@ -167,6 +167,17 @@ assert.ok(await page.locator("main svg[role=img]").count() >= 1, "transit wheel 
 assert.ok((await page.locator("article ul > li").count()) >= 1);
 await shot("09-timing");
 
+step("timeline: transits, progressions and solar arcs, with romance windows");
+await page.goto(`${BASE}/app/timeline`);
+await page.getByRole("heading", { level: 1, name: "Timeline" }).waitFor();
+assert.match(await page.locator("main").innerText(), /Romance Windows/i);
+assert.match(await page.locator("main").innerText(), /Solar Arcs/i);
+await shot("13-timeline");
+await page.goto(`${BASE}/app/timeline?who=${personUrl.split("/").pop()}`);
+await page.getByRole("heading", { level: 1, name: "Timeline" }).waitFor();
+assert.match(await page.locator("main").innerText(), /Charlie’s Romance Windows/i);
+await shot("13b-timeline-person");
+
 step("practice: planetary hours and a practice per dynamic");
 await page.goto(`${BASE}/app/practice`);
 await page.getByRole("heading", { name: /Day Of (Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn)/i }).waitFor();
@@ -232,7 +243,7 @@ assert.ok([400, 503].includes(hook.status()), `webhook answered ${hook.status()}
 
 step("mobile layout has no sideways scroll");
 await page.setViewportSize({ width: 390, height: 800 });
-for (const path of ["/", "/pricing", "/app", "/app/people", "/app/patterns", "/app/calendar", "/app/practice"]) {
+for (const path of ["/", "/pricing", "/app", "/app/people", "/app/patterns", "/app/calendar", "/app/timeline", "/app/practice"]) {
   await page.goto(BASE + path);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   assert.ok(overflow <= 1, `${path} scrolls sideways by ${overflow}px`);

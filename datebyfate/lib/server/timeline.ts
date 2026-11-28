@@ -478,8 +478,23 @@ export function timelineFor(chart: Chart, birthUtcMs: number, opts: { from: Date
     const a = monthStart(opts.from, k), b = monthStart(opts.from, k + 1);
     const active = events.filter((e) => e.from.getTime() < b && e.to.getTime() >= a);
     const of = (technique: Technique) => active.filter((e) => e.technique === technique);
-    const techniques = TECHNIQUES.filter((technique) => active.some((e) => e.technique === technique && e.romance > 0));
-    months.push({ key: new Date(a).toISOString().slice(0, 7), start: new Date(a), end: new Date(b - 1), transit: of("transit"), progression: of("progression"), solarArc: of("solar-arc"), techniques, strength: techniques.length >= 3 ? 3 : techniques.length === 2 ? 2 : 0 });
+    // Progressions, solar arcs and Jupiter's year in a house are the background: each lasts a year or more.
+    // A transit to a planet or angle is the timer, and it counts only in the months around its exact dates.
+    //   Ideal (3): a strong transit at its peak, with romance factors from both progressions and solar arcs behind
+    //              it, at least one of them strong.
+    //   Good (2):  a strong transit at its peak with a progression or a solar arc behind it, and one strong background factor.
+    const MONTH = 30.44 * 86400000;
+    const peaking = (e: TimelineEvent) => e.technique === "transit" && e.aspect !== "house" && e.exact.some((x) => x.getTime() >= a - MONTH && x.getTime() < b + MONTH);
+    const romantic = active.filter((e) => e.romance > 0);
+    const timer = romantic.some((e) => peaking(e) && e.romance === 2);
+    const behind = romantic.filter((e) => !peaking(e) && (e.technique !== "transit" || e.aspect === "house"));
+    const from = (technique: Technique, min = 1) => behind.some((e) => e.technique === technique && e.romance >= min);
+    const strongBehind = behind.some((e) => e.romance === 2);
+    const strength = !timer || !strongBehind || !(from("progression") || from("solar-arc")) ? 0 : from("progression") && from("solar-arc") ? 3 : 2;
+    const live = strength ? [...romantic.filter(peaking), ...behind] : [];
+    const has = (technique: Technique) => live.some((e) => e.technique === technique);
+    const techniques = strength ? TECHNIQUES.filter((technique) => has(technique)) : [];
+    months.push({ key: new Date(a).toISOString().slice(0, 7), start: new Date(a), end: new Date(b - 1), transit: of("transit"), progression: of("progression"), solarArc: of("solar-arc"), techniques, strength });
   }
   const windows: RomanceWindow[] = [];
   for (let k = 0; k < months.length; k++) {
@@ -487,7 +502,8 @@ export function timelineFor(chart: Chart, birthUtcMs: number, opts: { from: Date
     let last = k;
     while (last + 1 < months.length && months[last + 1]!.strength) last++;
     const span = months.slice(k, last + 1);
-    const factors = events.filter((e) => e.romance > 0 && span.some((m) => m.techniques.includes(e.technique) && [...m.transit, ...m.progression, ...m.solarArc].includes(e)));
+    const from = span[0]!.start.getTime() - 30.44 * 86400000, to = span[span.length - 1]!.end.getTime() + 30.44 * 86400000;
+    const factors = events.filter((e) => e.romance > 0 && span.some((m) => m.techniques.includes(e.technique) && [...m.transit, ...m.progression, ...m.solarArc].includes(e)) && (e.technique !== "transit" || e.aspect === "house" || e.exact.some((x) => x.getTime() >= from && x.getTime() <= to)));
     const techniques = TECHNIQUES.filter((technique) => span.some((m) => m.techniques.includes(technique)));
     const strength = span.some((m) => m.strength === 3) ? 3 : 2;
     windows.push({ from: span[0]!.start, to: span[span.length - 1]!.end, strength, techniques, factors, summary: summarise(techniques, strength, factors, span.length) });
@@ -502,6 +518,6 @@ function summarise(techniques: Technique[], strength: 2 | 3, factors: TimelineEv
   const strong = factors.filter((f) => f.romance === 2);
   const lead = (strong.length ? strong : factors).slice(0, 3).map((f) => f.title);
   const names = list(techniques.map((t) => TECHNIQUE_NAMES[t].toLowerCase()));
-  const head = strength === 3 ? `All three techniques point the same way here: ${names}.` : `${names.charAt(0).toUpperCase()}${names.slice(1)} point the same way here.`;
+  const head = strength === 3 ? `An ideal period: a strong transit peaks with both a progression and a solar arc behind it.` : `A good period: a strong transit peaks with ${names.replace("transits and ", "").replace("transits, ", "")} behind it.`;
   return `${head} ${months === 1 ? "One month" : `${months} months`}, ${factors.length === 1 ? "one factor" : `${factors.length} factors`}${lead.length ? `, led by ${list(lead)}` : ""}.`;
 }

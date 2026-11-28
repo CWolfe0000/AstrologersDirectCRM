@@ -133,9 +133,13 @@ describe("timeline", () => {
       expect(m.transit.every((e) => e.technique === "transit")).toBe(true);
       expect(m.progression.every((e) => e.technique === "progression")).toBe(true);
       expect(m.solarArc.every((e) => e.technique === "solar-arc")).toBe(true);
-      const romantic = (["transit", "progression", "solar-arc"] as const).filter((t) => [...m.transit, ...m.progression, ...m.solarArc].some((e) => e.technique === t && e.romance > 0));
-      expect(m.techniques).toEqual(romantic);
-      expect(m.strength).toBe(romantic.length >= 2 ? romantic.length : 0);
+      // A highlighted month has a strong transit at its peak with a progression or solar arc behind it.
+      if (m.strength) {
+        expect(m.techniques).toContain("transit");
+        expect(m.techniques.length).toBeGreaterThanOrEqual(2);
+        expect(m.transit.some((e) => e.romance === 2 && e.aspect !== "house" && e.exact.length > 0)).toBe(true);
+        if (m.strength === 3) expect(m.techniques).toHaveLength(3);
+      } else expect(m.techniques).toEqual([]);
     }
   });
 

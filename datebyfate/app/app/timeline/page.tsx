@@ -31,8 +31,8 @@ const join = (items: string[]) => (items.length < 2 ? items.join("") : `${items.
 
 const ROMANCE_BAR = ["border-line-strong bg-canvas-2 text-muted", "border-accent-200 bg-accent-100 text-accent-hover", "border-accent bg-accent text-white"];
 
-export default async function TimelinePage({ searchParams }: { searchParams: Promise<{ who?: string; from?: string }> }) {
-  const [{ who, from }, user] = await Promise.all([searchParams, requireUser()]);
+export default async function TimelinePage({ searchParams }: { searchParams: Promise<{ who?: string; from?: string; list?: string }> }) {
+  const [{ who, from, list }, user] = await Promise.all([searchParams, requireUser()]);
   const { self, matches, exes } = await loadContext(user.id);
   if (!self) return <p className="card">Add <Link className="link" href="/app">your own birth details</Link> to see your timeline.</p>;
   const others = [...matches, ...exes];
@@ -56,10 +56,13 @@ export default async function TimelinePage({ searchParams }: { searchParams: Pro
   };
   const width = MONTHS * MONTH_W;
   const today = now >= timeline.from && now < timeline.to ? x(now) : null;
-  const href = (id: string, y: number | null) => {
+  // The full list of contacts is long, so it is its own view: ?list=1.
+  const listed = list === "1";
+  const href = (id: string, y: number | null, withList = listed) => {
     const q = new URLSearchParams();
     if (id !== self.id) q.set("who", id);
     if (y) q.set("from", String(y));
+    if (withList) q.set("list", "1");
     const s = q.toString();
     return s ? `/app/timeline?${s}` : "/app/timeline";
   };
@@ -86,7 +89,7 @@ export default async function TimelinePage({ searchParams }: { searchParams: Pro
         </nav>
       )}
 
-      <p className="mb-4 max-w-3xl text-[13.5px] text-muted">Windows are found where at least two of the three techniques point the same way. This convergence rule is Datebyfate’s own, and nothing here predicts an event.</p>
+      <p className="mb-4 max-w-3xl text-[13.5px] text-muted">Progressions and solar arcs set the background for a year or two at a time; a transit is the timer. A window opens when a strong transit to your relationship points peaks while a progression or solar arc points the same way. It is marked ideal when both do. This convergence rule is Datebyfate’s own, and nothing here predicts an event.</p>
       {timeline.notes.map((n) => (
         <p key={n} className="mb-4 rounded-lg bg-warn-50 px-4 py-3 text-[13px] text-ink-2">{n}{!other && <> <Link className="link" href="/app/you">Add your birth time</Link> to include them.</>}</p>
       ))}
@@ -96,8 +99,13 @@ export default async function TimelinePage({ searchParams }: { searchParams: Pro
           <div className="flex border-b border-line">
             <RowLabel />
             <div style={{ width }}>
-              <div className="flex">
-                {years.map((y) => <div key={y.year} className="overflow-hidden border-l border-line-strong px-1.5 pt-1.5 text-[12px] font-semibold tabular-nums text-ink first:border-l-0" style={{ width: y.months * MONTH_W }}>{y.months > 1 ? y.year : ""}</div>)}
+              <div className="flex pt-5">
+                {years.map((y) => (
+                  <div key={y.year} className="border-l border-line-strong text-[12px] font-semibold tabular-nums text-ink first:border-l-0" style={{ width: y.months * MONTH_W }}>
+                    {/* The year stays in view while its months scroll past. */}
+                    {y.months > 1 && <span className="sticky inline-block px-1.5" style={{ left: LABEL_W }}>{y.year}</span>}
+                  </div>
+                ))}
               </div>
               <div className="flex pb-1">
                 {timeline.months.map((m) => <div key={m.key} title={monthYear(m.start)} className="text-center text-[10.5px] text-muted" style={{ width: MONTH_W }}>{INITIAL.format(m.start)}</div>)}
@@ -106,7 +114,7 @@ export default async function TimelinePage({ searchParams }: { searchParams: Pro
           </div>
           {own && <WindowRow label="Romance Windows: You" timeline={own} width={width} />}
           <WindowRow label={other ? `Romance Windows: ${person.name}` : "Romance Windows"} timeline={timeline} width={width} />
-          {user.premium && byTechnique.map(({ technique, events }) => <EventRow key={technique} label={TECHNIQUE_NAMES[technique]} events={events} x={x} width={width} />)}
+          {user.premium && byTechnique.map(({ technique, events }) => <EventRow key={technique} label={TECHNIQUE_NAMES[technique]} events={events} x={x} width={width} base={href(person.id, year, true)} />)}
           {today !== null && (
             <div aria-hidden className="pointer-events-none absolute inset-y-0 z-10 w-px bg-ink/70" style={{ left: LABEL_W + today }}>
               <span className="absolute left-1 top-0.5 rounded bg-ink px-1 text-[10px] font-medium leading-4 text-white">Today</span>
@@ -115,8 +123,8 @@ export default async function TimelinePage({ searchParams }: { searchParams: Pro
         </div>
       </TimelineScroll>
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12.5px] text-muted">
-        <Key className="bg-accent-200" text="Two techniques agree" />
-        <Key className="bg-accent" text="All three agree" />
+        <Key className="bg-accent-200" text="Good window" />
+        <Key className="bg-accent" text="Ideal window" />
         {user.premium && <><Key className="border border-accent bg-accent" text="Strongly supports romance" /><Key className="border border-accent-200 bg-accent-100" text="Supports romance" /><Key className="border border-line-strong bg-canvas-2" text="Other contacts" /></>}
       </div>
 
@@ -126,8 +134,8 @@ export default async function TimelinePage({ searchParams }: { searchParams: Pro
         </p>
       )}
 
-      <Section title={other ? `${person.name}’s Romance Windows` : "Your Romance Windows"} intro={`${plural(timeline.windows.length, "window")} between ${monthYear(timeline.months[0]!.start)} and ${monthYear(timeline.months[MONTHS - 1]!.start)}. A window is a run of months in which romance factors from at least two techniques are active together. It marks a period that favours love; what happens in it is up to the people involved.`}>
-        {timeline.windows.length === 0 && <p className="card text-ink-2">No two techniques agree about love in this range. Look earlier or later, or read the contacts below one at a time.</p>}
+      <Section title={other ? `${person.name}’s Romance Windows` : "Your Romance Windows"} intro={`${plural(timeline.windows.length, "window")} between ${monthYear(timeline.months[0]!.start)} and ${monthYear(timeline.months[MONTHS - 1]!.start)}. Each window is a run of months in which a strong transit to the relationship points peaks with a progression or solar arc behind it. It marks a period that favours love; what happens in it is up to the people involved.`}>
+        {timeline.windows.length === 0 && <p className="card text-ink-2">No strong transit meets a progression or solar arc about love in this range. Look earlier or later, or read the contacts one at a time.</p>}
         {user.premium ? (
           <div className="grid gap-4 lg:grid-cols-2">{timeline.windows.map((w) => <WindowCard key={w.from.toISOString()} window={w} />)}</div>
         ) : timeline.windows.length > 0 || timeline.events.length > 0 ? (
@@ -137,7 +145,11 @@ export default async function TimelinePage({ searchParams }: { searchParams: Pro
         ) : null}
       </Section>
 
-      {user.premium && byTechnique.map(({ technique, events }) => (
+      {user.premium && !listed && (
+        <p className="mt-8"><Link href={`${href(person.id, year, true)}#contacts`} className="btn-ghost">Show Every Contact In This Range ({timeline.events.length})</Link></p>
+      )}
+      {user.premium && listed && <div id="contacts" />}
+      {user.premium && listed && byTechnique.map(({ technique, events }) => (
         <Section key={technique} title={TECHNIQUE_NAMES[technique]} intro={INTRO[technique]}>
           {events.length === 0 ? <p className="card text-ink-2">Nothing by this technique reaches {whose} relationship points in this range.</p> : (
             <ul className="card divide-y divide-line">
@@ -177,17 +189,17 @@ function WindowRow({ label, timeline, width }: { label: string; timeline: Timeli
       <RowLabel>{label}</RowLabel>
       <div className="relative h-10" style={{ width, ...monthLines }}>
         {bands.map((b) => (
-          <div key={b.at} title={`${span(b.from, b.to)}: ${b.strength === 3 ? "all three techniques agree" : "two techniques agree"}`} className={`absolute inset-y-2 rounded-[3px] ${b.strength === 3 ? "bg-accent" : "bg-accent-200"}`} style={{ left: b.at * MONTH_W + 1, width: b.months * MONTH_W - 1 }}>
-            <span className="sr-only">{span(b.from, b.to)}: {b.strength === 3 ? "all three techniques agree" : "two techniques agree"}</span>
+          <div key={b.at} title={`${span(b.from, b.to)}: ${b.strength === 3 ? "ideal, all three techniques agree" : "good, two techniques agree"}`} className={`absolute inset-y-2 rounded-[3px] ${b.strength === 3 ? "bg-accent" : "bg-accent-200"}`} style={{ left: b.at * MONTH_W + 1, width: b.months * MONTH_W - 1 }}>
+            <span className="sr-only">{span(b.from, b.to)}: {b.strength === 3 ? "ideal, all three techniques agree" : "good, two techniques agree"}</span>
           </div>
         ))}
-        {bands.length === 0 && <span className="sticky left-[104px] inline-block py-2.5 pl-2 text-[12px] text-muted">None in this range</span>}
+        {bands.length === 0 && <span className="sticky inline-block py-2.5 pl-2 text-[12px] text-muted" style={{ left: LABEL_W }}>None in this range</span>}
       </div>
     </div>
   );
 }
 
-function EventRow({ label, events, x, width }: { label: string; events: TimelineEvent[]; x: (d: Date) => number; width: number }) {
+function EventRow({ label, events, x, width, base }: { label: string; events: TimelineEvent[]; x: (d: Date) => number; width: number; base: string }) {
   // Pack the bars into as few lanes as will hold them without overlap.
   const ends: number[] = [];
   const bars = events.map((e) => {
@@ -203,11 +215,11 @@ function EventRow({ label, events, x, width }: { label: string; events: Timeline
       <RowLabel>{label}</RowLabel>
       <div className="relative" style={{ width, height: Math.max(1, ends.length) * LANE_H + 10, ...monthLines }}>
         {bars.map(({ e, left, w, lane }) => (
-          <a key={e.id} href={`#${anchor(e)}`} title={`${e.title} (${eventSpan(e)})`} className={`heading absolute overflow-hidden whitespace-nowrap rounded-[3px] border px-1 text-[10.5px] font-medium leading-[16px] hover:z-10 hover:brightness-95 ${ROMANCE_BAR[e.romance]}`} style={{ left, width: w, top: 5 + lane * LANE_H, height: LANE_H - 4 }}>
+          <a key={e.id} href={`${base}#${anchor(e)}`} title={`${e.title} (${eventSpan(e)})`} className={`heading absolute overflow-hidden whitespace-nowrap rounded-[3px] border px-1 text-[10.5px] font-medium leading-[16px] hover:z-10 hover:brightness-95 ${ROMANCE_BAR[e.romance]}`} style={{ left, width: w, top: 5 + lane * LANE_H, height: LANE_H - 4 }}>
             {w >= 40 ? e.title.replace(" Your ", " ") : <span className="sr-only">{e.title}</span>}
           </a>
         ))}
-        {bars.length === 0 && <span className="inline-block py-1.5 pl-2 text-[12px] text-muted">Nothing in this range</span>}
+        {bars.length === 0 && <span className="sticky inline-block py-1.5 pl-2 text-[12px] text-muted" style={{ left: LABEL_W }}>Nothing in this range</span>}
       </div>
     </div>
   );
@@ -237,7 +249,7 @@ function WindowCard({ window: w }: { window: RomanceWindow }) {
   const factors = [...w.factors].sort((a, b) => b.romance - a.romance || a.from.getTime() - b.from.getTime());
   return (
     <article className="card">
-      <p className="eyebrow">{w.strength === 3 ? "All three techniques" : "Two techniques"}</p>
+      <p className="eyebrow">{w.strength === 3 ? "Ideal: All Three Techniques" : "Good: Two Techniques"}</p>
       <h3 className="mt-1 text-xl">{span(w.from, w.to)}</h3>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {w.techniques.map((t) => <span key={t} className={`chip ${w.strength === 3 ? "bg-accent text-white" : "bg-accent-50 text-accent"}`}>{TECHNIQUE_NAMES[t]}</span>)}
